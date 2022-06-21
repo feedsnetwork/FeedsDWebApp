@@ -7,16 +7,17 @@ import Hero from './Hero';
 const OverviewWrapper = styled(Box)(
   () => `
     overflow: auto;
-    flex: 1;
-    overflow-x: hidden;
-    text-align: center;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 `
 );
 
 function SignIn() {
   return (
     <OverviewWrapper p={3}>
-      <Card sx={{ p: {xs: 2, sm: 3, md: 5, lg: 8}, mt: 10, borderRadius: 3, display: 'inline-flex' }}>
+      <Card sx={{ p: {xs: 4, sm: 5, md: 7, lg: 8}, borderRadius: 3, display: 'inline-flex' }}>
         <Hero />
       </Card>
     </OverviewWrapper>

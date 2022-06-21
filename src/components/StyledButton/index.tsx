@@ -14,7 +14,7 @@ const GradientOutlineButton = styled(Button)(
       position: absolute;
       inset: 0;
       border-radius: 16px; 
-      padding: 3px; 
+      padding: 2px; 
       background: linear-gradient(90deg, #7624FE 0%, #368BFF 100%);
       -webkit-mask: 
         linear-gradient(#fff 0 0) content-box, 

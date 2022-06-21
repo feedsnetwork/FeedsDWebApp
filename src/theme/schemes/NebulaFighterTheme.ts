@@ -1,6 +1,27 @@
 import { alpha, createTheme, darken } from '@mui/material';
 import '@mui/lab/themeAugmentation';
 
+const FONT_PRIMARY = 'Public Sans, sans-serif'; // Google Font
+// const FONT_SECONDARY = 'CircularStd, sans-serif'; // Local Font
+
+function pxToRem(value) {
+  return `${value / 16}rem`;
+}
+
+function responsiveFontSizes({ sm, md, lg }) {
+  return {
+    '@media (min-width:600px)': {
+      fontSize: pxToRem(sm)
+    },
+    '@media (min-width:900px)': {
+      fontSize: pxToRem(md)
+    },
+    '@media (min-width:1200px)': {
+      fontSize: pxToRem(lg)
+    }
+  };
+}
+
 const themeColors = {
   primary: '#8C7CF0',
   secondary: '#9EA4C1',
@@ -1161,61 +1182,72 @@ export const NebulaFighterTheme = createTheme({
     borderRadius: 16
   },
   typography: {
-    fontFamily:
-      'sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+    fontFamily: FONT_PRIMARY,
     h1: {
       fontWeight: 700,
-      fontSize: 35
+      lineHeight: 80 / 64,
+      fontSize: pxToRem(40),
+      ...responsiveFontSizes({ sm: 52, md: 58, lg: 64 })
     },
     h2: {
       fontWeight: 700,
-      fontSize: 30
+      lineHeight: 64 / 48,
+      fontSize: pxToRem(32),
+      ...responsiveFontSizes({ sm: 40, md: 44, lg: 48 })
     },
     h3: {
       fontWeight: 700,
-      fontSize: 25,
-      lineHeight: 1.4,
-      color: colors.alpha.black[100]
+      lineHeight: 1.5,
+      fontSize: pxToRem(24),
+      ...responsiveFontSizes({ sm: 26, md: 30, lg: 32 })
     },
     h4: {
-      // fontWeight: 700,
-      fontSize: 16
+      fontWeight: 700,
+      lineHeight: 1.5,
+      fontSize: pxToRem(20),
+      ...responsiveFontSizes({ sm: 20, md: 24, lg: 24 })
     },
     h5: {
-      // fontWeight: 700,
-      fontSize: 14
+      fontWeight: 700,
+      lineHeight: 1.5,
+      fontSize: pxToRem(18),
+      ...responsiveFontSizes({ sm: 19, md: 20, lg: 20 })
     },
     h6: {
-      fontSize: 15
-    },
-    body1: {
-      fontSize: 14
-    },
-    body2: {
-      fontSize: 14
-    },
-    // button: {
-    //   fontWeight: 600
-    // },
-    caption: {
-      fontSize: 13,
-      textTransform: 'uppercase',
-      color: colors.alpha.black[50]
+      fontWeight: 700,
+      lineHeight: 28 / 18,
+      fontSize: pxToRem(17),
+      ...responsiveFontSizes({ sm: 18, md: 18, lg: 18 })
     },
     subtitle1: {
-      fontSize: 14,
-      color: colors.alpha.black[70]
+      fontWeight: 600,
+      lineHeight: 1.5,
+      fontSize: pxToRem(16)
     },
     subtitle2: {
-      fontWeight: 400,
-      fontSize: 15,
-      color: colors.alpha.black[50]
+      fontWeight: 600,
+      lineHeight: 22 / 14,
+      fontSize: pxToRem(14)
+    },
+    body1: {
+      lineHeight: 1.5,
+      fontSize: pxToRem(16)
+    },
+    body2: {
+      lineHeight: 22 / 14,
+      fontSize: pxToRem(14)
+    },
+    caption: {
+      lineHeight: 1.5,
+      fontSize: pxToRem(12)
     },
     overline: {
-      fontSize: 13,
       fontWeight: 700,
+      lineHeight: 1.5,
+      fontSize: pxToRem(12),
+      letterSpacing: 1.1,
       textTransform: 'uppercase'
-    }
+    },
   },
   shadows: [
     'none',

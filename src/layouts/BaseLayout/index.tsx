@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Outlet } from 'react-router-dom';
 
 import { Box } from '@mui/material';
-
+import Footer from './Footer'
 interface BaseLayoutProps {
   children?: ReactNode;
 }
@@ -13,11 +13,14 @@ const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
     <Box
       sx={{
         flex: 1,
-        height: '100%',
-        background: 'linear-gradient(180deg, #000000 0%, #A067FF 300.51%)'
+        background: 'linear-gradient(180deg, #000000 0%, #A067FF 300.51%)',
+        position: 'relative'
       }}
     >
-      {children || <Outlet />}
+      <Box sx={{pb: '40px', height: '100%'}}>
+        {children || <Outlet />}
+      </Box>
+      <Footer/>
     </Box>
   );
 };

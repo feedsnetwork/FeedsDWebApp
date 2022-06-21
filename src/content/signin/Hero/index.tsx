@@ -11,12 +11,14 @@ function Hero() {
   return (
     <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
       <Box display="flex" justifyContent="center" alignItems="center" mb={3}>
-        <Logo width={120}/>
+        <Link to="/home" component={RouterLink}>
+          <Box component='img' src='/feeds-logo.svg' sx={{width: {xs: 80, md: 100, lg: 120}}}/>
+        </Link>
       </Box>
-      <Typography variant='h3' sx={{ my: 7 }}>
+      <Typography variant='h3' sx={{ my: {xs: 3, sm: 5, md: 7} }}>
         Hello! 👋<br/>Welcome to Feeds Network!
       </Typography>
-      <Grid container spacing={2}>
+      <Grid container spacing={3}>
         <Grid item xs={12}>
           <StyledButton component={RouterLink} to="/home" fullWidth>Sign in with DID</StyledButton>
         </Grid>
@@ -24,9 +26,11 @@ function Hero() {
           <StyledButton type="outline" fullWidth>I don’t have a DID</StyledButton>
         </Grid>
         <Grid item xs={12}>
-          <Link href="https://www.elastos.org/did" underline="hover" color='inherit' target="_blank">
-            What is a DID?
-          </Link>
+          <Typography variant='caption'>
+            <Link href="https://www.elastos.org/did" underline="always" color='inherit' target="_blank">
+              What is a DID?
+            </Link>
+          </Typography>
         </Grid>
       </Grid>
     </Container>
