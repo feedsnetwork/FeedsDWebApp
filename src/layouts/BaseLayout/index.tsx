@@ -13,7 +13,8 @@ const BaseLayout: FC<BaseLayoutProps> = ({ children }) => {
     <Box
       sx={{
         flex: 1,
-        height: '100%'
+        height: '100%',
+        background: 'linear-gradient(180deg, #000000 0%, #A067FF 300.51%)'
       }}
     >
       {children || <Outlet />}
