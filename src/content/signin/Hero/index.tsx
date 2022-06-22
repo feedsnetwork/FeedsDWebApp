@@ -25,6 +25,16 @@ const LinearProgressWrapper = styled(LinearProgress)(
 
 function Hero() {
   const [verifyState, setVerifyState] = React.useState(0)
+  const [authProgress, setAuthProgress] = React.useState(0)
+  React.useEffect(()=>{
+    if(verifyState === 1) {
+      setTimeout(()=>{
+        setAuthProgress(100)
+        setTimeout(()=>{ setVerifyState(2) }, 500)
+      }, 1000)
+    }
+  }, [verifyState])
+
   return (
     <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
       <Box display="flex" justifyContent="center" alignItems="center">
@@ -39,7 +49,6 @@ function Hero() {
           </Typography>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              {/* <StyledButton component={RouterLink} to="/home" fullWidth>Sign in with DID</StyledButton> */}
               <StyledButton fullWidth onClick={(e)=>{setVerifyState(1)}}>Sign in with DID</StyledButton>
             </Grid>
             <Grid item xs={12}>
@@ -67,16 +76,30 @@ function Hero() {
             <Box component='img' src='hive.svg' width={{xs: 80, md: 100, lg: 120}} py={1} draggable={false}/>
             <Box width='100%'>
               <LinearProgressWrapper
-                value={25}
+                value={authProgress}
                 color="primary"
                 variant="determinate"
                 sx={{
                   '.MuiLinearProgress-bar': {
-                    background: `linear-gradient(90deg, #7624FE ${100 - 25}%, #368BFF 100%);`
+                    background: `linear-gradient(90deg, #7624FE ${100 - authProgress}%, #368BFF 100%);`
                   }
                 }}
               />
             </Box>
+          </Stack>
+        </>
+      }
+      {
+        verifyState===2 && <>
+          <Stack spacing={2} sx={{ mt: {xs: 3, sm: 5, md: 7} }} alignItems='center'>
+            <Typography variant='h3' component='div'>
+              Authorized
+            </Typography>
+            <Typography variant='body2' sx={{opacity: .8}}>
+              Successful login to Hive node!
+            </Typography>
+            <Box component='img' src='success-check.svg' width={{xs: 80, md: 100, lg: 120}} py={1} draggable={false}/>
+            <StyledButton component={RouterLink} to="/home" fullWidth>Let's go!</StyledButton>
           </Stack>
         </>
       }
