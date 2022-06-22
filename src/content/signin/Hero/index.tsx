@@ -1,6 +1,7 @@
 
 import React from 'react'
 import { Link as RouterLink } from 'react-router-dom';
+import FadeIn from 'react-fade-in';
 import { Box, Button, Container, Grid, Typography, Link, Stack, LinearProgress, Fade, Paper } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ArrowBack from '@mui/icons-material/ArrowBack';
@@ -44,7 +45,7 @@ function Hero() {
         </Link>
       </Box>
       {
-        verifyState===0 && <Fade in={true}>
+        verifyState===0 && <FadeIn>
           <Box>
             <Typography variant='h3' sx={{ my: {xs: 3, sm: 5, md: 7} }}>
               Hello! 👋<br/>Welcome to Feeds Network!
@@ -65,18 +66,18 @@ function Hero() {
               </Grid>
             </Grid>
           </Box>
-        </Fade>
+        </FadeIn>
       }
       {
-        verifyState===1 && <Fade in={true}>
+        verifyState===1 && <FadeIn>
           <Stack spacing={2} sx={{ mt: {xs: 3, sm: 5, md: 7} }} alignItems='center'>
-            <Typography variant='h3' component='div'>
+            <Typography variant='h3'>
               Authorization
             </Typography>
             <Typography variant='body2' sx={{opacity: .8}}>
               Connecting to Hive node...
             </Typography>
-            <Box component='img' src='hive.svg' width={{xs: 80, md: 100, lg: 120}} py={1} draggable={false}/>
+            <Box component='img' src='hive.svg' width={{xs: 80, md: 100, lg: 120}} height={{xs: 90, md: 110, lg: 130}} py={1} draggable={false}/>
             <Box width='100%'>
               <LinearProgressWrapper
                 value={authProgress}
@@ -90,10 +91,10 @@ function Hero() {
               />
             </Box>
           </Stack>
-        </Fade>
+        </FadeIn>
       }
       {
-        verifyState===2 && <Fade in={true}>
+        verifyState===2 && <FadeIn>
           <Stack spacing={2} sx={{ mt: {xs: 3, sm: 5, md: 7} }} alignItems='center'>
             <Typography variant='h3' component='div'>
               Authorized
@@ -101,13 +102,13 @@ function Hero() {
             <Typography variant='body2' sx={{opacity: .8}}>
               Successful login to Hive node!
             </Typography>
-            <Box component='img' src='success-check.svg' width={{xs: 80, md: 100, lg: 120}} py={1} draggable={false}/>
+            <Box component='img' src='feeds-complete.gif' width={{xs: 80, md: 100, lg: 120}} height={{xs: 90, md: 110, lg: 130}} py={1} draggable={false}/>
             <StyledButton component={RouterLink} to="/home" fullWidth>Let's go!</StyledButton>
           </Stack>
-        </Fade>
+        </FadeIn>
       }
       {
-        verifyState===3 && <Fade in={true}>
+        verifyState===3 && <FadeIn>
           <Box>
             <Typography variant='h3' sx={{ my: {xs: 3, sm: 5, md: 7} }}>
               Download Elastos Essentials app<br/>
@@ -132,7 +133,7 @@ function Hero() {
               </Grid>
             </Grid>
           </Box>
-        </Fade>
+        </FadeIn>
       }
     </Container>
   );
