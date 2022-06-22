@@ -3,7 +3,6 @@ import { Button, styled } from '@mui/material';
 const GradientContainButton = styled(Button)(
   ({ theme }) => `
     background: linear-gradient(90deg, #7624FE 0%, #368BFF 100%);
-    transition: filter .5s;
 `
 );
 
@@ -23,7 +22,6 @@ const GradientOutlineButton = styled(Button)(
               mask-composite: exclude; 
     }
     background: transparent;
-    transition: filter .5s;
 `
 );
 
