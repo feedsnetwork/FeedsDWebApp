@@ -24,42 +24,45 @@ const Tasks = Loader(lazy(() => import('src/content/dashboards/Tasks')));
 
 // Applications
 
-const Messenger = Loader(
-  lazy(() => import('src/content/applications/Messenger'))
-);
-const Transactions = Loader(
-  lazy(() => import('src/content/applications/Transactions'))
-);
 const Home = Loader(
   lazy(() => import('src/content/home'))
 );
-const UserSettings = Loader(
-  lazy(() => import('src/content/applications/Users/settings'))
+const Channel = Loader(
+  lazy(() => import('src/content/channel'))
 );
+// const Messenger = Loader(
+//   lazy(() => import('src/content/applications/Messenger'))
+// );
+// const Transactions = Loader(
+//   lazy(() => import('src/content/applications/Transactions'))
+// );
+// const UserSettings = Loader(
+//   lazy(() => import('src/content/applications/Users/settings'))
+// );
 
 // Components
 
-const Buttons = Loader(
-  lazy(() => import('src/content/pages/Components/Buttons'))
-);
-const Modals = Loader(
-  lazy(() => import('src/content/pages/Components/Modals'))
-);
-const Accordions = Loader(
-  lazy(() => import('src/content/pages/Components/Accordions'))
-);
-const Tabs = Loader(lazy(() => import('src/content/pages/Components/Tabs')));
-const Badges = Loader(
-  lazy(() => import('src/content/pages/Components/Badges'))
-);
-const Tooltips = Loader(
-  lazy(() => import('src/content/pages/Components/Tooltips'))
-);
-const Avatars = Loader(
-  lazy(() => import('src/content/pages/Components/Avatars'))
-);
-const Cards = Loader(lazy(() => import('src/content/pages/Components/Cards')));
-const Forms = Loader(lazy(() => import('src/content/pages/Components/Forms')));
+// const Buttons = Loader(
+//   lazy(() => import('src/content/pages/Components/Buttons'))
+// );
+// const Modals = Loader(
+//   lazy(() => import('src/content/pages/Components/Modals'))
+// );
+// const Accordions = Loader(
+//   lazy(() => import('src/content/pages/Components/Accordions'))
+// );
+// const Tabs = Loader(lazy(() => import('src/content/pages/Components/Tabs')));
+// const Badges = Loader(
+//   lazy(() => import('src/content/pages/Components/Badges'))
+// );
+// const Tooltips = Loader(
+//   lazy(() => import('src/content/pages/Components/Tooltips'))
+// );
+// const Avatars = Loader(
+//   lazy(() => import('src/content/pages/Components/Avatars'))
+// );
+// const Cards = Loader(lazy(() => import('src/content/pages/Components/Cards')));
+// const Forms = Loader(lazy(() => import('src/content/pages/Components/Forms')));
 
 // Status
 
@@ -123,6 +126,16 @@ const routes: RouteObject[] = [
       {
         path: '',
         element: <Home />
+      }
+    ]
+  },
+  {
+    path: 'channel',
+    element: <SidebarLayout />,
+    children: [
+      {
+        path: '',
+        element: <Channel />
       }
     ]
   },
