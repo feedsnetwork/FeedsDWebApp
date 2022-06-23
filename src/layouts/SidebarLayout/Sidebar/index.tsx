@@ -2,22 +2,11 @@ import { useContext } from 'react';
 import Scrollbar from 'src/components/Scrollbar';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 
-import {
-  Box,
-  Drawer,
-  alpha,
-  styled,
-  Divider,
-  useTheme,
-  Button,
-  lighten,
-  darken,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, Avatar, Tooltip, Typography } from '@mui/material';
 
 import SidebarMenu from './SidebarMenu';
 import Logo from 'src/components/LogoSign';
+import { reduceDIDstring } from 'src/utils/common'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -27,7 +16,7 @@ const SidebarWrapper = styled(Box)(
         position: relative;
         z-index: 7;
         height: 100%;
-        padding-bottom: 68px;
+        // padding-bottom: 68px;
 `
 );
 
@@ -42,7 +31,7 @@ function Sidebar() {
         sx={{
           display: {
             xs: 'none',
-            lg: 'inline-block'
+            lg: 'table'
           },
           position: 'fixed',
           left: theme.sidebarChannel.width,
@@ -52,28 +41,48 @@ function Sidebar() {
             theme.palette.mode === 'dark' ? theme.sidebar.boxShadow : 'none'
         }}
       >
-        <Scrollbar>
-          <Box mt={3} mb={4}>
-            <Box
-              mx={2}
-            >
-              <Typography
-                variant="h4"
-                sx={{ pt: 1, }}
+        <Box sx={{ display: 'table-row', height: '100%' }}>
+          <Scrollbar>
+            <Box mt={3} mb={4}>
+              <Box
+                mx={2}
               >
-                Feeds Network
-              </Typography>
+                <Typography
+                  variant="h4"
+                  sx={{ pt: 1, }}
+                >
+                  Feeds Network
+                </Typography>
+              </Box>
             </Box>
-          </Box>
-          <SidebarMenu />
-        </Scrollbar>
-        {/* <Divider
+            <SidebarMenu />
+          </Scrollbar>
+        </Box>
+        <Divider
           sx={{
             background: theme.colors.alpha.trueWhite[10]
           }}
         />
         <Box p={2}>
-          <Button
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Avatar
+              sx={{
+                width: 50,
+                height: 50
+              }}
+              alt="hames"
+              src="/static/images/avatars/2.jpg"
+            />
+            <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+              <Typography variant="subtitle2" noWrap>
+                hames
+              </Typography>
+              <Typography variant="body2" noWrap>
+                {reduceDIDstring('did:elastos:inSeTvmVDj6to7dHSZgkRZuUJYc9yHJChN')}
+              </Typography>
+            </Box>
+          </Stack>
+          {/* <Button
             href="https://bloomui.com"
             target="_blank"
             rel="noopener noreferrer"
@@ -83,10 +92,10 @@ function Sidebar() {
             fullWidth
           >
             Upgrade to PRO
-          </Button>
-        </Box> */}
+          </Button> */}
+        </Box>
       </SidebarWrapper>
-      <Drawer
+      {/* <Drawer
         sx={{
           boxShadow: `${theme.sidebar.boxShadow}`
         }}
@@ -125,7 +134,7 @@ function Sidebar() {
             <SidebarMenu />
           </Scrollbar>
         </SidebarWrapper>
-      </Drawer>
+      </Drawer> */}
     </>
   );
 }
