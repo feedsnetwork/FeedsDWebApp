@@ -202,10 +202,10 @@ function SidebarMenu() {
                   disableRipple
                   component={RouterLink}
                   onClick={closeSidebar}
-                  to="/profile"
+                  to="/channel"
                   // startIcon={<DisplaySettingsTwoToneIcon />}
                 >
-                  Profile
+                  Channel
                 </Button>
               </ListItem>
               <ListItem component="div">

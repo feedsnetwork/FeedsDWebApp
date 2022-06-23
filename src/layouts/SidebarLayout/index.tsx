@@ -55,8 +55,10 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
             display: 'block',
             flex: 1,
             pt: `${theme.header.height}`,
+            minHeight: '100%',
             background: theme.colors.default.main,
             [theme.breakpoints.up('lg')]: {
+              pt: 0,
               ml: `calc(${theme.sidebarChannel.width} + ${theme.sidebar.width})`,
               mr: `${theme.rightPanel.width}`
             }
