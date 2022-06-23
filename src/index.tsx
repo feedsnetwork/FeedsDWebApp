@@ -5,14 +5,17 @@ import { BrowserRouter } from 'react-router-dom';
 import 'nprogress/nprogress.css';
 import App from 'src/App';
 import { SidebarProvider } from 'src/contexts/SidebarContext';
+import { OverPageProvider } from 'src/contexts/OverPageContext';
 import * as serviceWorker from 'src/serviceWorker';
 
 ReactDOM.render(
   // <HelmetProvider>
     <SidebarProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <OverPageProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </OverPageProvider>
     </SidebarProvider>,
   // </HelmetProvider>,
   document.getElementById('root')

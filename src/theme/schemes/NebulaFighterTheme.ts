@@ -470,6 +470,21 @@ export const NebulaFighterTheme = createTheme({
         }
       }
     },
+    MuiInput: {
+      styleOverrides: {
+        underline: {
+          '&:before': {
+            borderBottomColor: themeColors.primary
+          },
+          '&:hover:not(.Mui-disabled):before': {
+            borderBottom: `1px solid ${colors.alpha.black[50]}`
+          },
+          '&:after': {
+            borderBottomColor: colors.alpha.black[50]
+          },
+        }
+      }
+    },
     MuiOutlinedInput: {
       styleOverrides: {
         root: {

@@ -29,18 +29,6 @@ function StyledButton(props) {
   const { children, type='contained', ...restProps} = props
   const GradientButton = type==='contained' ? GradientContainButton : GradientOutlineButton
   return (
-      // <GradientContainButton 
-      //   {...restProps}
-      //   variant='contained' 
-      //   sx={{
-      //     '&:hover': {
-      //       background: 'linear-gradient(90deg, #641fd7 0%, #2f78db 100%)',
-      //     }
-      //   }}
-      // >
-      //   {children}
-      // </GradientContainButton>
-
       <GradientButton 
         {...restProps}
         variant='contained' 

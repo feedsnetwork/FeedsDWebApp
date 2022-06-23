@@ -1,13 +1,16 @@
-import { FC } from 'react';
+import { FC, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography, Stack } from '@mui/material';
 
 import StyledButton from 'src/components/StyledButton';
+import { OverPageContext } from 'src/contexts/OverPageContext';
 
 interface EmptyViewProps {
   type?: string;
 }
 const EmptyView: FC<EmptyViewProps> = ({ type = 'home' })=>{
+  const { openAddChannelView } = useContext(OverPageContext);
+
   let subTitle = 'Your timeline is empty'
   let description = 'Add new channel or find new\nchannels to subscribe!'
   if(type==='channel'){
@@ -34,7 +37,7 @@ const EmptyView: FC<EmptyViewProps> = ({ type = 'home' })=>{
           <StyledButton type="outline" fullWidth>Explore Feeds</StyledButton>:
 
           <>
-            <StyledButton type="outline" fullWidth>Add Channel</StyledButton>
+            <StyledButton type="outline" fullWidth onClick={()=>{openAddChannelView()}}>Add Channel</StyledButton>
             <StyledButton type="outline" fullWidth>Explore Feeds</StyledButton>
           </>
         }
