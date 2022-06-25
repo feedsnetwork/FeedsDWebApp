@@ -6,6 +6,7 @@ import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, Avatar, T
 
 import SidebarMenu from './SidebarMenu';
 import Logo from 'src/components/LogoSign';
+import StyledAvatar from 'src/components/StyledAvatar'
 import { reduceDIDstring } from 'src/utils/common'
 
 const SidebarWrapper = styled(Box)(
@@ -65,14 +66,7 @@ function Sidebar() {
         />
         <Box p={2}>
           <Stack direction="row" alignItems="center" spacing={2}>
-            <Avatar
-              sx={{
-                width: 50,
-                height: 50
-              }}
-              alt="hames"
-              src="/static/images/avatars/2.jpg"
-            />
+            <StyledAvatar alt="hames" src="/static/images/avatars/2.jpg"/>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
               <Typography variant="subtitle2" noWrap>
                 hames

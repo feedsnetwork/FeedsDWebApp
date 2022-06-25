@@ -213,7 +213,7 @@ function SidebarMenu() {
                   disableRipple
                   component={RouterLink}
                   onClick={closeSidebar}
-                  to="/exploer"
+                  to="/explorer"
                   // startIcon={<DisplaySettingsTwoToneIcon />}
                 >
                   Explorer
