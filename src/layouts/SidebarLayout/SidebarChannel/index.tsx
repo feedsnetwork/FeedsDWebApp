@@ -62,29 +62,23 @@ function SidebarChannel() {
             xs: 'none',
             lg: 'table'
           },
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          boxShadow:
-            theme.palette.mode === 'dark' ? theme.sidebar.boxShadow : 'none'
+          boxShadow: theme.palette.mode === 'dark' ? theme.sidebar.boxShadow : 'none'
         }}
       >
         <Box sx={{ display: 'table-row', height: '100%' }}>
           <Scrollbar>
-            <Box mt={3}>
-              <Box mx={2}>
-                <Logo />
-              </Box>
+            <Box mt={3} textAlign='center'>
+              <Logo width={48} />
             </Box>
             <Divider
               sx={{
-                mt: theme.spacing(3),
+                mt: theme.spacing(2),
                 mx: theme.spacing(2),
                 background: theme.colors.alpha.trueWhite[10]
               }}
             />
             <Stack spacing={2} mt={2} alignItems='center'>
-              <GradientOutlineFab aria-label="add">
+              <GradientOutlineFab aria-label="add" size='medium'>
                 <svg width={0} height={0}>
                   <linearGradient id="linearColors" x1={0} y1={1} x2={1} y2={1}>
                     <stop offset={0} stopColor="#7624FE" />
@@ -97,10 +91,10 @@ function SidebarChannel() {
           </Scrollbar>
         </Box>
         <Stack spacing={2} alignItems='center' sx={{py: 2}}>
-          <Fab color='primary' aria-label="setting">
+          <Fab color='primary' aria-label="setting" size='medium'>
             <Icon icon="ep:setting" width={28} height={28} />
           </Fab>
-          <Fab color='primary' aria-label="logout">
+          <Fab color='primary' aria-label="logout" size='medium'>
             <Icon icon="clarity:sign-out-line" width={28} height={28} />
           </Fab>
         </Stack>

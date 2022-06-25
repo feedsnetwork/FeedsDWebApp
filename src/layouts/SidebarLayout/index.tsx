@@ -71,75 +71,76 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
       <Hidden lgUp>
         <Header />
       </Hidden>
-      <SidebarChannel />
-      <Sidebar />
-      <Box
-        sx={{
-          position: 'relative',
-          zIndex: 5,
-          display: 'block',
-          flex: 1,
-          pt: `${theme.header.height}`,
-          minHeight: '100%',
-          background: theme.colors.default.main,
-          [theme.breakpoints.up('lg')]: {
-            pt: 0,
-            ml: `calc(${theme.sidebarChannel.width} + ${theme.sidebar.width})`,
-            mr: `${theme.rightPanel.width}`
-          }
-        }}
-      >
-        <Box display="block">
-          {
-            isAddChannelView?
-            <>
-              <Hidden lgDown>
-                <Box sx={{pb: (theme)=>`${theme.header.height}`}}>
-                  <HeaderWrapper
-                    display="flex"
-                    alignItems="center"
-                    sx={{
-                      boxShadow:
-                        theme.palette.mode === 'dark'
-                          ? `0 1px 0 ${alpha(
-                              lighten(theme.colors.primary.main, 0.7),
-                              0.15
-                            )}, 0px 2px 8px -3px rgba(0, 0, 0, 0.2), 0px 5px 22px -4px rgba(0, 0, 0, .1)`
-                          : `0px 2px 8px -3px ${alpha(
-                              theme.colors.alpha.black[100],
-                              0.2
-                            )}, 0px 5px 22px -4px ${alpha(
-                              theme.colors.alpha.black[100],
-                              0.1
-                            )}`
-                    }}
-                  >
-                    <Stack
-                      direction="row"
+      <Stack direction='row' sx={{height: '100%'}}>
+        <SidebarChannel />
+        <Sidebar />
+        <Box
+          sx={{
+            position: 'relative',
+            zIndex: 5,
+            display: 'block',
+            flex: 1,
+            pt: `${theme.header.height}`,
+            minHeight: '100%',
+            background: theme.colors.default.main,
+            overflow: 'auto',
+            [theme.breakpoints.up('lg')]: {
+              pt: 0,
+            }
+          }}
+        >
+          <Box display="block">
+            {
+              isAddChannelView?
+              <>
+                <Hidden lgDown>
+                  <Box sx={{pb: (theme)=>`${theme.header.height}`}}>
+                    <HeaderWrapper
+                      display="flex"
                       alignItems="center"
-                      spacing={2}
+                      sx={{
+                        boxShadow:
+                          theme.palette.mode === 'dark'
+                            ? `0 1px 0 ${alpha(
+                                lighten(theme.colors.primary.main, 0.7),
+                                0.15
+                              )}, 0px 2px 8px -3px rgba(0, 0, 0, 0.2), 0px 5px 22px -4px rgba(0, 0, 0, .1)`
+                            : `0px 2px 8px -3px ${alpha(
+                                theme.colors.alpha.black[100],
+                                0.2
+                              )}, 0px 5px 22px -4px ${alpha(
+                                theme.colors.alpha.black[100],
+                                0.1
+                              )}`
+                      }}
                     >
-                      <Button
-                        color="inherit"
-                        startIcon={<ArrowBack />}
-                        onClick={()=>{closeAddChannelView()}}
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        spacing={2}
                       >
-                        Add Channel
-                      </Button>
-                    </Stack>
-                  </HeaderWrapper>
-                </Box>
-              </Hidden>
-              <FadeIn>
-                <AddChannel/>
-              </FadeIn>
-            </>:
+                        <Button
+                          color="inherit"
+                          startIcon={<ArrowBack />}
+                          onClick={()=>{closeAddChannelView()}}
+                        >
+                          Add Channel
+                        </Button>
+                      </Stack>
+                    </HeaderWrapper>
+                  </Box>
+                </Hidden>
+                <FadeIn>
+                  <AddChannel/>
+                </FadeIn>
+              </>:
 
-            <Outlet />
-          }
+              <Outlet />
+            }
+          </Box>
         </Box>
-      </Box>
-      <RightPanel />
+        <RightPanel />
+      </Stack>
     </Box>
   );
 };

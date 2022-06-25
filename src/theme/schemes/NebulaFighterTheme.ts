@@ -264,13 +264,13 @@ export const NebulaFighterTheme = createTheme({
     menuItemIconColorActive: colors.layout.sidebar.menuItemIconColorActive,
     menuItemHeadingColor: colors.layout.sidebar.menuItemHeadingColor,
     boxShadow: '1px 0 0 #272C48',
-    width: '270px'
+    width: '240px'
   },
   sidebarChannel: {
-    width: '90px'
+    width: '72px'
   },
   rightPanel: {
-    width: '270px'
+    width: '320px'
   },
   header: {
     height: '70px',

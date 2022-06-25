@@ -17,7 +17,6 @@ const SidebarWrapper = styled(Box)(
         position: relative;
         z-index: 7;
         height: 100%;
-        // padding-bottom: 68px;
 `
 );
 
@@ -34,9 +33,6 @@ function Sidebar() {
             xs: 'none',
             lg: 'table'
           },
-          position: 'fixed',
-          left: theme.sidebarChannel.width,
-          top: 0,
           background: theme.sidebar.background,
           boxShadow:
             theme.palette.mode === 'dark' ? theme.sidebar.boxShadow : 'none'
@@ -45,9 +41,7 @@ function Sidebar() {
         <Box sx={{ display: 'table-row', height: '100%' }}>
           <Scrollbar>
             <Box mt={3} mb={4}>
-              <Box
-                mx={2}
-              >
+              <Box mx={2}>
                 <Typography
                   variant="h4"
                   sx={{ pt: 1, }}
@@ -64,9 +58,9 @@ function Sidebar() {
             background: theme.colors.alpha.trueWhite[10]
           }}
         />
-        <Box p={2}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <StyledAvatar alt="hames" src="/static/images/avatars/2.jpg"/>
+        <Box p={1}>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <StyledAvatar alt="hames" src="/static/images/avatars/2.jpg" width={36}/>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
               <Typography variant="subtitle2" noWrap>
                 hames
