@@ -1,10 +1,13 @@
 import { useContext } from 'react';
 import Scrollbar from 'src/components/Scrollbar';
 import { SidebarContext } from 'src/contexts/SidebarContext';
-
-import { Stack, Box, Drawer, alpha, styled, Divider, useTheme, Button, lighten, Card, CardHeader, CardContent, List, ListItem, ListItemText, darken, Tooltip, InputAdornment, OutlinedInput } from '@mui/material';
+import { Icon } from '@iconify/react';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
+import { Stack, Box, Drawer, alpha, styled, Divider, useTheme, Button, lighten, Card, CardHeader, CardContent, List, ListItem, ListItemText, 
+  darken, Tooltip, InputAdornment, OutlinedInput, Typography, Grid } from '@mui/material';
 
+import StyledAvatar from 'src/components/StyledAvatar'
+import StyledButton from 'src/components/StyledButton'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -59,28 +62,73 @@ function RightPanel() {
               }
             />
             <Card>
-              <CardHeader title="Trends" />
+              <CardHeader 
+                title={
+                  <Typography variant='h5'>Trends</Typography>
+                } 
+              />
               <CardContent sx={{pt: 0}}>
                 <ListWrapper disablePadding>
                   <ListItem
-                    sx={{
-                      color: `${theme.colors.primary.main}`,
-                      '&:hover': { color: `${theme.colors.primary.dark}` }
-                    }}
                     button
                   >
-                    <ListItemText primary="#HTML" secondary="100 post" />
+                    <ListItemText 
+                      primary={
+                        <Typography variant='subtitle2' color='text.primary'>#web5</Typography>
+                      }
+                      secondary="100 post"
+                    />
                   </ListItem>
                   <ListItem
-                    sx={{
-                      color: `${theme.colors.primary.main}`,
-                      '&:hover': { color: `${theme.colors.primary.dark}` }
-                    }}
                     button
                   >
-                    <ListItemText primary="#HTML" secondary="100 post" />
+                    <ListItemText 
+                      primary={
+                        <Typography variant='subtitle2' color='text.primary'>#web5</Typography>
+                      }
+                      secondary="100 post"
+                    />
                   </ListItem>
                 </ListWrapper>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader 
+                title={
+                  <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Collection Channels&nbsp;<Icon icon="eva:info-outline"/></Typography>
+                } 
+                subheader={
+                  <Typography variant='body2' color='text.secondary'>Powered by Pasar Protocol</Typography>
+                }
+              />
+              <CardContent sx={{pt: 0}}>
+                <Grid container spacing={2}>
+                  {
+                    Array(5).fill(null).map((index)=>(
+                      <Grid item xs={12} key={index}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <StyledAvatar alt='Elastos' src='/static/images/avatars/2.jpg' width={32}/>
+                          <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                            <Typography component='div' variant="subtitle2" noWrap>
+                              Phantz Club
+                            </Typography>
+                            <Typography variant="body2" color='text.secondary' noWrap>
+                              100 Subscribers
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <StyledButton type="outlined">Subscribe</StyledButton>
+                          </Box>
+                        </Stack>
+                      </Grid>
+                    ))
+                  }
+                  <Grid item xs={12} textAlign='center'>
+                    <Button color="inherit">
+                      Show more
+                    </Button>
+                  </Grid>
+                </Grid>
               </CardContent>
             </Card>
           </Stack>
