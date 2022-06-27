@@ -23,12 +23,28 @@ const HeaderWrapper = styled(Box)(
         position: fixed;
         justify-content: space-between;
         width: 100%;
+        display: flex;
+        align-items: center;
         @media (min-width: ${theme.breakpoints.values.lg}px) {
             // margin-left: calc(${theme.sidebarChannel.width} + ${theme.sidebar.width});
             // margin-right: ${theme.rightPanel.width};
             left: calc(${theme.sidebarChannel.width} + ${theme.sidebar.width});
             width: auto;
         }
+        box-shadow: ${
+          theme.palette.mode === 'dark'
+            ? `0 1px 0 ${alpha(
+                lighten(theme.colors.primary.main, 0.7),
+                0.15
+              )}, 0px 2px 8px -3px rgba(0, 0, 0, 0.2), 0px 5px 22px -4px rgba(0, 0, 0, .1)`
+            : `0px 2px 8px -3px ${alpha(
+                theme.colors.alpha.black[100],
+                0.2
+              )}, 0px 5px 22px -4px ${alpha(
+                theme.colors.alpha.black[100],
+                0.1
+              )}`
+        };
 `
 );
 
@@ -95,25 +111,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
               <>
                 <Hidden lgDown>
                   <Box sx={{pb: (theme)=>`${theme.header.height}`}}>
-                    <HeaderWrapper
-                      display="flex"
-                      alignItems="center"
-                      sx={{
-                        boxShadow:
-                          theme.palette.mode === 'dark'
-                            ? `0 1px 0 ${alpha(
-                                lighten(theme.colors.primary.main, 0.7),
-                                0.15
-                              )}, 0px 2px 8px -3px rgba(0, 0, 0, 0.2), 0px 5px 22px -4px rgba(0, 0, 0, .1)`
-                            : `0px 2px 8px -3px ${alpha(
-                                theme.colors.alpha.black[100],
-                                0.2
-                              )}, 0px 5px 22px -4px ${alpha(
-                                theme.colors.alpha.black[100],
-                                0.1
-                              )}`
-                      }}
-                    >
+                    <HeaderWrapper>
                       <Stack
                         direction="row"
                         alignItems="center"

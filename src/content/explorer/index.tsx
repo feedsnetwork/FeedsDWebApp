@@ -1,7 +1,6 @@
-import Footer from 'src/components/Footer';
 import { Grid, Container, Box, Typography, Stack } from '@mui/material';
 
-import MyCards from './MyCards';
+import PostCard from 'src/components/PostCard';
 import EmptyView from 'src/components/EmptyView'
 
 function Explorer() {
@@ -20,21 +19,13 @@ function Explorer() {
             alignItems="stretch"
             spacing={3}
           >
-            <Grid item xs={12}>
-              <MyCards />
-            </Grid>
-            <Grid item xs={12}>
-              <MyCards />
-            </Grid>
-            <Grid item xs={12}>
-              <MyCards />
-            </Grid>
-            <Grid item xs={12}>
-              <MyCards />
-            </Grid>
-            <Grid item xs={12}>
-              <MyCards />
-            </Grid>
+            {
+              Array(5).fill(null).map((_, index)=>(
+                <Grid item xs={12} key={index}>
+                  <PostCard />
+                </Grid>
+              ))
+            }
           </Grid>
         </Container>
       }

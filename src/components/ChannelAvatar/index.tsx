@@ -7,7 +7,7 @@ const ChannelWrapper = styled(Box)(
   ({ theme }) => `
     width: 100%;
     position: relative;
-    & .pill {
+    &.channel>.pill, &.channel-focused>.pill {
       position: absolute;
       left: 0;
       top: 0;
@@ -16,19 +16,28 @@ const ChannelWrapper = styled(Box)(
       display: flex;
       align-items: center;
     }
-    & .pill>span {
+    &.channel>.pill>span, &.channel-focused>.pill>span {
       height: 8px;
       width: 8px;
       border-radius: 0 4px 4px 0;
       margin-left: -4px;
       background-color: white;
       transition: height .2s;
-    },
-    &:hover .pill>span {
+    }
+    &.channel-focused>.pill>span {
+      height: 32px;
+    }
+    &.channel:hover .pill>span {
       height: 20px
-    },
-    & .pill:hover>span {
+    }
+    &.channel> .pill:hover>span {
       height: 8px
+    }
+    &.channel-focused>.avatar-wrapper:before {
+      border-radius: 16px;
+    }
+    &.channel-focused>.avatar-wrapper>.MuiAvatar-root {
+      border-radius: 12px;
     }
   `
 )
@@ -72,10 +81,12 @@ interface ChannelAvatarProps {
   src?: string;
   variant?: "circular" | "square" | "rounded";
   width?: number;
+  onClick?: Function;
+  focused?: Boolean;
 }
 
 const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
-  const {alt, src, width=40, variant='circular'} = props
+  const { alt, src, width=40, variant = 'circular', onClick = ()=>{}, focused=false } = props
 
   const rippleRef = useRef(null);
   const onRippleStart = (e) => {
@@ -86,11 +97,12 @@ const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
   };
 
   return (
-    <ChannelWrapper>
+    <ChannelWrapper className={focused?'channel-focused':'channel'}>
       <Box className='pill'>
         <span/>
       </Box>
       <AvatarWrapper 
+        className='avatar-wrapper'
         sx={{
           overflow: 'hidden',
           width: width+8,
@@ -98,6 +110,7 @@ const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
         }}
         onMouseDown={onRippleStart}
         onMouseUp={onRippleStop}
+        onClick={() => { onClick() }}
       >
         <Avatar
           variant={variant}

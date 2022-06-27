@@ -51,10 +51,11 @@ const GradientOutlineFab = styled(Fab)(
 `
 );
 function SidebarChannel() {
-  const { sidebarToggle, toggleSidebar } = useContext(SidebarContext);
+  const { sidebarToggle, focusedChannel, toggleSidebar, setFocusChannel } = useContext(SidebarContext);
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
 
+  const tempChannels = [{name: 'MMA'}, {name: 'DAO'}, {name: 'LEM'}]
   return (
     <>
       <SidebarWrapper
@@ -79,9 +80,16 @@ function SidebarChannel() {
               }}
             />
             <Stack spacing={2} mt={2} alignItems='center'>
-              <ChannelAvatar alt='MMA' src='/static/images/avatars/2.jpg'/>
-              <ChannelAvatar alt='DAO' src='/static/images/avatars/2.jpg'/>
-              <ChannelAvatar alt='LEM' src='/static/images/avatars/2.jpg'/>
+              {
+                tempChannels.map((item, _i)=>
+                  <ChannelAvatar 
+                    key={_i} 
+                    alt={item.name} 
+                    src='/static/images/avatars/2.jpg' 
+                    onClick={()=>{setFocusChannel(item)}} 
+                    focused={focusedChannel&&focusedChannel.name===item.name}/>
+                )
+              }
               <GradientOutlineFab aria-label="add" size='medium'>
                 <svg width={0} height={0}>
                   <linearGradient id="linearColors" x1={0} y1={1} x2={1} y2={1}>
