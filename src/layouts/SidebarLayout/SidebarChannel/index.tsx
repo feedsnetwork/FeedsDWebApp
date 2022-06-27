@@ -7,6 +7,7 @@ import Scrollbar from 'src/components/Scrollbar';
 import Logo from 'src/components/LogoSign';
 import ChannelAvatar from 'src/components/ChannelAvatar'
 import { SidebarContext } from 'src/contexts/SidebarContext';
+import { OverPageContext } from 'src/contexts/OverPageContext';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -52,6 +53,7 @@ const GradientOutlineFab = styled(Fab)(
 );
 function SidebarChannel() {
   const { sidebarToggle, focusedChannel, toggleSidebar, setFocusChannel } = useContext(SidebarContext);
+  const { setPageType } = useContext(OverPageContext)
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
 
@@ -86,7 +88,7 @@ function SidebarChannel() {
                     key={_i} 
                     alt={item.name} 
                     src='/static/images/avatars/2.jpg' 
-                    onClick={()=>{setFocusChannel(item)}} 
+                    onClick={()=>{setFocusChannel(item); setPageType('CurrentChannel')}} 
                     focused={focusedChannel&&focusedChannel.name===item.name}/>
                 )
               }

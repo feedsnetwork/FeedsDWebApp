@@ -1,8 +1,9 @@
-import { FC, useState, createContext } from 'react';
+import { FC, useState, createContext, Dispatch } from 'react';
 type OverPageContext = {
-  isAddChannelView: boolean;
+  pageType: string;
   openAddChannelView: () => void;
-  closeAddChannelView: () => void;
+  closeOverPage: () => void;
+  setPageType: Dispatch<any>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -11,17 +12,17 @@ export const OverPageContext = createContext<OverPageContext>(
 );
 
 export const OverPageProvider: FC = ({ children }) => {
-  const [isAddChannelView, setAddChannelView] = useState(false);
+  const [pageType, setPageType] = useState('');
   const openAddChannelView = () => {
-    setAddChannelView(true);
+    setPageType('AddChannel');
   };
-  const closeAddChannelView = () => {
-    setAddChannelView(false);
+  const closeOverPage = () => {
+    setPageType('');
   };
 
   return (
     <OverPageContext.Provider
-      value={{ isAddChannelView, openAddChannelView, closeAddChannelView }}
+      value={{ pageType, openAddChannelView, closeOverPage, setPageType }}
     >
       {children}
     </OverPageContext.Provider>
