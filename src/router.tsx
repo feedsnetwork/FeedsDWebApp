@@ -33,6 +33,9 @@ const Channel = Loader(
 const Explorer = Loader(
   lazy(() => import('src/content/explorer'))
 );
+const Subscription = Loader(
+  lazy(() => import('src/content/subscription'))
+);
 // const Messenger = Loader(
 //   lazy(() => import('src/content/applications/Messenger'))
 // );
@@ -149,6 +152,16 @@ const routes: RouteObject[] = [
       {
         path: '',
         element: <Explorer />
+      }
+    ]
+  },
+  {
+    path: 'subscription',
+    element: <SidebarLayout />,
+    children: [
+      {
+        path: '',
+        element: <Subscription />
       }
     ]
   },

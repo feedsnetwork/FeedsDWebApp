@@ -222,10 +222,10 @@ function SidebarMenu() {
               <ListItem component="div">
                 <Button
                   disableRipple
-                  // component={RouterLink}
+                  component={RouterLink}
                   onClick={closeSidebar}
-                  // to="/management/profile/settings"
-                  endIcon={<ExpandMoreTwoToneIcon fontSize="small" />}
+                  to="/subscription"
+                  // endIcon={<ExpandMoreTwoToneIcon fontSize="small" />}
                 >
                   Subscriptions
                 </Button>
