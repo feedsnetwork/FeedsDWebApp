@@ -104,7 +104,7 @@ function RightPanel() {
               <CardContent sx={{pt: 0}}>
                 <Grid container spacing={2}>
                   {
-                    Array(5).fill(null).map((index)=>(
+                    Array(5).fill(null).map((_, index)=>(
                       <Grid item xs={12} key={index}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <StyledAvatar alt='Elastos' src='/static/images/avatars/2.jpg' width={32}/>

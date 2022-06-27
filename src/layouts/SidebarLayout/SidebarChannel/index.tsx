@@ -5,6 +5,7 @@ import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, darken, T
 
 import Scrollbar from 'src/components/Scrollbar';
 import Logo from 'src/components/LogoSign';
+import ChannelAvatar from 'src/components/ChannelAvatar'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 
 const SidebarWrapper = styled(Box)(
@@ -78,6 +79,9 @@ function SidebarChannel() {
               }}
             />
             <Stack spacing={2} mt={2} alignItems='center'>
+              <ChannelAvatar alt='MMA' src='/static/images/avatars/2.jpg'/>
+              <ChannelAvatar alt='DAO' src='/static/images/avatars/2.jpg'/>
+              <ChannelAvatar alt='LEM' src='/static/images/avatars/2.jpg'/>
               <GradientOutlineFab aria-label="add" size='medium'>
                 <svg width={0} height={0}>
                   <linearGradient id="linearColors" x1={0} y1={1} x2={1} y2={1}>
@@ -85,7 +89,7 @@ function SidebarChannel() {
                     <stop offset={1} stopColor="#368BFF" />
                   </linearGradient>
                 </svg>
-                <AddIcon sx={{ fill: "url(#linearColors)", fontSize: 33 }}/>
+                <AddIcon sx={{ fill: "url(#linearColors)", fontSize: 24 }}/>
               </GradientOutlineFab>
             </Stack>
           </Scrollbar>

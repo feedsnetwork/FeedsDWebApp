@@ -1,4 +1,5 @@
 import { FC } from 'react'
+import PropTypes from 'prop-types';
 import { Avatar, Box, styled } from '@mui/material';
 
 const StyledBox = styled(Box)(
@@ -15,6 +16,7 @@ const StyledBox = styled(Box)(
         linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
               mask-composite: exclude; 
+      transition: border-radius .2s;
     }
     // background: transparent;
     // borderRadius: '50%';
@@ -28,21 +30,24 @@ const StyledBox = styled(Box)(
 interface StyledAvatarProps {
   alt?: string;
   src?: string;
+  variant?: "circular" | "square" | "rounded";
   width?: number;
 }
 
 const StyledAvatar: FC<StyledAvatarProps> = (props) => {
-  const {alt, src, width=45} = props
+  const {alt, src, width=47, variant='circular'} = props
 
   return (
     <StyledBox style={{
-      width: width+10,
-      height: width+10,
+      width: width+8,
+      height: width+8,
     }}>
       <Avatar
+        variant={variant}
         sx={{
           width: width,
-          height: width
+          height: width,
+          transition: 'border-radius .2s',
         }}
         alt={alt}
         src={src}
@@ -52,6 +57,11 @@ const StyledAvatar: FC<StyledAvatarProps> = (props) => {
 }
 
 StyledAvatar.propTypes = {
+  variant: PropTypes.oneOf([
+    "circular",
+    "square",
+    "rounded"
+  ])
 }
 
 export default StyledAvatar;
