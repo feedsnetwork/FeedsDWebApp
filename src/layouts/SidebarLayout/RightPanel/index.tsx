@@ -70,8 +70,10 @@ function RightPanel() {
                   <CardContent>
                     <Stack alignItems='end'>
                       <Stack direction='row' spacing={1}>
-                        <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}}><ShareIcon/></IconButton>
-                        <StyledButton type='outlined'>Edit channel</StyledButton>
+                        <Box m='auto'>
+                          <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><ShareIcon fontSize='small'/></IconButton>
+                        </Box>
+                        <StyledButton type='outlined' size='small'>Edit channel</StyledButton>
                       </Stack>
                     </Stack>
                     <Stack alignItems='center' my={2}>
@@ -83,7 +85,7 @@ function RightPanel() {
                     <Stack alignItems='center'>
                       <Stack direction='row' spacing={1}>
                         <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;100 Subscribers</Typography>
-                        <StyledButton>Subscribed</StyledButton>
+                        <StyledButton size='small'>Subscribed</StyledButton>
                       </Stack>
                     </Stack>
                   </CardContent>
@@ -113,7 +115,7 @@ function RightPanel() {
                                 </Typography>
                               </Box>
                               <Box>
-                                <StyledButton type="outlined">Subscribe</StyledButton>
+                                <StyledButton type="outlined" size='small'>Subscribe</StyledButton>
                               </Box>
                             </Stack>
                           </Grid>
@@ -186,7 +188,7 @@ function RightPanel() {
                                 </Typography>
                               </Box>
                               <Box>
-                                <StyledButton type="outlined">Subscribe</StyledButton>
+                                <StyledButton type="outlined" size='small'>Subscribe</StyledButton>
                               </Box>
                             </Stack>
                           </Grid>

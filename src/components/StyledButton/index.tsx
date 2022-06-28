@@ -26,7 +26,7 @@ const GradientOutlineButton = styled(Button)(
 );
 
 function StyledButton(props) {
-  const { children, type='contained', ...restProps} = props
+  const { children, type='contained', size='medium', ...restProps} = props
   const GradientButton = type==='contained' ? GradientContainButton : GradientOutlineButton
   return (
       <GradientButton 
@@ -35,8 +35,10 @@ function StyledButton(props) {
         sx={{
           '&:hover': {
             background: 'linear-gradient(90deg, #641fd7 0%, #2f78db 100%)',
-          }
+          },
+          ...(size==='small'?{padding: '5px 16px 4px'}:{})
         }}
+        size={size}
       >
         {children}
       </GradientButton>

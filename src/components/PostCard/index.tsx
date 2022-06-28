@@ -30,8 +30,8 @@ function PostCard() {
               </Typography>
             </Box>
             <Box>
-              <StyledButton type="outlined">Subscribe</StyledButton>
-              <IconButton aria-label="settings">
+              <StyledButton type="outlined" size='small'>Subscribe</StyledButton>
+              <IconButton aria-label="settings" size='small'>
                 <MoreVertIcon />
               </IconButton>
             </Box>
