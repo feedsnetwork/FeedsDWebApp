@@ -16,3 +16,11 @@ export const reduceDIDstring = (strDID) => {
     return strDID
   return prefix+`:${tempDID.substring(0, 6)}...${tempDID.substring(tempDID.length - 3, tempDID.length)}`;
 }
+
+export const reduceHexAddress = (strAddress) => {
+  if(!strAddress)
+    return ''
+  if(strAddress.length<10)
+    return strAddress
+  return `${strAddress.substring(0, 6)}...${strAddress.substring(strAddress.length - 3, strAddress.length)}`;
+}

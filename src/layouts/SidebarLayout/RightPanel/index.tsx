@@ -1,14 +1,16 @@
 import { useContext } from 'react';
-import Scrollbar from 'src/components/Scrollbar';
-import { SidebarContext } from 'src/contexts/SidebarContext';
+import { useLocation } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
 import { Stack, Box, Drawer, alpha, styled, Divider, useTheme, Button, lighten, Card, CardHeader, CardContent, List, ListItem, ListItemText, 
   darken, Tooltip, InputAdornment, OutlinedInput, Typography, Grid, IconButton } from '@mui/material';
 
+import Scrollbar from 'src/components/Scrollbar';
 import StyledAvatar from 'src/components/StyledAvatar'
 import StyledButton from 'src/components/StyledButton'
+import { SidebarContext } from 'src/contexts/SidebarContext';
+import { reduceHexAddress } from 'src/utils/common'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -36,9 +38,175 @@ const ListWrapper = styled(List)(
 );
 function RightPanel() {
   const { sidebarToggle, focusedChannel, toggleSidebar } = useContext(SidebarContext);
-
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
+  const { pathname } = useLocation();
+  const isSetting = pathname.startsWith('/setting');
+  let content = null
+  if(isSetting) {
+    if(pathname.endsWith('/credentials'))
+      content = 
+        <Card>
+          <CardHeader title={<Typography variant='h5'>Preview</Typography>}/>
+          <CardContent>
+            <Stack mb={2}>
+              <StyledAvatar alt='Asralf' src='/channel.png' width={80}/>
+              <Typography variant='h5' mt={1}>@asralf</Typography>
+              <Typography variant='body2'>{reduceHexAddress('0x9A83Fd213843799AB8C7d383Fd213843799AB8C7')}</Typography>
+              <Typography variant='body2' color='text.secondary'>Hello! I love Elastos. Subscribe to my channel to get the latest info!</Typography>
+            </Stack>
+            <Stack alignItems='center'>
+              <Stack direction='row' spacing={1}>
+                <Typography variant='body2'><Typography variant='subtitle2' display='inline-flex'>5&nbsp;</Typography>Channels</Typography>
+                <Typography variant='body2'><Typography variant='subtitle2' display='inline-flex'>100&nbsp;</Typography>Subscribers</Typography>
+                <Typography variant='body2'><Typography variant='subtitle2' display='inline-flex'>32&nbsp;</Typography>Subscriptions</Typography>
+              </Stack>
+            </Stack>
+          </CardContent>
+        </Card>
+  } else {
+    if(focusedChannel)
+      content = 
+        <>
+          <Card>
+            <CardContent>
+              <Stack alignItems='end'>
+                <Stack direction='row' spacing={1}>
+                  <Box m='auto'>
+                    <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><ShareIcon fontSize='small'/></IconButton>
+                  </Box>
+                  <StyledButton type='outlined' size='small'>Edit channel</StyledButton>
+                </Stack>
+              </Stack>
+              <Stack alignItems='center' my={2}>
+                <StyledAvatar alt={focusedChannel.name} src='/channel.png' width={60}/>
+                <Typography variant='h5' mt={1}>{focusedChannel.name}</Typography>
+                <Typography variant='body2'>@asralf</Typography>
+                <Typography variant='body2' color='text.secondary' textAlign='center'>Hello! Welcome to my main channel! I love Elastos. Subscribe to my channel to get the latest info!</Typography>
+              </Stack>
+              <Stack alignItems='center'>
+                <Stack direction='row' spacing={1}>
+                  <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;100 Subscribers</Typography>
+                  <StyledButton size='small'>Subscribed</StyledButton>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader 
+              title={
+                <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Subscribers</Typography>
+              } 
+              subheader={
+                <Typography variant='body2' color='text.secondary'>100 Subscribers</Typography>
+              }
+            />
+            <CardContent sx={{pt: 0}}>
+              <Grid container spacing={2}>
+                {
+                  Array(5).fill(null).map((_, index)=>(
+                    <Grid item xs={12} key={index}>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <StyledAvatar alt='Elastos' src='/static/images/avatars/2.jpg' width={32}/>
+                        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                          <Typography component='div' variant="subtitle2" noWrap>
+                            Phantz Club
+                          </Typography>
+                          <Typography variant="body2" color='text.secondary' noWrap>
+                            100 Subscribers
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <StyledButton type="outlined" size='small'>Subscribe</StyledButton>
+                        </Box>
+                      </Stack>
+                    </Grid>
+                  ))
+                }
+                <Grid item xs={12} textAlign='center'>
+                  <Button color="inherit">
+                    Show more
+                  </Button>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </>
+    else 
+      content = 
+        <>
+          <Card>
+            <CardHeader 
+              title={
+                <Typography variant='h5'>Trends</Typography>
+              } 
+            />
+            <CardContent sx={{pt: 0}}>
+              <ListWrapper disablePadding>
+                <ListItem
+                  button
+                >
+                  <ListItemText 
+                    primary={
+                      <Typography variant='subtitle2' color='text.primary'>#web5</Typography>
+                    }
+                    secondary="100 post"
+                  />
+                </ListItem>
+                <ListItem
+                  button
+                >
+                  <ListItemText 
+                    primary={
+                      <Typography variant='subtitle2' color='text.primary'>#web5</Typography>
+                    }
+                    secondary="100 post"
+                  />
+                </ListItem>
+              </ListWrapper>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader 
+              title={
+                <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Collection Channels&nbsp;<Icon icon="eva:info-outline"/></Typography>
+              } 
+              subheader={
+                <Typography variant='body2' color='text.secondary'>Powered by Pasar Protocol</Typography>
+              }
+            />
+            <CardContent sx={{pt: 0}}>
+              <Grid container spacing={2}>
+                {
+                  Array(5).fill(null).map((_, index)=>(
+                    <Grid item xs={12} key={index}>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <StyledAvatar alt='Elastos' src='/static/images/avatars/2.jpg' width={32}/>
+                        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                          <Typography component='div' variant="subtitle2" noWrap>
+                            Phantz Club
+                          </Typography>
+                          <Typography variant="body2" color='text.secondary' noWrap>
+                            100 Subscribers
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <StyledButton type="outlined" size='small'>Subscribe</StyledButton>
+                        </Box>
+                      </Stack>
+                    </Grid>
+                  ))
+                }
+                <Grid item xs={12} textAlign='center'>
+                  <Button color="inherit">
+                    Show more
+                  </Button>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </>
+  }
 
   return (
     <>
@@ -64,150 +232,8 @@ function RightPanel() {
                 </InputAdornment>
               }
             />
-            {
-              focusedChannel?
-              <>
-                <Card>
-                  <CardContent>
-                    <Stack alignItems='end'>
-                      <Stack direction='row' spacing={1}>
-                        <Box m='auto'>
-                          <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><ShareIcon fontSize='small'/></IconButton>
-                        </Box>
-                        <StyledButton type='outlined' size='small'>Edit channel</StyledButton>
-                      </Stack>
-                    </Stack>
-                    <Stack alignItems='center' my={2}>
-                      <StyledAvatar alt={focusedChannel.name} src='/channel.png' width={60}/>
-                      <Typography variant='h5' mt={1}>{focusedChannel.name}</Typography>
-                      <Typography variant='body2'>@asralf</Typography>
-                      <Typography variant='body2' color='text.secondary' textAlign='center'>Hello! Welcome to my main channel! I love Elastos. Subscribe to my channel to get the latest info!</Typography>
-                    </Stack>
-                    <Stack alignItems='center'>
-                      <Stack direction='row' spacing={1}>
-                        <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;100 Subscribers</Typography>
-                        <StyledButton size='small'>Subscribed</StyledButton>
-                      </Stack>
-                    </Stack>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader 
-                    title={
-                      <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Subscribers</Typography>
-                    } 
-                    subheader={
-                      <Typography variant='body2' color='text.secondary'>100 Subscribers</Typography>
-                    }
-                  />
-                  <CardContent sx={{pt: 0}}>
-                    <Grid container spacing={2}>
-                      {
-                        Array(5).fill(null).map((_, index)=>(
-                          <Grid item xs={12} key={index}>
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                              <StyledAvatar alt='Elastos' src='/static/images/avatars/2.jpg' width={32}/>
-                              <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                                <Typography component='div' variant="subtitle2" noWrap>
-                                  Phantz Club
-                                </Typography>
-                                <Typography variant="body2" color='text.secondary' noWrap>
-                                  100 Subscribers
-                                </Typography>
-                              </Box>
-                              <Box>
-                                <StyledButton type="outlined" size='small'>Subscribe</StyledButton>
-                              </Box>
-                            </Stack>
-                          </Grid>
-                        ))
-                      }
-                      <Grid item xs={12} textAlign='center'>
-                        <Button color="inherit">
-                          Show more
-                        </Button>
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </>:
-
-              <>
-                <Card>
-                  <CardHeader 
-                    title={
-                      <Typography variant='h5'>Trends</Typography>
-                    } 
-                  />
-                  <CardContent sx={{pt: 0}}>
-                    <ListWrapper disablePadding>
-                      <ListItem
-                        button
-                      >
-                        <ListItemText 
-                          primary={
-                            <Typography variant='subtitle2' color='text.primary'>#web5</Typography>
-                          }
-                          secondary="100 post"
-                        />
-                      </ListItem>
-                      <ListItem
-                        button
-                      >
-                        <ListItemText 
-                          primary={
-                            <Typography variant='subtitle2' color='text.primary'>#web5</Typography>
-                          }
-                          secondary="100 post"
-                        />
-                      </ListItem>
-                    </ListWrapper>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader 
-                    title={
-                      <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Collection Channels&nbsp;<Icon icon="eva:info-outline"/></Typography>
-                    } 
-                    subheader={
-                      <Typography variant='body2' color='text.secondary'>Powered by Pasar Protocol</Typography>
-                    }
-                  />
-                  <CardContent sx={{pt: 0}}>
-                    <Grid container spacing={2}>
-                      {
-                        Array(5).fill(null).map((_, index)=>(
-                          <Grid item xs={12} key={index}>
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                              <StyledAvatar alt='Elastos' src='/static/images/avatars/2.jpg' width={32}/>
-                              <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                                <Typography component='div' variant="subtitle2" noWrap>
-                                  Phantz Club
-                                </Typography>
-                                <Typography variant="body2" color='text.secondary' noWrap>
-                                  100 Subscribers
-                                </Typography>
-                              </Box>
-                              <Box>
-                                <StyledButton type="outlined" size='small'>Subscribe</StyledButton>
-                              </Box>
-                            </Stack>
-                          </Grid>
-                        ))
-                      }
-                      <Grid item xs={12} textAlign='center'>
-                        <Button color="inherit">
-                          Show more
-                        </Button>
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </>
-            }
+            { content }
           </Stack>
-          {/* <Box mt={3} pb={3}>
-          </Box> */}
         </Scrollbar>
       </SidebarWrapper>
     </>
