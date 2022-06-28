@@ -39,6 +39,9 @@ const Subscription = Loader(
 const AccountInfo = Loader(
   lazy(() => import('src/content/setting/profile'))
 );
+const Credentials = Loader(
+  lazy(() => import('src/content/setting/credentials'))
+);
 // const Messenger = Loader(
 //   lazy(() => import('src/content/applications/Messenger'))
 // );
@@ -179,6 +182,10 @@ const routes: RouteObject[] = [
       {
         path: 'profile',
         element: <AccountInfo />
+      },
+      {
+        path: 'credentials',
+        element: <Credentials />
       },
     ]
   },

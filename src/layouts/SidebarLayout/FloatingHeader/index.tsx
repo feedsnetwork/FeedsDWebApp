@@ -64,14 +64,19 @@ function FloatingHeader() {
   let actionText;
   if(pageType==='AddChannel')
     actionText = 'Add Channel'
-  else if(pathname.startsWith('/setting'))
+  else if(pathname.startsWith('/setting')){
+    let description = 'Profile and verifiable credentials (DID) details'
+    if(pathname.endsWith('/credentials'))
+      description = 'Manage user profile and verifiable credentials visibility'
+
     actionText = 
       <ListItemText 
         primary={
           <Typography variant='subtitle2' color='text.primary' textAlign='left'>Settings</Typography>
         }
-        secondary="Profile and verifiable credentials (DID) details"
+        secondary={description}
       />
+  }
   else if(pageType==='CurrentChannel')
     actionText = focusedChannel?
       <ListItemText 

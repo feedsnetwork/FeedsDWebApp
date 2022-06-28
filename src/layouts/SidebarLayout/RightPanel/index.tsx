@@ -57,6 +57,7 @@ function RightPanel() {
             <OutlinedInputWrapper
               type="text"
               placeholder="Search"
+              size="small"
               startAdornment={
                 <InputAdornment position="start">
                   <SearchTwoToneIcon />
