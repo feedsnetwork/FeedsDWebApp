@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
 import { Icon } from '@iconify/react';
 import { Stack, Box, Button, Hidden, ListItemText, Typography, styled, alpha, lighten } from '@mui/material';
@@ -51,6 +51,7 @@ const HeaderWrapper = styled(Box)(
 function FloatingHeader() {
   const { pageType, setPageType, closeOverPage } = useContext(OverPageContext);
   const { focusedChannel } = useContext(SidebarContext);
+  const { pathname } = useLocation()
 
   const handleClose = (e) => {
     if(pageType === 'AddChannel'){
@@ -63,11 +64,19 @@ function FloatingHeader() {
   let actionText;
   if(pageType==='AddChannel')
     actionText = 'Add Channel'
+  else if(pathname.startsWith('/setting'))
+    actionText = 
+      <ListItemText 
+        primary={
+          <Typography variant='subtitle2' color='text.primary' textAlign='left'>Settings</Typography>
+        }
+        secondary="Profile and verifiable credentials (DID) details"
+      />
   else if(pageType==='CurrentChannel')
     actionText = focusedChannel?
       <ListItemText 
         primary={
-          <Typography variant='subtitle2' color='text.primary'>{focusedChannel.name}</Typography>
+          <Typography variant='subtitle2' color='text.primary' textAlign='left'>{focusedChannel.name}</Typography>
         }
         secondary="3 post"
       />:

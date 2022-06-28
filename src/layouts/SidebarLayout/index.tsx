@@ -21,8 +21,11 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
   const theme = useTheme();
 
   let floatingHeaderVisible = false;
-  if(((pathname==='/home' || pathname==='/channel') && pageType==='AddChannel')
-  || ((pathname==='/channel') && pageType==='CurrentChannel'))
+  if(
+    ((pathname==='/home' || pathname==='/channel') && pageType==='AddChannel')
+    || ((pathname==='/channel') && pageType==='CurrentChannel')
+    || pathname.startsWith('/setting')
+  )
     floatingHeaderVisible = true;
 
   const addChannelVisible = (pathname==='/home' || pathname==='/channel') && pageType==='AddChannel'
