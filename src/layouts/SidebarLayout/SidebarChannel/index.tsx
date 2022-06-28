@@ -1,4 +1,5 @@
 import { useContext } from 'react';
+import { Link as RouterLink, useLocation } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import AddIcon from '@mui/icons-material/Add';
 import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, darken, Tooltip, Fab, Typography } from '@mui/material';
@@ -51,21 +52,25 @@ const GradientOutlineFab = styled(Fab)(
     background: transparent;
 `
 );
+const GradientFab = styled(Fab)(
+  ({ theme }) => `
+    background: linear-gradient(90deg, #7624FE 0%, #368BFF 100%);
+`
+);
+
 function SidebarChannel() {
   const { sidebarToggle, focusedChannel, toggleSidebar, setFocusChannel } = useContext(SidebarContext);
   const { setPageType } = useContext(OverPageContext)
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
+  const { pathname } = useLocation()
 
   const tempChannels = [{name: 'MMA'}, {name: 'DAO'}, {name: 'LEM'}]
   return (
     <>
       <SidebarWrapper
         sx={{
-          display: {
-            xs: 'none',
-            lg: 'table'
-          },
+          display: 'table',
           boxShadow: theme.palette.mode === 'dark' ? theme.sidebar.boxShadow : 'none'
         }}
       >
@@ -105,7 +110,15 @@ function SidebarChannel() {
           </Scrollbar>
         </Box>
         <Stack spacing={2} alignItems='center' sx={{py: 2}}>
-          <Fab color='primary' aria-label="setting" size='medium'>
+          <Fab 
+            color='primary' 
+            aria-label="setting" 
+            size='medium' 
+            component={RouterLink} 
+            to='/setting/profile' 
+            sx={
+              pathname.startsWith('/setting') ? { background: 'linear-gradient(90deg, #7624FE 0%, #368BFF 100%)'} : {}
+            }>
             <Icon icon="ep:setting" width={28} height={28} />
           </Fab>
           <Fab color='primary' aria-label="logout" size='medium'>
@@ -113,7 +126,7 @@ function SidebarChannel() {
           </Fab>
         </Stack>
       </SidebarWrapper>
-      <Drawer
+      {/* <Drawer
         sx={{
           boxShadow: `${theme.sidebar.boxShadow}`
         }}
@@ -148,7 +161,7 @@ function SidebarChannel() {
             />
           </Scrollbar>
         </SidebarWrapper>
-      </Drawer>
+      </Drawer> */}
     </>
   );
 }

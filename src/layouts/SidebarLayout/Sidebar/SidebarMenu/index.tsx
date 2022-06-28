@@ -1,37 +1,12 @@
 import { useContext } from 'react';
+import { NavLink as RouterLink, useLocation } from 'react-router-dom';
+import FadeIn from 'react-fade-in';
+// import { Fade } from "react-awesome-reveal";
+import Reveal from "react-awesome-reveal";
+import { keyframes } from "@emotion/react";
+import { ListSubheader, alpha, Box, List, styled, Button, ListItem } from '@mui/material';
 
-import {
-  ListSubheader,
-  alpha,
-  Box,
-  List,
-  styled,
-  Button,
-  ListItem
-} from '@mui/material';
-import { NavLink as RouterLink } from 'react-router-dom';
 import { SidebarContext } from 'src/contexts/SidebarContext';
-
-import DesignServicesTwoToneIcon from '@mui/icons-material/DesignServicesTwoTone';
-import BrightnessLowTwoToneIcon from '@mui/icons-material/BrightnessLowTwoTone';
-import MmsTwoToneIcon from '@mui/icons-material/MmsTwoTone';
-import TableChartTwoToneIcon from '@mui/icons-material/TableChartTwoTone';
-import AccountCircleTwoToneIcon from '@mui/icons-material/AccountCircleTwoTone';
-import BallotTwoToneIcon from '@mui/icons-material/BallotTwoTone';
-import BeachAccessTwoToneIcon from '@mui/icons-material/BeachAccessTwoTone';
-import EmojiEventsTwoToneIcon from '@mui/icons-material/EmojiEventsTwoTone';
-import FilterVintageTwoToneIcon from '@mui/icons-material/FilterVintageTwoTone';
-import HowToVoteTwoToneIcon from '@mui/icons-material/HowToVoteTwoTone';
-import LocalPharmacyTwoToneIcon from '@mui/icons-material/LocalPharmacyTwoTone';
-import RedeemTwoToneIcon from '@mui/icons-material/RedeemTwoTone';
-import SettingsTwoToneIcon from '@mui/icons-material/SettingsTwoTone';
-import TrafficTwoToneIcon from '@mui/icons-material/TrafficTwoTone';
-import CheckBoxTwoToneIcon from '@mui/icons-material/CheckBoxTwoTone';
-import ChromeReaderModeTwoToneIcon from '@mui/icons-material/ChromeReaderModeTwoTone';
-import WorkspacePremiumTwoToneIcon from '@mui/icons-material/WorkspacePremiumTwoTone';
-import CameraFrontTwoToneIcon from '@mui/icons-material/CameraFrontTwoTone';
-import DisplaySettingsTwoToneIcon from '@mui/icons-material/DisplaySettingsTwoTone';
-import ExpandMoreTwoToneIcon from '@mui/icons-material/ExpandMoreTwoTone';
 
 const MenuWrapper = styled(Box)(
   ({ theme }) => `
@@ -175,64 +150,82 @@ const SubMenuWrapper = styled(Box)(
 `
 );
 
+const MainMenuArray = [
+  {to: '/home', name: 'Home'},
+  {to: '/channel', name: 'Channel'},
+  {to: '/explorer', name: 'Explorer'},
+  {to: '/subscription', name: 'Subscription'},
+]
+const SettingMenuArray = [
+  {to: '/profile', name: 'Account Info'},
+  {to: '/credentials', name: 'Credentials'},
+  {to: '/language', name: 'Language'},
+  {to: '/api', name: 'API Provider'},
+  {to: '/preferences', name: 'App Preferences'},
+  {to: '/connections', name: 'Connections'},
+  {to: '/about', name: 'About Feeds'},
+]
+const customAnimation = keyframes`
+  from {
+    opacity: 0;
+    transform: translate3d(50px, 0px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+`;
+
 function SidebarMenu() {
   const { closeSidebar } = useContext(SidebarContext);
-
+  const { pathname } = useLocation()
+  const isSettingPage = pathname.startsWith('/setting')
+  
   return (
     <>
       <MenuWrapper>
-        <List
-          component="div"
-        >
-          <SubMenuWrapper>
+        <SubMenuWrapper>
+          {
+            !isSettingPage?
             <List component="div">
-              <ListItem component="div">
-                <Button
-                  disableRipple
-                  component={RouterLink}
-                  onClick={closeSidebar}
-                  to="/home"
-                  // startIcon={<AccountCircleTwoToneIcon />}
-                >
-                  Home
-                </Button>
-              </ListItem>
-              <ListItem component="div">
-                <Button
-                  disableRipple
-                  component={RouterLink}
-                  onClick={closeSidebar}
-                  to="/channel"
-                  // startIcon={<DisplaySettingsTwoToneIcon />}
-                >
-                  Channel
-                </Button>
-              </ListItem>
-              <ListItem component="div">
-                <Button
-                  disableRipple
-                  component={RouterLink}
-                  onClick={closeSidebar}
-                  to="/explorer"
-                  // startIcon={<DisplaySettingsTwoToneIcon />}
-                >
-                  Explorer
-                </Button>
-              </ListItem>
-              <ListItem component="div">
-                <Button
-                  disableRipple
-                  component={RouterLink}
-                  onClick={closeSidebar}
-                  to="/subscription"
-                  // endIcon={<ExpandMoreTwoToneIcon fontSize="small" />}
-                >
-                  Subscriptions
-                </Button>
-              </ListItem>
-            </List>
-          </SubMenuWrapper>
-        </List>
+              {
+                MainMenuArray.map((menuItem, _i)=>(
+                  <ListItem component="div" key={_i}>
+                    <Button
+                      disableRipple
+                      component={RouterLink}
+                      onClick={closeSidebar}
+                      to={menuItem.to}
+                      // startIcon={<AccountCircleTwoToneIcon />}
+                    >
+                      {menuItem.name}
+                    </Button>
+                  </ListItem>
+                ))
+              }
+            </List>:
+
+            <Reveal keyframes={customAnimation}>
+              <List component="div">
+              {
+                SettingMenuArray.map((menuItem, _i)=>(
+                  <ListItem component="div" key={_i}>
+                    <Button
+                      disableRipple
+                      component={RouterLink}
+                      onClick={closeSidebar}
+                      to={`/setting${menuItem.to}`}
+                    >
+                      {menuItem.name}
+                    </Button>
+                  </ListItem>
+                ))
+              }
+              </List>
+            </Reveal>
+          }
+        </SubMenuWrapper>
       </MenuWrapper>
     </>
   );

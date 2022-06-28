@@ -36,6 +36,9 @@ const Explorer = Loader(
 const Subscription = Loader(
   lazy(() => import('src/content/subscription'))
 );
+const AccountInfo = Loader(
+  lazy(() => import('src/content/setting/profile'))
+);
 // const Messenger = Loader(
 //   lazy(() => import('src/content/applications/Messenger'))
 // );
@@ -165,24 +168,20 @@ const routes: RouteObject[] = [
       }
     ]
   },
-  // {
-  //   path: 'dashboards',
-  //   element: <SidebarLayout />,
-  //   children: [
-  //     {
-  //       path: '',
-  //       element: <Navigate to="tasks" replace />
-  //     },
-  //     {
-  //       path: 'tasks',
-  //       element: <Tasks />
-  //     },
-  //     {
-  //       path: 'messenger',
-  //       element: <Messenger />
-  //     }
-  //   ]
-  // },
+  {
+    path: 'setting',
+    element: <SidebarLayout />,
+    children: [
+      {
+        path: '',
+        element: <Navigate to="profile" replace />
+      },
+      {
+        path: 'profile',
+        element: <AccountInfo />
+      },
+    ]
+  },
   // {
   //   path: 'management',
   //   element: <SidebarLayout />,
