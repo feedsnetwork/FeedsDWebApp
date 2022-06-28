@@ -80,9 +80,11 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
           }
           {
               addChannelVisible?
-              <FadeIn>
-                <AddChannel/>
-              </FadeIn>:
+              <Box sx={{ overflow: 'auto', height: (theme)=>`calc(100% - ${theme.header.height})` }}>
+                <FadeIn>
+                    <AddChannel/>
+                </FadeIn>
+              </Box>:
 
               <Box sx={{ overflow: 'auto', height: (theme)=>floatingHeaderVisible?`calc(100% - ${theme.header.height})`:'100%' }}>
                 <Outlet />
