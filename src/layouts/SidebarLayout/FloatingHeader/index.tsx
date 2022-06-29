@@ -68,6 +68,8 @@ function FloatingHeader() {
     let description = 'Profile and verifiable credentials (DID) details'
     if(pathname.endsWith('/credentials'))
       description = 'Manage user profile and verifiable credentials visibility'
+    else if(pathname.endsWith('/language'))
+      description = 'Global language settings'
 
     actionText = 
       <ListItemText 

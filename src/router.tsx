@@ -42,6 +42,9 @@ const AccountInfo = Loader(
 const Credentials = Loader(
   lazy(() => import('src/content/setting/credentials'))
 );
+const Language = Loader(
+  lazy(() => import('src/content/setting/language'))
+);
 // const Messenger = Loader(
 //   lazy(() => import('src/content/applications/Messenger'))
 // );
@@ -186,6 +189,10 @@ const routes: RouteObject[] = [
       {
         path: 'credentials',
         element: <Credentials />
+      },
+      {
+        path: 'language',
+        element: <Language />
       },
     ]
   },
