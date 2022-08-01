@@ -7,6 +7,7 @@ import { keyframes } from "@emotion/react";
 import { ListSubheader, alpha, Box, List, styled, Button, ListItem } from '@mui/material';
 
 import { SidebarContext } from 'src/contexts/SidebarContext';
+import { SettingMenuArray } from 'src/utils/common'
 
 const MenuWrapper = styled(Box)(
   ({ theme }) => `
@@ -155,15 +156,6 @@ const MainMenuArray = [
   {to: '/channel', name: 'Channel'},
   {to: '/explorer', name: 'Explorer'},
   {to: '/subscription', name: 'Subscription'},
-]
-const SettingMenuArray = [
-  {to: '/profile', name: 'Account Info'},
-  {to: '/credentials', name: 'Credentials'},
-  {to: '/language', name: 'Language'},
-  {to: '/api', name: 'API Provider'},
-  {to: '/preferences', name: 'App Preferences'},
-  {to: '/connections', name: 'Connections'},
-  {to: '/about', name: 'About Feeds'},
 ]
 const customAnimation = keyframes`
   from {

@@ -10,6 +10,7 @@ import StyledButton from 'src/components/StyledButton'
 import Scrollbar from 'src/components/Scrollbar';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
+import { SettingMenuArray } from 'src/utils/common'
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -47,7 +48,6 @@ const HeaderWrapper = styled(Box)(
         };
 `
 );
-
 function FloatingHeader() {
   const { pageType, setPageType, closeOverPage } = useContext(OverPageContext);
   const { focusedChannel } = useContext(SidebarContext);
@@ -65,11 +65,9 @@ function FloatingHeader() {
   if(pageType==='AddChannel')
     actionText = 'Add Channel'
   else if(pathname.startsWith('/setting')){
-    let description = 'Profile and verifiable credentials (DID) details'
-    if(pathname.endsWith('/credentials'))
-      description = 'Manage user profile and verifiable credentials visibility'
-    else if(pathname.endsWith('/language'))
-      description = 'Global language settings'
+    const suburl = pathname.substring(8)
+    const menuType = SettingMenuArray.find(item=>item.to===suburl)
+    const description = menuType?menuType.description:''
 
     actionText = 
       <ListItemText 

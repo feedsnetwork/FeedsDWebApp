@@ -45,6 +45,9 @@ const Credentials = Loader(
 const Language = Loader(
   lazy(() => import('src/content/setting/language'))
 );
+const ApiProvider = Loader(
+  lazy(() => import('src/content/setting/api-provider'))
+);
 // const Messenger = Loader(
 //   lazy(() => import('src/content/applications/Messenger'))
 // );
@@ -193,6 +196,10 @@ const routes: RouteObject[] = [
       {
         path: 'language',
         element: <Language />
+      },
+      {
+        path: 'api',
+        element: <ApiProvider />
       },
     ]
   },
