@@ -51,6 +51,9 @@ const ApiProvider = Loader(
 const AppPreference = Loader(
   lazy(() => import('src/content/setting/app-preference'))
 );
+const Connections = Loader(
+  lazy(() => import('src/content/setting/connections'))
+);
 // const Messenger = Loader(
 //   lazy(() => import('src/content/applications/Messenger'))
 // );
@@ -207,6 +210,10 @@ const routes: RouteObject[] = [
       {
         path: 'preferences',
         element: <AppPreference />
+      },
+      {
+        path: 'connections',
+        element: <Connections />
       },
     ]
   },
