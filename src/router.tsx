@@ -54,6 +54,9 @@ const AppPreference = Loader(
 const Connections = Loader(
   lazy(() => import('src/content/setting/connections'))
 );
+const About = Loader(
+  lazy(() => import('src/content/setting/about'))
+);
 // const Messenger = Loader(
 //   lazy(() => import('src/content/applications/Messenger'))
 // );
@@ -214,6 +217,10 @@ const routes: RouteObject[] = [
       {
         path: 'connections',
         element: <Connections />
+      },
+      {
+        path: 'about',
+        element: <About />
       },
     ]
   },
