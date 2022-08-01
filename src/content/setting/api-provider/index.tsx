@@ -2,10 +2,10 @@ import { FC, useContext } from 'react';
 import { Box, Typography, Stack, Card, Link, Divider, IconButton, Grid, List, ListItem, ListItemText, styled } from '@mui/material';
 import { Icon } from '@iconify/react';
 
-interface LanguageProps {
+interface ApiProviderProps {
   // type?: string;
 }
-const Language: FC<LanguageProps> = (props)=>{
+const ApiProvider: FC<ApiProviderProps> = (props)=>{
   return (
     <Box p={4}>
       <Card sx={{ p: 3 }}>
@@ -42,4 +42,4 @@ const Language: FC<LanguageProps> = (props)=>{
   );
 }
 
-export default Language;
+export default ApiProvider;

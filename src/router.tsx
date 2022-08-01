@@ -48,6 +48,9 @@ const Language = Loader(
 const ApiProvider = Loader(
   lazy(() => import('src/content/setting/api-provider'))
 );
+const AppPreference = Loader(
+  lazy(() => import('src/content/setting/app-preference'))
+);
 // const Messenger = Loader(
 //   lazy(() => import('src/content/applications/Messenger'))
 // );
@@ -200,6 +203,10 @@ const routes: RouteObject[] = [
       {
         path: 'api',
         element: <ApiProvider />
+      },
+      {
+        path: 'preferences',
+        element: <AppPreference />
       },
     ]
   },
