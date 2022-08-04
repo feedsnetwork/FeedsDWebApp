@@ -12,8 +12,9 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import InputOutline from 'src/components/InputOutline'
 import StyledAvatar from 'src/components/StyledAvatar'
-import { SettingMenuArray } from 'src/utils/common'
 import StyledButton from 'src/components/StyledButton';
+import PostDlg from 'src/components/Modal/Post';
+import { SettingMenuArray } from 'src/utils/common'
 
 const MenuWrapper = styled(Box)(
   ({ theme }) => `
@@ -190,11 +191,13 @@ function SidebarMenu() {
   const { closeSidebar } = useContext(SidebarContext);
   const { pathname } = useLocation()
   const [isVisibleChannels, setVisibleChannels] = useState(false)
+  const [isOpenPost, setOpenPost] = useState(false)
   const isSettingPage = pathname.startsWith('/setting')
   
   const toggleChannels = (e) => {
     setVisibleChannels(!isVisibleChannels)
   }
+
   return (
     <>
       <MenuWrapper>
@@ -274,7 +277,7 @@ function SidebarMenu() {
                 </Reveal>
               }
               <Box py={3} px={1} textAlign="center">
-                <StyledButton variant="contained" fullWidth>Post</StyledButton>
+                <StyledButton variant="contained" fullWidth onClick={()=>{setOpenPost(true)}}>Post</StyledButton>
               </Box>
             </List>:
 
@@ -299,6 +302,7 @@ function SidebarMenu() {
           }
         </SubMenuWrapper>
       </MenuWrapper>
+      <PostDlg setOpen={setOpenPost} isOpen={isOpenPost}/>
     </>
   );
 }

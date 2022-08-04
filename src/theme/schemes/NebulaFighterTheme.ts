@@ -378,7 +378,7 @@ export const NebulaFighterTheme = createTheme({
     MuiDialog: {
       styleOverrides: {
         paper: {
-          backgroundColor: darken(themeColors.primaryAlt, 0.5)
+          // backgroundColor: darken(themeColors.primaryAlt, 0.5)
         }
       }
     },
