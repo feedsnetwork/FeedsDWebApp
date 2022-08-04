@@ -4,11 +4,12 @@ import { Icon } from '@iconify/react';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
 import { Stack, Box, Drawer, alpha, styled, Divider, useTheme, Button, lighten, Card, CardHeader, CardContent, List, ListItem, ListItemText, 
-  darken, Tooltip, InputAdornment, OutlinedInput, Typography, Grid, IconButton } from '@mui/material';
+  darken, Tooltip, InputAdornment, Typography, Grid, IconButton } from '@mui/material';
 
 import Scrollbar from 'src/components/Scrollbar';
 import StyledAvatar from 'src/components/StyledAvatar'
 import StyledButton from 'src/components/StyledButton'
+import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { reduceHexAddress } from 'src/utils/common'
 
@@ -20,12 +21,6 @@ const SidebarWrapper = styled(Box)(
         position: relative;
         z-index: 7;
         height: 100%;
-`
-);
-const OutlinedInputWrapper = styled(OutlinedInput)(
-  ({ theme }) => `
-    background-color: ${theme.colors.alpha.white[100]};
-    padding-right: ${theme.spacing(0.7)}
 `
 );
 const ListWrapper = styled(List)(
@@ -222,7 +217,7 @@ function RightPanel() {
       >
         <Scrollbar>
           <Stack spacing={3} my={3} px={2}>
-            <OutlinedInputWrapper
+            <InputOutline
               type="text"
               placeholder="Search"
               size="small"

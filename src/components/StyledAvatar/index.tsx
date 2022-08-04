@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import { Avatar, Box, styled } from '@mui/material';
 
 const StyledBox = styled(Box)(
-  ({ theme }) => `
+  ({ theme, width }) => `
     &:before {
       content: "";
       position: absolute;
       inset: 0;
       border-radius: 50%; 
-      padding: 2px; 
+      padding: ${width<30?'1px':'2px'}; 
       background: linear-gradient(90deg, #7624FE 0%, #368BFF 100%);
       -webkit-mask: 
         linear-gradient(#fff 0 0) content-box, 
@@ -38,9 +38,9 @@ const StyledAvatar: FC<StyledAvatarProps> = (props) => {
   const {alt, src, width=47, variant='circular'} = props
 
   return (
-    <StyledBox style={{
-      width: width+8,
-      height: width+8,
+    <StyledBox width={width} style={{
+      width: width<30 ? width+6 : width+8,
+      height: width<30 ? width+6 : width+8,
     }}>
       <Avatar
         variant={variant}

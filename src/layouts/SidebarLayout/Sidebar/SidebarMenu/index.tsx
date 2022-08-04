@@ -1,13 +1,19 @@
-import { useContext } from 'react';
+import { useState, useContext } from 'react';
 import { NavLink as RouterLink, useLocation } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
 // import { Fade } from "react-awesome-reveal";
 import Reveal from "react-awesome-reveal";
 import { keyframes } from "@emotion/react";
-import { ListSubheader, alpha, Box, List, styled, Button, ListItem } from '@mui/material';
+import { ListSubheader, alpha, Box, List, styled, Button, ListItem, InputAdornment, Divider } from '@mui/material';
+import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 import { SidebarContext } from 'src/contexts/SidebarContext';
+import InputOutline from 'src/components/InputOutline'
+import StyledAvatar from 'src/components/StyledAvatar'
 import { SettingMenuArray } from 'src/utils/common'
+import StyledButton from 'src/components/StyledButton';
 
 const MenuWrapper = styled(Box)(
   ({ theme }) => `
@@ -155,7 +161,6 @@ const MainMenuArray = [
   {to: '/home', name: 'Home'},
   {to: '/channel', name: 'Channel'},
   {to: '/explorer', name: 'Explorer'},
-  {to: '/subscription', name: 'Subscription'},
 ]
 const customAnimation = keyframes`
   from {
@@ -168,12 +173,28 @@ const customAnimation = keyframes`
     transform: translate3d(0, 0, 0);
   }
 `;
+const customAnimationForChannels = keyframes`
+  from {
+    opacity: 0;
+    transform: translate3d(0px, 20px, 0);
+  }
 
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+`;
+
+const tempChannelArray = ["Elastos Info", "Elacity", "Elabox"]
 function SidebarMenu() {
   const { closeSidebar } = useContext(SidebarContext);
   const { pathname } = useLocation()
+  const [isVisibleChannels, setVisibleChannels] = useState(false)
   const isSettingPage = pathname.startsWith('/setting')
   
+  const toggleChannels = (e) => {
+    setVisibleChannels(!isVisibleChannels)
+  }
   return (
     <>
       <MenuWrapper>
@@ -189,13 +210,72 @@ function SidebarMenu() {
                       component={RouterLink}
                       onClick={closeSidebar}
                       to={menuItem.to}
-                      // startIcon={<AccountCircleTwoToneIcon />}
                     >
                       {menuItem.name}
                     </Button>
                   </ListItem>
                 ))
               }
+              {
+                tempChannelArray.length>0?
+                <ListItem component="div">
+                  <Button disableRipple onClick={toggleChannels} endIcon={isVisibleChannels ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon />} >
+                    Subscriptions
+                  </Button>
+                </ListItem>:
+                
+                <ListItem component="div">
+                  <Button
+                    disableRipple
+                    component={RouterLink}
+                    onClick={closeSidebar}
+                    to='/subscription'
+                    // startIcon={<AccountCircleTwoToneIcon />}
+                  >
+                    Subscription
+                  </Button>
+                </ListItem>
+              }
+              {
+                isVisibleChannels&&
+                <Reveal keyframes={customAnimationForChannels} duration={500}>
+                  <Box px={2} textAlign="center">
+                    <InputOutline
+                      type="text"
+                      placeholder="Search channels"
+                      size="small"
+                      startAdornment={
+                        <InputAdornment position="start">
+                          <SearchTwoToneIcon />
+                        </InputAdornment>
+                      }
+                    />
+                    <Box mt={1}>
+                      {
+                        tempChannelArray.map((channel, _i)=>(
+                          <ListItem component="div" key={_i}>
+                            <Button
+                              disableRipple
+                              // component={RouterLink}
+                              // to={menuItem.to}
+                              // onClick={closeSidebar}
+                              startIcon={<StyledAvatar alt="hames" src="/static/images/avatars/2.jpg" width={20}/>}
+                              sx={{p: '4px 14px !important'}}
+                            >
+                              {channel}
+                            </Button>
+                          </ListItem>
+                        ))
+                      }
+                    </Box>
+                    <Button color="inherit" size="small" sx={{px: 1}}>Show more</Button>
+                  </Box>
+                  <Divider sx={{mx: -1}}/>
+                </Reveal>
+              }
+              <Box py={3} px={1} textAlign="center">
+                <StyledButton variant="contained" fullWidth>Post</StyledButton>
+              </Box>
             </List>:
 
             <Reveal keyframes={customAnimation}>
