@@ -119,10 +119,10 @@ function Profile() {
           }
         </TabPanel>
         <TabPanel value={tabValue} index={1}>
-          
+          <EmptyViewInProfile type='collectible'/>
         </TabPanel>
         <TabPanel value={tabValue} index={2}>
-          
+          <EmptyViewInProfile type='like'/>
         </TabPanel>
       </Card>
     </Container>
