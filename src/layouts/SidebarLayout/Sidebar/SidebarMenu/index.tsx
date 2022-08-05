@@ -160,6 +160,7 @@ const SubMenuWrapper = styled(Box)(
 
 const MainMenuArray = [
   {to: '/home', name: 'Home'},
+  {to: '/profile', name: 'Profile'},
   {to: '/channel', name: 'Channel'},
   {to: '/explorer', name: 'Explorer'},
 ]

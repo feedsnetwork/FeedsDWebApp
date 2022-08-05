@@ -27,6 +27,9 @@ const Tasks = Loader(lazy(() => import('src/content/dashboards/Tasks')));
 const Home = Loader(
   lazy(() => import('src/content/home'))
 );
+const Profile = Loader(
+  lazy(() => import('src/content/profile'))
+);
 const Channel = Loader(
   lazy(() => import('src/content/channel'))
 );
@@ -153,6 +156,16 @@ const routes: RouteObject[] = [
       {
         path: '',
         element: <Home />
+      }
+    ]
+  },
+  {
+    path: 'profile',
+    element: <SidebarLayout />,
+    children: [
+      {
+        path: '',
+        element: <Profile />
       }
     ]
   },

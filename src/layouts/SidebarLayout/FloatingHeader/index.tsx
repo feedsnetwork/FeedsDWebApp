@@ -86,6 +86,14 @@ function FloatingHeader() {
         secondary="3 post"
       />:
       ''
+  else if(pageType==='Profile')
+    actionText = 
+      <ListItemText 
+        primary={
+          <Typography variant='subtitle2' color='text.primary' textAlign='left'>asralf</Typography>
+        }
+        secondary="43 post"
+      />
   else actionText=''
   return (
     <>

@@ -30,18 +30,24 @@ const StyledBox = styled(Box)(
 interface StyledAvatarProps {
   alt?: string;
   src?: string;
+  style?: object;
   variant?: "circular" | "square" | "rounded";
   width?: number;
 }
 
 const StyledAvatar: FC<StyledAvatarProps> = (props) => {
-  const {alt, src, width=47, variant='circular'} = props
+  const {alt, src, width=47, variant='circular', style={}} = props
 
   return (
-    <StyledBox width={width} style={{
-      width: width<30 ? width+6 : width+8,
-      height: width<30 ? width+6 : width+8,
-    }}>
+    <StyledBox 
+      width={width}
+      style={{
+        minWidth: width<30 ? width+6 : width+8,
+        width: width<30 ? width+6 : width+8,
+        height: width<30 ? width+6 : width+8,
+        ...style
+      }}
+    >
       <Avatar
         variant={variant}
         sx={{

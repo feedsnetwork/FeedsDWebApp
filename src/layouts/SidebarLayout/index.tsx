@@ -25,6 +25,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
     ((pathname==='/home' || pathname==='/channel') && pageType==='AddChannel')
     || ((pathname==='/channel') && pageType==='CurrentChannel')
     || pathname.startsWith('/setting')
+    || pathname==='/profile'
   )
     floatingHeaderVisible = true;
 
