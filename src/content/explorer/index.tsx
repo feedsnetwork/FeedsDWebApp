@@ -1,7 +1,7 @@
 import { Grid, Container, Box, Typography, Stack } from '@mui/material';
 
 import PostCard from 'src/components/PostCard';
-import EmptyView from 'src/components/EmptyView'
+import { EmptyView } from 'src/components/EmptyView'
 
 function Explorer() {
   const isEmpty = false

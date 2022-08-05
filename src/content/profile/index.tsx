@@ -4,6 +4,7 @@ import ShareIcon from '@mui/icons-material/ShareOutlined';
 
 import StyledButton from 'src/components/StyledButton'
 import StyledAvatar from 'src/components/StyledAvatar'
+import { EmptyViewInProfile } from 'src/components/EmptyView'
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { reduceHexAddress } from 'src/utils/common'
 
@@ -40,6 +41,7 @@ function Profile() {
   }, [])
 
   const isEmpty = false
+  const isChannelsEmpty = true
   const backgroundImg = "/temp-back.png"
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
@@ -86,30 +88,35 @@ function Profile() {
           <Tab label="Likes" />
         </Tabs>
         <TabPanel value={tabValue} index={0}>
-          <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <StyledAvatar alt="hames" src="/static/images/avatars/2.jpg"/>
-              <Box flex={1}>
-                <Hidden mdDown>
+          {
+            isChannelsEmpty?
+            <EmptyViewInProfile type='channel'/>:
+
+            <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <StyledAvatar alt="hames" src="/static/images/avatars/2.jpg"/>
+                <Box flex={1}>
+                  <Hidden mdDown>
+                    <Typography variant="body2">Hello! Welcome to my main channel! I love Elastos. Subscribe to my channel to get the latest info!</Typography>
+                    <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
+                      <Typography variant="body2" pr={3}><strong>100</strong> Subscribers</Typography>
+                      <Typography variant="body2"><strong>32</strong> Subscriptions</Typography>
+                    </Stack>
+                  </Hidden>
+                </Box>
+                <StyledButton type="outlined" size="small" sx={{height: 'fit-content'}}>Edit Channel</StyledButton>
+              </Stack>
+              <Hidden mdUp>
+                <Box mt={1}>
                   <Typography variant="body2">Hello! Welcome to my main channel! I love Elastos. Subscribe to my channel to get the latest info!</Typography>
                   <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
                     <Typography variant="body2" pr={3}><strong>100</strong> Subscribers</Typography>
                     <Typography variant="body2"><strong>32</strong> Subscriptions</Typography>
                   </Stack>
-                </Hidden>
-              </Box>
-              <StyledButton type="outlined" size="small" sx={{height: 'fit-content'}}>Edit Channel</StyledButton>
-            </Stack>
-            <Hidden mdUp>
-              <Box mt={1}>
-                <Typography variant="body2">Hello! Welcome to my main channel! I love Elastos. Subscribe to my channel to get the latest info!</Typography>
-                <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
-                  <Typography variant="body2" pr={3}><strong>100</strong> Subscribers</Typography>
-                  <Typography variant="body2"><strong>32</strong> Subscriptions</Typography>
-                </Stack>
-              </Box>
-            </Hidden>
-          </Card>
+                </Box>
+              </Hidden>
+            </Card>
+          }
         </TabPanel>
         <TabPanel value={tabValue} index={1}>
           

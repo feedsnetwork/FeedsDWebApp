@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet';
 import Footer from 'src/components/Footer';
 import { Grid, Container, Box, Typography, Stack } from '@mui/material';
 
-import EmptyView from 'src/components/EmptyView'
+import { EmptyView } from 'src/components/EmptyView'
 
 function Subscription() {
   const isEmpty = true

@@ -3,7 +3,7 @@ import { Icon } from '@iconify/react';
 import { Grid, Container, Box, Typography, Stack, styled, IconButton } from '@mui/material';
 
 import PostCard from 'src/components/PostCard';
-import EmptyView from 'src/components/EmptyView'
+import { EmptyView } from 'src/components/EmptyView'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import StyledButton from 'src/components/StyledButton';
 import StyledIconButton from 'src/components/StyledIconButton';

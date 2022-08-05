@@ -2,7 +2,7 @@ import Footer from 'src/components/Footer';
 import { Grid, Container, Box, Typography, Stack } from '@mui/material';
 
 import MyCards from './MyCards';
-import EmptyView from 'src/components/EmptyView'
+import { EmptyView } from 'src/components/EmptyView'
 
 function Home() {
   const isEmpty = true
