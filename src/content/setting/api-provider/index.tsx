@@ -29,7 +29,7 @@ const ApiProvider: FC<ApiProviderProps> = (props)=>{
             <ListItem button>
               <ListItemText 
                 primary={
-                  <Typography variant='subtitle1' color='text.primary' sx={{ fontFamily: 'Montserrat' }}>trinity-tech.cn</Typography>
+                  <Typography variant='subtitle1' color='text.primary'>trinity-tech.io</Typography>
                 }
                 secondary="Trinity Tech"
               />
