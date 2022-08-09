@@ -81,12 +81,13 @@ interface ChannelAvatarProps {
   src?: string;
   variant?: "circular" | "square" | "rounded";
   width?: number;
-  onClick?: Function;
+  onClick?: (e)=>void;
+  onRightClick?: (e)=>void;
   focused?: Boolean;
 }
 
 const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
-  const { alt, src, width=40, variant = 'circular', onClick = ()=>{}, focused=false } = props
+  const { alt, src, width=40, variant = 'circular', onClick=(e)=>{}, onRightClick=(e)=>{}, focused=false } = props
 
   const rippleRef = useRef(null);
   const onRippleStart = (e) => {
@@ -110,7 +111,8 @@ const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
         }}
         onMouseDown={onRippleStart}
         onMouseUp={onRippleStop}
-        onClick={() => { onClick() }}
+        onClick={onClick}
+        onContextMenu={onRightClick}
       >
         <Avatar
           variant={variant}

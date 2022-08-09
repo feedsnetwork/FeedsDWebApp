@@ -1,12 +1,14 @@
-import { useContext } from 'react';
+import { useState, useContext, useRef } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import AddIcon from '@mui/icons-material/Add';
-import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, darken, Tooltip, Fab, Typography } from '@mui/material';
+import ShareIcon from '@mui/icons-material/ShareOutlined';
+import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, Popper, ClickAwayListener, Tooltip, Fab, Typography, Paper, IconButton } from '@mui/material';
 
 import Scrollbar from 'src/components/Scrollbar';
 import Logo from 'src/components/LogoSign';
 import ChannelAvatar from 'src/components/ChannelAvatar'
+import StyledButton from 'src/components/StyledButton'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
 
@@ -57,15 +59,97 @@ const GradientFab = styled(Fab)(
     background: linear-gradient(90deg, #7624FE 0%, #368BFF 100%);
 `
 );
-
+const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
+  maxWidth: '350px',
+  width: '100%',
+  '&[data-popper-placement*="bottom"] .arrow': {
+    top: 0,
+    left: 0,
+    marginTop: '-0.9em',
+    width: '3em',
+    height: '1em',
+    '&::before': {
+      borderWidth: '0 1em 1em 1em',
+      borderColor: `transparent transparent ${theme.palette.background.paper} transparent`,
+    },
+  },
+  '&[data-popper-placement*="top"] .arrow': {
+    bottom: 0,
+    left: 0,
+    marginBottom: '-0.9em',
+    width: '3em',
+    height: '1em',
+    '&::before': {
+      borderWidth: '1em 1em 0 1em',
+      borderColor: `${theme.palette.background.paper} transparent transparent transparent`,
+    },
+  },
+  '&[data-popper-placement*="right"] .arrow': {
+    left: 0,
+    marginLeft: '-0.9em',
+    height: '3em',
+    width: '1em',
+    '&::before': {
+      borderWidth: '1em 1em 1em 0',
+      borderColor: `transparent ${theme.palette.background.paper} transparent transparent`,
+    },
+  },
+  '&[data-popper-placement*="left"] .arrow': {
+    right: 0,
+    marginRight: '-0.9em',
+    height: '3em',
+    width: '1em',
+    '&::before': {
+      borderWidth: '1em 0 1em 1em',
+      borderColor: `transparent transparent transparent ${theme.palette.background.paper}`,
+    },
+  },
+}));
 function SidebarChannel() {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isOpenPopover, setOpenPopover] = useState(false);
+  const [popoverChannel, setPopoverChannel] = useState({});
+  const [arrowRef, setArrowRef] = useState(null);
   const { sidebarToggle, focusedChannel, toggleSidebar, setFocusChannel } = useContext(SidebarContext);
   const { setPageType } = useContext(OverPageContext)
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
-  const { pathname } = useLocation()
+  const { pathname } = useLocation();
 
   const tempChannels = [{name: 'MMA'}, {name: 'DAO'}, {name: 'LEM'}]
+  
+  const handleClickChannel = (item)=>{
+    setFocusChannel(item); 
+    setPageType('CurrentChannel')
+  }
+  const handleRightClickChannel = (e, item)=>{
+    e.preventDefault()
+    handlePopoverOpen(e, item)
+  }
+  const handlePopoverOpen = (event, item) => {
+    setAnchorEl(event.currentTarget)
+    setPopoverChannel(item)
+    setOpenPopover(true);
+  };
+  const handlePopoverClose = () => {
+    setOpenPopover(false);
+  };
+  const styles = {
+    arrow: {
+        position: 'absolute',
+        fontSize: 7,
+        width: '3em',
+        height: '3em',
+        '&::before': {
+          content: '""',
+          margin: 'auto',
+          display: 'block',
+          width: 0,
+          height: 0,
+          borderStyle: 'solid',
+        },
+    }
+};
   return (
     <>
       <SidebarWrapper
@@ -93,7 +177,8 @@ function SidebarChannel() {
                     key={_i} 
                     alt={item.name} 
                     src='/static/images/avatars/2.jpg' 
-                    onClick={()=>{setFocusChannel(item); setPageType('CurrentChannel')}} 
+                    onClick={(e)=>{handleClickChannel(item)}} 
+                    onRightClick={(e)=>{handleRightClickChannel(e, item)}} 
                     focused={focusedChannel&&focusedChannel.name===item.name}/>
                 )
               }
@@ -126,6 +211,66 @@ function SidebarChannel() {
           </Fab>
         </Stack>
       </SidebarWrapper>
+      <ClickAwayListener onClickAway={() => handlePopoverClose()}>
+        <StyledPopper
+          anchorEl={anchorEl}
+          open={isOpenPopover}
+          placement="right-start"
+          disablePortal={false}
+          modifiers={[
+            {
+              name: 'flip',
+              enabled: true,
+              options: {
+                altBoundary: true,
+                rootBoundary: 'document',
+                padding: 8,
+              },
+            },
+            {
+              name: 'preventOverflow',
+              enabled: false,
+              options: {
+                altAxis: true,
+                altBoundary: true,
+                tether: true,
+                rootBoundary: 'document',
+                padding: 8,
+              },
+            },
+            {
+              name: 'arrow',
+              enabled: true,
+              options: {
+                element: arrowRef,
+              },
+            },
+          ]}
+          sx={{zIndex: 100}}
+        >
+          <Box component="span" className="arrow" ref={setArrowRef} sx={styles.arrow} />
+          <Paper sx={{p: 2}}>
+            <Stack direction="row">
+              <Typography variant="h5" pb={2} flex={1}>{popoverChannel['name']}</Typography>
+              <Box sx={{display: 'inline-block'}}>
+                <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main, mr: 1}} size='small'><Icon icon="ant-design:share-alt-outlined" />
+</IconButton>
+                <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><Icon icon="clarity:note-edit-line" /></IconButton>
+              </Box>
+            </Stack>
+            <Typography variant="body1" component='div' sx={{display: 'flex'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;100 Subscribers</Typography>
+            <Typography variant="h6" py={1}>Recent Posts</Typography>
+            <Typography variant="body2" color='text.secondary'>Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though... I hope it’s gonna be alright haha#osaka #japan #spring</Typography>
+            <Typography variant="body2" textAlign='right'>1m</Typography>
+            <Divider/>
+            <Typography variant="body2" color='text.secondary'>Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though... I hope it’s gonna be alright haha#osaka #japan #spring</Typography>
+            <Typography variant="body2" textAlign='right'>1d</Typography>
+            <Box sx={{display: 'block'}} textAlign="center" p={2}>
+              <StyledButton type="contained" fullWidth>Post</StyledButton>
+            </Box>
+          </Paper>
+        </StyledPopper>
+      </ClickAwayListener>
       {/* <Drawer
         sx={{
           boxShadow: `${theme.sidebar.boxShadow}`
