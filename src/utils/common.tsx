@@ -34,3 +34,5 @@ export const SettingMenuArray = [
   {to: '/connections', name: 'Connections', description: 'Manage account connections'},
   {to: '/about', name: 'About Feeds', description: 'Feeds Network basic information'},
 ]
+
+export const isInAppBrowser = () => window['elastos'] !== undefined && window['elastos'].name === 'essentialsiab';

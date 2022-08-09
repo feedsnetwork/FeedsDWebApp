@@ -1,7 +1,7 @@
+import React from 'react'
 import { Box, Container, Card } from '@mui/material';
-import { Helmet } from 'react-helmet';
-
 import { styled } from '@mui/material/styles';
+
 import Hero from './Hero';
 
 const OverviewWrapper = styled(Box)(
@@ -11,7 +11,7 @@ const OverviewWrapper = styled(Box)(
     display: flex;
     align-items: center;
     justify-content: center;
-`
+  `
 );
 
 function SignIn() {
