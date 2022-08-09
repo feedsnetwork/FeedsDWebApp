@@ -7,10 +7,6 @@ let hiveVault
 let scriptRunners = {}
 
 export class HiveService {
-  public static CREATEALLCollECTION = "feeds_createALLCollections" // 本地标识是否创建了Collection
-  public static readonly CHANNEL = "channels"
-  public static readonly TARGETDID = "targetDid"
-  public static readonly postId = "channelId"
   private static readonly RESOLVE_CACHE = "data/didCache"
 
   public image = null
