@@ -1,6 +1,7 @@
 import { HiveService } from 'src/services/HiveService'
 import { QueryHasResultCondition, FindExecutable, AndCondition, NetworkException, InsertExecutable, UpdateExecutable, DeleteExecutable, UpdateResult, UpdateOptions, InsertResult, FileDownloadExecutable, HiveException, InsufficientStorageException } from "@elastosfoundation/hive-js-sdk"
 import { utils } from 'src/services/utils'
+import SparkMD5 from 'spark-md5'
 
 const TAG = 'HiveApi'
 
@@ -1759,9 +1760,7 @@ export class HiveApi {
     uploadMediaDataWithString(data: string): Promise<string> {
         return new Promise(async (resolve, reject) => {
             try {
-                // TODO: 
-                // const hash = SparkMD5.hash(dataBase64)
-                const hash = ''
+                const hash = SparkMD5.hash(data)
                 const remoteName = 'feeds/data/' + hash
                 await hiveService.uploadScriptWithString(remoteName, data)
                 const scriptName = hash
@@ -1780,9 +1779,7 @@ export class HiveApi {
         return new Promise(async (resolve, reject) => {
             try {
                 const dataBase64 = bufferData.toString()
-                // TODO: 
-                // const hash = SparkMD5.hash(dataBase64)
-                const hash = ''
+                const hash = SparkMD5.hash(dataBase64)
                 const remoteName = 'feeds/data/' + hash
                 await hiveService.uploadScriptWithBuffer(remoteName, bufferData)
                 const scriptName = hash
