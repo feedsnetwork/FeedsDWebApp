@@ -1,13 +1,18 @@
-
+import { connectivity, DID as ConDID } from "@elastosfoundation/elastos-connectivity-sdk-js";
 import { Executable, InsertOptions, File as HiveFile, ScriptRunner, Vault, AppContext, Logger as HiveLogger, UpdateResult, UpdateOptions, Condition, InsertResult } from "@elastosfoundation/hive-js-sdk";
-import { Claims, DIDDocument, JWTParserBuilder, DID, DIDBackend, DefaultDIDAdapter, JSONObject, VerifiableCredential } from '@elastosfoundation/did-js-sdk';
-let TAG: string = 'Feeds-web-dapp-HiveService';
+import { Claims, DIDDocument, JWTHeader, JWTParserBuilder, DID, DIDBackend, DefaultDIDAdapter, JSONObject, VerifiablePresentation } from '@elastosfoundation/did-js-sdk'
+import { ApplicationDID } from '../config'
 
+let TAG: string = 'Feeds-web-dapp-HiveService'
+let didResolverUrl = "https://api.trinity-tech.io/eid"
 let hiveVault
 let scriptRunners = {}
 
+const feedsDid = sessionStorage.getItem('FEEDS_DID')
+const userDid = `did:elastos:${feedsDid}`
+
 export class HiveService {
-  private static readonly RESOLVE_CACHE = "data/didCache"
+  private static readonly RESOLVE_CACHE = '/data/userDir/data/store/catch'
 
   public image = null
   public appinstanceDid: string
@@ -20,15 +25,22 @@ export class HiveService {
   ) {
   }
 
-  public async creatAppContext(appInstanceDocumentString: string, userDidString: string): Promise<AppContext> {
+  public async creatAppContext(appInstanceDocument, userDidString: string): Promise<AppContext> {
     return new Promise(async (resolve, reject) => {
       try {
-        const currentNet = "MainNet".toLowerCase();
+        const currentNet = "mainnet".toLowerCase();
         HiveLogger.setDefaultLevel(HiveLogger.TRACE)
+
+        console.log("setupResolver userDidString ========================= 0-1", userDidString)
+        console.log("setupResolver currentNet ========================= 0-2", currentNet)
+
         DIDBackend.initialize(new DefaultDIDAdapter(currentNet))
         try {
+          console.log("setupResolver ======================== 1")
           AppContext.setupResolver(currentNet, HiveService.RESOLVE_CACHE)
+          console.log("setupResolver ======================== 2")
         } catch (error) {
+          console.log("setupResolver error: ", error)
         }
         const path = "/data/userDir/data/store/develop"
 
@@ -40,8 +52,7 @@ export class HiveService {
           getAppInstanceDocument(): Promise<DIDDocument> {
             return new Promise(async (resolve, reject) => {
               try {
-                let appInstanceDidDocument = DIDDocument._parseOnly(appInstanceDocumentString)
-                resolve(appInstanceDidDocument)
+                resolve(appInstanceDocument)
               } catch (error) {
                 reject(error)
               }
@@ -59,7 +70,7 @@ export class HiveService {
               }
             })
           }
-        }, userDidString, Config.APPLICATION_DID);
+        }, userDidString, ApplicationDID);
         resolve(context)
       } catch (error) {
         // Logger.error(TAG, "creat Error: ", error)
@@ -83,8 +94,6 @@ export class HiveService {
   async createVault() {
     try {
       // TODO: 更改为feeds_did 
-      const pasarDid = sessionStorage.getItem('PASAR_DID')
-      const userDid = `did:elastos:${pasarDid}`
       const appinstanceDocument = await getAppInstanceDIDDoc()
       const context = await this.creatAppContext(appinstanceDocument, userDid)
       // const context = await getAppContext(userDid)
@@ -246,8 +255,6 @@ export class HiveService {
   }
 
   async uploadScriting(transactionId: string, data: string) {
-    const pasarDid = sessionStorage.getItem('PASAR_DID')
-    const userDid = `did:elastos:${pasarDid}`
     const scriptRunner = await this.getScriptRunner(userDid)
     return scriptRunner.uploadFile(transactionId, data)
   }
@@ -257,8 +264,6 @@ export class HiveService {
       if (avatarParam === null || avatarParam === undefined) {
         return
       }
-      const pasarDid = sessionStorage.getItem('PASAR_DID')
-      const userDid = `did:elastos:${pasarDid}`
       const scriptRunner = await this.getScriptRunner(userDid)
       return await scriptRunner.callScript<any>(avatarScriptName, avatarParam, tarDID, tarAppDID)
     } catch (error) {
@@ -386,11 +391,11 @@ const generateHiveAuthPresentationJWT = async (challeng) => {
   if (claims === undefined) {
     return // 抛出error
   }
-  // const _payload = claims.payload
-  // const _nonce = _payload.nonce
+  const payload = claims.getJWTPayload()
+  const nonce = payload['nonce'] as string
   const hiveDid = claims.getIssuer()
   const appIdCredential = await issueDiplomaFor()
-  const presentation = await createPresentation(appIdCredential, hiveDid, storePassword)
+  const presentation = await createPresentation(appIdCredential, hiveDid, nonce)
   const token = await createChallengeResponse(presentation, hiveDid, storePassword)
   return token
 }
@@ -400,6 +405,7 @@ async function getAppInstanceDIDDoc() {
   const didAccess = new ConDID.DIDAccess()
   const info = await didAccess.getOrCreateAppInstanceDID()
   const instanceDIDDocument = await info.didStore.loadDid(info.did.toString())
+  console.log("instanceDIDDocument ======= ", instanceDIDDocument)
   return instanceDIDDocument
 }
 
@@ -418,12 +424,12 @@ async function issueDiplomaFor() {
   }
 }
 
-async function createPresentation(vc, hiveDid, storepass) {
+async function createPresentation(vc, hiveDid, nonce) {
   const access = new ConDID.DIDAccess()
   const info = await access.getOrCreateAppInstanceDID()
   const info2 = await access.getExistingAppInstanceDIDInfo()
   const vpb = await VerifiablePresentation.createFor(info.did, null, info.didStore)
-  const vp = await vpb.credentials(vc).realm(hiveDid).seal(info2.storePassword)
+  const vp = await vpb.credentials(vc).realm(hiveDid).nonce(nonce).seal(info2.storePassword)
   return vp
 }
 

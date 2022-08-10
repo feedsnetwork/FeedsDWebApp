@@ -14,7 +14,9 @@ import StyledButton from 'src/components/StyledButton';
 import { essentialsConnector, initConnectivitySDK, isUsingEssentialsConnector } from '../EssentialConnectivity';
 import { isInAppBrowser } from 'src/utils/common'
 import { DidResolverUrl } from 'src/config';
+import { HiveVaultHelper } from 'src/services/hivevault_helper.service';
 
+const hiveApi = new HiveVaultHelper()
 const LinearProgressWrapper = styled(LinearProgress)(
   ({ theme }) => `
       flex-grow: 1;
@@ -71,6 +73,8 @@ function Hero() {
       await essentialsConnector.disconnectWalletConnect();
     }
     await signInWithEssentials();
+    
+    await hiveApi.prepareConnection()
     // setVerifyState(1)
   }
 
