@@ -1,1 +1,1 @@
-# Feeeds Decentralized web application
+# Feeeds Decentralized web platform
