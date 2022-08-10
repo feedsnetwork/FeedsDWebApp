@@ -9,6 +9,7 @@
   },
   "private": false,
   "dependencies": {
+    "@elastosfoundation/hive-js-sdk": "^2.8.1",
     "@emotion/react": "11.9.0",
     "@emotion/styled": "11.8.1",
     "@iconify/react": "^3.2.2",
