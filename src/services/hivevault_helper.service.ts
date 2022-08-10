@@ -1,6 +1,9 @@
 import { HiveService } from 'src/services/HiveService'
 import { QueryHasResultCondition, FindExecutable, AndCondition, NetworkException, InsertExecutable, UpdateExecutable, DeleteExecutable, UpdateResult, UpdateOptions, InsertResult, FileDownloadExecutable, HiveException, InsufficientStorageException } from "@elastosfoundation/hive-js-sdk"
+import { utils } from 'src/services/utils'
+
 const TAG = 'HiveVaultHelper'
+
 
 // TODO: 
 const feedsWebDid = sessionStorage.getItem('FEEEDS_WEB_DID')
@@ -148,7 +151,7 @@ export class HiveVaultHelper {
         let errorDes = "ErrorInfo.HIVE_ERROR_" + errorCode
         if (errorCode === 507) {
             if (this.buyStorageSpaceDialog === null) {
-                await this.showBuyStorageSpaceDialog(errorDes)
+                // await this.showBuyStorageSpaceDialog(errorDes)
             }
         } else if (errorCode === undefined) {
             // this.native.toastWarn(errorDes)
@@ -161,7 +164,7 @@ export class HiveVaultHelper {
         let errorDes = "ErrorInfo.HIVE_ERROR_" + errorCode
         if (errorCode === 507) {
             if (this.buyStorageSpaceDialog === null) {
-                await this.showBuyStorageSpaceDialog(errorDes)
+                // await this.showBuyStorageSpaceDialog(errorDes)
             }
         } else if (errorCode === undefined) {
             // this.native.toastWarn("common.likeError") 
@@ -308,7 +311,7 @@ export class HiveVaultHelper {
                 const signinDid = userDid_local
                 const createdAt = new Date().getTime()
                 const updatedAt = new Date().getTime() 
-                // const channelId = UtilService.generateChannelId(signinDid, channelName) 
+                const channelId = utils.generateChannelId(signinDid, channelName) 
 
                 // TODO : signinDid / createdAt / updatedAt / channelId
                 let result = await this.insertDataToChannelDB(channelId.toString(), channelName, intro, avatarAddress, memo, createdAt, updatedAt, type, tippingAddress, nft, category, proof)
@@ -367,7 +370,7 @@ export class HiveVaultHelper {
 
     private updateChannelData(channelId: string, newName: string, newIntro: string, newAvatar: string, newType: string, newMemo: string,
         newTippingAddress: string, newNft: string) {
-        // const updatedAt = UtilService.getCurrentTimeNum() 
+        const updatedAt = utils.getCurrentTimeNum() 
         // TODO: updatedAt
         return this.updateDataToChannelDB(channelId, newName, newIntro, newAvatar, newType, newMemo, newTippingAddress, newNft, updatedAt)
     }
@@ -455,7 +458,7 @@ export class HiveVaultHelper {
 
                 const createdAt = new Date().getTime()
                 const updatedAt = new Date().getTime() 
-                // const postId = UtilService.generatePostId(signinDid, channelId, content) 
+                const postId = utils.generatePostId(signinDid, channelId, content) 
 
                 // TODO: signinDid / createdAt / updatedAt / postId
                 await this.insertDataToPostDB(postId, channelId, type, tag, content, memo, createdAt, updatedAt, status, proof)
@@ -707,7 +710,7 @@ export class HiveVaultHelper {
             try {
                 const params = {
                     "channel_id": channelId,
-                    "created_at": UtilService.getCurrentTimeNum(),
+                    "created_at": utils.getCurrentTimeNum(),
                     "display_name": userDisplayName,
                     "updated_at": updatedAt,
                     "status": status
@@ -1187,7 +1190,7 @@ export class HiveVaultHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 const signinDid = userDid_local
-                const commentId = UtilService.generateCommentId(signinDid, postId, refcommentId, content)
+                const commentId = utils.generateCommentId(signinDid, postId, refcommentId, content)
                 const createdAt = new Date().getTime()
                 const result = await this.callCreateComment(targetDid, commentId, channelId, postId, refcommentId, content, createdAt)
 
@@ -1239,7 +1242,7 @@ export class HiveVaultHelper {
     private callUpdateComment(targetDid: string, channelId: string, postId: string, commentId: string, content: string): Promise<{ updatedAt: number }> {
         return new Promise(async (resolve, reject) => {
             try {
-                const updatedAt = UtilService.getCurrentTimeNum()
+                const updatedAt = utils.getCurrentTimeNum()
                 const params = {
                     "channel_id": channelId,
                     "post_id": postId,
@@ -1701,7 +1704,7 @@ export class HiveVaultHelper {
     private callUpdateLike(targetDid: string, likeId: string, status: number): Promise<{ updatedAt: number }> {
         return new Promise(async (resolve, reject) => {
             try {
-                const updatedAt = UtilService.getCurrentTimeNum()
+                const updatedAt = utils.getCurrentTimeNum()
                 const params = {
                     "updated_at": updatedAt,
                     "like_id": likeId,
@@ -1717,7 +1720,7 @@ export class HiveVaultHelper {
         })
     }
 
-    updateLike(targetDid: string, likeId: string, status: FeedsData.PostCommentStatus): Promise<{ updatedAt: number }> {
+    updateLike(targetDid: string, likeId: string, status: number): Promise<{ updatedAt: number }> {
         return this.callUpdateLike(targetDid, likeId, status)
     }
     /** update like end */
@@ -1730,7 +1733,7 @@ export class HiveVaultHelper {
     private downloadEssAvatarData(avatarParam: string, avatarScriptName: string, tarDID: string, tarAppDID: string): Promise<string> {
         return new Promise(async (resolve, reject) => {
             try {
-                // let userDid = (await this.dataHelper.getSigninData()).did
+                let userDid = userDid_local
                 const result = await this.hiveService.downloadEssAvatarTransactionId(avatarParam, avatarScriptName, tarDID, tarAppDID)
                 if (!result) {
                     resolve(null)
@@ -1738,8 +1741,9 @@ export class HiveVaultHelper {
                 }
                 const transaction_id = result["download"]["transaction_id"]
                 let dataBuffer = await this.hiveService.downloadScripting(userDid, transaction_id)
+                // TODO: 
                 // const rawImage = await rawImageToBase64DataUrl(dataBuffer)
-                resolve(rawImage)
+                resolve("")
             }
             catch (error) {
                 // Logger.error(TAG, "Download Ess Avatar error: ", error)
@@ -1756,8 +1760,9 @@ export class HiveVaultHelper {
     uploadMediaDataWithString(data: string): Promise<string> {
         return new Promise(async (resolve, reject) => {
             try {
-                const hash = SparkMD5.hash(data)
-
+                // TODO: 
+                // const hash = SparkMD5.hash(dataBase64)
+                const hash = ''
                 const remoteName = 'feeds/data/' + hash
                 await this.hiveService.uploadScriptWithString(remoteName, data)
                 const scriptName = hash
@@ -1776,7 +1781,9 @@ export class HiveVaultHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 const dataBase64 = bufferData.toString()
-                const hash = SparkMD5.hash(dataBase64)
+                // TODO: 
+                // const hash = SparkMD5.hash(dataBase64)
+                const hash = ''
                 const remoteName = 'feeds/data/' + hash
                 await this.hiveService.uploadScriptWithBuffer(remoteName, bufferData)
                 const scriptName = hash
@@ -1879,9 +1886,8 @@ export class HiveVaultHelper {
     private callScript(targetDid: string, scriptName: string, params: any): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
-                const appid = Config.APPLICATION_DID
+                // const appid = Config.APPLICATION_DID
                 // Logger.log(TAG, 'Call script params is targetDid:', targetDid, 'scriptName:', scriptName, 'params:', params)
-                // let callerDid = (await this.dataHelper.getSigninData()).did 
                 let result = await this.hiveService.callScript(scriptName, params, targetDid, appid)
                 // Logger.log('Call script result is', result)
                 resolve(result)
@@ -2240,18 +2246,6 @@ export class HiveVaultHelper {
         return this.callQueryPublicPostRangeOfTime(targetDid, channelId, start, end)
     }
     /** query public post data range of time end */
-
-    async showBuyStorageSpaceDialog(message: string) {
-
-        this.buyStorageSpaceDialog = await this.popupProvider.ionicAlert(
-            this,
-            'buyStorageSpaceDialog.title',
-            message,
-            this.cancelBuyStorageSpace,
-            'hiveStrong.svg',
-        )
-    }
-
 
     cancelBuyStorageSpace(that: any) {
         if (that.buyStorageSpaceDialog != null) {
