@@ -1,1 +1,1 @@
-# Feeeds Decentralized web platform
+# Feeeds Decentralized web social platform
