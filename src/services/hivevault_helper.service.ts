@@ -471,13 +471,13 @@ export class HiveVaultHelper {
         })
     }
 
-    publishPost(channelId: string, tag: string, content: string, type: string = 'public', status: number = FeedsData.PostCommentStatus.available, memo: string, proof: string): Promise<{ targetDid: string, postId: string, createdAt: number, updatedAt: number }> {
+    publishPost(channelId: string, tag: string, content: string, type: string = 'public', status: number = 0, memo: string, proof: string): Promise<{ targetDid: string, postId: string, createdAt: number, updatedAt: number }> {
         return this.insertPostData(channelId, tag, content, type, status, memo, proof)
     }
     /** publish post end */
 
     /** update post start */
-    private updateDataToPostDB(postId: string, channelId: string, updatedAt: number, newType: string, newTag: string, newContent: string, newStatus: number = FeedsData.PostCommentStatus.edited, newMemo: string, newProof: string,): Promise<UpdateResult> {
+    private updateDataToPostDB(postId: string, channelId: string, updatedAt: number, newType: string, newTag: string, newContent: string, newStatus: number = 2, newMemo: string, newProof: string,): Promise<UpdateResult> {
         return new Promise(async (resolve, reject) => {
             const doc =
             {
@@ -841,7 +841,7 @@ export class HiveVaultHelper {
         })
     }
 
-    private callQuerySubscriptionInfoByChannelId(targetDid: string, channelId: string, status: number = FeedsData.PostCommentStatus.available): Promise<any> {
+    private callQuerySubscriptionInfoByChannelId(targetDid: string, channelId: string, status: number = 0): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 const params = {
@@ -1350,7 +1350,7 @@ export class HiveVaultHelper {
         })
     }
 
-    private callQueryLikeById(targetDid: string, channelId: string, postId: string, commentId: string, status: number = FeedsData.PostCommentStatus.available): Promise<any> {
+    private callQueryLikeById(targetDid: string, channelId: string, postId: string, commentId: string, status: number = 0): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 const params = {
@@ -1886,7 +1886,9 @@ export class HiveVaultHelper {
     private callScript(targetDid: string, scriptName: string, params: any): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
+                // TODO: Config appid
                 // const appid = Config.APPLICATION_DID
+                const appid = ""
                 // Logger.log(TAG, 'Call script params is targetDid:', targetDid, 'scriptName:', scriptName, 'params:', params)
                 let result = await this.hiveService.callScript(scriptName, params, targetDid, appid)
                 // Logger.log('Call script result is', result)

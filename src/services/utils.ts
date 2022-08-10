@@ -216,20 +216,24 @@ export class utils {
     feedId: string,
     postId: string,
   ) {
-    return page + '-' + type + '-' + nodeId + '-' + feedId + '-' + postId;
+    return page + '-' + type + '-' + nodeId + '-' + feedId + '-' + postId
   }
 
   public static generatePostId(did: string, channelId: string, postContent: string): string {
-    const currentTime = utils.getCurrentTimeNum() / (1000 * 10);
-    return utils.SHA256(did + channelId + postContent + currentTime);
+    const currentTime = utils.getCurrentTimeNum() / (1000 * 10)
+    return utils.SHA256(did + channelId + postContent + currentTime)
   }
 
   public static generateCommentId(did: string, postId: string, refCommentId: string, commentContent: string): string {
-    const currentTime = utils.getCurrentTimeNum() / (1000 * 10);
-    return utils.SHA256(did + postId + refCommentId + commentContent + currentTime);
+    const currentTime = utils.getCurrentTimeNum() / (1000 * 10)
+    return utils.SHA256(did + postId + refCommentId + commentContent + currentTime)
+  }
+
+  public static generateChannelId(did: string, channelName: string): string {
+    return utils.SHA256(did + channelName)
   }
 
   public static getCurrentTimeNum(): number {
-    return new Date().getTime();
+    return new Date().getTime()
   }
 }
