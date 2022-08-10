@@ -2,6 +2,10 @@ import { HiveService } from 'src/services/HiveService'
 import { QueryHasResultCondition, FindExecutable, AndCondition, NetworkException, InsertExecutable, UpdateExecutable, DeleteExecutable, UpdateResult, UpdateOptions, InsertResult, FileDownloadExecutable, HiveException, InsufficientStorageException } from "@elastosfoundation/hive-js-sdk"
 const TAG = 'HiveVaultHelper'
 
+// TODO: 
+const feedsWebDid = sessionStorage.getItem('FEEEDS_WEB_DID')
+const userDid_local = `did:elastos:${feedsWebDid}`
+
 export class HiveVaultHelper {
     public static readonly TABLE_FEEDS_SCRIPTING = "feeds_scripting"
 
@@ -301,7 +305,7 @@ export class HiveVaultHelper {
     private insertChannelData(channelName: string, intro: string, avatarAddress: string, tippingAddress: string, type: string, nft: string, memo: string, category: string, proof: string): Promise<{ [x: string]: string | number | boolean }> {
         return new Promise(async (resolve, reject) => {
             try {
-                // const signinDid = (await this.dataHelper.getSigninData()).did 
+                const signinDid = userDid_local
                 // const createdAt = UtilService.getCurrentTimeNum() 
                 // const updatedAt = UtilService.getCurrentTimeNum() 
                 // const channelId = UtilService.generateChannelId(signinDid, channelName) 
@@ -447,7 +451,7 @@ export class HiveVaultHelper {
     private insertPostData(channelId: string, tag: string, content: string, type: string, status: number, memo: string, proof: string): Promise<{ targetDid: string, postId: string, createdAt: number, updatedAt: number }> {
         return new Promise(async (resolve, reject) => {
             try {
-                // const signinDid = (await this.dataHelper.getSigninData()).did 
+                const signinDid = userDid_local
 
                 // const createdAt = UtilService.getCurrentTimeNum() 
                 // const updatedAt = UtilService.getCurrentTimeNum() 
@@ -1182,7 +1186,7 @@ export class HiveVaultHelper {
     createComment(targetDid: string, channelId: string, postId: string, refcommentId: string, content: string): Promise<{ commentId: string, createrDid: string, createdAt: number }> {
         return new Promise(async (resolve, reject) => {
             try {
-                const signinDid = (await this.dataHelper.getSigninData()).did
+                const signinDid = userDid_local
                 const commentId = UtilService.generateCommentId(signinDid, postId, refcommentId, content)
                 const createdAt = UtilService.getCurrentTimeNum()
                 const result = await this.callCreateComment(targetDid, commentId, channelId, postId, refcommentId, content, createdAt)
