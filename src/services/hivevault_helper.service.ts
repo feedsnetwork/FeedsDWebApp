@@ -306,8 +306,8 @@ export class HiveVaultHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 const signinDid = userDid_local
-                // const createdAt = UtilService.getCurrentTimeNum() 
-                // const updatedAt = UtilService.getCurrentTimeNum() 
+                const createdAt = new Date().getTime()
+                const updatedAt = new Date().getTime() 
                 // const channelId = UtilService.generateChannelId(signinDid, channelName) 
 
                 // TODO : signinDid / createdAt / updatedAt / channelId
@@ -453,8 +453,8 @@ export class HiveVaultHelper {
             try {
                 const signinDid = userDid_local
 
-                // const createdAt = UtilService.getCurrentTimeNum() 
-                // const updatedAt = UtilService.getCurrentTimeNum() 
+                const createdAt = new Date().getTime()
+                const updatedAt = new Date().getTime() 
                 // const postId = UtilService.generatePostId(signinDid, channelId, content) 
 
                 // TODO: signinDid / createdAt / updatedAt / postId
@@ -544,7 +544,7 @@ export class HiveVaultHelper {
     private deletePostData(postId: string, channelId: string): Promise<{ updatedAt: number, status: number }> {
         return new Promise(async (resolve, reject) => {
             try {
-                const updatedAt = UtilService.getCurrentTimeNum()
+                const updatedAt = new Date().getTime()
                 const result = await this.deleteDataFromPostDB(postId, channelId, updatedAt)
                 // // Logger.log(TAG, 'delete post result success')
                 resolve(result)
@@ -756,7 +756,7 @@ export class HiveVaultHelper {
     private callUpdateSubscription(targetDid: string, channelId: string, status: number): Promise<{ updatedAt: number }> {
         return new Promise(async (resolve, reject) => {
             try {
-                const updatedAt = UtilService.getCurrentTimeNum()
+                const updatedAt = new Date().getTime()
                 const params = {
                     "channel_id": channelId,
                     "updated_at": updatedAt,
@@ -1188,7 +1188,7 @@ export class HiveVaultHelper {
             try {
                 const signinDid = userDid_local
                 const commentId = UtilService.generateCommentId(signinDid, postId, refcommentId, content)
-                const createdAt = UtilService.getCurrentTimeNum()
+                const createdAt = new Date().getTime()
                 const result = await this.callCreateComment(targetDid, commentId, channelId, postId, refcommentId, content, createdAt)
 
                 resolve({ commentId: commentId, createrDid: signinDid, createdAt: createdAt })
@@ -1594,7 +1594,7 @@ export class HiveVaultHelper {
     private callAddLike(targetDid: string, likeId: string, channelId: string, postId: string, commentId: string): Promise<{ createdAt: number }> {
         return new Promise(async (resolve, reject) => {
             try {
-                const createdAt = UtilService.getCurrentTimeNum()
+                const createdAt = new Date().getTime()
                 const params = {
                     "like_id": likeId,
                     "channel_id": channelId,
