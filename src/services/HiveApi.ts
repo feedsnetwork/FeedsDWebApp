@@ -2,7 +2,7 @@ import { HiveService } from 'src/services/HiveService'
 import { QueryHasResultCondition, FindExecutable, AndCondition, NetworkException, InsertExecutable, UpdateExecutable, DeleteExecutable, UpdateResult, UpdateOptions, InsertResult, FileDownloadExecutable, HiveException, InsufficientStorageException } from "@elastosfoundation/hive-js-sdk"
 import { utils } from 'src/services/utils'
 
-const TAG = 'HiveVaultHelper'
+const TAG = 'HiveApi'
 
 
 // TODO: 
@@ -10,7 +10,7 @@ const feedsDid = sessionStorage.getItem('FEEDS_DID')
 const userDid_local = `did:elastos:${feedsDid}`
 const hiveService = new HiveService()
 
-export class HiveVaultHelper {
+export class HiveApi {
     public static readonly TABLE_FEEDS_SCRIPTING = "feeds_scripting"
 
     public static readonly TABLE_CHANNELS = "channels"
@@ -134,7 +134,7 @@ export class HiveVaultHelper {
                 "regist_scripting": registScripting,
             }
             try {
-                const insertResult = hiveService.insertDBData(HiveVaultHelper.TABLE_FEEDS_SCRIPTING, doc)
+                const insertResult = hiveService.insertDBData(HiveApi.TABLE_FEEDS_SCRIPTING, doc)
                 // // Logger.log(TAG, 'Insert feeds scripting db result', insertResult)
                 resolve(doc)
             } catch (error) {
@@ -191,7 +191,7 @@ export class HiveVaultHelper {
                 let update = { "$set": doc }
 
                 const updateResult =
-                    hiveService.updateOneDBData(HiveVaultHelper.TABLE_FEEDS_SCRIPTING, filter, update, option)
+                    hiveService.updateOneDBData(HiveApi.TABLE_FEEDS_SCRIPTING, filter, update, option)
                 // // Logger.log(TAG, 'update feeds scripting result', updateResult)
                 resolve(updateResult)
             } catch (error) {
@@ -209,7 +209,7 @@ export class HiveVaultHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 const filter = {}
-                const result = hiveService.queryDBData(HiveVaultHelper.TABLE_FEEDS_SCRIPTING, filter)
+                const result = hiveService.queryDBData(HiveApi.TABLE_FEEDS_SCRIPTING, filter)
                 resolve(result)
             } catch (error) {
                 // // Logger.error(TAG, 'Query Feeds scripting from DB', error) 
@@ -230,13 +230,13 @@ export class HiveVaultHelper {
 
     createAllCollections(): Promise<string> {
         return new Promise(async (resolve, reject) => {
-            const p1 = this.createCollection(HiveVaultHelper.TABLE_FEEDS_SCRIPTING)
-            const p2 = this.createCollection(HiveVaultHelper.TABLE_CHANNELS)
-            const p3 = this.createCollection(HiveVaultHelper.TABLE_POSTS)
-            const p4 = this.createCollection(HiveVaultHelper.TABLE_SUBSCRIPTIONS)
-            const p5 = this.createCollection(HiveVaultHelper.TABLE_COMMENTS)
-            const p6 = this.createCollection(HiveVaultHelper.TABLE_LIKES)
-            const p7 = this.createCollection(HiveVaultHelper.TABLE_BACKUP_SUBSCRIBEDCHANNEL)
+            const p1 = this.createCollection(HiveApi.TABLE_FEEDS_SCRIPTING)
+            const p2 = this.createCollection(HiveApi.TABLE_CHANNELS)
+            const p3 = this.createCollection(HiveApi.TABLE_POSTS)
+            const p4 = this.createCollection(HiveApi.TABLE_SUBSCRIPTIONS)
+            const p5 = this.createCollection(HiveApi.TABLE_COMMENTS)
+            const p6 = this.createCollection(HiveApi.TABLE_LIKES)
+            const p7 = this.createCollection(HiveApi.TABLE_BACKUP_SUBSCRIBEDCHANNEL)
 
             const array = [p1, p2, p3, p4, p5, p6, p7] as const
             Promise.all(array).then(values => {
@@ -255,14 +255,14 @@ export class HiveVaultHelper {
     deleteAllCollections(): Promise<string> {
         return new Promise(async (resolve, reject) => {
             try {
-                await this.deleteCollection(HiveVaultHelper.TABLE_FEEDS_SCRIPTING)
-                await this.deleteCollection(HiveVaultHelper.TABLE_CHANNELS)
-                await this.deleteCollection(HiveVaultHelper.TABLE_POSTS)
-                await this.deleteCollection(HiveVaultHelper.TABLE_SUBSCRIPTIONS)
-                await this.deleteCollection(HiveVaultHelper.TABLE_COMMENTS)
-                await this.deleteCollection(HiveVaultHelper.TABLE_LIKES)
-                await this.deleteCollection(HiveVaultHelper.TABLE_BACKUP_SUBSCRIBEDCHANNEL)
-                await this.deleteCollection(HiveVaultHelper.TABLE_FEEDS_SCRIPTING)
+                await this.deleteCollection(HiveApi.TABLE_FEEDS_SCRIPTING)
+                await this.deleteCollection(HiveApi.TABLE_CHANNELS)
+                await this.deleteCollection(HiveApi.TABLE_POSTS)
+                await this.deleteCollection(HiveApi.TABLE_SUBSCRIPTIONS)
+                await this.deleteCollection(HiveApi.TABLE_COMMENTS)
+                await this.deleteCollection(HiveApi.TABLE_LIKES)
+                await this.deleteCollection(HiveApi.TABLE_BACKUP_SUBSCRIBEDCHANNEL)
+                await this.deleteCollection(HiveApi.TABLE_FEEDS_SCRIPTING)
                 resolve("true")
             } catch (error) {
                 // // Logger.error(TAG, 'delete Collections error', error) 
@@ -294,7 +294,7 @@ export class HiveVaultHelper {
             }
 
             try {
-                const insertResult = hiveService.insertDBData(HiveVaultHelper.TABLE_CHANNELS, doc)
+                const insertResult = hiveService.insertDBData(HiveApi.TABLE_CHANNELS, doc)
                 // // Logger.log(TAG, 'Insert channel db result', insertResult)
                 resolve(doc)
             } catch (error) {
@@ -309,8 +309,8 @@ export class HiveVaultHelper {
             try {
                 const signinDid = userDid_local
                 const createdAt = new Date().getTime()
-                const updatedAt = new Date().getTime() 
-                const channelId = utils.generateChannelId(signinDid, channelName) 
+                const updatedAt = new Date().getTime()
+                const channelId = utils.generateChannelId(signinDid, channelName)
 
                 // TODO : signinDid / createdAt / updatedAt / channelId
                 let result = await this.insertDataToChannelDB(channelId.toString(), channelName, intro, avatarAddress, memo, createdAt, updatedAt, type, tippingAddress, nft, category, proof)
@@ -357,7 +357,7 @@ export class HiveVaultHelper {
                 let filter = { "channel_id": channelId }
                 let update = { "$set": doc }
 
-                const updateResult = hiveService.updateOneDBData(HiveVaultHelper.TABLE_CHANNELS, filter, update, option)
+                const updateResult = hiveService.updateOneDBData(HiveApi.TABLE_CHANNELS, filter, update, option)
                 // // Logger.log(TAG, 'update channel result', updateResult)
                 resolve(updateResult)
             } catch (error) {
@@ -369,7 +369,7 @@ export class HiveVaultHelper {
 
     private updateChannelData(channelId: string, newName: string, newIntro: string, newAvatar: string, newType: string, newMemo: string,
         newTippingAddress: string, newNft: string) {
-        const updatedAt = utils.getCurrentTimeNum() 
+        const updatedAt = utils.getCurrentTimeNum()
         // TODO: updatedAt
         return this.updateDataToChannelDB(channelId, newName, newIntro, newAvatar, newType, newMemo, newTippingAddress, newNft, updatedAt)
     }
@@ -386,8 +386,8 @@ export class HiveVaultHelper {
             try {
                 let executablefilter = { "channel_id": "$params.channel_id", "type": "public" }
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_CHANNELS, executablefilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_CHANNEL_INFO, executable, null, false)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_CHANNELS, executablefilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_CHANNEL_INFO, executable, null, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // // Logger.error(TAG, "registerQueryChannelInfo error", error)
@@ -399,7 +399,7 @@ export class HiveVaultHelper {
     private callQueryChannelInfo(targetDid: string, channelId: string) {
         return new Promise(async (resolve, reject) => {
             try {
-                let result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_CHANNEL_INFO, { "channel_id": channelId })
+                let result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_CHANNEL_INFO, { "channel_id": channelId })
                 resolve(result)
             } catch (error) {
                 // // Logger.error(TAG, 'callGetAllPostScripting error:', error)
@@ -440,7 +440,7 @@ export class HiveVaultHelper {
             }
 
             try {
-                const insertResult = await hiveService.insertDBData(HiveVaultHelper.TABLE_POSTS, doc)
+                const insertResult = await hiveService.insertDBData(HiveApi.TABLE_POSTS, doc)
                 // // Logger.log(TAG, 'insert postData result', insertResult)
                 resolve(insertResult)
             } catch (error) {
@@ -456,8 +456,8 @@ export class HiveVaultHelper {
                 const signinDid = userDid_local
 
                 const createdAt = new Date().getTime()
-                const updatedAt = new Date().getTime() 
-                const postId = utils.generatePostId(signinDid, channelId, content) 
+                const updatedAt = new Date().getTime()
+                const postId = utils.generatePostId(signinDid, channelId, content)
 
                 // TODO: signinDid / createdAt / updatedAt / postId
                 await this.insertDataToPostDB(postId, channelId, type, tag, content, memo, createdAt, updatedAt, status, proof)
@@ -492,7 +492,7 @@ export class HiveVaultHelper {
             let filter = { "channel_id": channelId, "post_id": postId }
             let update = { "$set": doc }
             try {
-                const updateResult = hiveService.updateOneDBData(HiveVaultHelper.TABLE_POSTS, filter, update, option)
+                const updateResult = hiveService.updateOneDBData(HiveApi.TABLE_POSTS, filter, update, option)
                 // // Logger.log(TAG, 'update post result', updateResult) 
                 resolve(updateResult)
             } catch (error) {
@@ -532,7 +532,7 @@ export class HiveVaultHelper {
             let filter = { "channel_id": channelId, "post_id": postId }
             let update = { "$set": doc }
             try {
-                const result = await hiveService.updateOneDBData(HiveVaultHelper.TABLE_POSTS, filter, update, option)
+                const result = await hiveService.updateOneDBData(HiveApi.TABLE_POSTS, filter, update, option)
                 // // Logger.log(TAG, 'Delete post result', result)
                 resolve({ updatedAt: updatedAt, status: 1 })
             } catch (error) {
@@ -571,11 +571,11 @@ export class HiveVaultHelper {
                 let options = { "projection": { "_id": false }, "limit": 100 }
                 let conditionfilter1 = { "channel_id": "$params.channel_id", "user_did": "$caller_did" }
                 let conditionfilter2 = { "channel_id": "$params.channel_id", "post_id": "$params.post_id", "type": "public" }
-                let queryCondition1 = new QueryHasResultCondition("subscription_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionfilter1, null)
-                let queryCondition2 = new QueryHasResultCondition("post_permission", HiveVaultHelper.TABLE_POSTS, conditionfilter2, null)
+                let queryCondition1 = new QueryHasResultCondition("subscription_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionfilter1, null)
+                let queryCondition2 = new QueryHasResultCondition("post_permission", HiveApi.TABLE_POSTS, conditionfilter2, null)
                 let andCondition = new AndCondition("verify_user_permission", [queryCondition1, queryCondition2])
-                let findExe = new FindExecutable("find_message", HiveVaultHelper.TABLE_POSTS, executablefilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_SPECIFIED_POST, findExe, andCondition, false, false)
+                let findExe = new FindExecutable("find_message", HiveApi.TABLE_POSTS, executablefilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_SPECIFIED_POST, findExe, andCondition, false, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // // Logger.error(TAG, "registerQueryPostById error", error)
@@ -588,7 +588,7 @@ export class HiveVaultHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 const doc = { "channel_id": channelId, "post_id": postId }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_SPECIFIED_POST, doc)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_SPECIFIED_POST, doc)
                 resolve(result)
             } catch (error) {
                 // // Logger.error(TAG, 'callQueryPostById error:', error)
@@ -609,9 +609,9 @@ export class HiveVaultHelper {
                 let executablefilter = { "channel_id": "$params.channel_id" }
                 let options = { "projection": { "_id": false }, "limit": 100 }
                 let conditionfilter = { "channel_id": "$params.channel_id", "user_did": "$caller_did" }
-                let queryCondition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionfilter, null)
-                let findExe = new FindExecutable("find_message", HiveVaultHelper.TABLE_POSTS, executablefilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_POST_BY_CHANNEL, findExe, queryCondition, false, false)
+                let queryCondition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionfilter, null)
+                let findExe = new FindExecutable("find_message", HiveApi.TABLE_POSTS, executablefilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_POST_BY_CHANNEL, findExe, queryCondition, false, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // // Logger.error(TAG, "registerQueryPostByChannelId error", error)
@@ -623,7 +623,7 @@ export class HiveVaultHelper {
     private callQueryPostByChannelId(targetDid: string, channelId: string) {
         return new Promise(async (resolve, reject) => {
             try {
-                let result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_POST_BY_CHANNEL, { "channel_id": channelId })
+                let result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_POST_BY_CHANNEL, { "channel_id": channelId })
                 resolve(result)
             } catch (error) {
                 // // Logger.error(TAG, 'callQueryPostByChannelId error:', error)
@@ -645,9 +645,9 @@ export class HiveVaultHelper {
                     { "channel_id": "$params.channel_id", "updated_at": { $gt: "$params.start", $lt: "$params.end" } }
                 let options = { "projection": { "_id": false }, "limit": 30, "sort": { "updated_at": -1 } }
                 let conditionfilter = { "channel_id": "$params.channel_id", "user_did": "$caller_did" }
-                let queryCondition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionfilter, null)
-                let findExe = new FindExecutable("find_message", HiveVaultHelper.TABLE_POSTS, executablefilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_SOMETIME_POST, findExe, queryCondition, false, false)
+                let queryCondition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionfilter, null)
+                let findExe = new FindExecutable("find_message", HiveApi.TABLE_POSTS, executablefilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_SOMETIME_POST, findExe, queryCondition, false, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // // Logger.error(TAG, "registerQueryPostRangeOfTime error", error)
@@ -659,7 +659,7 @@ export class HiveVaultHelper {
     private callQueryPostRangeOfTimeScripting(targetDid: string, channelId: string, start: number, end: number) {
         return new Promise(async (resolve, reject) => {
             try {
-                let result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_SOMETIME_POST, { "channel_id": channelId, "start": start, "end": end })
+                let result = await this.callScript(targetDid, HiveApi.SCRIPT_SOMETIME_POST, { "channel_id": channelId, "start": start, "end": end })
                 resolve(result)
             } catch (error) {
                 // // Logger.error(TAG, 'callQueryPostByChannelId error:', error)
@@ -682,7 +682,7 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                     "type": type
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_CHANNELS, conditionfilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_CHANNELS, conditionfilter, null)
 
                 let document = {
                     "channel_id": "$params.channel_id",
@@ -694,8 +694,8 @@ export class HiveVaultHelper {
                 }
                 let options = { "projectxsion": { "_id": false } }
 
-                const executable = new InsertExecutable("database_insert", HiveVaultHelper.TABLE_SUBSCRIPTIONS, document, options)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_SUBSCRIBE_CHANNEL, executable, condition)
+                const executable = new InsertExecutable("database_insert", HiveApi.TABLE_SUBSCRIPTIONS, document, options)
+                await hiveService.registerScript(HiveApi.SCRIPT_SUBSCRIBE_CHANNEL, executable, condition)
                 resolve("SUCCESS")
             } catch (error) {
                 // // Logger.error(TAG, "registerSubscribe error", error)
@@ -714,7 +714,7 @@ export class HiveVaultHelper {
                     "updated_at": updatedAt,
                     "status": status
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_SUBSCRIBE_CHANNEL, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_SUBSCRIBE_CHANNEL, params)
                 resolve(result)
             } catch (error) {
                 // // Logger.error(TAG, 'callSubscription error:', error)
@@ -734,7 +734,7 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                 }
 
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionfilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionfilter, null)
                 let set = {
                     "status": "$params.status",
                     "updated_at": "$params.updated_at",
@@ -745,8 +745,8 @@ export class HiveVaultHelper {
                 }
                 let update = { "$set": set }
                 let options = { "bypass_document_validation": false, "upsert": true }
-                const executable = new UpdateExecutable("database_update", HiveVaultHelper.TABLE_SUBSCRIPTIONS, filter, update, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_UPDATE_SUBSCRIPTION, executable, condition, false)
+                const executable = new UpdateExecutable("database_update", HiveApi.TABLE_SUBSCRIPTIONS, filter, update, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_UPDATE_SUBSCRIPTION, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerUpdateSubscription error", error)
@@ -764,7 +764,7 @@ export class HiveVaultHelper {
                     "updated_at": updatedAt,
                     "status": status
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_UPDATE_SUBSCRIPTION, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_UPDATE_SUBSCRIPTION, params)
                 console.log("update subscription , result is", result)
                 resolve({ updatedAt: updatedAt })
             } catch (error) {
@@ -789,8 +789,8 @@ export class HiveVaultHelper {
                     "user_did": "$caller_did"
                 }
 
-                const executable = new DeleteExecutable("database_delete", HiveVaultHelper.TABLE_SUBSCRIPTIONS, filter)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_UNSUBSCRIBE_CHANNEL, executable, null)
+                const executable = new DeleteExecutable("database_delete", HiveApi.TABLE_SUBSCRIPTIONS, filter)
+                await hiveService.registerScript(HiveApi.SCRIPT_UNSUBSCRIBE_CHANNEL, executable, null)
                 resolve("SUCCESS")
             } catch (error) {
                 // // Logger.error(TAG, "registerUnsubscribe error", error)
@@ -805,7 +805,7 @@ export class HiveVaultHelper {
                 const params = {
                     "channel_id": channelId,
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_UNSUBSCRIBE_CHANNEL, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_UNSUBSCRIBE_CHANNEL, params)
                 resolve(result)
             } catch (error) {
                 // Logger.error(TAG, 'callSubscription error:', error)
@@ -830,8 +830,8 @@ export class HiveVaultHelper {
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_SUBSCRIPTIONS, executableFilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_SUBSCRIPTION_BY_CHANNELID, executable, null, false)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_SUBSCRIPTIONS, executableFilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_SUBSCRIPTION_BY_CHANNELID, executable, null, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQuerySubscriptionInfoByChannelId error", error)
@@ -847,7 +847,7 @@ export class HiveVaultHelper {
                     "channel_id": channelId,
                     "status": status
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_SUBSCRIPTION_BY_CHANNELID, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_SUBSCRIPTION_BY_CHANNELID, params)
                 console.log("Query subscription from scripting , result is", result)
                 resolve(result)
             } catch (error) {
@@ -871,8 +871,8 @@ export class HiveVaultHelper {
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_SUBSCRIPTIONS, executableFilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_SUBSCRIPTION_BY_USERDID, executable, null, false)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_SUBSCRIPTIONS, executableFilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_SUBSCRIPTION_BY_USERDID, executable, null, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQuerySubscriptionInfoByUserDID error", error)
@@ -887,7 +887,7 @@ export class HiveVaultHelper {
                 const params = {
                     "user_did": userDid
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_SUBSCRIPTION_BY_USERDID, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_SUBSCRIPTION_BY_USERDID, params)
                 console.log("Find subscription from scripting , result is", result)
                 resolve(result)
             } catch (error) {
@@ -912,8 +912,8 @@ export class HiveVaultHelper {
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_SUBSCRIPTIONS, executableFilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_SUBSCRIPTION_BY_USERDID_CHANNELID, executable, null, false)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_SUBSCRIPTIONS, executableFilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_SUBSCRIPTION_BY_USERDID_CHANNELID, executable, null, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQuerySubscriptionInfoByUserDID error", error)
@@ -929,7 +929,7 @@ export class HiveVaultHelper {
                     "channel_id": channelId,
                     "user_did": userDid
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_SUBSCRIPTION_BY_USERDID_CHANNELID, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_SUBSCRIPTION_BY_USERDID_CHANNELID, params)
                 console.log("Find subscription from scripting , result is", result)
                 resolve(result)
             } catch (error) {
@@ -952,7 +952,7 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                     "user_did": "$caller_did"
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionFilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionFilter, null)
 
                 const executableFilter = {
                     "channel_id": "$params.channel_id",
@@ -960,9 +960,9 @@ export class HiveVaultHelper {
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_COMMENTS, executableFilter, options).setOutput(true)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_COMMENTS, executableFilter, options).setOutput(true)
 
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_COMMENT_BY_POSTID, executable, condition, false)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_COMMENT_BY_POSTID, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQueryCommentByPostId error", error)
@@ -978,7 +978,7 @@ export class HiveVaultHelper {
                     "channel_id": channelId,
                     "post_id": postId
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_COMMENT_BY_POSTID, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_COMMENT_BY_POSTID, params)
                 console.log("Get comment from scripting by post id , result is ", result)
                 resolve(result)
             } catch (error) {
@@ -1001,7 +1001,7 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                     "user_did": "$caller_did"
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionFilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionFilter, null)
 
                 const executableFilter = {
                     "channel_id": "$params.channel_id",
@@ -1010,9 +1010,9 @@ export class HiveVaultHelper {
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_COMMENTS, executableFilter, options).setOutput(true)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_COMMENTS, executableFilter, options).setOutput(true)
 
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_COMMENT_BY_COMMENTID, executable, condition, false)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_COMMENT_BY_COMMENTID, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerFindCommentById error", error)
@@ -1029,7 +1029,7 @@ export class HiveVaultHelper {
                     "post_id": postId,
                     "comment_id": commentId
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_COMMENT_BY_COMMENTID, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_COMMENT_BY_COMMENTID, params)
                 console.log("Get comment from scripting by comment id , result is", result)
                 resolve(result)
             } catch (error) {
@@ -1051,9 +1051,9 @@ export class HiveVaultHelper {
                     { "channel_id": "$params.channel_id", "post_id": "$params.post_id", "updated_at": { $gt: "$params.start", $lt: "$params.end" } }
                 let options = { "projection": { "_id": false }, "limit": 30, "sort": { "updated_at": -1 } }
                 let conditionfilter = { "channel_id": "$params.channel_id", "user_did": "$caller_did" }
-                let queryCondition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionfilter, null)
-                let findExe = new FindExecutable("find_message", HiveVaultHelper.TABLE_COMMENTS, executablefilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_SOMETIME_COMMENT, findExe, queryCondition, false, false)
+                let queryCondition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionfilter, null)
+                let findExe = new FindExecutable("find_message", HiveApi.TABLE_COMMENTS, executablefilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_SOMETIME_COMMENT, findExe, queryCondition, false, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQueryCommentRangeOfTime error", error)
@@ -1069,7 +1069,7 @@ export class HiveVaultHelper {
     private callQueryCommentRangeOfTimeScripting(targetDid: string, channelId: string, postId: string, start: number, end: number) {
         return new Promise(async (resolve, reject) => {
             try {
-                let result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_SOMETIME_COMMENT, { "channel_id": channelId, "post_id": postId, "start": start, "end": end })
+                let result = await this.callScript(targetDid, HiveApi.SCRIPT_SOMETIME_COMMENT, { "channel_id": channelId, "post_id": postId, "start": start, "end": end })
                 resolve(result)
             } catch (error) {
                 // Logger.error(TAG, 'callQueryCommentRangeOfTimeScripting error:', error)
@@ -1086,16 +1086,16 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                     "user_did": "$caller_did"
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionFilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionFilter, null)
 
                 const executableFilter = {
                     "channel_id": "$params.channel_id"
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_COMMENTS, executableFilter, options).setOutput(true)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_COMMENTS, executableFilter, options).setOutput(true)
 
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_COMMENT_BY_CHANNELID, executable, condition, false)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_COMMENT_BY_CHANNELID, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQueryCommentByChannel error", error)
@@ -1110,7 +1110,7 @@ export class HiveVaultHelper {
                 const params = {
                     "channel_id": channelId
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_COMMENT_BY_CHANNELID, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_COMMENT_BY_CHANNELID, params)
                 console.log("Get comment from scripting by channel id , result is", result)
                 resolve(result)
             } catch (error) {
@@ -1133,7 +1133,7 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                     "user_did": "$caller_did"
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionfilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionfilter, null)
 
                 let executablefilter = {
                     "comment_id": "$params.comment_id",
@@ -1153,9 +1153,9 @@ export class HiveVaultHelper {
                         "_id": false
                     }
                 }
-                const executable = new InsertExecutable("database_update", HiveVaultHelper.TABLE_COMMENTS, executablefilter, options).setOutput(true)
+                const executable = new InsertExecutable("database_update", HiveApi.TABLE_COMMENTS, executablefilter, options).setOutput(true)
 
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_CREATE_COMMENT, executable, condition, false)
+                await hiveService.registerScript(HiveApi.SCRIPT_CREATE_COMMENT, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerCreateComment error", error)
@@ -1175,7 +1175,7 @@ export class HiveVaultHelper {
                     "content": content,
                     "created_at": createdAt
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_CREATE_COMMENT, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_CREATE_COMMENT, params)
                 console.log("Create comment from scripting , result is", result)
                 resolve(result)
             } catch (error) {
@@ -1211,7 +1211,7 @@ export class HiveVaultHelper {
                     "comment_id": "$params.comment_id",
                     "creater_did": "$caller_did"
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_COMMENTS, conditionfilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_COMMENTS, conditionfilter, null)
 
                 const filter = {
                     "channel_id": "$params.channel_id",
@@ -1228,8 +1228,8 @@ export class HiveVaultHelper {
                 let update = { "$set": set }
                 let options = { "bypass_document_validation": false, "upsert": true }
 
-                const executable = new UpdateExecutable("database_update", HiveVaultHelper.TABLE_COMMENTS, filter, update, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_UPDATE_COMMENT, executable, condition, false)
+                const executable = new UpdateExecutable("database_update", HiveApi.TABLE_COMMENTS, filter, update, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_UPDATE_COMMENT, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerUpdateComment error", error)
@@ -1249,7 +1249,7 @@ export class HiveVaultHelper {
                     "content": content,
                     "updated_at": updatedAt
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_UPDATE_COMMENT, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_UPDATE_COMMENT, params)
                 console.log("Get comment from scripting by comment id , result is", result)
                 resolve({ updatedAt: updatedAt })
             } catch (error) {
@@ -1274,7 +1274,7 @@ export class HiveVaultHelper {
                     "comment_id": "$params.comment_id",
                     "creater_did": "$caller_did"
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_COMMENTS, conditionfilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_COMMENTS, conditionfilter, null)
 
                 const filter = {
                     "channel_id": "$params.channel_id",
@@ -1288,8 +1288,8 @@ export class HiveVaultHelper {
                 let update = { "$set": set }
                 let options = { "bypass_document_validation": false, "upsert": true }
 
-                const executable = new UpdateExecutable("database_update", HiveVaultHelper.TABLE_COMMENTS, filter, update, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_DELETE_COMMENT, executable, condition, false)
+                const executable = new UpdateExecutable("database_update", HiveApi.TABLE_COMMENTS, filter, update, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_DELETE_COMMENT, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerDeleteComment error", error)
@@ -1306,7 +1306,7 @@ export class HiveVaultHelper {
                     "post_id": postId,
                     "comment_id": commentId
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_DELETE_COMMENT, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_DELETE_COMMENT, params)
                 console.log("Delete comment from scripting , result is", result)
                 resolve(result)
             } catch (error) {
@@ -1329,7 +1329,7 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                     "user_did": "$caller_did",
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionFilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionFilter, null)
 
                 const executableFilter = {
                     "channel_id": "$params.channel_id",
@@ -1339,8 +1339,8 @@ export class HiveVaultHelper {
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_LIKES, executableFilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_LIKE_BY_ID, executable, condition, false)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_LIKES, executableFilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_LIKE_BY_ID, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQueryLikeById error", error)
@@ -1358,7 +1358,7 @@ export class HiveVaultHelper {
                     "comment_id": commentId,
                     "status": status
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_LIKE_BY_ID, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_LIKE_BY_ID, params)
                 // Logger.log("Query like from scripting , result is", result)
                 resolve(result)
             } catch (error) {
@@ -1382,7 +1382,7 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                     "user_did": "$caller_did",
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionFilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionFilter, null)
 
                 const executableFilter = {
                     "like_id": "$params.like_id",
@@ -1391,8 +1391,8 @@ export class HiveVaultHelper {
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_LIKES, executableFilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_SELF_LIKE_BY_ID, executable, condition, false)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_LIKES, executableFilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_SELF_LIKE_BY_ID, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQuerySelfLikeById error", error)
@@ -1409,7 +1409,7 @@ export class HiveVaultHelper {
                     "like_id": likeId,
                     "status": status
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_SELF_LIKE_BY_ID, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_SELF_LIKE_BY_ID, params)
                 // Logger.log(TAG, "Query like from scripting , result is", result)
                 resolve(result)
             } catch (error) {
@@ -1432,7 +1432,7 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                     "user_did": "$caller_did",
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionFilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionFilter, null)
 
                 const executableFilter = {
                     "channel_id": "$params.channel_id",
@@ -1440,8 +1440,8 @@ export class HiveVaultHelper {
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_LIKES, executableFilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_LIKE_BY_CHANNEL, executable, condition, false)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_LIKES, executableFilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_LIKE_BY_CHANNEL, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQueryLikeByChannel error", error)
@@ -1457,7 +1457,7 @@ export class HiveVaultHelper {
                     "channel_id": channelId,
                     "status": 0 //available
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_LIKE_BY_CHANNEL, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_LIKE_BY_CHANNEL, params)
                 console.log("Query like by channel from scripting , result is", result)
                 resolve(result)
             } catch (error) {
@@ -1480,7 +1480,7 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                     "user_did": "$caller_did",
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionFilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionFilter, null)
 
                 const executableFilter = {
                     "channel_id": "$params.channel_id",
@@ -1489,8 +1489,8 @@ export class HiveVaultHelper {
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_LIKES, executableFilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_LIKE_BY_POST, executable, condition, false)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_LIKES, executableFilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_LIKE_BY_POST, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQueryLikeByPost error", error)
@@ -1507,7 +1507,7 @@ export class HiveVaultHelper {
                     "post_id": postId,
                     "status": 0 // available
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_LIKE_BY_POST, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_LIKE_BY_POST, params)
                 console.log("Query like by post from scripting , result is", result)
                 resolve(result)
             } catch (error) {
@@ -1529,9 +1529,9 @@ export class HiveVaultHelper {
                     { "channel_id": "$params.channel_id", "post_id": "$params.post_id", "updated_at": { $gt: "$params.start", $lt: "$params.end" } }
                 let options = { "projection": { "_id": false }, "limit": 30, "sort": { "updated_at": -1 } }
                 let conditionfilter = { "channel_id": "$params.channel_id", "user_did": "$caller_did" }
-                let queryCondition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionfilter, null)
-                let findExe = new FindExecutable("find_message", HiveVaultHelper.TABLE_LIKES, executablefilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_SOMETIME_LIKE, findExe, queryCondition, false, false)
+                let queryCondition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionfilter, null)
+                let findExe = new FindExecutable("find_message", HiveApi.TABLE_LIKES, executablefilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_SOMETIME_LIKE, findExe, queryCondition, false, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerLikeRangeOfTime error", error)
@@ -1547,7 +1547,7 @@ export class HiveVaultHelper {
     private callQueryLikeRangeOfTimeScripting(targetDid: string, channelId: string, postId: string, start: number, end: number) {
         return new Promise(async (resolve, reject) => {
             try {
-                let result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_SOMETIME_LIKE, { "channel_id": channelId, "post_id": postId, "start": start, "end": end })
+                let result = await this.callScript(targetDid, HiveApi.SCRIPT_SOMETIME_LIKE, { "channel_id": channelId, "post_id": postId, "start": start, "end": end })
                 resolve(result)
             } catch (error) {
                 // Logger.error(TAG, 'callQueryLikeRangeOfTimeScripting error:', error)
@@ -1564,7 +1564,7 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                     "user_did": "$caller_did"
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionfilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionfilter, null)
 
                 let executablefilter = {
                     "like_id": "$params.like_id",
@@ -1583,8 +1583,8 @@ export class HiveVaultHelper {
                         "_id": false
                     }
                 }
-                const executable = new InsertExecutable("database_insert", HiveVaultHelper.TABLE_LIKES, executablefilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_CREATE_LIKE, executable, condition, false)
+                const executable = new InsertExecutable("database_insert", HiveApi.TABLE_LIKES, executablefilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_CREATE_LIKE, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerCreateLike error", error)
@@ -1606,7 +1606,7 @@ export class HiveVaultHelper {
                     "updated_at": createdAt,
                     "status": 0 // available
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_CREATE_LIKE, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_CREATE_LIKE, params)
                 console.log("Add like from scripting , result is", result)
                 resolve({ createdAt: createdAt })
             } catch (error) {
@@ -1631,15 +1631,15 @@ export class HiveVaultHelper {
                     "comment_id": "$params.comment_id",
                     "creater_did": "$caller_did"
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_LIKES, conditionfilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_LIKES, conditionfilter, null)
 
                 const filter = {
                     "channel_id": "$params.channel_id",
                     "post_id": "$params.post_id",
                     "comment_id": "$params.comment_id"
                 }
-                const executable = new DeleteExecutable("database_delete", HiveVaultHelper.TABLE_LIKES, filter).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_REMOVE_LIKE, executable, condition, false)
+                const executable = new DeleteExecutable("database_delete", HiveApi.TABLE_LIKES, filter).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_REMOVE_LIKE, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerRemoveLike error", error)
@@ -1656,7 +1656,7 @@ export class HiveVaultHelper {
                     "post_id": postId,
                     "comment_id": commentId
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_REMOVE_LIKE, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_REMOVE_LIKE, params)
                 console.log("Remove like from scripting , result is", result)
                 resolve(result)
             } catch (error) {
@@ -1680,7 +1680,7 @@ export class HiveVaultHelper {
                     "creater_did": "$caller_did",
                 }
 
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_LIKES, conditionfilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_LIKES, conditionfilter, null)
                 let set = {
                     "status": "$params.status",
                     "updated_at": "$params.updated_at",
@@ -1690,8 +1690,8 @@ export class HiveVaultHelper {
                 }
                 let update = { "$set": set }
                 let options = { "bypass_document_validation": false, "upsert": true }
-                const executable = new UpdateExecutable("database_update", HiveVaultHelper.TABLE_LIKES, filter, update, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_UPDATE_LIKE, executable, condition, false)
+                const executable = new UpdateExecutable("database_update", HiveApi.TABLE_LIKES, filter, update, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_UPDATE_LIKE, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerUpdateLike error", error)
@@ -1709,7 +1709,7 @@ export class HiveVaultHelper {
                     "like_id": likeId,
                     "status": status
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_UPDATE_LIKE, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_UPDATE_LIKE, params)
                 console.log("update subscription , result is", result)
                 resolve({ updatedAt: updatedAt })
             } catch (error) {
@@ -1905,7 +1905,7 @@ export class HiveVaultHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 const filter = {}
-                const result = await hiveService.queryDBData(HiveVaultHelper.TABLE_CHANNELS, filter)
+                const result = await hiveService.queryDBData(HiveApi.TABLE_CHANNELS, filter)
                 resolve(result)
             } catch (error) {
                 // Logger.error(TAG, 'Query channels from DB', error)
@@ -1924,7 +1924,7 @@ export class HiveVaultHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 const filter = {}
-                const result = await hiveService.queryDBData(HiveVaultHelper.TABLE_POSTS, filter)
+                const result = await hiveService.queryDBData(HiveApi.TABLE_POSTS, filter)
                 resolve(result)
             } catch (error) {
                 // Logger.error(TAG, 'Query post from DB', error)
@@ -1943,7 +1943,7 @@ export class HiveVaultHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 const filter = { 'channel_id': channelId }
-                const result = await hiveService.queryDBData(HiveVaultHelper.TABLE_POSTS, filter)
+                const result = await hiveService.queryDBData(HiveApi.TABLE_POSTS, filter)
                 resolve(result)
             } catch (error) {
                 // Logger.error(TAG, 'Query post by channel from DB', error)
@@ -1966,7 +1966,7 @@ export class HiveVaultHelper {
                 //     "channel_id": "$params.channel_id",
                 //     "user_did": "$caller_did"
                 // } 
-                // const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionFilter, null) 
+                // const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionFilter, null) 
 
                 const executableFilter = {
                     "channel_id": "$params.channel_id",
@@ -1974,8 +1974,8 @@ export class HiveVaultHelper {
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_SUBSCRIPTIONS, executableFilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_USER_DISPLAYNAME, executable, null, false)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_SUBSCRIPTIONS, executableFilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_USER_DISPLAYNAME, executable, null, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQueryDisplayName error", error)
@@ -1991,7 +1991,7 @@ export class HiveVaultHelper {
                     "channel_id": channelId,
                     "user_did": userDid
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_USER_DISPLAYNAME, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_USER_DISPLAYNAME, params)
                 // Logger.log("Query user display name from scripting , result is", result)
                 resolve(result)
             } catch (error) {
@@ -2029,7 +2029,7 @@ export class HiveVaultHelper {
             }
 
             try {
-                const insertResult = hiveService.insertDBData(HiveVaultHelper.TABLE_BACKUP_SUBSCRIBEDCHANNEL, doc)
+                const insertResult = hiveService.insertDBData(HiveApi.TABLE_BACKUP_SUBSCRIBEDCHANNEL, doc)
                 // Logger.log(TAG, 'Insert bsc db result', insertResult)
                 resolve('FINISH')
             } catch (error) {
@@ -2053,7 +2053,7 @@ export class HiveVaultHelper {
             }
 
             try {
-                const result = hiveService.deleateOneDBData(HiveVaultHelper.TABLE_BACKUP_SUBSCRIBEDCHANNEL, doc)
+                const result = hiveService.deleateOneDBData(HiveApi.TABLE_BACKUP_SUBSCRIBEDCHANNEL, doc)
                 // Logger.log(TAG, 'Remove bsc db result', result)
                 resolve('FINISH')
             } catch (error) {
@@ -2073,7 +2073,7 @@ export class HiveVaultHelper {
     private queryDataFromBackupSCDB(): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
-                const result = hiveService.queryDBData(HiveVaultHelper.TABLE_BACKUP_SUBSCRIBEDCHANNEL, {})
+                const result = hiveService.queryDBData(HiveApi.TABLE_BACKUP_SUBSCRIBEDCHANNEL, {})
                 // Logger.log(TAG, 'Query bsc db result', result)
                 resolve(result)
             } catch (error) {
@@ -2096,15 +2096,15 @@ export class HiveVaultHelper {
                     "channel_id": "$params.channel_id",
                     "user_did": "$caller_did",
                 }
-                const condition = new QueryHasResultCondition("verify_user_permission", HiveVaultHelper.TABLE_SUBSCRIPTIONS, conditionFilter, null)
+                const condition = new QueryHasResultCondition("verify_user_permission", HiveApi.TABLE_SUBSCRIPTIONS, conditionFilter, null)
 
                 const executableFilter = {
                     "post_id": { "$in": "$params.post_ids" }
                 }
 
                 let options = { "projection": { "_id": false }, "limit": 100 }
-                const executable = new FindExecutable("find_message", HiveVaultHelper.TABLE_COMMENTS, executableFilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.SCRIPT_QUERY_COMMENT_FROM_POSTS, executable, condition, false)
+                const executable = new FindExecutable("find_message", HiveApi.TABLE_COMMENTS, executableFilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.SCRIPT_QUERY_COMMENT_FROM_POSTS, executable, condition, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQueryCommentsFromPosts error", error)
@@ -2119,7 +2119,7 @@ export class HiveVaultHelper {
                 const params = {
                     "post_ids": postIds
                 }
-                const result = await this.callScript(targetDid, HiveVaultHelper.SCRIPT_QUERY_COMMENT_FROM_POSTS, params)
+                const result = await this.callScript(targetDid, HiveApi.SCRIPT_QUERY_COMMENT_FROM_POSTS, params)
                 // Logger.log("Query comments counts from posts , result is", result)
                 resolve(result)
             } catch (error) {
@@ -2139,13 +2139,13 @@ export class HiveVaultHelper {
             try {
                 const postType = 'public'
                 let postCondition = { "channel_id": "$params.channel_id", "post_id": "$params.post_id", "type": postType }
-                let queryCondition = new QueryHasResultCondition("post_permission", HiveVaultHelper.TABLE_POSTS, postCondition, null)
+                let queryCondition = new QueryHasResultCondition("post_permission", HiveApi.TABLE_POSTS, postCondition, null)
 
                 let executablefilter = { "channel_id": "$params.channel_id", "post_id": "$params.post_id", "type": postType }
                 let options = { "projection": { "_id": false }, "limit": 100 }
 
-                let findExe = new FindExecutable("find_message", HiveVaultHelper.TABLE_POSTS, executablefilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.QUERY_PUBLIC_SPECIFIED_POST, findExe, queryCondition, false, false)
+                let findExe = new FindExecutable("find_message", HiveApi.TABLE_POSTS, executablefilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.QUERY_PUBLIC_SPECIFIED_POST, findExe, queryCondition, false, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, 'Register query public post by id error', error)
@@ -2158,7 +2158,7 @@ export class HiveVaultHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 const doc = { "channel_id": channelId, "post_id": postId }
-                const result = await this.callScript(targetDid, HiveVaultHelper.QUERY_PUBLIC_SPECIFIED_POST, doc)
+                const result = await this.callScript(targetDid, HiveApi.QUERY_PUBLIC_SPECIFIED_POST, doc)
                 resolve(result)
             } catch (error) {
                 // Logger.error(TAG, 'callQueryPostById error:', error)
@@ -2179,13 +2179,13 @@ export class HiveVaultHelper {
                 const channelType = 'public'
                 const postType = 'public'
                 let conditionfilter = { "channel_id": "$params.channel_id", "type": channelType }
-                let queryCondition = new QueryHasResultCondition("channel_permission", HiveVaultHelper.TABLE_CHANNELS, conditionfilter, null)
+                let queryCondition = new QueryHasResultCondition("channel_permission", HiveApi.TABLE_CHANNELS, conditionfilter, null)
 
                 let executablefilter = { "channel_id": "$params.channel_id", "type": postType }
                 let options = { "projection": { "_id": false }, "limit": 100 }
 
-                let findExe = new FindExecutable("find_message", HiveVaultHelper.TABLE_POSTS, executablefilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.QUERY_PUBLIC_POST_BY_CHANNEL, findExe, queryCondition, false, false)
+                let findExe = new FindExecutable("find_message", HiveApi.TABLE_POSTS, executablefilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.QUERY_PUBLIC_POST_BY_CHANNEL, findExe, queryCondition, false, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, 'Register query public post by channel error', error)
@@ -2197,7 +2197,7 @@ export class HiveVaultHelper {
     private callQueryPublicPostByChannelId(targetDid: string, channelId: string) {
         return new Promise(async (resolve, reject) => {
             try {
-                let result = await this.callScript(targetDid, HiveVaultHelper.QUERY_PUBLIC_POST_BY_CHANNEL, { "channel_id": channelId })
+                let result = await this.callScript(targetDid, HiveApi.QUERY_PUBLIC_POST_BY_CHANNEL, { "channel_id": channelId })
                 resolve(result)
             } catch (error) {
                 // Logger.error(TAG, 'Call query public post by channel error:', error)
@@ -2218,13 +2218,13 @@ export class HiveVaultHelper {
                 const channelType = 'public'
                 const postType = 'public'
                 let conditionfilter = { "channel_id": "$params.channel_id", "type": channelType }
-                let queryCondition = new QueryHasResultCondition("channel_permission", HiveVaultHelper.TABLE_CHANNELS, conditionfilter, null)
+                let queryCondition = new QueryHasResultCondition("channel_permission", HiveApi.TABLE_CHANNELS, conditionfilter, null)
 
                 let executablefilter = { "channel_id": "$params.channel_id", "updated_at": { $gt: "$params.start", $lt: "$params.end" }, "type": postType }
                 let options = { "projection": { "_id": false }, "limit": 30, "sort": { "updated_at": -1 } }
 
-                let findExe = new FindExecutable("find_message", HiveVaultHelper.TABLE_POSTS, executablefilter, options).setOutput(true)
-                await hiveService.registerScript(HiveVaultHelper.QUERY_PUBLIC_SOMETIME_POST, findExe, queryCondition, false, false)
+                let findExe = new FindExecutable("find_message", HiveApi.TABLE_POSTS, executablefilter, options).setOutput(true)
+                await hiveService.registerScript(HiveApi.QUERY_PUBLIC_SOMETIME_POST, findExe, queryCondition, false, false)
                 resolve("SUCCESS")
             } catch (error) {
                 // Logger.error(TAG, "registerQueryPublicPostRangeOfTime error", error)
@@ -2236,7 +2236,7 @@ export class HiveVaultHelper {
     private callQueryPublicPostRangeOfTime(targetDid: string, channelId: string, start: number, end: number) {
         return new Promise(async (resolve, reject) => {
             try {
-                let result = await this.callScript(targetDid, HiveVaultHelper.QUERY_PUBLIC_SOMETIME_POST, { "channel_id": channelId, "start": start, "end": end })
+                let result = await this.callScript(targetDid, HiveApi.QUERY_PUBLIC_SOMETIME_POST, { "channel_id": channelId, "start": start, "end": end })
                 resolve(result)
             } catch (error) {
                 // Logger.error(TAG, 'Call query post by channel and range of time error:', error)

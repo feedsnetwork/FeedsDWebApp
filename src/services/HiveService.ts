@@ -5,7 +5,7 @@ import { ApplicationDID } from '../config'
 
 let TAG: string = 'Feeds-web-dapp-HiveService'
 let didResolverUrl = "https://api.trinity-tech.io/eid"
-let hiveVault
+
 let scriptRunners = {}
 
 const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -20,10 +20,7 @@ export class HiveService {
   private scriptRunner: ScriptRunner
   private scriptRunners: { [key: string]: ScriptRunner } = {}
 
-  constructor(
-    // private standardAuthService: StandardAuthService,
-  ) {
-  }
+  constructor() { }
 
   public async creatAppContext(appInstanceDocument, userDidString: string): Promise<AppContext> {
     return new Promise(async (resolve, reject) => {

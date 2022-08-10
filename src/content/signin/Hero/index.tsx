@@ -14,9 +14,9 @@ import StyledButton from 'src/components/StyledButton';
 import { essentialsConnector, initConnectivitySDK, isUsingEssentialsConnector } from '../EssentialConnectivity';
 import { isInAppBrowser } from 'src/utils/common'
 import { DidResolverUrl } from 'src/config';
-import { HiveVaultHelper } from 'src/services/hivevault_helper.service';
+import { HiveApi } from 'src/services/HiveApi';
 
-const hiveApi = new HiveVaultHelper()
+const hiveApi = new HiveApi()
 const LinearProgressWrapper = styled(LinearProgress)(
   ({ theme }) => `
       flex-grow: 1;
