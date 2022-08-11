@@ -235,27 +235,79 @@ export class HiveApi {
     return hiveHelper.queryPostById(targetDid, channelId, postId)
   }
 
-  /** Suscription */
+  /**
+    * Suscription 订阅
+    *
+    * @param targetDid: 订阅channel的持有者
+    * @param channelId: 订阅的channel的id
+    * @param displayName: 订阅者的名字
+    * @param updatedAt: 订约时间
+    * @param status: 订阅状态
+    * @return 订阅成功信息
+    * @throws HiveError
+  */
   subscribeChannel(targetDid: string, channelId: string, displayName: string, updatedAt: number, status: number = HiveData.PostCommentStatus.available): Promise<any> {
     return hiveHelper.subscribeChannel(targetDid, channelId, displayName, updatedAt, status)
   }
 
+  /**
+    * Suscription 更新订阅信息
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param status: 订阅状态
+    * @return 更新订阅成功信息
+    * @throws HiveError
+  */
   updateSubscription(targetDid: string, channelId: string, status: number): Promise<{ updatedAt: number }> {
     return hiveHelper.updateSubscription(targetDid, channelId, status)
   }
 
+  /**
+    * unSubscribeChannel 取消订阅
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @return 取消订阅成功信息
+    * @throws HiveError
+  */
   unSubscribeChannel(targetDid: string, channelId: string) {
     return hiveHelper.unsubscribeChannel(targetDid, channelId)
   }
 
+  /**
+    * 查询指定channelId的Subscrption信息
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @return 指定channelid下所有的订阅信息
+    * @throws HiveError
+  */
   querySubscrptionInfoByChannelId(targetDid: string, channelId: string) {
     return hiveHelper.querySubscriptionInfoByChannelId(targetDid, channelId)
   }
 
+  /**
+    * 查询指定userDid的Subscrption信息
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @return 指定userdid下所有的订阅信息
+    * @throws HiveError
+  */
   querySubscriptionInfoByUserDID(targetDid: string, userDid: string) {
     return hiveHelper.querySubscriptionByUserDID(targetDid, userDid)
   }
 
+  /**
+    * 查询指定userDid且指定channelId的Subscrption信息
+    *
+    * @param targetDid: channel的持有者
+    * @param userDid: 要查询的订阅者的did
+    * @param channelId: 要查询的channel的id
+    * @return 返回查询条件下channel的订阅信息
+    * @throws HiveError
+  */
   querySubscriptionByUserDIDAndChannelId(targetDid: string, userDid: string, channelId: string) {
     return hiveHelper.querySubscriptionByUserDIDAndChannelId(targetDid, userDid, channelId)
   }
