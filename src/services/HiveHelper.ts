@@ -1732,7 +1732,7 @@ export class HiveHelper {
     }
 
     /** download essential avatar start */
-    private downloadEssAvatarData(avatarParam: string, avatarScriptName: string, tarDID: string, tarAppDID: string): Promise<string> {
+    private downloadEssAvatarData(avatarParam: string, avatarScriptName: string, tarDID: string, tarAppDID: string): Promise<Buffer> {
         return new Promise(async (resolve, reject) => {
             try {
                 let userDid = userDid_local
@@ -1745,7 +1745,7 @@ export class HiveHelper {
                 let dataBuffer = await hiveService.downloadScripting(userDid, transaction_id)
                 // TODO: 
                 // const rawImage = await rawImageToBase64DataUrl(dataBuffer)
-                resolve("")
+                resolve(dataBuffer)
             }
             catch (error) {
                 // Logger.error(TAG, "Download Ess Avatar error: ", error)
@@ -1754,7 +1754,7 @@ export class HiveHelper {
         })
     }
 
-    downloadEssAvatar(avatarParam: string, avatarScriptName: string, tarDID: string, tarAppDID: string): Promise<string> {
+    downloadEssAvatar(avatarParam: string, avatarScriptName: string, tarDID: string, tarAppDID: string): Promise<Buffer> {
         return this.downloadEssAvatarData(avatarParam, avatarScriptName, tarDID, tarAppDID)
     }
     /** download essential avatar end */
@@ -1831,8 +1831,6 @@ export class HiveHelper {
                     return
                 }
                 const data = await this.downloadScriptingDataWithString(targetDid, transaction_id)
-                // const rawImage = await rawImageToBase64DataUrl(dataBuffer)
-
                 resolve(data)
             } catch (error) {
                 // Logger.error(TAG, 'download file from scripting error', error)

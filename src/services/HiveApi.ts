@@ -522,27 +522,77 @@ export class HiveApi {
     return hiveHelper.updateLike(targetDid, likeId, status)
   }
 
-  /** Download data */
+  /**
+    * download 通过avatarHiveURL下载Esential的avatar
+    *
+    * @param targetDid: channel的持有者
+    * @param avatarHiveURL: vatar的url
+    * @return base64 string
+    * @throws HiveError
+  */
   downloadScripting(targetDid: string, avatarHiveURL: string): Promise<any> {
     return hiveHelper.downloadScripting(targetDid, avatarHiveURL)
   }
 
+  /**
+    * download 通过avatarHiveURL下载Feeds自定义的avatar
+    *
+    * @param remoteHiveUrlPath: vatar的url
+    * @return data buffer
+    * @throws HiveError
+  */
   downloadCustomeAvatar(remoteHiveUrlPath: string): Promise<any> {
     return hiveHelper.downloadFile(remoteHiveUrlPath)
   }
 
+  /**
+    * parse 解析Esential的avatar
+    *
+    * @param userDid: 用户did
+    * @return {
+          avatarParam: xxx,
+          avatarScriptName: xxx,
+          tarDID: xxx,
+          tarAppDID: xxx
+        }
+    * @throws HiveError
+  */
   parseDidDocumentAvatar(userDid: string) {
     return hiveHelper.parseDidDocumentAvatar(userDid)
   }
 
-  downloadEssAvatar(avatarParam: string, avatarScriptName: string, tarDID: string, tarAppDID: string): Promise<string> {
+  /**
+    * download 下载Esential的avatar
+    *
+    * @param avatarParam: avatarParam
+    * @param avatarScriptName: avatarScriptName
+    * @param tarDID: tarDID
+    * @param tarAppDID: tarAppDID
+    * @return avatar: Buffer
+    * @throws HiveError
+  */
+  downloadEssAvatar(avatarParam: string, avatarScriptName: string, tarDID: string, tarAppDID: string): Promise<Buffer> {
     return hiveHelper.downloadEssAvatar(avatarParam, avatarScriptName, tarDID, tarAppDID)
   }
 
+  /**
+    * MediaData 更新MediaData
+    *
+    * @param data: base64 string
+    * @return 上传MediaData结果:  scriptName(data打hash) + "@" + remoteName('feeds/data/' + hash)
+    * @throws HiveError
+  */
   uploadMediaDataWithString(data: string): Promise<string> {
     return hiveHelper.uploadMediaDataWithString(data)
   }
 
+  /**
+    * MediaData 上传MediaData
+    *
+    * @param data: data buffer
+    * @return 上传MediaData结果:  scriptName(data打hash) + "@" + remoteName('feeds/data/' + hash)
+    * @throws HiveError
+  */
   uploadMediaDataWithBuffer(data: Buffer): Promise<string> {
     return hiveHelper.uploadMediaDataWithBuffer(data)
   }
