@@ -597,59 +597,163 @@ export class HiveApi {
     return hiveHelper.uploadMediaDataWithBuffer(data)
   }
 
-  /** selfData */
+  /** selfData
+    * 查询自己创建的所有的channel
+    *
+    * @return 返回自己创建的所有的channel
+    * @throws HiveError
+  */
   querySelfChannels(): Promise<any> {
     return hiveHelper.querySelfChannels()
   }
 
+  /** selfData
+    * 查询自己发布的所有的post
+    *
+    * @return 返回自己发布的所有的post
+    * @throws HiveError
+  */
   querySelfPosts(): Promise<any> {
     return hiveHelper.querySelfPosts()
   }
 
+  /** selfData
+    * 查询指定channel下自己发布的所有的post
+    *
+    * @return 满足条件下所有的post
+    * @throws HiveError
+  */
   querySelfPostsByChannel(channelId: string): Promise<any> {
     return hiveHelper.querySelfPostsByChannel(channelId)
   }
 
+  /**
+    * 查询指定userDid的DisplayName
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel id
+    * @param userDid: user did
+    * @return DisplayName
+    * @throws HiveError
+  */
   queryUserDisplayName(targetDid: string, channelId: string, userDid: string): Promise<any> {
     return hiveHelper.queryUserDisplayName(targetDid, channelId, userDid)
   }
 
+  /**
+    * 查询指定channel下所有的订阅者
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @return 满足条件下所有的订阅者信息
+    * @throws HiveError
+  */
   querySubscription(targetDid: string, channelId: string): Promise<any> {
     return hiveHelper.querySubscriptionInfoByChannelId(targetDid, channelId)
   }
 
+  /**
+    * 登录hive
+    *
+  */
   prepareConnection() {
     return hiveHelper.prepareConnection()
   }
 
+  /** backup
+    * 备份channel
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @return FINISH：备份成功，否则抛出异常
+    * @throws HiveError
+  */
   backupSubscribedChannel(targetDid: string, channelId: string) {
     return hiveHelper.backupSubscribedChannel(targetDid, channelId)
   }
 
+  /** backup
+    * 查询所有的备份数据
+    *
+    * @return 所有的备份数据
+    * @throws HiveError
+  */
   queryBackupData(): Promise<any> {
     return hiveHelper.queryBackupData()
   }
 
+  /** backup
+    * 删除指定channel的备份
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @return FINISH：删除成功，否则抛出异常
+    * @throws HiveError
+  */
   removeBackupData(targetDid: string, channelId: string) {
     return hiveHelper.removeBackupData(targetDid, channelId)
   }
 
+  /** query
+    * 查询指定postIds下所有的评论
+    *
+    * @param targetDid: channel的持有者
+    * @param postIds: 数组：postIds
+    * @return 满足条件的所有评论
+    * @throws HiveError
+  */
   queryCommentsFromPosts(targetDid: string, postIds: string[]): Promise<any> {
     return hiveHelper.queryCommentsFromPosts(targetDid, postIds)
   }
 
+  /** query
+    * 查询指定likeId的like是否存在
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param likeId: likeId
+    * @return 返回like信息
+    * @throws HiveError
+  */
   querySelfLikeById(targetDid: string, channelId: string, likeId: string) {
     return hiveHelper.querySelfLikeById(targetDid, channelId, likeId)
   }
 
+  /** query
+    * 查询指定postId的public post
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param postId: postId
+    * @return 查询的post 信息
+    * @throws HiveError
+  */
   queryPublicPostById(targetDid: string, channelId: string, postId: string): Promise<any> {
     return hiveHelper.queryPublicPostById(targetDid, channelId, postId)
   }
 
+  /** query
+    * 查询public post
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @return 查询的post 信息
+    * @throws HiveError
+  */
   queryPublicPostByChannelId(targetDid: string, channelId: string): Promise<any> {
     return hiveHelper.queryPublicPostByChannelId(targetDid, channelId)
   }
 
+  /** query
+    * 查询指定时间段的public post
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param start: 查询的开始时间
+    * @param end: 查询的结束时间
+    * @return 满足条件的所有public 的posts
+    * @throws HiveError
+  */
   queryPublicPostRangeOfTime(targetDid: string, channelId: string, start: number, end: number): Promise<any> {
     return hiveHelper.queryPublicPostRangeOfTime(targetDid, channelId, start, end)
   }
