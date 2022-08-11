@@ -2,6 +2,7 @@ import { HiveService } from 'src/services/HiveService'
 import { QueryHasResultCondition, FindExecutable, AndCondition, NetworkException, InsertExecutable, UpdateExecutable, DeleteExecutable, UpdateResult, UpdateOptions, InsertResult, FileDownloadExecutable, HiveException, InsufficientStorageException } from "@elastosfoundation/hive-js-sdk"
 import { utils } from 'src/services/utils'
 import SparkMD5 from 'spark-md5'
+import { HiveData } from 'src/services/HiveData'
 
 const TAG = 'HiveHelper'
 
@@ -471,13 +472,13 @@ export class HiveHelper {
         })
     }
 
-    publishPost(channelId: string, tag: string, content: string, type: string = 'public', status: number = 0, memo: string, proof: string): Promise<{ targetDid: string, postId: string, createdAt: number, updatedAt: number }> {
+    publishPost(channelId: string, tag: string, content: string, type: string = 'public', status: number = HiveData.PostCommentStatus.available, memo: string, proof: string): Promise<{ targetDid: string, postId: string, createdAt: number, updatedAt: number }> {
         return this.insertPostData(channelId, tag, content, type, status, memo, proof)
     }
     /** publish post end */
 
     /** update post start */
-    private updateDataToPostDB(postId: string, channelId: string, updatedAt: number, newType: string, newTag: string, newContent: string, newStatus: number = 2, newMemo: string, newProof: string,): Promise<UpdateResult> {
+    private updateDataToPostDB(postId: string, channelId: string, updatedAt: number, newType: string, newTag: string, newContent: string, newStatus: number = HiveData.PostCommentStatus.edited, newMemo: string, newProof: string,): Promise<UpdateResult> {
         return new Promise(async (resolve, reject) => {
             const doc =
             {
@@ -841,7 +842,7 @@ export class HiveHelper {
         })
     }
 
-    private callQuerySubscriptionInfoByChannelId(targetDid: string, channelId: string, status: number = 0): Promise<any> {
+    private callQuerySubscriptionInfoByChannelId(targetDid: string, channelId: string, status: number = HiveData.PostCommentStatus.available): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 const params = {
@@ -1350,7 +1351,7 @@ export class HiveHelper {
         })
     }
 
-    private callQueryLikeById(targetDid: string, channelId: string, postId: string, commentId: string, status: number = 0): Promise<any> {
+    private callQueryLikeById(targetDid: string, channelId: string, postId: string, commentId: string, status: number = HiveData.PostCommentStatus.available): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 const params = {
@@ -1402,7 +1403,7 @@ export class HiveHelper {
         })
     }
     //                                                                                                      0: available
-    private callQuerySelfLikeById(targetDid: string, channelId: string, likeId: string, status: number = 0): Promise<any> {
+    private callQuerySelfLikeById(targetDid: string, channelId: string, likeId: string, status: number = HiveData.PostCommentStatus.available): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 const params = {
