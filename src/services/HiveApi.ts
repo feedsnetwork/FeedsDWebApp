@@ -414,36 +414,110 @@ export class HiveApi {
     return hiveHelper.queryCommentRangeOfTimeScripting(targetDid, channelId, postId, star, end)
   }
 
-  /** Like */
+  /**
+    * Like 查询指定channelId下所有的点赞
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @return 满足条件下所有的点赞
+    * @throws HiveError
+  */
   queryLikeByChannel(targetDid: string, channelId: string): Promise<any> {
     return hiveHelper.queryLikeByChannel(targetDid, channelId)
   }
 
+  /**
+    * Like 查询指定commentId下所有的点赞
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param postId: post的id
+    * @param commentId: 评论id
+    * @return 满足条件下所有的点赞
+    * @throws HiveError
+  */
   queryLikeById(targetDid: string, channelId: string, postId: string, commentId: string): Promise<any> {
     return hiveHelper.queryLikeById(targetDid, channelId, postId, commentId)
   }
 
+  /**
+    * Like 
+    * TODO: 待定
+    * 
+  */
   queryLikeByUser(targetDid: string, channelId: string, postId: string, commentId: string, userDid: string): Promise<any> {
     // TODO userDid: string
     return hiveHelper.queryLikeById(targetDid, channelId, postId, commentId)
   }
 
+  /**
+    * Like 查询指定postId下所有的点赞
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param postId: post id
+    * @return 满足条件下所有的点赞
+    * @throws HiveError
+  */
   queryLikeByPost(targetDid: string, channelId: string, postId: string): Promise<any> {
     return hiveHelper.queryLikeByPost(targetDid, channelId, postId)
   }
 
+  /**
+    * like 查询指定channel下且指定时间段内的所有评论
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param postId: 指定post的id
+    * @param star: 指定开始时间
+    * @param end: 指定结束时间
+    * @return 满足条件下所有的点赞
+    * @throws HiveError
+  */
   queryLikeByRangeOfTime(targetDid: string, channelId: string, postId: string, star: number, end: number) {
     return hiveHelper.queryLikeRangeOfTimeScripting(targetDid, channelId, postId, star, end)
   }
 
+  /**
+    * like 点赞
+    *
+    * @param targetDid: channel的持有者
+    * @param likeId: like的id： 生成规则：SHA256(postId + commentId + userDid) 
+    * @param channelId: 指定channel的id
+    * @param postId: 指定postid
+    * @param commentId: 点赞的评论id， 为post点赞时 commentId = 0
+    * @return 点赞成功信息 {createdAt: xxx}
+    * @throws HiveError
+  */
   addLike(targetDid: string, likeId: string, channelId: string, postId: string, commentId: string): Promise<{ createdAt: number }> {
     return hiveHelper.addLike(targetDid, likeId, channelId, postId, commentId)
   }
 
+  /**
+    * like 取消点赞
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: 指定channel的id 
+    * @param postId: 指定postid
+    * @param commentId: 取消点赞的评论id， 取消post点赞时 commentId = 0
+    * @return 点赞成功信息 {createdAt: xxx}
+    * @throws HiveError
+  */
   removeLike(targetDid: string, channelId: string, postId: string, commentId: string): Promise<any> {
     return hiveHelper.removeLike(targetDid, channelId, postId, commentId)
   }
 
+  /**
+    * like 更新点赞
+    *
+    * @param targetDid: channel的持有者
+    * @param likeId: 指定点赞的id 
+    * @param status: 点赞状态: 
+    *         available = 0,
+              deleted = 1,
+    * @return 点赞成功信息 {updatedAt: xxx}
+    * @throws HiveError
+  */
   updateLike(targetDid: string, likeId: string, status: number): Promise<{ updatedAt: number }> {
     return hiveHelper.updateLike(targetDid, likeId, status)
   }
