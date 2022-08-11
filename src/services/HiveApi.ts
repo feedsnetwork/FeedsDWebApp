@@ -153,6 +153,20 @@ export class HiveApi {
     return hiveHelper.queryChannelInfo(targetDid, channelId)
   }
 
+
+  /**  Channel
+     * 删除channel
+     *
+     * @param channelId: channel的id
+     * @return { updatedAt: xxx
+     *           status: 1 
+     *          }
+     * @throws HiveError
+   */
+  deleteChannel(channelId: string): Promise<any> {
+    return hiveHelper.deleteChannel(channelId)
+  }
+
   /** Post
     * 发布post
     *

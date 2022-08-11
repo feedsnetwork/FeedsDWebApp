@@ -383,6 +383,38 @@ export class HiveHelper {
     }
     /** update channel end */
 
+    /** delete channel star */
+    deleteChannel(channelId: string) {
+        return this.deleteChannelData(channelId)
+    }
+
+    private deleteChannelData(channelId: string) {
+        const updatedAt = utils.getCurrentTimeNum()
+        return this.deleteDataToChannelDB(channelId, updatedAt)
+    }
+
+    private deleteDataToChannelDB(channelId: string, updatedAt: number): Promise<{ updatedAt: number, status: number }> {
+        return new Promise(async (resolve, reject) => {
+            const doc =
+            {
+                "updated_at": updatedAt,
+                "status": 1,
+            }
+            const option = new UpdateOptions(false, true)
+            let filter = { "channel_id": channelId }
+            let update = { "$set": doc }
+            try {
+                const result = await hiveService.updateOneDBData(HiveHelper.TABLE_CHANNELS, filter, update, option)
+                // // Logger.log(TAG, 'Delete post result', result)
+                resolve({ updatedAt: updatedAt, status: 1 })
+            } catch (error) {
+                // // Logger.error(TAG, 'Delete data from postDB error', error)
+                reject(this.handleError(error))
+            }
+        })
+    }
+    /** delete channel end */
+
     /** query channel info start*/
     private registerQueryChannelInfoScripting(): Promise<string> {
         return new Promise(async (resolve, reject) => {
