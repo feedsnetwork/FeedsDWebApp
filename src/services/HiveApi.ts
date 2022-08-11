@@ -7,7 +7,7 @@ const hiveHelper = new HiveHelper()
 export class HiveApi {
   constructor() { }
 
-  /**
+  /** registe
     * 注册所有的脚本： 
     * channel、post、Public post、subscription、comment、like、DisplayName
   */
@@ -15,7 +15,7 @@ export class HiveApi {
     return hiveHelper.registeScripting()
   }
 
-  /**
+  /** 
     * 创建存储feeds版本号等信息的表格
     *
     * @param lasterVersion: 最新的feeds版本号
@@ -31,7 +31,7 @@ export class HiveApi {
     return hiveHelper.createFeedsScripting(lasterVersion, preVersion, registScripting)
   }
 
-  /**
+  /** 
     * 更新feeds版本号等信息
     *
     * @param lasterVersion: 最新的feeds版本号
@@ -47,7 +47,7 @@ export class HiveApi {
     return hiveHelper.updateFeedsScripting(lasterVersion, preVersion, registScripting)
   }
 
-  /**
+  /** 
     * 查询feeds版本号等信息
     *
     * @return 返回服务器存储的的feeds信息: 
@@ -60,7 +60,7 @@ export class HiveApi {
     return hiveHelper.queryFeedsScripting()
   }
 
-  /**
+  /** Collection
     * 创建所有的collection：
     *
     * @return true：所有collection创建成功，返回true，否则抛出异常: 
@@ -77,7 +77,7 @@ export class HiveApi {
     return hiveHelper.createAllCollections()
   }
 
-  /**
+  /** Collection
     * 删除指定的collection：
     * @param collectionName: 要删除的collection name
     * @return void：删除collection成功，否则抛出异常
@@ -87,7 +87,7 @@ export class HiveApi {
     return hiveHelper.deleteCollection(collectionName)
   }
 
-  /**
+  /** Collection
     * 删除所有的的collection：
     * @param collectionName: 要删除的collection name
     * @return true：删除所有的collection成功，返回true，否则抛出异常 
@@ -96,12 +96,32 @@ export class HiveApi {
   deleteAllCollections(): Promise<string> {
     return hiveHelper.deleteAllCollections()
   }
-  /** Channel */
+
+  /**  Channel
+     * 创建channel
+     *
+     * @param channelName: channel的name
+     * @param intro: channel的介绍
+     * @param avatarAddress: channel头像 base64 string
+     * @param tippingAddress: tippingAddress
+     * @param type: 默认是public，public：公开 /private： 私有
+     * @param nft: nft
+     * @param memo: memo
+     * @param category: category
+     * @param proof: proof
+     * @return {
+                destDid: xxx,
+                channelId: xxx,
+                createdAt: xxx,
+                updatedAt: xxx
+                }
+     * @throws HiveError
+   */
   createChannel(channelName: string, intro: string, avatarAddress: string, tippingAddress: string = '', type: string = 'public', nft: string = '', memo: string, category: string = '', proof: string = ''): Promise<any> {
     return hiveHelper.createChannel(channelName, intro, avatarAddress, tippingAddress, type, nft, memo, category, proof)
   }
 
-  /**
+  /** Channel
     * 更新channel信息
     *
     * @param channelId: 需要更新的channelId
@@ -121,7 +141,7 @@ export class HiveApi {
     return hiveHelper.updateChannel(channelId, newName, newIntro, newAvatar, newType, newMemo, newTippingAddress, newNft)
   }
 
-  /**
+  /** Channel
     * 查询channel信息
     *
     * @param targetDid: channel的持有者的did
@@ -133,7 +153,7 @@ export class HiveApi {
     return hiveHelper.queryChannelInfo(targetDid, channelId)
   }
 
-  /**
+  /** Post
     * 发布post
     *
     * @param channelId: 发布的post在哪个channel下
@@ -160,7 +180,7 @@ export class HiveApi {
     return hiveHelper.publishPost(channelId, tag, content, type, status, memo, proof)
   }
 
-  /**
+  /** Post
     * 更新post
     *
     * @param postId: 需要修改的post的id
@@ -184,7 +204,7 @@ export class HiveApi {
     return hiveHelper.updatePost(postId, channelId, newType, newTag, newContent, newStatus, newUpdateAt, newMemo, newProof)
   }
 
-  /**
+  /** Post
     * 删除post
     *
     * @param postId: 需要删除的post的id
@@ -196,7 +216,7 @@ export class HiveApi {
     return hiveHelper.deletePost(postId, channelId)
   }
 
-  /**
+  /** Post
     * 查询指定channel下的所有post
     *
     * @param targetDid: channel的持有者
@@ -208,7 +228,7 @@ export class HiveApi {
     return hiveHelper.queryPostByChannelId(targetDid, channelId)
   }
 
-  /**
+  /** Post
     * 查询指定targetDid且指定时间段下的所有post
     *
     * @param targetDid: channel的持有者
@@ -222,7 +242,7 @@ export class HiveApi {
     return hiveHelper.queryPostRangeOfTimeScripting(targetDid, channelId, star, end)
   }
 
-  /**
+  /** Post
     * 查询指定post
     *
     * @param targetDid: channel的持有者
@@ -235,8 +255,8 @@ export class HiveApi {
     return hiveHelper.queryPostById(targetDid, channelId, postId)
   }
 
-  /**
-    * Suscription 订阅
+  /** Suscription
+    * 订阅
     *
     * @param targetDid: 订阅channel的持有者
     * @param channelId: 订阅的channel的id
@@ -250,8 +270,8 @@ export class HiveApi {
     return hiveHelper.subscribeChannel(targetDid, channelId, displayName, updatedAt, status)
   }
 
-  /**
-    * Suscription 更新订阅信息
+  /** Suscription
+    * 更新订阅信息
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -263,8 +283,8 @@ export class HiveApi {
     return hiveHelper.updateSubscription(targetDid, channelId, status)
   }
 
-  /**
-    * unSubscribeChannel 取消订阅
+  /** unSuscription
+    * 取消订阅
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -275,7 +295,7 @@ export class HiveApi {
     return hiveHelper.unsubscribeChannel(targetDid, channelId)
   }
 
-  /**
+  /** Suscription
     * 查询指定channelId的Subscrption信息
     *
     * @param targetDid: channel的持有者
@@ -287,7 +307,7 @@ export class HiveApi {
     return hiveHelper.querySubscriptionInfoByChannelId(targetDid, channelId)
   }
 
-  /**
+  /** Suscription
     * 查询指定userDid的Subscrption信息
     *
     * @param targetDid: channel的持有者
@@ -299,7 +319,7 @@ export class HiveApi {
     return hiveHelper.querySubscriptionByUserDID(targetDid, userDid)
   }
 
-  /**
+  /** Suscription
     * 查询指定userDid且指定channelId的Subscrption信息
     *
     * @param targetDid: channel的持有者
@@ -312,8 +332,8 @@ export class HiveApi {
     return hiveHelper.querySubscriptionByUserDIDAndChannelId(targetDid, userDid, channelId)
   }
 
-  /**
-    * Comment 添加评论
+  /** Comment
+    * 添加评论
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -330,8 +350,8 @@ export class HiveApi {
     return hiveHelper.createComment(targetDid, channelId, postId, refcommentId, content)
   }
 
-  /**
-    * Comment 更新评论
+  /** Comment
+    * 更新评论
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -346,8 +366,8 @@ export class HiveApi {
     return hiveHelper.updateComment(targetDid, channelId, postId, commentId, content)
   }
 
-  /**
-    * Comment 删除评论
+  /** Comment
+    * 删除评论
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -360,8 +380,8 @@ export class HiveApi {
     return hiveHelper.deleteComment(targetDid, channelId, postId, commentId)
   }
 
-  /**
-    * Comment 查询指定postId下的所有评论
+  /** Comment
+    * 查询指定postId下的所有评论
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -373,8 +393,8 @@ export class HiveApi {
     return hiveHelper.queryCommentByPostId(targetDid, channelId, postId)
   }
 
-  /**
-    * Comment 查询指定postId且指定commentId下的所有评论
+  /** Comment
+    * 查询指定postId且指定commentId下的所有评论
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -387,8 +407,8 @@ export class HiveApi {
     return hiveHelper.queryCommentByID(targetDid, channelId, postId, commentId)
   }
 
-  /**
-    * Comment 查询指定channelId下的所有评论
+  /** Comment
+    * 查询指定channelId下的所有评论
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -399,8 +419,8 @@ export class HiveApi {
     return hiveHelper.queryCommentByChannel(targetDid, channelId)
   }
 
-  /**
-    * Comment 查询指定post下且指定时间段内的所有评论
+  /** Comment
+    * 查询指定post下且指定时间段内的所有评论
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -414,8 +434,8 @@ export class HiveApi {
     return hiveHelper.queryCommentRangeOfTimeScripting(targetDid, channelId, postId, star, end)
   }
 
-  /**
-    * Like 查询指定channelId下所有的点赞
+  /** Like
+    * 查询指定channelId下所有的点赞
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -426,8 +446,8 @@ export class HiveApi {
     return hiveHelper.queryLikeByChannel(targetDid, channelId)
   }
 
-  /**
-    * Like 查询指定commentId下所有的点赞
+  /** Like
+    * 查询指定commentId下所有的点赞
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -440,7 +460,7 @@ export class HiveApi {
     return hiveHelper.queryLikeById(targetDid, channelId, postId, commentId)
   }
 
-  /**
+  /** Like
     * Like 
     * TODO: 待定
     * 
@@ -450,8 +470,8 @@ export class HiveApi {
     return hiveHelper.queryLikeById(targetDid, channelId, postId, commentId)
   }
 
-  /**
-    * Like 查询指定postId下所有的点赞
+  /** Like
+    * 查询指定postId下所有的点赞
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -463,8 +483,8 @@ export class HiveApi {
     return hiveHelper.queryLikeByPost(targetDid, channelId, postId)
   }
 
-  /**
-    * like 查询指定channel下且指定时间段内的所有评论
+  /** Like
+    * 查询指定channel下且指定时间段内的所有评论
     *
     * @param targetDid: channel的持有者
     * @param channelId: channel的id
@@ -478,8 +498,8 @@ export class HiveApi {
     return hiveHelper.queryLikeRangeOfTimeScripting(targetDid, channelId, postId, star, end)
   }
 
-  /**
-    * like 点赞
+  /** Like
+    * 点赞
     *
     * @param targetDid: channel的持有者
     * @param likeId: like的id： 生成规则：SHA256(postId + commentId + userDid) 
@@ -493,8 +513,8 @@ export class HiveApi {
     return hiveHelper.addLike(targetDid, likeId, channelId, postId, commentId)
   }
 
-  /**
-    * like 取消点赞
+  /** Like
+    * 取消点赞
     *
     * @param targetDid: channel的持有者
     * @param channelId: 指定channel的id 
@@ -507,8 +527,8 @@ export class HiveApi {
     return hiveHelper.removeLike(targetDid, channelId, postId, commentId)
   }
 
-  /**
-    * like 更新点赞
+  /** Like
+    * 更新点赞
     *
     * @param targetDid: channel的持有者
     * @param likeId: 指定点赞的id 
@@ -522,8 +542,8 @@ export class HiveApi {
     return hiveHelper.updateLike(targetDid, likeId, status)
   }
 
-  /**
-    * download 通过avatarHiveURL下载Esential的avatar
+  /** download
+    * 通过avatarHiveURL下载Esential的avatar
     *
     * @param targetDid: channel的持有者
     * @param avatarHiveURL: vatar的url
@@ -534,8 +554,8 @@ export class HiveApi {
     return hiveHelper.downloadScripting(targetDid, avatarHiveURL)
   }
 
-  /**
-    * download 通过avatarHiveURL下载Feeds自定义的avatar
+  /** download
+    * 通过avatarHiveURL下载Feeds自定义的avatar
     *
     * @param remoteHiveUrlPath: vatar的url
     * @return data buffer
@@ -545,8 +565,8 @@ export class HiveApi {
     return hiveHelper.downloadFile(remoteHiveUrlPath)
   }
 
-  /**
-    * parse 解析Esential的avatar
+  /** parse
+    * 解析Esential的avatar
     *
     * @param userDid: 用户did
     * @return {
@@ -561,8 +581,8 @@ export class HiveApi {
     return hiveHelper.parseDidDocumentAvatar(userDid)
   }
 
-  /**
-    * download 下载Esential的avatar
+  /** download
+    * 下载Esential的avatar
     *
     * @param avatarParam: avatarParam
     * @param avatarScriptName: avatarScriptName
@@ -575,8 +595,8 @@ export class HiveApi {
     return hiveHelper.downloadEssAvatar(avatarParam, avatarScriptName, tarDID, tarAppDID)
   }
 
-  /**
-    * MediaData 更新MediaData
+  /** MediaData
+    * 更新MediaData
     *
     * @param data: base64 string
     * @return 上传MediaData结果:  scriptName(data打hash) + "@" + remoteName('feeds/data/' + hash)
@@ -586,8 +606,8 @@ export class HiveApi {
     return hiveHelper.uploadMediaDataWithString(data)
   }
 
-  /**
-    * MediaData 上传MediaData
+  /** MediaData
+    * 上传MediaData
     *
     * @param data: data buffer
     * @return 上传MediaData结果:  scriptName(data打hash) + "@" + remoteName('feeds/data/' + hash)
@@ -627,7 +647,7 @@ export class HiveApi {
     return hiveHelper.querySelfPostsByChannel(channelId)
   }
 
-  /**
+  /** DisplayName
     * 查询指定userDid的DisplayName
     *
     * @param targetDid: channel的持有者
@@ -640,7 +660,7 @@ export class HiveApi {
     return hiveHelper.queryUserDisplayName(targetDid, channelId, userDid)
   }
 
-  /**
+  /** Subscription
     * 查询指定channel下所有的订阅者
     *
     * @param targetDid: channel的持有者
@@ -652,7 +672,7 @@ export class HiveApi {
     return hiveHelper.querySubscriptionInfoByChannelId(targetDid, channelId)
   }
 
-  /**
+  /** login hive
     * 登录hive
     *
   */
@@ -719,7 +739,7 @@ export class HiveApi {
     return hiveHelper.querySelfLikeById(targetDid, channelId, likeId)
   }
 
-  /** query
+  /** query public
     * 查询指定postId的public post
     *
     * @param targetDid: channel的持有者
@@ -732,7 +752,7 @@ export class HiveApi {
     return hiveHelper.queryPublicPostById(targetDid, channelId, postId)
   }
 
-  /** query
+  /** query public
     * 查询public post
     *
     * @param targetDid: channel的持有者
@@ -744,7 +764,7 @@ export class HiveApi {
     return hiveHelper.queryPublicPostByChannelId(targetDid, channelId)
   }
 
-  /** query
+  /** query public
     * 查询指定时间段的public post
     *
     * @param targetDid: channel的持有者
