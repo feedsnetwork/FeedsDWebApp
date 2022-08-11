@@ -4,6 +4,7 @@ import { utils } from 'src/services/utils'
 import SparkMD5 from 'spark-md5'
 import { HiveData } from 'src/services/HiveData'
 
+import { ApplicationDID } from '../config'
 const TAG = 'HiveHelper'
 
 
@@ -1885,7 +1886,7 @@ export class HiveHelper {
             try {
                 // TODO: Config appid
                 // const appid = Config.APPLICATION_DID
-                const appid = ""
+                const appid = ApplicationDID
                 // Logger.log(TAG, 'Call script params is targetDid:', targetDid, 'scriptName:', scriptName, 'params:', params)
                 let result = await hiveService.callScript(scriptName, params, targetDid, appid)
                 // Logger.log('Call script result is', result)

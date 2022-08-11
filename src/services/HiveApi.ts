@@ -101,35 +101,136 @@ export class HiveApi {
     return hiveHelper.createChannel(channelName, intro, avatarAddress, tippingAddress, type, nft, memo, category, proof)
   }
 
+  /**
+    * 更新channel信息
+    *
+    * @param channelId: 需要更新的channelId
+    * @param newName: 新的channel名字
+    * @param newIntro: 新的channel介绍
+    * @param newAvatar: 新的channel 头像
+    * @param newType: 新的channel type
+    * @param newMemo: 新的channel memo
+    * @param newTippingAddress: 新的channel TippingAddress
+    * @param newNft: 新的channel Nft
+
+    * @return 更新channel的结果
+    * @throws HiveError
+  */
   updateChannel(channelId: string, newName: string, newIntro: string, newAvatar: string, newType: string, newMemo: string,
     newTippingAddress: string, newNft: string) {
     return hiveHelper.updateChannel(channelId, newName, newIntro, newAvatar, newType, newMemo, newTippingAddress, newNft)
   }
 
+  /**
+    * 查询channel信息
+    *
+    * @param targetDid: channel的持有者的did
+    * @param channelId: channel的id
+    * @return channel的信息
+    * @throws HiveError
+  */
   queryChannelInfo(targetDid: string, channelId: string): Promise<any> {
     return hiveHelper.queryChannelInfo(targetDid, channelId)
   }
 
-  /** Post */
+  /**
+    * 发布post
+    *
+    * @param channelId: 发布的post在哪个channel下
+    * @param tag: post的tag
+    * @param content: post的内容
+    * @param type: post的type
+    * @param status: post的状态: 
+    *   available: 0,
+        deleted: 1,
+        edited: 2,
+        sending: 11,
+        error: 12,
+    * @param memo: post的 memo
+    * @param proof: post的proof
+    * @return 发布成功后返回post信息{
+      targetDid: xxx,
+      postId: xxx, 
+      createdAt: xxx,
+      updatedAt: xxx
+    }
+    * @throws HiveError
+  */
   publishPost(channelId: string, tag: string, content: string, type: string = 'public', status: number = HiveData.PostCommentStatus.available, memo: string, proof: string): Promise<{ targetDid: string, postId: string, createdAt: number, updatedAt: number }> {
     return hiveHelper.publishPost(channelId, tag, content, type, status, memo, proof)
   }
 
+  /**
+    * 更新post
+    *
+    * @param postId: 需要修改的post的id
+    * @param channelId: post属于哪个channel
+    * @param newType: post的新type
+    * @param newTag: post的新tag
+    * @param newContent: post的新内容
+    * @param newStatus: post的新的statu: 
+    *   available: 0,
+        deleted: 1,
+        edited: 2,
+        sending: 11,
+        error: 12,
+    * @param newUpdateAt: post的更新时间
+    * @param newMemo: post的新的memo
+    * @param newProof: post的新的proof
+    * @return 更新成功信息
+    * @throws HiveError
+  */
   updatePost(postId: string, channelId: string, newType: string, newTag: string, newContent: string, newStatus: number, newUpdateAt: number, newMemo: string, newProof: string) {
     return hiveHelper.updatePost(postId, channelId, newType, newTag, newContent, newStatus, newUpdateAt, newMemo, newProof)
   }
 
+  /**
+    * 删除post
+    *
+    * @param postId: 需要删除的post的id
+    * @param channelId: post属于哪个channel
+    * @return 删除成功信息
+    * @throws HiveError
+  */
   deletePost(postId: string, channelId: string): Promise<{ updatedAt: number, status: number }> {
     return hiveHelper.deletePost(postId, channelId)
   }
 
+  /**
+    * 查询指定channel下的所有post
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: post属于哪个channel
+    * @return channel下所有的post
+    * @throws HiveError
+  */
   queryPostByChannelId(targetDid: string, channelId: string) {
     return hiveHelper.queryPostByChannelId(targetDid, channelId)
   }
 
+  /**
+    * 查询指定targetDid且指定时间段下的所有post
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: post属于哪个channel
+    * @param star: 查询post的开始时间
+    * @param end: 查询post的结束时间
+    * @return 指定之间段的所有post
+    * @throws HiveError
+  */
   queryPostByRangeOfTime(targetDid: string, channelId: string, star: number, end: number) {
     return hiveHelper.queryPostRangeOfTimeScripting(targetDid, channelId, star, end)
   }
+
+  /**
+    * 查询指定post
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: post属于哪个channel
+    * @param postId: 查询的post的id
+    * @return post信息
+    * @throws HiveError
+  */
   queryPostById(targetDid: string, channelId: string, postId: string) {
     return hiveHelper.queryPostById(targetDid, channelId, postId)
   }
