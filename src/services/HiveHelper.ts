@@ -12,14 +12,14 @@ const userDid_local = `did:elastos:${feedsDid}`
 const hiveService = new HiveService()
 
 export class HiveHelper {
-    public static readonly TABLE_FEEDS_SCRIPTING = "feeds_scripting"
+    public static readonly TABLE_FEEDS_SCRIPTING = "feeds_scripting" // 存储feeds信息：版本号等
 
-    public static readonly TABLE_CHANNELS = "channels"
-    public static readonly TABLE_POSTS = "posts"
-    public static readonly TABLE_SUBSCRIPTIONS = "subscriptions"
-    public static readonly TABLE_COMMENTS = "comments"
-    public static readonly TABLE_LIKES = "likes"
-    public static readonly TABLE_BACKUP_SUBSCRIBEDCHANNEL = "backup_subscribed_channel"
+    public static readonly TABLE_CHANNELS = "channels" // 存储所有的channle 信息，已订阅者可以访问，仅自己写入
+    public static readonly TABLE_POSTS = "posts" // 存储所有的post: 已订阅者可以访问，仅自己写入
+    public static readonly TABLE_SUBSCRIPTIONS = "subscriptions" // 存储所有的订阅者的信息，订阅者可写入
+    public static readonly TABLE_COMMENTS = "comments" // 存储所有的评论， 订阅者可写入
+    public static readonly TABLE_LIKES = "likes" // 存储所有的like，订阅者可写入
+    public static readonly TABLE_BACKUP_SUBSCRIBEDCHANNEL = "backup_subscribed_channel" // 存储备份，仅自己写入
 
     public static readonly SCRIPT_SPECIFIED_POST = "script_specified_post_name"
     public static readonly SCRIPT_SOMETIME_POST = "script_sometime_post_name"

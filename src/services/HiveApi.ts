@@ -7,30 +7,92 @@ const hiveHelper = new HiveHelper()
 export class HiveApi {
   constructor() { }
 
+  /**
+    * 注册所有的脚本： 
+    * channel、post、Public post、subscription、comment、like、DisplayName
+  */
   registeScripting(): Promise<string> {
     return hiveHelper.registeScripting()
   }
 
+  /**
+    * 创建存储feeds版本号等信息的表格
+    *
+    * @param lasterVersion: 最新的feeds版本号
+    * @param preVersion: feeds前一个版本
+    * @param registScripting: 是否已经注册了脚本，默认值=false
+    * @return 最新的feeds存储信息: 
+    *         {"laster_version": 2.1.1,
+              "pre_version": 2.1.0,
+              "regist_scripting": true}
+    * @throws HiveError
+  */
   createFeedsScripting(lasterVersion: string, preVersion: string, registScripting: boolean = false): Promise<string> {
     return hiveHelper.createFeedsScripting(lasterVersion, preVersion, registScripting)
   }
 
+  /**
+    * 更新feeds版本号等信息
+    *
+    * @param lasterVersion: 最新的feeds版本号
+    * @param preVersion: feeds前一个版本
+    * @param registScripting: 是否已经注册了脚本，默认值=false
+    * @return 最新的feeds存储信息: 
+    *         {"laster_version": 2.1.1,
+              "pre_version": 2.1.0,
+              "regist_scripting": true}
+    * @throws HiveError
+  */
   updateFeedsScripting(lasterVersion: string, preVersion: string, registScripting: boolean = false) {
     return hiveHelper.updateFeedsScripting(lasterVersion, preVersion, registScripting)
   }
 
+  /**
+    * 查询feeds版本号等信息
+    *
+    * @return 返回服务器存储的的feeds信息: 
+    *         {"laster_version": 2.1.1,
+              "pre_version": 2.1.0,
+              "regist_scripting": true}
+    * @throws HiveError
+  */
   queryFeedsScripting(): Promise<any> {
     return hiveHelper.queryFeedsScripting()
   }
 
+  /**
+    * 创建所有的collection：
+    *
+    * @return true：所有collection创建成功，返回true，否则抛出异常: 
+    *       feeds_scripting: 存储feeds信息：版本号等
+            channels: 存储所有的channle 信息，已订阅者可以访问，仅自己写入
+            posts: 存储所有的post: 已订阅者可以访问，仅自己写入
+            subscriptions: 存储所有的订阅者的信息，订阅者可写入
+            comments: 存储所有的评论， 订阅者可写入
+            likes: 存储所有的like，订阅者可写入
+            backup_subscribed_channel: 存储备份，仅自己写入
+    * @throws HiveError
+  */
   createAllCollections(): Promise<string> {
     return hiveHelper.createAllCollections()
   }
 
+  /**
+    * 删除指定的collection：
+    * @param collectionName: 要删除的collection name
+    * @return void：删除collection成功，否则抛出异常
+    * @throws HiveError
+  */
   deleteCollection(collectionName: string): Promise<void> {
     return hiveHelper.deleteCollection(collectionName)
   }
 
+  /**
+    * 删除所有的的collection：
+    * @param collectionName: 要删除的collection name
+    * @return true：删除所有的collection成功，返回true，否则抛出异常 
+    * @throws HiveError
+  */
   deleteAllCollections(): Promise<string> {
     return hiveHelper.deleteAllCollections()
   }
