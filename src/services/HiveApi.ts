@@ -312,31 +312,104 @@ export class HiveApi {
     return hiveHelper.querySubscriptionByUserDIDAndChannelId(targetDid, userDid, channelId)
   }
 
-  /** Comment */
+  /**
+    * Comment 添加评论
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param postId: 添加评论的post的id
+    * @param refcommentId: 回复的评论的评论id, 如果是post下的新评论refcommentId为0
+    * @param content: 评论内容
+    * @return 评论成功后返回：
+    *         {commentId: xxx, 
+    *         createrDid: xxx, 
+    *         createdAt: xxx}
+    * @throws HiveError
+  */
   createComment(targetDid: string, channelId: string, postId: string, refcommentId: string, content: string): Promise<{ commentId: string, createrDid: string, createdAt: number }> {
     return hiveHelper.createComment(targetDid, channelId, postId, refcommentId, content)
   }
 
+  /**
+    * Comment 更新评论
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param postId: 评论的post的id
+    * @param commentId: 评论id
+    * @param content: 评论内容
+    * @return 评论成功后返回：
+    *         {updatedAt: xxx}
+    * @throws HiveError
+  */
   updateComment(targetDid: string, channelId: string, postId: string, commentId: string, content: string): Promise<{ updatedAt: number }> {
     return hiveHelper.updateComment(targetDid, channelId, postId, commentId, content)
   }
 
+  /**
+    * Comment 删除评论
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param postId: 评论的post的id
+    * @param commentId: 需要删除的评论id
+    * @return 删除成功信息
+    * @throws HiveError
+  */
   deleteComment(targetDid: string, channelId: string, postId: string, commentId: string): Promise<any> {
     return hiveHelper.deleteComment(targetDid, channelId, postId, commentId)
   }
 
+  /**
+    * Comment 查询指定postId下的所有评论
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param postId: 评论的post的id
+    * @return 满足条件下所有的评论
+    * @throws HiveError
+  */
   queryCommentByPostId(targetDid: string, channelId: string, postId: string) {
     return hiveHelper.queryCommentByPostId(targetDid, channelId, postId)
   }
 
+  /**
+    * Comment 查询指定postId且指定commentId下的所有评论
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param postId: 指定评论的post的id
+    * @param commentId: 指定评论的id 
+    * @return 满足条件下所有的评论
+    * @throws HiveError
+  */
   queryCommentByID(targetDid: string, channelId: string, postId: string, commentId: string): Promise<any> {
     return hiveHelper.queryCommentByID(targetDid, channelId, postId, commentId)
   }
 
+  /**
+    * Comment 查询指定channelId下的所有评论
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @return 满足条件下所有的评论
+    * @throws HiveError
+  */
   queryCommentByChannel(targetDid: string, channelId: string) {
     return hiveHelper.queryCommentByChannel(targetDid, channelId)
   }
 
+  /**
+    * Comment 查询指定post下且指定时间段内的所有评论
+    *
+    * @param targetDid: channel的持有者
+    * @param channelId: channel的id
+    * @param postId: 指定评论的post的id
+    * @param star: 指定评论的开始时间
+    * @param end: 指定评论的结束时间
+    * @return 满足条件下所有的评论
+    * @throws HiveError
+  */
   queryCommentByRangeOfTime(targetDid: string, channelId: string, postId: string, star: number, end: number) {
     return hiveHelper.queryCommentRangeOfTimeScripting(targetDid, channelId, postId, star, end)
   }
