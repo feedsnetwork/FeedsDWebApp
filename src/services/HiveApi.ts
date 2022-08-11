@@ -599,7 +599,7 @@ export class HiveApi {
     * 更新MediaData
     *
     * @param data: base64 string
-    * @return 上传MediaData结果:  scriptName(data打hash) + "@" + remoteName('feeds/data/' + hash)
+    * @return 上传MediaData结果:  scriptName(data的hash) + "@" + remoteName('feeds/data/' + hash)
     * @throws HiveError
   */
   uploadMediaDataWithString(data: string): Promise<string> {
