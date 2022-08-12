@@ -46,9 +46,10 @@
     "web-vitals": "2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "eject": "react-scripts eject"
+    "git-info": "node src/utils/gitInfo.js",
+    "start": "npm run git-info && react-scripts start",
+    "build": "npm run git-info && react-scripts build",
+    "eject": "npm run git-info && react-scripts eject"
   },
   "browserslist": {
     "production": [

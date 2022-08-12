@@ -1,4 +1,5 @@
 import { Box, Container, Link, Typography, styled } from '@mui/material';
+import generatedGitInfo from 'src/generatedGitInfo.json';
 
 const FooterWrapper = styled(Container)(
   ({ theme }) => `
@@ -17,8 +18,8 @@ function Footer() {
         justifyContent="space-between"
       >
         <Box>
-          <Typography variant="subtitle1">
-            ⚡ Powered by Elastos
+          <Typography variant="body1">
+            <strong>⚡ Powered by Elastos</strong> v1 - {generatedGitInfo.gitCommitHash}
           </Typography>
         </Box>
       </Box>

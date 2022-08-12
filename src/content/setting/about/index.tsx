@@ -1,7 +1,5 @@
 import { Box, Typography, Stack, Card, Input, Divider, IconButton, Grid, styled } from '@mui/material';
-
-import StyledButton from 'src/components/StyledButton';
-import StyledAvatar from 'src/components/StyledAvatar';
+import generatedGitInfo from 'src/generatedGitInfo.json';
 
 const aboutData = [
   {title: 'Website', value: 'https://feedsnetwork.io'},
@@ -9,7 +7,7 @@ const aboutData = [
   {title: 'Telegram', value: 'https://t.me/feedscapsule'},
   {title: 'Disclaimer', value: 'https://trinity-feeds.app/disclaimer'},
   {title: 'Version', value: 'v3.0.1'},
-  {title: 'Commit ID', value: '08d4ee01'},
+  {title: 'Commit ID', value: generatedGitInfo.gitCommitHash},
 ]
 const About = (props)=>{
   return (
