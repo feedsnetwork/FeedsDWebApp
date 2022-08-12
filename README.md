@@ -1,1 +1,1 @@
-# Feeeds Decentralized web application
+# Feeeds - A Decentralized web social platform
