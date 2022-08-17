@@ -6,16 +6,19 @@ import LocalizationProvider from '@mui/lab/LocalizationProvider';
 
 import { CssBaseline } from '@mui/material';
 import ThemeProvider from './theme/ThemeProvider';
+import NotistackProvider from './components/NotistackProvider';
 
 function App() {
   const content = useRoutes(router);
 
   return (
     <ThemeProvider>
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <CssBaseline />
-        {content}
-      </LocalizationProvider>
+      <NotistackProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <CssBaseline />
+          {content}
+        </LocalizationProvider>
+      </NotistackProvider>
     </ThemeProvider>
   );
 }

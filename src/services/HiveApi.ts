@@ -117,7 +117,7 @@ export class HiveApi {
                 }
      * @throws HiveError
    */
-  createChannel(channelName: string, intro: string, avatarAddress: string, tippingAddress: string = '', type: string = 'public', nft: string = '', memo: string, category: string = '', proof: string = ''): Promise<any> {
+  createChannel(channelName: string, intro: string, avatarAddress: string, tippingAddress: string = '', type: string = 'public', nft: string = '', memo: string = '', category: string = '', proof: string = ''): Promise<any> {
     return hiveHelper.createChannel(channelName, intro, avatarAddress, tippingAddress, type, nft, memo, category, proof)
   }
 
