@@ -8,9 +8,6 @@ let didResolverUrl = "https://api.trinity-tech.io/eid"
 
 let scriptRunners = {}
 
-const feedsDid = sessionStorage.getItem('FEEDS_DID')
-const userDid = `did:elastos:${feedsDid}`
-
 export class HiveService {
   private static readonly RESOLVE_CACHE = '/data/userDir/data/store/catch'
 
@@ -90,12 +87,12 @@ export class HiveService {
 
   async createVault() {
     try {
-      // TODO: 更改为feeds_did 
+      const feedsDid = sessionStorage.getItem('FEEDS_DID')
+      const userDid = `did:elastos:${feedsDid}`      
       const appinstanceDocument = await getAppInstanceDIDDoc()
       const context = await this.creatAppContext(appinstanceDocument, userDid)
       // const context = await getAppContext(userDid)
       const hiveVault = new Vault(context)
-
       const scriptRunner = await this.creatScriptRunner(userDid)
       if (scriptRunners === undefined) {
         scriptRunners = {}
@@ -252,6 +249,9 @@ export class HiveService {
   }
 
   async uploadScriting(transactionId: string, data: string) {
+    const feedsDid = sessionStorage.getItem('FEEDS_DID')
+    const userDid = `did:elastos:${feedsDid}`
+
     const scriptRunner = await this.getScriptRunner(userDid)
     return scriptRunner.uploadFile(transactionId, data)
   }
@@ -261,6 +261,9 @@ export class HiveService {
       if (avatarParam === null || avatarParam === undefined) {
         return
       }
+      const feedsDid = sessionStorage.getItem('FEEDS_DID')
+      const userDid = `did:elastos:${feedsDid}`
+
       const scriptRunner = await this.getScriptRunner(userDid)
       return await scriptRunner.callScript<any>(avatarScriptName, avatarParam, tarDID, tarAppDID)
     } catch (error) {

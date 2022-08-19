@@ -297,11 +297,11 @@ export class HiveHelper {
             }
 
             try {
-                const insertResult = hiveService.insertDBData(HiveHelper.TABLE_CHANNELS, doc)
-                // // Logger.log(TAG, 'Insert channel db result', insertResult)
+                const insertResult = await hiveService.insertDBData(HiveHelper.TABLE_CHANNELS, doc)
+                console.log('Insert channel db result', insertResult)
                 resolve(doc)
             } catch (error) {
-                // // Logger.error(TAG, 'Insert channel db error', error)
+                console.error('Insert channel db error', error)
                 reject(this.handleError(error))
             }
         })
@@ -317,6 +317,7 @@ export class HiveHelper {
 
                 // TODO : signinDid / createdAt / updatedAt / channelId
                 let result = await this.insertDataToChannelDB(channelId.toString(), channelName, intro, avatarAddress, memo, createdAt, updatedAt, type, tippingAddress, nft, category, proof)
+                console.log("insertChannelData result", result)
                 if (result) {
                     const insertResult = {
                         destDid: signinDid,
@@ -329,6 +330,7 @@ export class HiveHelper {
                 else
                     reject('Insert channel data error')
             } catch (error) {
+                console.log("insertChannelData error: ", error)
                 // // Logger.error(TAG, "insertChannelData error", error) 
                 reject(error)
             }
@@ -1934,10 +1936,12 @@ export class HiveHelper {
         return new Promise(async (resolve, reject) => {
             try {
                 const filter = {}
+                console.log("queryChannelsFromDB ====== 开始")
                 const result = await hiveService.queryDBData(HiveHelper.TABLE_CHANNELS, filter)
+                console.log("queryChannelsFromDB ====== 结束")
                 resolve(result)
             } catch (error) {
-                // Logger.error(TAG, 'Query channels from DB', error)
+                console.log("queryChannelsFromDB ====== 错误： ", error)
                 reject(this.handleError(error))
             }
         })
