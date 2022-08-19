@@ -14,9 +14,8 @@ import StyledButton from 'src/components/StyledButton';
 import { essentialsConnector, initConnectivitySDK, isUsingEssentialsConnector } from '../EssentialConnectivity';
 import { isInAppBrowser } from 'src/utils/common'
 import { DidResolverUrl } from 'src/config';
-import { HiveApi } from 'src/services/HiveApi';
+import { useGlobalState } from 'src/global/store'
 
-const hiveApi = new HiveApi()
 const LinearProgressWrapper = styled(LinearProgress)(
   ({ theme }) => `
       flex-grow: 1;
@@ -38,6 +37,8 @@ function Hero() {
   const [authProgress, setAuthProgress] = React.useState(0)
   const [activatingConnector, setActivatingConnector] = React.useState(null);
   const [walletAddress, setWalletAddress] = React.useState(null);
+  const [hiveApi, updateAction] = useGlobalState("hiveApi");
+
   let sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
 
   const initializeWalletConnection = React.useCallback(async () => {
@@ -121,8 +122,8 @@ function Hero() {
           canManageAdmins: false
         };
         // succeed
-        const token = jwt.sign(user, 'pasar', { expiresIn: 60 * 60 * 24 * 7 });
-        // sessionStorage.setItem('PASAR_TOKEN', token);
+        const token = jwt.sign(user, 'feeds', { expiresIn: 60 * 60 * 24 * 7 });
+        // sessionStorage.setItem('FEEDS_TOKEN', token);
         sessionStorage.setItem('FEEDS_DID', did);
         sessionLinkFlag = '2';
         sessionStorage.setItem('FEEDS_LINK', '1');

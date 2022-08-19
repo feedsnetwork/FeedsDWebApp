@@ -5,9 +5,7 @@ import { Icon } from '@iconify/react';
 import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled } from '@mui/material';
 
 import StyledButton from 'src/components/StyledButton';
-import { HiveApi } from 'src/services/HiveApi';
-
-const hiveApi = new HiveApi()
+import { useGlobalState } from 'src/global/store'
 
 const AvatarWrapper = styled(Box)(
   ({ theme }) => `
@@ -52,6 +50,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const nameRef = useRef(null)
   const descriptionRef = useRef(null)
   const tippingRef = useRef(null)
+  const [hiveApi, updateAction] = useGlobalState("hiveApi");
   const { enqueueSnackbar } = useSnackbar();
   
   const handleFileChange = event => {

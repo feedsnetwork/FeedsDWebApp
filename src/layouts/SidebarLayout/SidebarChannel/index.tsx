@@ -1,4 +1,4 @@
-import { useState, useContext, useRef } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import AddIcon from '@mui/icons-material/Add';
@@ -11,6 +11,7 @@ import ChannelAvatar from 'src/components/ChannelAvatar'
 import StyledButton from 'src/components/StyledButton'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
+import { useGlobalState } from 'src/global/store'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -115,9 +116,20 @@ function SidebarChannel() {
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
+  const [hiveApi, updateAction] = useGlobalState("hiveApi");
 
   const tempChannels = [{name: 'MMA'}, {name: 'DAO'}, {name: 'LEM'}]
   
+  useEffect(()=>{
+    hiveApi.querySelfChannels()
+      .then(res=>{
+        console.log(res)
+      })
+      .catch(err=>{
+        console.log(err)
+      })
+  }, [])
+
   const handleClickChannel = (item)=>{
     setFocusChannel(item); 
     setPageType('CurrentChannel')
@@ -149,7 +161,8 @@ function SidebarChannel() {
           borderStyle: 'solid',
         },
     }
-};
+  };
+  
   return (
     <>
       <SidebarWrapper
