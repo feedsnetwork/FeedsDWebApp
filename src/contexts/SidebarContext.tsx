@@ -3,10 +3,12 @@ type SidebarContext = {
   sidebarToggle: any;
   focusedChannel: any;
   selectedChannel: any;
+  walletAddress: any;
   toggleSidebar: () => void;
   closeSidebar: () => void;
   setFocusChannel: Dispatch<any>;
   setSelectChannel: Dispatch<any>;
+  setWalletAddress: Dispatch<any>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -18,6 +20,7 @@ export const SidebarProvider: FC = ({ children }) => {
   const [sidebarToggle, setSidebarToggle] = useState(false);
   const [focusedChannel, setFocusChannel] = useState(null);
   const [selectedChannel, setSelectChannel] = useState(null);
+  const [walletAddress, setWalletAddress] = useState(null);
 
   const toggleSidebar = () => {
     setSidebarToggle(!sidebarToggle);
@@ -31,11 +34,13 @@ export const SidebarProvider: FC = ({ children }) => {
       value={{ 
         sidebarToggle, 
         focusedChannel, 
-        selectedChannel, 
+        selectedChannel,
+        walletAddress,
         toggleSidebar, 
         closeSidebar, 
         setFocusChannel, 
-        setSelectChannel 
+        setSelectChannel,
+        setWalletAddress
       }}
     >
       {children}

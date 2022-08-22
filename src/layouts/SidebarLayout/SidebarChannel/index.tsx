@@ -11,7 +11,7 @@ import ChannelAvatar from 'src/components/ChannelAvatar'
 import StyledButton from 'src/components/StyledButton'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
-import { useGlobalState } from 'src/global/store'
+import { HiveApi } from 'src/services/HiveApi'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -107,6 +107,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
   },
 }));
 function SidebarChannel() {
+  const [selfChannels, setSelfChannels] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
   const [popoverChannel, setPopoverChannel] = useState({});
@@ -116,14 +117,13 @@ function SidebarChannel() {
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
-  const [hiveApi, updateAction] = useGlobalState("hiveApi");
-
-  const tempChannels = [{name: 'MMA'}, {name: 'DAO'}, {name: 'LEM'}]
+  const hiveApi = new HiveApi()
   
   useEffect(()=>{
     hiveApi.querySelfChannels()
       .then(res=>{
-        console.log(res)
+        if(Array.isArray(res))
+          setSelfChannels(res)
       })
       .catch(err=>{
         console.log(err)
@@ -185,11 +185,11 @@ function SidebarChannel() {
             />
             <Stack spacing={2} mt={2} alignItems='center'>
               {
-                tempChannels.map((item, _i)=>
+                selfChannels.map((item, _i)=>
                   <ChannelAvatar 
                     key={_i} 
                     alt={item.name} 
-                    src='/static/images/avatars/2.jpg' 
+                    src={`data:image/png;base64,${item.avatar}`}
                     onClick={(e)=>{handleClickChannel(item)}} 
                     onRightClick={(e)=>{handleRightClickChannel(e, item)}} 
                     focused={focusedChannel&&focusedChannel.name===item.name}/>

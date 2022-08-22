@@ -1188,7 +1188,7 @@
     svelte-i18n "^3.3.6"
     web3-core "^1.6.1"
 
-"@elastosfoundation/essentials-connector-client-browser@^1.0.37":
+"@elastosfoundation/essentials-connector-client-browser@1.0.41":
   version "1.0.41"
   resolved "https://registry.yarnpkg.com/@elastosfoundation/essentials-connector-client-browser/-/essentials-connector-client-browser-1.0.41.tgz#203e4dbc72b0fc3b101489255b469540c09935f1"
   integrity sha512-X8e1ZImID08APjxmoWSQBf/gX3ubswsBOAG4q3EGQ1yCEngrRr0lMi1V5wTeYtLDurNJOcn5tbh/TlJqGJMdlQ==
@@ -1202,7 +1202,7 @@
     web3 "^1.6.1"
     web3-core "^1.6.1"
 
-"@elastosfoundation/hive-js-sdk@^2.8.1":
+"@elastosfoundation/hive-js-sdk@^2.7.4":
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/@elastosfoundation/hive-js-sdk/-/hive-js-sdk-2.8.1.tgz#5e81539a1d2558edb2e13ce483e7b5f433f86653"
   integrity sha512-WSHjoblBqrRZ6cDmPQQ0+4MrgIN+5jgBJsYqKMobMBfDQdp4EOy0PPxw0bTheu6jNt5mml8I/kcr3BUtx3ob5g==

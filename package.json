@@ -11,8 +11,8 @@
   "dependencies": {
     "@elastosfoundation/did-js-sdk": "^2.2.9",
     "@elastosfoundation/elastos-connectivity-sdk-js": "^1.0.23",
-    "@elastosfoundation/essentials-connector-client-browser": "^1.0.37",
-    "@elastosfoundation/hive-js-sdk": "^2.8.1",
+    "@elastosfoundation/essentials-connector-client-browser": "1.0.41",
+    "@elastosfoundation/hive-js-sdk": "^2.7.4",
     "@emotion/react": "11.9.0",
     "@emotion/styled": "11.8.1",
     "@ethersproject/providers": "^5.5.2",

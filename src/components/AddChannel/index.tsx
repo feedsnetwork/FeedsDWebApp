@@ -6,6 +6,7 @@ import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled } from '@
 
 import StyledButton from 'src/components/StyledButton';
 import { useGlobalState } from 'src/global/store'
+import { HiveApi } from 'src/services/HiveApi'
 
 const AvatarWrapper = styled(Box)(
   ({ theme }) => `
@@ -50,7 +51,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const nameRef = useRef(null)
   const descriptionRef = useRef(null)
   const tippingRef = useRef(null)
-  const [hiveApi, updateAction] = useGlobalState("hiveApi");
+  const hiveApi = new HiveApi()
   const { enqueueSnackbar } = useSnackbar();
   
   const handleFileChange = event => {

@@ -1,4 +1,4 @@
-import { FC, ReactNode, useContext } from 'react';
+import { FC, ReactNode, useEffect, useContext, useCallback } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
 import { Box, alpha, lighten, useTheme, Hidden, Card, Stack, Input, Typography, Grid, styled, IconButton, Button } from '@mui/material';
@@ -8,14 +8,25 @@ import SidebarChannel from './SidebarChannel';
 import RightPanel from './RightPanel';
 import Header from './Header';
 import FloatingHeader from './FloatingHeader'
+import { essentialsConnector, initConnectivitySDK } from 'src/content/signin/EssentialConnectivity';
 import AddChannel from 'src/components/AddChannel';
+import { HiveApi } from 'src/services/HiveApi'
 import { OverPageContext } from 'src/contexts/OverPageContext';
+import { SidebarContext } from 'src/contexts/SidebarContext';
+import { isInAppBrowser } from 'src/utils/common'
 
 interface SidebarLayoutProps {
   children?: ReactNode;
 }
 
 const SidebarLayout: FC<SidebarLayoutProps> = () => {
+  const hiveApi = new HiveApi()
+  const {setWalletAddress} = useContext(SidebarContext);
+  let sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
+  if (sessionLinkFlag === '1') {
+    initConnectivitySDK()
+  }
+
   const { pageType } = useContext(OverPageContext);
   const { pathname } = useLocation();
   const theme = useTheme();

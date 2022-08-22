@@ -14,7 +14,9 @@ import StyledButton from 'src/components/StyledButton';
 import { essentialsConnector, initConnectivitySDK, isUsingEssentialsConnector } from '../EssentialConnectivity';
 import { isInAppBrowser } from 'src/utils/common'
 import { DidResolverUrl } from 'src/config';
-import { useGlobalState } from 'src/global/store'
+// import { useGlobalState } from 'src/global/store'
+import { HiveApi } from 'src/services/HiveApi'
+import { SidebarContext } from 'src/contexts/SidebarContext';
 
 const LinearProgressWrapper = styled(LinearProgress)(
   ({ theme }) => `
@@ -36,9 +38,9 @@ function Hero() {
   const [verifyState, setVerifyState] = React.useState(0)
   const [authProgress, setAuthProgress] = React.useState(0)
   const [activatingConnector, setActivatingConnector] = React.useState(null);
-  const [walletAddress, setWalletAddress] = React.useState(null);
-  const [hiveApi, updateAction] = useGlobalState("hiveApi");
-
+  const { setWalletAddress } = React.useContext(SidebarContext);
+  // const [hiveApi, updateAction] = useGlobalState("hiveApi");
+  const hiveApi = new HiveApi()
   let sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
 
   const initializeWalletConnection = React.useCallback(async () => {
@@ -74,8 +76,6 @@ function Hero() {
       await essentialsConnector.disconnectWalletConnect();
     }
     await signInWithEssentials();
-    
-    await hiveApi.prepareConnection()
     // setVerifyState(1)
   }
 
@@ -127,31 +127,22 @@ function Hero() {
         sessionStorage.setItem('FEEDS_DID', did);
         sessionLinkFlag = '2';
         sessionStorage.setItem('FEEDS_LINK', '1');
-        // setPasarLinkAddress(2)
-        // setOpenSigninDlg(false);
 
         // HIVE START
-        // TODO: IMPROVE HIVE LOGIN
-        // prepareConnectToHive()
-        //   .then(res=>(
-        //     creatAndRegister(true)
-        //   ))
-        //   // .then(result=>{
-        //   //   // createProfileCollection()
-        //   // })
-        //   .catch(error=>{
-        //     console.log("Register scripting error: ", error)
-        //   })
+        hiveApi.prepareConnection()
+          .then(async res => {
+            console.log("Prepare Connection", "---------------------")
+            await hiveApi.createAllCollections()
+            console.log("create All Collections", "---------------------")
+            await hiveApi.registeScripting()
+            console.log("Register Scripting", "---------------------")
+          })
         // HIVE END
 
         let essentialAddress = essentialsConnector.getWalletConnectProvider().wc.accounts[0]
         if (isInAppBrowser())
           essentialAddress = await window['elastos'].getWeb3Provider().address
         setWalletAddress(essentialAddress);
-        // getCredentialInfo(essentialAddress).then(proofData=>{
-        //   if(proofData)
-        //     sessionStorage.setItem('KYCedProof', proofData)
-        // })
         setActivatingConnector(essentialsConnector);
         setVerifyState(1)
         // setSigninEssentialSuccess(true);
