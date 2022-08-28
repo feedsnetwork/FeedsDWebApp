@@ -9,7 +9,7 @@ export const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
-const ApplicationDIDForMain = "did:elastos:iZvAak2SUHaKwBHmPFsgtVVMGtTpi4r2kY"
+const ApplicationDIDForMain = "did:elastos:iqtWRVjz7gsYhyuQEb1hYNNmWQt1Z9geXg"
 // const ApplicationDIDForTest = "did:elastos:ic8pRXyAT3JqEXo4PzHQHv5rsoYyEyDwpB"
 export const DidResolverUrl = 'https://api.trinity-tech.io/eid'
   // process.env.REACT_APP_ENV === 'production' ? 'mainnet' : 'testnet';
