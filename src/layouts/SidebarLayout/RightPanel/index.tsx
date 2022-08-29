@@ -32,7 +32,7 @@ const ListWrapper = styled(List)(
 `
 );
 function RightPanel() {
-  const { sidebarToggle, focusedChannel, toggleSidebar } = useContext(SidebarContext);
+  const { sidebarToggle, focusedChannelId, selfChannels, toggleSidebar } = useContext(SidebarContext);
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
@@ -60,6 +60,7 @@ function RightPanel() {
           </CardContent>
         </Card>
   } else {
+    const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
     if(focusedChannel)
       content = 
         <>
@@ -74,10 +75,10 @@ function RightPanel() {
                 </Stack>
               </Stack>
               <Stack alignItems='center' my={2}>
-                <StyledAvatar alt={focusedChannel.name} src='/channel.png' width={60}/>
+                <StyledAvatar alt={focusedChannel.name} src={focusedChannel.avatarSrc} width={60}/>
                 <Typography variant='h5' mt={1}>{focusedChannel.name}</Typography>
                 <Typography variant='body2'>@asralf</Typography>
-                <Typography variant='body2' color='text.secondary' textAlign='center'>Hello! Welcome to my main channel! I love Elastos. Subscribe to my channel to get the latest info!</Typography>
+                <Typography variant='body2' color='text.secondary' textAlign='center'>{focusedChannel.intro}</Typography>
               </Stack>
               <Stack alignItems='center'>
                 <Stack direction='row' spacing={1}>

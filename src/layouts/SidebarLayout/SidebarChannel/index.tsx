@@ -107,12 +107,11 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
   },
 }));
 function SidebarChannel() {
-  const [selfChannels, setSelfChannels] = useState([]);
+  const { selfChannels, setSelfChannels, sidebarToggle, focusedChannelId, toggleSidebar, setFocusChannelId } = useContext(SidebarContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
   const [popoverChannel, setPopoverChannel] = useState({});
   const [arrowRef, setArrowRef] = useState(null);
-  const { sidebarToggle, focusedChannel, toggleSidebar, setFocusChannel } = useContext(SidebarContext);
   const { setPageType } = useContext(OverPageContext)
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
@@ -122,6 +121,7 @@ function SidebarChannel() {
   useEffect(()=>{
     hiveApi.querySelfChannels()
       .then(res=>{
+        console.log(res)
         if(Array.isArray(res))
           setSelfChannels(res)
       })
@@ -131,7 +131,7 @@ function SidebarChannel() {
   }, [])
 
   const handleClickChannel = (item)=>{
-    setFocusChannel(item); 
+    setFocusChannelId(item.channel_id); 
     setPageType('CurrentChannel')
   }
   const handleRightClickChannel = (e, item)=>{
@@ -188,11 +188,11 @@ function SidebarChannel() {
                 selfChannels.map((item, _i)=>
                   <ChannelAvatar 
                     key={_i} 
-                    alt={item.name} 
-                    src={`data:image/png;base64,${item.avatar}`}
+                    index={_i}
+                    channel={item}
                     onClick={(e)=>{handleClickChannel(item)}} 
                     onRightClick={(e)=>{handleRightClickChannel(e, item)}} 
-                    focused={focusedChannel&&focusedChannel.name===item.name}/>
+                    focused={focusedChannelId&&focusedChannelId===item.channel_id}/>
                 )
               }
               <GradientOutlineFab aria-label="add" size='medium'>

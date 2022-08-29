@@ -1,12 +1,14 @@
 import { FC, useState, createContext, Dispatch } from 'react';
 type SidebarContext = {
   sidebarToggle: any;
-  focusedChannel: any;
+  selfChannels: any;
+  focusedChannelId: number;
   selectedChannel: any;
   walletAddress: any;
   toggleSidebar: () => void;
   closeSidebar: () => void;
-  setFocusChannel: Dispatch<any>;
+  setSelfChannels: Dispatch<any>;
+  setFocusChannelId: Dispatch<any>;
   setSelectChannel: Dispatch<any>;
   setWalletAddress: Dispatch<any>;
 };
@@ -18,7 +20,8 @@ export const SidebarContext = createContext<SidebarContext>(
 
 export const SidebarProvider: FC = ({ children }) => {
   const [sidebarToggle, setSidebarToggle] = useState(false);
-  const [focusedChannel, setFocusChannel] = useState(null);
+  const [selfChannels, setSelfChannels] = useState([]);
+  const [focusedChannelId, setFocusChannelId] = useState(null);
   const [selectedChannel, setSelectChannel] = useState(null);
   const [walletAddress, setWalletAddress] = useState(null);
 
@@ -33,12 +36,14 @@ export const SidebarProvider: FC = ({ children }) => {
     <SidebarContext.Provider
       value={{ 
         sidebarToggle, 
-        focusedChannel, 
+        selfChannels, 
+        focusedChannelId, 
         selectedChannel,
         walletAddress,
         toggleSidebar, 
         closeSidebar, 
-        setFocusChannel, 
+        setSelfChannels, 
+        setFocusChannelId, 
         setSelectChannel,
         setWalletAddress
       }}

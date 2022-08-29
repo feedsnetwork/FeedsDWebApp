@@ -20,9 +20,9 @@ const PostBoxStyle = styled(Box)(({ theme }) => ({
 }));
 
 function Channel() {
-  const { focusedChannel } = useContext(SidebarContext);
+  const { focusedChannelId } = useContext(SidebarContext);
 
-  const isEmpty = focusedChannel?false:true
+  const isEmpty = focusedChannelId==null?false:true
   return (
     <>
       {

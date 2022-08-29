@@ -50,12 +50,12 @@ const HeaderWrapper = styled(Box)(
 );
 function FloatingHeader() {
   const { pageType, setPageType, closeOverPage } = useContext(OverPageContext);
-  const { focusedChannel } = useContext(SidebarContext);
+  const { focusedChannelId, selfChannels } = useContext(SidebarContext);
   const { pathname } = useLocation()
 
   const handleClose = (e) => {
     if(pageType === 'AddChannel'){
-      if(focusedChannel)
+      if(focusedChannelId)
         setPageType('CurrentChannel')
       else
         closeOverPage()
@@ -77,7 +77,8 @@ function FloatingHeader() {
         secondary={description}
       />
   }
-  else if(pageType==='CurrentChannel')
+  else if(pageType==='CurrentChannel'){
+    const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
     actionText = focusedChannel?
       <ListItemText 
         primary={
@@ -86,6 +87,7 @@ function FloatingHeader() {
         secondary="3 post"
       />:
       ''
+  }
   else if(pageType==='Profile')
     actionText = 
       <ListItemText 
