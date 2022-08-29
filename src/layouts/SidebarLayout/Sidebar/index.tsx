@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import React from 'react';
 import Scrollbar from 'src/components/Scrollbar';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 
@@ -7,7 +7,8 @@ import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, Avatar, T
 import SidebarMenu from './SidebarMenu';
 import Logo from 'src/components/LogoSign';
 import StyledAvatar from 'src/components/StyledAvatar'
-import { reduceDIDstring } from 'src/utils/common'
+import { HiveApi } from 'src/services/HiveApi'
+import { reduceDIDstring, getInfoFromDID } from 'src/utils/common'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -21,10 +22,33 @@ const SidebarWrapper = styled(Box)(
 );
 
 function Sidebar() {
-  const { sidebarToggle, toggleSidebar } = useContext(SidebarContext);
+  const { sidebarToggle, walletAddress, toggleSidebar } = React.useContext(SidebarContext);
+  const [userInfo, setUserInfo] = React.useState({})
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
+  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const userDid = `did:elastos:${feedsDid}`
+  const hiveApi = new HiveApi()
 
+  React.useEffect(()=>{
+    if(!feedsDid)
+      return
+    getInfoFromDID(userDid).then(res=>{
+      setUserInfo(res)
+      // hiveApi.parseDidDocumentAvatar(userDid).then(res1=>{
+      //   console.log(res1, '---------')
+      //   hiveApi.downloadEssAvatar(res1['avatarParam'], res1['avatarScriptName'], res1['tarDID'], res1['tarAppDID'])
+      //     .then(res2=>{
+      //       console.log(res2,)
+      //     })
+      // })
+      
+      // hiveApi.downloadEssAvatarFromUrl(res['avatar'].data).then(res1=>{
+      //   console.log(res1)
+      // })
+      console.log(res)
+    })
+  }, [])
   return (
     <>
       <SidebarWrapper
@@ -63,10 +87,10 @@ function Sidebar() {
             <StyledAvatar alt="hames" src="/static/images/avatars/2.jpg" width={36}/>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
               <Typography variant="subtitle2" noWrap>
-                hames
+                {userInfo['name'] || walletAddress}
               </Typography>
               <Typography variant="body2" noWrap>
-                {reduceDIDstring('did:elastos:inSeTvmVDj6to7dHSZgkRZuUJYc9yHJChN')}
+                {reduceDIDstring(userDid)}
               </Typography>
             </Box>
           </Stack>

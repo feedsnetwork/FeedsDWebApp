@@ -1,3 +1,5 @@
+import { DID, DIDBackend, DefaultDIDAdapter } from '@elastosfoundation/did-js-sdk';
+
 export const reduceDIDstring = (strDID) => {
   if(!strDID)
     return ''
@@ -36,3 +38,25 @@ export const SettingMenuArray = [
 ]
 
 export const isInAppBrowser = () => window['elastos'] !== undefined && window['elastos'].name === 'essentialsiab';
+
+export const getInfoFromDID = (did) =>
+  new Promise((resolve, reject) => {
+    if(!DIDBackend.isInitialized())
+      DIDBackend.initialize(new DefaultDIDAdapter('https://api.elastos.io/eid'));
+    const didObj = new DID(did);
+    didObj
+      .resolve(true)
+      .then((didDoc) => {
+        if (!didDoc) resolve({});
+        const credentials = didDoc.getCredentials();
+        const properties = credentials.reduce((props, c) => {
+          const fragment = c.id['fragment']
+          props[fragment] = c.subject['properties'][fragment];
+          return props;
+        }, {});
+        resolve(properties);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });

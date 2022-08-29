@@ -125,8 +125,8 @@ function Hero() {
         const token = jwt.sign(user, 'feeds', { expiresIn: 60 * 60 * 24 * 7 });
         // sessionStorage.setItem('FEEDS_TOKEN', token);
         sessionStorage.setItem('FEEDS_DID', did);
-        sessionLinkFlag = '2';
         sessionStorage.setItem('FEEDS_LINK', '1');
+        sessionLinkFlag = '1';
 
         // HIVE START
         hiveApi.prepareConnection()
