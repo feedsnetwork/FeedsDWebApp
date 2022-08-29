@@ -6,7 +6,9 @@ import StyledButton from 'src/components/StyledButton'
 import StyledAvatar from 'src/components/StyledAvatar'
 import { EmptyViewInProfile } from 'src/components/EmptyView'
 import { OverPageContext } from 'src/contexts/OverPageContext';
-import { reduceHexAddress } from 'src/utils/common'
+import { SidebarContext } from 'src/contexts/SidebarContext';
+import { HiveApi } from 'src/services/HiveApi'
+import { reduceHexAddress, reduceDIDstring, getInfoFromDID } from 'src/utils/common'
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -29,8 +31,15 @@ function TabPanel(props) {
 }
 
 function Profile() {
-  const [tabValue, setTabValue] = React.useState(0);
   const { setPageType } = React.useContext(OverPageContext)
+  const { walletAddress, selfChannels } = React.useContext(SidebarContext);
+  const [tabValue, setTabValue] = React.useState(0);
+  const [subscriptions, setSubscriptions] = React.useState([]);
+  const [userInfo, setUserInfo] = React.useState({})
+  const [avatarSrc, setAvatarSrc] = React.useState('')
+  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const userDid = `did:elastos:${feedsDid}`
+  const hiveApi = new HiveApi()
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -38,17 +47,37 @@ function Profile() {
 
   React.useEffect(()=>{
     setPageType('Profile')
+    if(!feedsDid)
+      return
+      
+    hiveApi.getHiveUrl(userDid)
+      .then(async hiveUrl=>{
+        const res =  await hiveApi.downloadFileByHiveUrl(userDid, hiveUrl)
+        if(res && res.length) {
+          const base64Content = res.toString('base64')
+          setAvatarSrc(`data:image/png;base64,${base64Content}`)
+        }
+      })
+
+    hiveApi.querySubscriptionInfoByUserDID(userDid, userDid)
+      .then(res=>{
+        console.log(res)
+        if(res['find_message'])
+          setSubscriptions(res['find_message']['items'])
+      })
+    getInfoFromDID(userDid).then(res=>{
+      setUserInfo(res)
+    })
   }, [])
 
-  const isEmpty = false
-  const isChannelsEmpty = true
   const backgroundImg = "/temp-back.png"
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
       <Card>
         <Box sx={{position: 'relative'}}>
-          <Box sx={{ height: {xs: 120, md: 200}, background: `url(${backgroundImg}) no-repeat center`, backgroundSize: 'cover'}}/>
-          <StyledAvatar alt="asralf" src="/static/images/avatars/2.jpg" width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
+          {/* <Box sx={{ height: {xs: 120, md: 200}, background: `url(${backgroundImg}) no-repeat center`, backgroundSize: 'cover'}}/> */}
+          <Box sx={{ height: {xs: 120, md: 200}, background: 'linear-gradient(180deg, #000000 0%, #A067FF 300.51%)', backgroundSize: 'cover'}}/>
+          <StyledAvatar alt={userInfo['name']} src={avatarSrc} width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
         </Box>
         <Box px={2} py={1}>
           <Stack direction='row' spacing={1}>
@@ -58,13 +87,13 @@ function Profile() {
             <StyledButton type='outlined' size='small'>Edit Profile</StyledButton>
           </Stack>
           <Stack spacing={1} px={{sm: 0, md: 3}} mt={2}>
-            <Typography variant="h3">@asralf</Typography>
-            <Typography variant="body1">{reduceHexAddress('0x9A83Fd213843799AB8C7d383Fd213843799AB8C7')}</Typography>
-            <Typography variant="body1">Hello! Nice to meet you!</Typography>
+            <Typography variant="h3">@{userInfo['name'] || reduceDIDstring(feedsDid)}</Typography>
+            <Typography variant="body1">{reduceHexAddress(walletAddress)}</Typography>
+            <Typography variant="body1">{userInfo['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
-              <Typography variant="body1" pr={3}><strong>1</strong> Channel</Typography>
+              <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
               <Typography variant="body1" pr={3}><strong>100</strong> Subscribers</Typography>
-              <Typography variant="body1"><strong>32</strong> Subscriptions</Typography>
+              <Typography variant="body1"><strong>{subscriptions.length}</strong> Subscriptions</Typography>
             </Stack>
             <Stack direction='row' spacing={1}>
               <Box component="img" src='/pasar-logo.svg' width={30}/>
@@ -89,33 +118,35 @@ function Profile() {
         </Tabs>
         <TabPanel value={tabValue} index={0}>
           {
-            isChannelsEmpty?
+            !selfChannels.length?
             <EmptyViewInProfile type='channel'/>:
 
-            <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <StyledAvatar alt="hames" src="/static/images/avatars/2.jpg"/>
-                <Box flex={1}>
-                  <Hidden mdDown>
-                    <Typography variant="body2">Hello! Welcome to my main channel! I love Elastos. Subscribe to my channel to get the latest info!</Typography>
+            selfChannels.map((channel, _i)=>(
+              <Card key={_i} sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <StyledAvatar alt={channel.name} src={channel.avatarSrc}/>
+                  <Box flex={1}>
+                    <Hidden mdDown>
+                      <Typography variant="body2">{channel.intro}</Typography>
+                      <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
+                        <Typography variant="body2" pr={3}><strong>100</strong> Subscribers</Typography>
+                        <Typography variant="body2"><strong>32</strong> Subscriptions</Typography>
+                      </Stack>
+                    </Hidden>
+                  </Box>
+                  <StyledButton type="outlined" size="small" sx={{height: 'fit-content'}}>Edit Channel</StyledButton>
+                </Stack>
+                <Hidden mdUp>
+                  <Box mt={1}>
+                    <Typography variant="body2">{channel.intro}</Typography>
                     <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
                       <Typography variant="body2" pr={3}><strong>100</strong> Subscribers</Typography>
                       <Typography variant="body2"><strong>32</strong> Subscriptions</Typography>
                     </Stack>
-                  </Hidden>
-                </Box>
-                <StyledButton type="outlined" size="small" sx={{height: 'fit-content'}}>Edit Channel</StyledButton>
-              </Stack>
-              <Hidden mdUp>
-                <Box mt={1}>
-                  <Typography variant="body2">Hello! Welcome to my main channel! I love Elastos. Subscribe to my channel to get the latest info!</Typography>
-                  <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
-                    <Typography variant="body2" pr={3}><strong>100</strong> Subscribers</Typography>
-                    <Typography variant="body2"><strong>32</strong> Subscriptions</Typography>
-                  </Stack>
-                </Box>
-              </Hidden>
-            </Card>
+                  </Box>
+                </Hidden>
+              </Card>
+            ))
           }
         </TabPanel>
         <TabPanel value={tabValue} index={1}>
