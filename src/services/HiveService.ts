@@ -1,10 +1,9 @@
 import { connectivity, DID as ConDID } from "@elastosfoundation/elastos-connectivity-sdk-js";
 import { Executable, InsertOptions, File as HiveFile, ScriptRunner, Vault, AppContext, Logger as HiveLogger, UpdateResult, UpdateOptions, Condition, InsertResult } from "@elastosfoundation/hive-js-sdk";
 import { Claims, DIDDocument, JWTHeader, JWTParserBuilder, DID, DIDBackend, DefaultDIDAdapter, JSONObject, VerifiablePresentation } from '@elastosfoundation/did-js-sdk'
-import { ApplicationDID } from '../config'
+import { ApplicationDID, DidResolverUrl } from '../config'
 
 let TAG: string = 'Feeds-web-dapp-HiveService'
-let didResolverUrl = "https://api.trinity-tech.io/eid"
 
 let scriptRunners = {}
 
@@ -107,6 +106,34 @@ export class HiveService {
       // this.events.publish(FeedsEvent.PublishType.authEssentialFail, { type: 1 });
       throw error
     }
+  }
+
+  getHiveUrl(userDid: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        if(!DIDBackend.isInitialized()) {
+          DIDBackend.initialize(new DefaultDIDAdapter(DidResolverUrl));
+        }
+
+        const userDID = DID.from(userDid)
+        const userDIDDocument = await userDID.resolve()
+
+        const avatarDid = userDid + "#avatar"
+        const avatarVC = userDIDDocument.getCredential(avatarDid)
+        if (!avatarVC) {// 没有有头像
+          // Logger.warn(TAG, 'Not found avatar from did document');
+          return null;
+        }
+
+        const sub = avatarVC.getSubject()
+        const pro = sub.getProperty("avatar")
+        const data: string = pro["data"]
+
+        resolve(data)
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   parseUserDIDDocumentForUserAvatar(userDid: string): Promise<{
@@ -266,6 +293,15 @@ export class HiveService {
 
       const scriptRunner = await this.getScriptRunner(userDid)
       return await scriptRunner.callScript<any>(avatarScriptName, avatarParam, tarDID, tarAppDID)
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async downloadFileByHiveUrl(targetDid: string, url: string) {
+    try {
+      const scriptRunner = await this.getScriptRunner(targetDid)
+      return await scriptRunner.downloadFileByHiveUrl(url)
     } catch (error) {
       throw error
     }

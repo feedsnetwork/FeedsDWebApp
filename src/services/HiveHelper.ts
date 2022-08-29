@@ -1765,6 +1765,10 @@ export class HiveHelper {
         return hiveService.parseUserDIDDocumentForUserAvatar(userDid)
     }
 
+    getHiveUrl(userDid: string): Promise<string> {
+        return hiveService.getHiveUrl(userDid)
+    }
+
     /** download essential avatar start */
     private downloadEssAvatarData(avatarParam: string, avatarScriptName: string, tarDID: string, tarAppDID: string): Promise<Buffer> {
         return new Promise(async (resolve, reject) => {
@@ -1790,6 +1794,10 @@ export class HiveHelper {
 
     downloadEssAvatar(avatarParam: string, avatarScriptName: string, tarDID: string, tarAppDID: string): Promise<Buffer> {
         return this.downloadEssAvatarData(avatarParam, avatarScriptName, tarDID, tarAppDID)
+    }
+
+    downloadFileByHiveUrl(targetDid: string, url: string) {
+        return hiveService.downloadFileByHiveUrl(targetDid, url)
     }
     /** download essential avatar end */
 

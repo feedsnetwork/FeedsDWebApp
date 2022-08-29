@@ -609,6 +609,14 @@ export class HiveApi {
     return hiveHelper.downloadEssAvatar(avatarParam, avatarScriptName, tarDID, tarAppDID)
   }
 
+  getHiveUrl(userDid: string): Promise<string> {
+    return hiveHelper.getHiveUrl(userDid)
+  }
+
+  downloadFileByHiveUrl(targetDid: string, url: string) {
+    return hiveHelper.downloadFileByHiveUrl(targetDid, url)
+  }
+
   /** MediaData
     * 更新MediaData
     *
