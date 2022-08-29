@@ -12,7 +12,7 @@ import StyledButton from 'src/components/StyledButton'
 import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi'
-import { reduceHexAddress } from 'src/utils/common'
+import { reduceHexAddress, reduceDIDstring } from 'src/utils/common'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -35,6 +35,7 @@ const ListWrapper = styled(List)(
 function RightPanel() {
   const { sidebarToggle, focusedChannelId, selfChannels, toggleSidebar } = useContext(SidebarContext);
   const [dispName, setDispName] = React.useState('')
+  const [subscribers, setSubscribers] = React.useState([])
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
@@ -51,6 +52,11 @@ function RightPanel() {
         .then(res=>{
           if(res['find_message'])
             setDispName(res['find_message']['items'][0].display_name)
+        })
+      hiveApi.querySubscription(userDid, focusedChannel.channel_id)
+        .then(res=>{
+          if(res['find_message'])
+            setSubscribers(res['find_message']['items'])
         })
     }
   }, [focusedChannelId])
@@ -93,14 +99,12 @@ function RightPanel() {
               <Stack alignItems='center' my={2}>
                 <StyledAvatar alt={focusedChannel.name} src={focusedChannel.avatarSrc} width={60}/>
                 <Typography variant='h5' mt={1}>{focusedChannel.name}</Typography>
-                {
-                  !!dispName && <Typography variant='body2'>@{dispName}</Typography>
-                }
+                <Typography variant='body2'>@{dispName || reduceDIDstring(feedsDid)}</Typography>
                 <Typography variant='body2' color='text.secondary' textAlign='center'>{focusedChannel.intro}</Typography>
               </Stack>
               <Stack alignItems='center'>
                 <Stack direction='row' spacing={1}>
-                  <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;100 Subscribers</Typography>
+                  <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{subscribers.length} Subscribers</Typography>
                   <StyledButton size='small'>Subscribed</StyledButton>
                 </Stack>
               </Stack>
