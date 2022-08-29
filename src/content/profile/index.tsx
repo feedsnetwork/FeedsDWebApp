@@ -5,6 +5,7 @@ import ShareIcon from '@mui/icons-material/ShareOutlined';
 import StyledButton from 'src/components/StyledButton'
 import StyledAvatar from 'src/components/StyledAvatar'
 import { EmptyViewInProfile } from 'src/components/EmptyView'
+import ChannelListItem from './ChannelListItem'
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi'
@@ -61,10 +62,10 @@ function Profile() {
 
     hiveApi.querySubscriptionInfoByUserDID(userDid, userDid)
       .then(res=>{
-        console.log(res)
         if(res['find_message'])
           setSubscriptions(res['find_message']['items'])
       })
+      
     getInfoFromDID(userDid).then(res=>{
       setUserInfo(res)
     })
@@ -122,30 +123,7 @@ function Profile() {
             <EmptyViewInProfile type='channel'/>:
 
             selfChannels.map((channel, _i)=>(
-              <Card key={_i} sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <StyledAvatar alt={channel.name} src={channel.avatarSrc}/>
-                  <Box flex={1}>
-                    <Hidden mdDown>
-                      <Typography variant="body2">{channel.intro}</Typography>
-                      <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
-                        <Typography variant="body2" pr={3}><strong>100</strong> Subscribers</Typography>
-                        <Typography variant="body2"><strong>32</strong> Subscriptions</Typography>
-                      </Stack>
-                    </Hidden>
-                  </Box>
-                  <StyledButton type="outlined" size="small" sx={{height: 'fit-content'}}>Edit Channel</StyledButton>
-                </Stack>
-                <Hidden mdUp>
-                  <Box mt={1}>
-                    <Typography variant="body2">{channel.intro}</Typography>
-                    <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
-                      <Typography variant="body2" pr={3}><strong>100</strong> Subscribers</Typography>
-                      <Typography variant="body2"><strong>32</strong> Subscriptions</Typography>
-                    </Stack>
-                  </Box>
-                </Hidden>
-              </Card>
+              <ChannelListItem channel={channel} key={_i}/>
             ))
           }
         </TabPanel>

@@ -317,7 +317,7 @@ export class HiveApi {
     * @return 指定channelid下所有的订阅信息
     * @throws HiveError
   */
-  querySubscrptionInfoByChannelId(targetDid: string, channelId: string) {
+  querySubscriptionInfoByChannelId(targetDid: string, channelId: string) {
     return hiveHelper.querySubscriptionInfoByChannelId(targetDid, channelId)
   }
 

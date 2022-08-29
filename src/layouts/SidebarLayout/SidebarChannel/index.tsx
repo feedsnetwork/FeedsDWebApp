@@ -121,7 +121,7 @@ function SidebarChannel() {
   useEffect(()=>{
     hiveApi.querySelfChannels()
       .then(res=>{
-        console.log(res)
+        // console.log(res)
         if(Array.isArray(res))
           setSelfChannels(res)
       })
