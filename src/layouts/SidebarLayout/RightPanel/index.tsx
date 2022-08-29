@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import React, { useContext } from 'react';
 import { useLocation } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
@@ -11,6 +11,7 @@ import StyledAvatar from 'src/components/StyledAvatar'
 import StyledButton from 'src/components/StyledButton'
 import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
+import { HiveApi } from 'src/services/HiveApi'
 import { reduceHexAddress } from 'src/utils/common'
 
 const SidebarWrapper = styled(Box)(
@@ -33,11 +34,27 @@ const ListWrapper = styled(List)(
 );
 function RightPanel() {
   const { sidebarToggle, focusedChannelId, selfChannels, toggleSidebar } = useContext(SidebarContext);
+  const [dispName, setDispName] = React.useState('')
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
   const isSetting = pathname.startsWith('/setting');
+  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const userDid = `did:elastos:${feedsDid}`
+  const hiveApi = new HiveApi()
+  const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
   let content = null
+
+  React.useEffect(()=>{
+    if(focusedChannelId) {
+      hiveApi.queryUserDisplayName(userDid, focusedChannel.channel_id, userDid)
+        .then(res=>{
+          if(res['find_message'])
+            setDispName(res['find_message']['items'][0].display_name)
+        })
+    }
+  }, [focusedChannelId])
+
   if(isSetting) {
     if(pathname.endsWith('/credentials'))
       content = 
@@ -60,8 +77,7 @@ function RightPanel() {
           </CardContent>
         </Card>
   } else {
-    const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
-    if(focusedChannel)
+    if(focusedChannel) {
       content = 
         <>
           <Card>
@@ -77,7 +93,9 @@ function RightPanel() {
               <Stack alignItems='center' my={2}>
                 <StyledAvatar alt={focusedChannel.name} src={focusedChannel.avatarSrc} width={60}/>
                 <Typography variant='h5' mt={1}>{focusedChannel.name}</Typography>
-                <Typography variant='body2'>@asralf</Typography>
+                {
+                  !!dispName && <Typography variant='body2'>@{dispName}</Typography>
+                }
                 <Typography variant='body2' color='text.secondary' textAlign='center'>{focusedChannel.intro}</Typography>
               </Stack>
               <Stack alignItems='center'>
@@ -128,6 +146,7 @@ function RightPanel() {
             </CardContent>
           </Card>
         </>
+    }
     else 
       content = 
         <>
