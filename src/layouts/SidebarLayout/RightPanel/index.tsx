@@ -13,6 +13,7 @@ import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi'
 import { reduceHexAddress, reduceDIDstring } from 'src/utils/common'
+import SubscriberListItem from './SubscriberListItem';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -53,7 +54,7 @@ function RightPanel() {
           if(res['find_message'])
             setDispName(res['find_message']['items'][0].display_name)
         })
-      hiveApi.querySubscription(userDid, focusedChannel.channel_id)
+      hiveApi.querySubscriptionInfoByChannelId(userDid, focusedChannel.channel_id)
         .then(res=>{
           if(res['find_message'])
             setSubscribers(res['find_message']['items'])
@@ -116,28 +117,15 @@ function RightPanel() {
                 <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Subscribers</Typography>
               } 
               subheader={
-                <Typography variant='body2' color='text.secondary'>100 Subscribers</Typography>
+                <Typography variant='body2' color='text.secondary'>List of Subscribers</Typography>
               }
             />
             <CardContent sx={{pt: 0}}>
               <Grid container spacing={2}>
                 {
-                  Array(5).fill(null).map((_, index)=>(
+                  subscribers.map((item, index)=>(
                     <Grid item xs={12} key={index}>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <StyledAvatar alt='Elastos' src='/static/images/avatars/2.jpg' width={32}/>
-                        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                          <Typography component='div' variant="subtitle2" noWrap>
-                            Phantz Club
-                          </Typography>
-                          <Typography variant="body2" color='text.secondary' noWrap>
-                            100 Subscribers
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <StyledButton type="outlined" size='small'>Subscribe</StyledButton>
-                        </Box>
-                      </Stack>
+                      <SubscriberListItem subscriber={item}/>
                     </Grid>
                   ))
                 }

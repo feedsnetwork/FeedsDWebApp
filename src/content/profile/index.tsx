@@ -93,7 +93,6 @@ function Profile() {
             <Typography variant="body1">{userInfo['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
-              <Typography variant="body1" pr={3}><strong>100</strong> Subscribers</Typography>
               <Typography variant="body1"><strong>{subscriptions.length}</strong> Subscriptions</Typography>
             </Stack>
             <Stack direction='row' spacing={1}>
