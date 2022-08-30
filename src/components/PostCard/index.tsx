@@ -33,7 +33,7 @@ const PostCard = (props) => {
               </IconButton>
             </Box>
           </Stack>
-          <Typography variant="body2">
+          <Typography variant="body2" sx={{whiteSpace: 'pre-line'}}>
             {postObj.content}
           </Typography>
         </Stack>
