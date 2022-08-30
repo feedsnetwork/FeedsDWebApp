@@ -122,8 +122,11 @@ function SidebarChannel() {
     hiveApi.querySelfChannels()
       .then(res=>{
         // console.log(res)
-        if(Array.isArray(res))
+        if(Array.isArray(res)){
           setSelfChannels(res)
+          if(res.length)
+            setFocusChannelId(res[0].channel_id)
+        }
       })
       .catch(err=>{
         console.log(err)

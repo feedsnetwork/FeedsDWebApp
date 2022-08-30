@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import React from 'react'
 import { Icon } from '@iconify/react';
 import { Grid, Container, Box, Typography, Stack, styled, IconButton } from '@mui/material';
 
@@ -8,6 +8,7 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import StyledButton from 'src/components/StyledButton';
 import StyledIconButton from 'src/components/StyledIconButton';
 import StyledTextFieldOutline from 'src/components/StyledTextFieldOutline'
+import { HiveApi } from 'src/services/HiveApi'
 
 const PostBoxStyle = styled(Box)(({ theme }) => ({
   position: 'sticky',
@@ -20,17 +21,28 @@ const PostBoxStyle = styled(Box)(({ theme }) => ({
 }));
 
 function Channel() {
-  const { focusedChannelId } = useContext(SidebarContext);
+  const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);
+  const [posts, setPosts] = React.useState([])
+  const hiveApi = new HiveApi()
 
-  const isEmpty = focusedChannelId==null?false:true
+  React.useEffect(()=>{
+    if(focusedChannelId)
+      hiveApi.querySelfPostsByChannel(focusedChannelId.toString())
+        .then(res=>{
+          if(Array.isArray(res)) {
+            setPosts(res)
+          }
+        })
+  }, [focusedChannelId])
+
   return (
     <>
       {
-        isEmpty?
+        !selfChannels.length?
         <EmptyView type='channel'/>:
 
-        <>
-          <Container sx={{ mt: 3 }} maxWidth="lg">
+        <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+          <Container sx={{ mt: 3, flexGrow: 1, overFlow: 'auto' }} maxWidth="lg">
             <Grid
               container
               direction="row"
@@ -39,9 +51,9 @@ function Channel() {
               spacing={3}
             >
               {
-                Array(5).fill(null).map((_, index)=>(
-                  <Grid item xs={12} key={index}>
-                    <PostCard />
+                posts.map((post, _i)=>(
+                  <Grid item xs={12} key={_i}>
+                    <PostCard post={post}/>
                   </Grid>
                 ))
               }
@@ -80,7 +92,7 @@ function Channel() {
               </Stack>
             </Stack>
           </PostBoxStyle>
-        </>
+        </Box>
       }
     </>
   );
