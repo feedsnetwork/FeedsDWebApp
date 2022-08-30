@@ -135,7 +135,6 @@ function SidebarChannel() {
 
   const handleClickChannel = (item)=>{
     setFocusChannelId(item.channel_id); 
-    setPageType('CurrentChannel')
   }
   const handleRightClickChannel = (e, item)=>{
     e.preventDefault()

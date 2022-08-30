@@ -1,15 +1,11 @@
-import { useContext } from 'react';
+import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import FadeIn from 'react-fade-in';
-import { Icon } from '@iconify/react';
 import { Stack, Box, Button, Hidden, ListItemText, Typography, styled, alpha, lighten } from '@mui/material';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 
-import StyledAvatar from 'src/components/StyledAvatar'
-import StyledButton from 'src/components/StyledButton'
-import Scrollbar from 'src/components/Scrollbar';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
+import { HiveApi } from 'src/services/HiveApi'
 import { SettingMenuArray } from 'src/utils/common'
 
 const HeaderWrapper = styled(Box)(
@@ -49,54 +45,60 @@ const HeaderWrapper = styled(Box)(
 `
 );
 function FloatingHeader() {
-  const { pageType, setPageType, closeOverPage } = useContext(OverPageContext);
-  const { focusedChannelId, selfChannels } = useContext(SidebarContext);
+  const { pageType, setPageType, closeOverPage } = React.useContext(OverPageContext);
+  const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);
+  const [secondaryData, setSecondaryData] = React.useState(0)
   const { pathname } = useLocation()
+  const hiveApi = new HiveApi()
+
+  React.useEffect(()=>{
+    if(pathname.startsWith('/channel') && focusedChannelId) {
+      hiveApi.querySelfPostsByChannel(focusedChannelId.toString())
+        .then((res)=>{
+          if(Array.isArray(res)) {
+            setSecondaryData(res.length)
+          }
+        })
+    }
+  }, [focusedChannelId])
 
   const handleClose = (e) => {
-    if(pageType === 'AddChannel'){
-      if(focusedChannelId)
-        setPageType('CurrentChannel')
-      else
-        closeOverPage()
-    }
+    
   }
-  let actionText;
-  if(pageType==='AddChannel')
-    actionText = 'Add Channel'
-  else if(pathname.startsWith('/setting')){
-    const suburl = pathname.substring(8)
-    const menuType = SettingMenuArray.find(item=>item.to===suburl)
-    const description = menuType?menuType.description:''
+  
+  const getActionText = () => {
+    let primaryText = ""
+    let secondaryText = ""
+    
+    if(pathname.startsWith('/setting')) {
+      const suburl = pathname.substring(8)
+      const menuType = SettingMenuArray.find(item=>item.to===suburl)
+      const description = menuType?menuType.description:''
 
-    actionText = 
-      <ListItemText 
-        primary={
-          <Typography variant='subtitle2' color='text.primary' textAlign='left'>Settings</Typography>
-        }
-        secondary={description}
-      />
+      primaryText = "Settings"
+      secondaryText = description
+    }
+    else if(pathname.startsWith('/channel') && focusedChannelId) {
+      const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
+      primaryText = focusedChannel.name
+      secondaryText = `${secondaryData} post`
+    }
+    else if(pageType==='AddChannel')
+      primaryText = "Add Channel"
+    else if(pageType==='Profile') {
+      primaryText = "asralf"
+      // secondaryText = "0 post"
+    }
+    if(primaryText) {
+      const listItemProps = { primary: <Typography variant='subtitle2' color='text.primary' textAlign='left'>{primaryText}</Typography> }
+      if(secondaryText)
+        listItemProps['secondary'] = secondaryText
+      return <ListItemText {...listItemProps}/>
+    }
+    return ""
   }
-  else if(pageType==='CurrentChannel'){
-    const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
-    actionText = focusedChannel?
-      <ListItemText 
-        primary={
-          <Typography variant='subtitle2' color='text.primary' textAlign='left'>{focusedChannel.name}</Typography>
-        }
-        secondary="3 post"
-      />:
-      ''
-  }
-  else if(pageType==='Profile')
-    actionText = 
-      <ListItemText 
-        primary={
-          <Typography variant='subtitle2' color='text.primary' textAlign='left'>asralf</Typography>
-        }
-        secondary="43 post"
-      />
-  else actionText=''
+
+  const backBtnText = React.useMemo(() => getActionText(), [pageType, focusedChannelId, secondaryData])
   return (
     <>
       <Hidden lgDown>
@@ -108,13 +110,14 @@ function FloatingHeader() {
               spacing={2}
             >
               {
-                !!actionText&&
+                !!backBtnText&&
                 <Button
                   color="inherit"
                   startIcon={<ArrowBack />}
                   onClick={handleClose}
+                  sx={{textAlign: 'left'}}
                 >
-                  {actionText}
+                  {backBtnText}
                 </Button>
               }
             </Stack>

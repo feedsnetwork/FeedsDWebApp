@@ -22,7 +22,7 @@ const SubscriberListItem = (props) => {
     //         })
     //     })
     // }, [])
-    console.log(subscriber)
+    // console.log(subscriber)
     React.useEffect(()=>{
         hiveApi.getHiveUrl(subscriber.user_did)
           .then(async hiveUrl=>{

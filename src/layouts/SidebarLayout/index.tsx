@@ -21,7 +21,7 @@ interface SidebarLayoutProps {
 
 const SidebarLayout: FC<SidebarLayoutProps> = () => {
   const hiveApi = new HiveApi()
-  const {setWalletAddress} = useContext(SidebarContext);
+  const {setWalletAddress, focusedChannelId} = useContext(SidebarContext);
   let sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
   if (sessionLinkFlag === '1') {
     initConnectivitySDK()
@@ -34,7 +34,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
   let floatingHeaderVisible = false;
   if(
     ((pathname==='/home' || pathname==='/channel') && pageType==='AddChannel')
-    || ((pathname==='/channel') && pageType==='CurrentChannel')
+    || (pathname.startsWith('/channel') && focusedChannelId)
     || pathname.startsWith('/setting')
     || pathname==='/profile'
   )

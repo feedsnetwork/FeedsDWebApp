@@ -8,6 +8,7 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import StyledButton from 'src/components/StyledButton';
 import StyledIconButton from 'src/components/StyledIconButton';
 import StyledTextFieldOutline from 'src/components/StyledTextFieldOutline'
+import { reduceDIDstring } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const PostBoxStyle = styled(Box)(({ theme }) => ({
@@ -23,16 +24,25 @@ const PostBoxStyle = styled(Box)(({ theme }) => ({
 function Channel() {
   const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);
   const [posts, setPosts] = React.useState([])
+  const [dispName, setDispName] = React.useState('');
+  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const userDid = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
 
   React.useEffect(()=>{
-    if(focusedChannelId)
+    if(focusedChannelId) {
+      hiveApi.queryUserDisplayName(userDid, focusedChannelId.toString(), userDid)
+        .then(res=>{
+          if(res['find_message'])
+            setDispName(res['find_message']['items'][0].display_name)
+        })
       hiveApi.querySelfPostsByChannel(focusedChannelId.toString())
         .then(res=>{
           if(Array.isArray(res)) {
             setPosts(res)
           }
         })
+    }
   }, [focusedChannelId])
 
   return (
@@ -42,7 +52,7 @@ function Channel() {
         <EmptyView type='channel'/>:
 
         <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
-          <Container sx={{ mt: 3, flexGrow: 1, overFlow: 'auto' }} maxWidth="lg">
+          <Container sx={{ mt: 3, flexGrow: 1, overFlow: 'auto' }} maxWidth={false}>
             <Grid
               container
               direction="row"
@@ -53,7 +63,7 @@ function Channel() {
               {
                 posts.map((post, _i)=>(
                   <Grid item xs={12} key={_i}>
-                    <PostCard post={post}/>
+                    <PostCard post={post} dispName={dispName || reduceDIDstring(feedsDid)}/>
                   </Grid>
                 ))
               }
