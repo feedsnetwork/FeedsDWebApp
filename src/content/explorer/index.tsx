@@ -1,14 +1,16 @@
+import React from 'react'
 import { Grid, Container, Box, Typography, Stack } from '@mui/material';
 
-import PostCard from 'src/components/PostCard';
+import ChannelCard from 'src/components/ChannelCard';
 import { EmptyView } from 'src/components/EmptyView'
+import { SidebarContext } from 'src/contexts/SidebarContext';
 
 function Explorer() {
-  const isEmpty = false
+  const { selfChannels } = React.useContext(SidebarContext);
   return (
     <>
       {
-        isEmpty?
+        !selfChannels.length?
         <EmptyView/>:
 
         <Container sx={{ mt: 3 }} maxWidth="lg">
@@ -20,9 +22,9 @@ function Explorer() {
             spacing={3}
           >
             {
-              Array(5).fill(null).map((_, index)=>(
-                <Grid item xs={12} key={index}>
-                  <PostCard />
+              selfChannels.map((channel, _i)=>(
+                <Grid item xs={12} key={_i}>
+                  <ChannelCard channel={channel}/>
                 </Grid>
               ))
             }

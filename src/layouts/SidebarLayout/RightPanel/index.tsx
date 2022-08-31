@@ -10,10 +10,10 @@ import Scrollbar from 'src/components/Scrollbar';
 import StyledAvatar from 'src/components/StyledAvatar'
 import StyledButton from 'src/components/StyledButton'
 import InputOutline from 'src/components/InputOutline'
+import SubscriberListItem from './SubscriberListItem';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi'
 import { reduceHexAddress, reduceDIDstring } from 'src/utils/common'
-import SubscriberListItem from './SubscriberListItem';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
