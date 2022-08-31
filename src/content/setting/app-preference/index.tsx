@@ -3,18 +3,10 @@ import { Box, Typography, Stack, Card, Input, Divider, IconButton, Grid, Switch,
 import { Icon } from '@iconify/react';
 
 import SwitchUI from 'src/components/SwitchUI'
+import { getAppPreference } from 'src/utils/common'
 
 const AppPreference = (props)=>{
-  const PrefConf = localStorage.getItem('FEEDS_PREF')
-  let initConf = {DP: 0, DC: 0}
-  if(PrefConf) {
-    try {
-      const tempConf = JSON.parse(PrefConf)
-      if(typeof tempConf == 'object') {
-        initConf = tempConf
-      }
-    } catch (err) {}
-  }
+  const initConf = getAppPreference()
   const [preference, setPreference] = React.useState(initConf)
 
   const onChangeMode = (event) => {

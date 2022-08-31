@@ -8,7 +8,7 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import StyledButton from 'src/components/StyledButton';
 import StyledIconButton from 'src/components/StyledIconButton';
 import StyledTextFieldOutline from 'src/components/StyledTextFieldOutline'
-import { reduceDIDstring } from 'src/utils/common'
+import { reduceDIDstring, getAppPreference } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const PostBoxStyle = styled(Box)(({ theme }) => ({
@@ -25,6 +25,7 @@ function Channel() {
   const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);
   const [posts, setPosts] = React.useState([])
   const [dispName, setDispName] = React.useState('');
+  const prefConf = getAppPreference()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
@@ -39,7 +40,11 @@ function Channel() {
       hiveApi.querySelfPostsByChannel(focusedChannelId.toString())
         .then(res=>{
           if(Array.isArray(res)) {
-            setPosts(res)
+            setPosts(
+              prefConf.DP?
+              res:
+              res.filter(item=>!item.status)
+            )
           }
         })
     }

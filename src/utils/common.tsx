@@ -60,3 +60,19 @@ export const getInfoFromDID = (did) =>
         reject(error);
       });
   });
+
+export const getAppPreference = () => {
+  const PrefConf = localStorage.getItem('FEEDS_PREF')
+  let initConf = {DP: 0, DC: 0}
+  if(PrefConf) {
+    try {
+      const tempConf = JSON.parse(PrefConf)
+      if(typeof tempConf == 'object') {
+        initConf = tempConf
+      }
+    } catch (err) {
+      return initConf
+    }
+  }
+  return initConf
+}

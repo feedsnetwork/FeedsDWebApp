@@ -6,7 +6,7 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { HiveApi } from 'src/services/HiveApi'
-import { SettingMenuArray } from 'src/utils/common'
+import { SettingMenuArray, getAppPreference } from 'src/utils/common'
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -53,17 +53,22 @@ function FloatingHeader() {
 
   React.useEffect(()=>{
     if(pathname.startsWith('/channel') && focusedChannelId) {
+      const prefConf = getAppPreference()
       hiveApi.querySelfPostsByChannel(focusedChannelId.toString())
         .then((res)=>{
           if(Array.isArray(res)) {
-            setSecondaryData(res.length)
+            setSecondaryData(
+              prefConf.DP?
+              res.length:
+              res.filter(item=>!item.status).length
+            )
           }
         })
     }
   }, [focusedChannelId])
 
   const handleClose = (e) => {
-    
+
   }
   
   const getActionText = () => {
@@ -98,7 +103,7 @@ function FloatingHeader() {
     return ""
   }
 
-  const backBtnText = React.useMemo(() => getActionText(), [pageType, focusedChannelId, secondaryData])
+  const backBtnText = React.useMemo(() => getActionText(), [pageType, pathname, focusedChannelId, secondaryData])
   return (
     <>
       <Hidden lgDown>
