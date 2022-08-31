@@ -1,4 +1,5 @@
 import { DID, DIDBackend, DefaultDIDAdapter } from '@elastosfoundation/did-js-sdk';
+import { formatDistance } from 'date-fns';
 
 export const reduceDIDstring = (strDID) => {
   if(!strDID)
@@ -76,3 +77,5 @@ export const getAppPreference = () => {
   }
   return initConf
 }
+
+export const getDateDistance = (timestamp) => timestamp ? formatDistance(timestamp*1000, new Date(), { addSuffix: false }).replace("about","").trim() : ''
