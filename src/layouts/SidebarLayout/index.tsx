@@ -23,9 +23,21 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
   const hiveApi = new HiveApi()
   const {setWalletAddress, focusedChannelId} = useContext(SidebarContext);
   let sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
-  if (sessionLinkFlag === '1') {
-    initConnectivitySDK()
-  }
+
+  const initializeWalletConnection = async () => {
+    if (sessionLinkFlag === '1') {
+      setWalletAddress(
+        isInAppBrowser()
+          ? await window['elastos'].getWeb3Provider().address
+          : essentialsConnector.getWalletConnectProvider().wc.accounts[0]
+      );
+    }
+  };
+
+  useEffect(()=>{
+    initializeWalletConnection()
+  }, [])
+
 
   const { pageType } = useContext(OverPageContext);
   const { pathname } = useLocation();
