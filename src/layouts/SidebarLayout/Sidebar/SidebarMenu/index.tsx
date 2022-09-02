@@ -11,9 +11,9 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import InputOutline from 'src/components/InputOutline'
-import StyledAvatar from 'src/components/StyledAvatar'
 import StyledButton from 'src/components/StyledButton';
 import PostDlg from 'src/components/Modal/Post';
+import SubscriptionAvatar from './subscriptionAvatar'
 import { SettingMenuArray } from 'src/utils/common'
 
 const MenuWrapper = styled(Box)(
@@ -187,8 +187,8 @@ const customAnimationForChannels = keyframes`
   }
 `;
 
-const tempChannelArray = ["Elastos Info", "Elacity", "Elabox"]
-function SidebarMenu() {
+function SidebarMenu(props) {
+  const { subscriptions } = props
   const { closeSidebar } = useContext(SidebarContext);
   const { pathname } = useLocation()
   const [isVisibleChannels, setVisibleChannels] = useState(false)
@@ -221,7 +221,7 @@ function SidebarMenu() {
                 ))
               }
               {
-                tempChannelArray.length>0?
+                subscriptions.length>0?
                 <ListItem component="div">
                   <Button disableRipple onClick={toggleChannels} endIcon={isVisibleChannels ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon />} >
                     Subscriptions
@@ -256,17 +256,17 @@ function SidebarMenu() {
                     />
                     <Box mt={1}>
                       {
-                        tempChannelArray.map((channel, _i)=>(
+                        subscriptions.map((channel, _i)=>(
                           <ListItem component="div" key={_i}>
                             <Button
                               disableRipple
                               // component={RouterLink}
                               // to={menuItem.to}
                               // onClick={closeSidebar}
-                              startIcon={<StyledAvatar alt="hames" src="/static/images/avatars/2.jpg" width={20}/>}
+                              startIcon={<SubscriptionAvatar channel={channel}/>}
                               sx={{p: '4px 14px !important'}}
                             >
-                              {channel}
+                              {channel.name}
                             </Button>
                           </ListItem>
                         ))

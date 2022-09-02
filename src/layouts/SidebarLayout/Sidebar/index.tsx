@@ -25,6 +25,7 @@ function Sidebar() {
   const { sidebarToggle, walletAddress, toggleSidebar } = React.useContext(SidebarContext);
   const [userInfo, setUserInfo] = React.useState({})
   const [avatarSrc, setAvatarSrc] = React.useState('')
+  const [subscriptions, setSubscriptions] = React.useState([])
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -44,9 +45,33 @@ function Sidebar() {
         }
       })
 
+    hiveApi.queryBackupData()
+      .then(res=>{
+        if(Array.isArray(res)) {
+          res.forEach(item=>{
+            hiveApi.queryChannelInfo(item.target_did, item.channel_id)
+              .then(res=>{
+                if(res['find_message'] && res['find_message']['items'].length) {
+                  setSubscriptions(prev=>{
+                    const prevState = [...prev]
+                    prevState.push(res['find_message']['items'][0])
+                    return prevState
+                  })
+                }
+                console.log(res, "++++++++3")
+              })
+          })
+        }
+        // console.log(res, "+++++++++++++")
+      })
+
+    // hiveApi.querySubscriptionInfoByUserDID(userDid, userDid)
+    //   .then(res=>{
+    //     console.log(res, "88888888888")
+    //   })
+
     getInfoFromDID(userDid).then(res=>{
       setUserInfo(res)
-      console.log(res)
     })
   }, [])
   return (
@@ -74,7 +99,7 @@ function Sidebar() {
                 </Typography>
               </Box>
             </Box>
-            <SidebarMenu />
+            <SidebarMenu subscriptions={subscriptions} />
           </Scrollbar>
         </Box>
         <Divider
