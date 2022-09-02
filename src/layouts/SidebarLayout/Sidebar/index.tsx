@@ -22,7 +22,7 @@ const SidebarWrapper = styled(Box)(
 );
 
 function Sidebar() {
-  const { sidebarToggle, walletAddress, toggleSidebar } = React.useContext(SidebarContext);
+  const { sidebarToggle, walletAddress, toggleSidebar, subscribedChannels, setSubscribedChannels } = React.useContext(SidebarContext);
   const [userInfo, setUserInfo] = React.useState({})
   const [avatarSrc, setAvatarSrc] = React.useState('')
   const [subscriptions, setSubscriptions] = React.useState([])
@@ -52,17 +52,15 @@ function Sidebar() {
             hiveApi.queryChannelInfo(item.target_did, item.channel_id)
               .then(res=>{
                 if(res['find_message'] && res['find_message']['items'].length) {
-                  setSubscriptions(prev=>{
+                  setSubscribedChannels(prev=>{
                     const prevState = [...prev]
                     prevState.push(res['find_message']['items'][0])
                     return prevState
                   })
                 }
-                console.log(res, "++++++++3")
               })
           })
         }
-        // console.log(res, "+++++++++++++")
       })
 
     // hiveApi.querySubscriptionInfoByUserDID(userDid, userDid)
@@ -99,7 +97,7 @@ function Sidebar() {
                 </Typography>
               </Box>
             </Box>
-            <SidebarMenu subscriptions={subscriptions} />
+            <SidebarMenu/>
           </Scrollbar>
         </Box>
         <Divider

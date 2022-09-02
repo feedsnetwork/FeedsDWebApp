@@ -10,8 +10,8 @@ import { HiveApi } from 'src/services/HiveApi'
 
 const PostCard = (props) => {
   const { post, dispName } = props
-  const { focusedChannelId, selfChannels } = useContext(SidebarContext);
-  const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
+  const { selfChannels, subscribedChannels } = useContext(SidebarContext);
+  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id)
   const postObj = JSON.parse(post.content)
   if(post.status == 1)
     postObj.content = "(post deleted)"
@@ -22,10 +22,10 @@ const PostCard = (props) => {
       <Box p={3}>
         <Stack spacing={2}>
           <Stack direction="row" alignItems="center" spacing={2}>
-            <StyledAvatar alt={focusedChannel.name} src={focusedChannel.avatarSrc}/>
+            <StyledAvatar alt={currentChannel.name} src={currentChannel.avatarSrc}/>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
               <Typography component='div' variant="subtitle2" noWrap>
-                {focusedChannel.name}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
+                {currentChannel.name}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
               </Typography>
               <Typography variant="body2" noWrap>
                 @{dispName}

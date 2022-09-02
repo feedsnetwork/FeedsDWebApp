@@ -57,12 +57,7 @@ function Channel() {
   const postRef = React.useRef()
 
   React.useEffect(()=>{
-    if(focusedChannelId) {
-      // hiveApi.queryBackupData()
-      //   .then(res=>{
-      //     console.log(res, "+++++++++++++")
-      //   })
-        
+    if(focusedChannelId) {        
       // const postContent = new PostContentV3()
       // postContent.content = "This is new post"
       // hiveApi.updatePost("4d273607cd54b4850c086ecffd1b059aa7332b35e3c8a153b4d8178f4aa045fc", "396968a639f20908bbe51cba84f14f02620466fc6a103b2c277cc80b3ab22504", "public", "", JSON.stringify(postContent), 0, 1662041339625, "", "")

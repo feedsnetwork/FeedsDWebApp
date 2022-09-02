@@ -188,8 +188,7 @@ const customAnimationForChannels = keyframes`
 `;
 
 function SidebarMenu(props) {
-  const { subscriptions } = props
-  const { closeSidebar } = useContext(SidebarContext);
+  const { closeSidebar, subscribedChannels } = useContext(SidebarContext);
   const { pathname } = useLocation()
   const [isVisibleChannels, setVisibleChannels] = useState(false)
   const [isOpenPost, setOpenPost] = useState(false)
@@ -221,7 +220,7 @@ function SidebarMenu(props) {
                 ))
               }
               {
-                subscriptions.length>0?
+                subscribedChannels.length>0?
                 <ListItem component="div">
                   <Button disableRipple onClick={toggleChannels} endIcon={isVisibleChannels ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon />} >
                     Subscriptions
@@ -256,7 +255,7 @@ function SidebarMenu(props) {
                     />
                     <Box mt={1}>
                       {
-                        subscriptions.map((channel, _i)=>(
+                        subscribedChannels.map((channel, _i)=>(
                           <ListItem component="div" key={_i}>
                             <Button
                               disableRipple
