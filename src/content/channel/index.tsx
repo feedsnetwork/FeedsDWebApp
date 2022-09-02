@@ -1,6 +1,7 @@
 import React from 'react'
 import { Icon } from '@iconify/react';
 import { Grid, Container, Box, Typography, Stack, styled, IconButton } from '@mui/material';
+import { useSnackbar } from 'notistack';
 
 import PostCard from 'src/components/PostCard';
 import { EmptyView } from 'src/components/EmptyView'
@@ -21,17 +22,51 @@ const PostBoxStyle = styled(Box)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
 }));
 
+type mediaDataV3 = {
+  kind: string,           //"image/video/audio"
+  originMediaPath: string,
+  type: string,           //"image/jpg",
+  size: number,           //origin file size
+  thumbnailPath: string    //"thumbnailCid"
+  duration: number,
+  imageIndex: number,
+  additionalInfo: any,
+  memo: any
+} 
+const enum MediaType {
+  noMedia = 0,
+  containsImg = 1,
+  containsVideo = 2,
+}
+class PostContentV3 {
+  version: string = "3.0"
+  content: string = ""
+  mediaData: mediaDataV3[] = []
+  mediaType: MediaType = 0
+}
+
 function Channel() {
   const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);
   const [posts, setPosts] = React.useState([])
   const [dispName, setDispName] = React.useState('');
+  const { enqueueSnackbar } = useSnackbar();
   const prefConf = getAppPreference()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
+  const postRef = React.useRef()
 
   React.useEffect(()=>{
     if(focusedChannelId) {
+      // hiveApi.queryBackupData()
+      //   .then(res=>{
+      //     console.log(res, "+++++++++++++")
+      //   })
+        
+      // const postContent = new PostContentV3()
+      // postContent.content = "This is new post"
+      // hiveApi.updatePost("4d273607cd54b4850c086ecffd1b059aa7332b35e3c8a153b4d8178f4aa045fc", "396968a639f20908bbe51cba84f14f02620466fc6a103b2c277cc80b3ab22504", "public", "", JSON.stringify(postContent), 0, 1662041339625, "", "")
+      //   .then(res=>{console.log(res, '%%%%%%%%%%%%%%%%%%%%%%%%')})
       hiveApi.queryUserDisplayName(userDid, focusedChannelId.toString(), userDid)
         .then(res=>{
           if(res['find_message'])
@@ -39,6 +74,7 @@ function Channel() {
         })
       hiveApi.querySelfPostsByChannel(focusedChannelId.toString())
         .then(res=>{
+          // console.log(res, "---------------------3")
           if(Array.isArray(res)) {
             setPosts(
               prefConf.DP?
@@ -49,6 +85,18 @@ function Channel() {
         })
     }
   }, [focusedChannelId])
+
+  const handlePost = (e) => {
+    if(!postRef['current'])
+      return
+    const postContent = new PostContentV3()
+    postContent.content = postRef['current']['value']
+    hiveApi.publishPost(focusedChannelId.toString(), "", JSON.stringify(postContent))
+      .then(res=>{
+        // console.log(res, "===============2")
+        enqueueSnackbar('Publish post success', { variant: 'success' });
+      })
+  }
 
   return (
     <>
@@ -77,6 +125,7 @@ function Channel() {
           <PostBoxStyle>
             <Stack spacing={2}>
               <StyledTextFieldOutline
+                inputRef={postRef}
                 multiline
                 rows={3}
                 placeholder="What's up"
@@ -102,7 +151,7 @@ function Channel() {
                   </IconButton>
                 </Box>
                 <Box width={150}>
-                  <StyledButton fullWidth>Post</StyledButton>
+                  <StyledButton fullWidth onClick={handlePost}>Post</StyledButton>
                 </Box>
               </Stack>
             </Stack>

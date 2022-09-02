@@ -190,7 +190,7 @@ export class HiveApi {
     }
     * @throws HiveError
   */
-  publishPost(channelId: string, tag: string, content: string, type: string = 'public', status: number = HiveData.PostCommentStatus.available, memo: string, proof: string): Promise<{ targetDid: string, postId: string, createdAt: number, updatedAt: number }> {
+  publishPost(channelId: string, tag: string, content: string, type: string = 'public', status: number = HiveData.PostCommentStatus.available, memo: string = '', proof: string = ''): Promise<{ targetDid: string, postId: string, createdAt: number, updatedAt: number }> {
     return hiveHelper.publishPost(channelId, tag, content, type, status, memo, proof)
   }
 

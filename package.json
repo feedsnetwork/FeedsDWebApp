@@ -73,5 +73,8 @@
       "react-app",
       "react-app/jest"
     ]
+  },
+  "devDependencies": {
+    "react-error-overlay": "^6.0.9"
   }
 }
