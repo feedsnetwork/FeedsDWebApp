@@ -9,7 +9,6 @@ import { HiveApi } from 'src/services/HiveApi'
 const Home = () => {
   const [posts, setPosts] = React.useState([])
   const [dispNames, setDispNames] = React.useState({})
-  const isEmpty = false
   const prefConf = getAppPreference()
   const hiveApi = new HiveApi()
 
@@ -50,7 +49,7 @@ const Home = () => {
   return (
     <>
       {
-        isEmpty?
+        !posts.length?
         <EmptyView/>:
 
         <Container sx={{ mt: 3 }} maxWidth="lg">
