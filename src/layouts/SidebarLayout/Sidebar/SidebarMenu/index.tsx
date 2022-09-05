@@ -4,7 +4,7 @@ import FadeIn from 'react-fade-in';
 // import { Fade } from "react-awesome-reveal";
 import Reveal from "react-awesome-reveal";
 import { keyframes } from "@emotion/react";
-import { ListSubheader, alpha, Box, List, styled, Button, ListItem, InputAdornment, Divider } from '@mui/material';
+import { ListSubheader, alpha, Box, List, styled, Button, ListItem, InputAdornment, Divider, Typography } from '@mui/material';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -265,7 +265,7 @@ function SidebarMenu(props) {
                               startIcon={<SubscriptionAvatar channel={channel} index={_i}/>}
                               sx={{p: '4px 14px !important'}}
                             >
-                              {channel.name}
+                              <Typography variant="body2" sx={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>{channel.name}</Typography>
                             </Button>
                           </ListItem>
                         ))
