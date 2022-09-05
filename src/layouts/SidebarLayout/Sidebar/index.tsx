@@ -51,9 +51,24 @@ function Sidebar() {
             hiveApi.queryChannelInfo(item.target_did, item.channel_id)
               .then(res=>{
                 if(res['find_message'] && res['find_message']['items'].length) {
+                  const channelInfo = res['find_message']['items'][0]
                   setSubscribedChannels(prev=>{
-                    return [...prev, {...res['find_message']['items'][0], target_did: item.target_did}]
+                    return [...prev, {...channelInfo, target_did: item.target_did}]
                   })
+                  hiveApi.downloadScripting(item.target_did, channelInfo.avatar)
+                    .then(res=>{
+                      setSubscribedChannels(prev=>{
+                        const prevState = [...prev]
+                        const channelIndex = prevState.findIndex(channel=>channel.channel_id==channelInfo.channel_id)
+                        if(channelIndex<0)
+                          return prevState
+                        prevState[channelIndex].avatarSrc = res
+                        return prevState
+                      })
+                    })
+                    .catch(err=>{
+                      console.log(err)
+                    })
                 }
               })
           })
