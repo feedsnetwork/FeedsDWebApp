@@ -78,4 +78,4 @@ export const getAppPreference = () => {
   return initConf
 }
 
-export const getDateDistance = (timestamp) => timestamp ? formatDistance(timestamp*1000, new Date(), { addSuffix: false }).replace("about","").trim() : ''
+export const getDateDistance = (timestamp) => timestamp ? formatDistance(new Date(timestamp*1000), new Date(), { addSuffix: false }).replace("about","").trim() : ''
