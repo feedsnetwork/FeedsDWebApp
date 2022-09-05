@@ -22,10 +22,9 @@ const SidebarWrapper = styled(Box)(
 );
 
 function Sidebar() {
-  const { sidebarToggle, walletAddress, toggleSidebar, subscribedChannels, setSubscribedChannels } = React.useContext(SidebarContext);
+  const { sidebarToggle, walletAddress, toggleSidebar, setSubscribedChannels } = React.useContext(SidebarContext);
   const [userInfo, setUserInfo] = React.useState({})
   const [avatarSrc, setAvatarSrc] = React.useState('')
-  const [subscriptions, setSubscriptions] = React.useState([])
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -46,15 +45,15 @@ function Sidebar() {
       })
 
     hiveApi.queryBackupData()
-      .then(res=>{
-        if(Array.isArray(res)) {
-          res.forEach(item=>{
+      .then(backupRes=>{
+        if(Array.isArray(backupRes)) {
+          backupRes.forEach(item=>{
             hiveApi.queryChannelInfo(item.target_did, item.channel_id)
               .then(res=>{
                 if(res['find_message'] && res['find_message']['items'].length) {
                   setSubscribedChannels(prev=>{
                     const prevState = [...prev]
-                    prevState.push(res['find_message']['items'][0])
+                    prevState.push({...res['find_message']['items'][0], target_did: item.target_did})
                     return prevState
                   })
                 }

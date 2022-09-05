@@ -262,7 +262,7 @@ function SidebarMenu(props) {
                               // component={RouterLink}
                               // to={menuItem.to}
                               // onClick={closeSidebar}
-                              startIcon={<SubscriptionAvatar channel={channel}/>}
+                              startIcon={<SubscriptionAvatar channel={channel} index={_i}/>}
                               sx={{p: '4px 14px !important'}}
                             >
                               {channel.name}

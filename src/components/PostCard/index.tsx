@@ -11,7 +11,7 @@ import { HiveApi } from 'src/services/HiveApi'
 const PostCard = (props) => {
   const { post, dispName } = props
   const { selfChannels, subscribedChannels } = useContext(SidebarContext);
-  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id)
+  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   const postObj = JSON.parse(post.content)
   if(post.status == 1)
     postObj.content = "(post deleted)"
