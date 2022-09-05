@@ -52,9 +52,7 @@ function Sidebar() {
               .then(res=>{
                 if(res['find_message'] && res['find_message']['items'].length) {
                   setSubscribedChannels(prev=>{
-                    const prevState = [...prev]
-                    prevState.push({...res['find_message']['items'][0], target_did: item.target_did})
-                    return prevState
+                    return [...prev, {...res['find_message']['items'][0], target_did: item.target_did}]
                   })
                 }
               })
