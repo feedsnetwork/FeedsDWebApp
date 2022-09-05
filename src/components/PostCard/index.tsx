@@ -5,7 +5,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import StyledAvatar from 'src/components/StyledAvatar'
 import StyledButton from 'src/components/StyledButton'
 import { SidebarContext } from 'src/contexts/SidebarContext';
-import { getDateDistance } from 'src/utils/common'
+import { getDateDistance, isValidTime } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const PostCard = (props) => {
@@ -16,7 +16,7 @@ const PostCard = (props) => {
   if(post.status == 1)
     postObj.content = "(post deleted)"
 
-  const distanceTime = getDateDistance(post.created)
+  const distanceTime = isValidTime(post.created)?getDateDistance(post.created):''
   return (
     <Card>
       <Box p={3}>
