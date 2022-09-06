@@ -93,6 +93,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
             pt: `${theme.header.height}`,
             minHeight: '100%',
             background: theme.colors.default.main,
+            overflow: 'hidden',
             [theme.breakpoints.up('lg')]: {
               pt: 0,
             }

@@ -8,7 +8,7 @@ import SidebarMenu from './SidebarMenu';
 import Logo from 'src/components/LogoSign';
 import StyledAvatar from 'src/components/StyledAvatar'
 import { HiveApi } from 'src/services/HiveApi'
-import { reduceDIDstring, getInfoFromDID } from 'src/utils/common'
+import { reduceDIDstring, getInfoFromDID, reduceHexAddress } from 'src/utils/common'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -122,7 +122,7 @@ function Sidebar() {
             <StyledAvatar alt="hames" src={avatarSrc} width={36}/>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
               <Typography variant="subtitle2" noWrap>
-                {userInfo['name'] || walletAddress}
+                {userInfo['name'] || reduceHexAddress(walletAddress)}
               </Typography>
               <Typography variant="body2" noWrap>
                 {reduceDIDstring(userDid)}

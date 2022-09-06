@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import React from 'react';
 import { Box, Stack, Typography, Card, CardHeader, Divider, lighten, CardActionArea, CardContent, Tooltip, IconButton, Avatar, styled } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
@@ -9,14 +9,14 @@ import { getDateDistance, isValidTime } from 'src/utils/common'
 
 const PostCard = (props) => {
   const { post, dispName } = props
-  const { selfChannels, subscribedChannels } = useContext(SidebarContext);
+  const { selfChannels, subscribedChannels } = React.useContext(SidebarContext);
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   const postObj = JSON.parse(post.content)
   if(post.status == 1)
     postObj.content = "(post deleted)"
 
   const distanceTime = isValidTime(post.created)?getDateDistance(post.created):''
-  
+
   return (
     <Card>
       <Box p={3}>
@@ -40,6 +40,14 @@ const PostCard = (props) => {
           <Typography variant="body2" sx={{whiteSpace: 'pre-line'}}>
             {postObj.content}
           </Typography>
+          {
+            !!post.mediaData && post.mediaData.map((media, _i)=>(
+              media.kind == 'image'?
+              <Box component='img' src={media.mediaSrc} key={_i}/>:
+              <div key={_i}/>
+              // <Box component='video' src={media.mediaSrc}/>
+            ))
+          }
         </Stack>
       </Box>
     </Card>

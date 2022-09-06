@@ -41,7 +41,33 @@ const Home = () => {
                     if(typeof post.created == 'object')
                       post.created = new Date(post.created['$date']).getTime()/1000
                   })
-                  setPosts((prevState)=>([...prevState, ...postArr]))
+                  postArr.forEach(post=>{
+                    const contentObj = JSON.parse(post.content)
+                    contentObj.mediaData.forEach((media, _i)=>{
+                      if(!media.originMediaPath)
+                        return
+                      hiveApi.downloadScripting(item.target_did, media.originMediaPath)
+                        .then(res=>{
+                          if(res) {
+                            setPosts(prev=>{
+                              const prevState = [...prev]
+                              const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
+                              if(postIndex<0)
+                                return prevState
+                              if(prevState[postIndex].mediaData)
+                                prevState[postIndex].mediaData.push({...media, mediaSrc: res})
+                              else
+                                prevState[postIndex].mediaData = [{...media, mediaSrc: res}]
+                              return prevState
+                            })
+                          }
+                        })
+                        .catch(err=>{
+                          console.log(err)
+                        })
+                    })
+                  })
+                  setPosts((prevState)=>sortByDate([...prevState, ...postArr]))
                   // console.log(postArr, "---------------------3")
                 }
               })
@@ -50,14 +76,13 @@ const Home = () => {
       })
   }, [])
   
-  const postsInSort = sortByDate([...posts])
   return (
     <>
       {
         !posts.length?
         <EmptyView/>:
 
-        <Container sx={{ mt: 3 }} maxWidth="lg">
+        <Container sx={{ my: 3 }} maxWidth="lg">
           <Grid
             container
             direction="row"
@@ -66,7 +91,7 @@ const Home = () => {
             spacing={3}
           >
             {
-              postsInSort.map((post, _i)=>(
+              posts.map((post, _i)=>(
                 <Grid item xs={12} key={_i}>
                   <PostCard post={post} dispName={dispNames[post.channel_id] || reduceDIDstring(post.target_did)}/>
                 </Grid>
