@@ -36,7 +36,11 @@ const Home = () => {
                     postRes['find_message']['items']:
                     postRes['find_message']['items'].filter(postItem=>!postItem.status)
                   const splitTargetDid = item.target_did.split(':')
-                  postArr.map(post=>{post.target_did = splitTargetDid[splitTargetDid.length-1]})
+                  postArr.map(post=>{
+                    post.target_did = splitTargetDid[splitTargetDid.length-1]
+                    if(typeof post.created == 'object')
+                      post.created = new Date(post.created['$date']).getTime()/1000
+                  })
                   setPosts((prevState)=>([...prevState, ...postArr]))
                   // console.log(postArr, "---------------------3")
                 }

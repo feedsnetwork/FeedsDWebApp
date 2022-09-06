@@ -80,7 +80,7 @@ export const getAppPreference = () => {
 
 export const getDateDistance = (timestamp) => timestamp ? formatDistance(new Date(timestamp*1000), new Date(), { addSuffix: false }).replace("about","").trim() : ''
 
-export const isValidTime = (timestamp) => (new Date(timestamp)).getTime() > 0;
+export const isValidTime = (timestamp) => (new Date(timestamp*1000)).getTime() > 0;
 
 function compareDate( a, b ) {
   if ( a.created > b.created ){

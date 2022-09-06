@@ -6,7 +6,6 @@ import StyledAvatar from 'src/components/StyledAvatar'
 import StyledButton from 'src/components/StyledButton'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { getDateDistance, isValidTime } from 'src/utils/common'
-import { HiveApi } from 'src/services/HiveApi'
 
 const PostCard = (props) => {
   const { post, dispName } = props
@@ -17,6 +16,7 @@ const PostCard = (props) => {
     postObj.content = "(post deleted)"
 
   const distanceTime = isValidTime(post.created)?getDateDistance(post.created):''
+  
   return (
     <Card>
       <Box p={3}>
