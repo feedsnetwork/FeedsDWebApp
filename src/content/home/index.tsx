@@ -3,7 +3,7 @@ import { Grid, Container, Box, Typography, Stack } from '@mui/material';
 
 import PostCard from 'src/components/PostCard';
 import { EmptyView } from 'src/components/EmptyView'
-import { reduceDIDstring, getAppPreference } from 'src/utils/common'
+import { reduceDIDstring, getAppPreference, sortByDate } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const Home = () => {
@@ -45,7 +45,8 @@ const Home = () => {
         }
       })
   }, [])
-
+  
+  const postsInSort = sortByDate([...posts])
   return (
     <>
       {
@@ -61,7 +62,7 @@ const Home = () => {
             spacing={3}
           >
             {
-              posts.map((post, _i)=>(
+              postsInSort.map((post, _i)=>(
                 <Grid item xs={12} key={_i}>
                   <PostCard post={post} dispName={dispNames[post.channel_id] || reduceDIDstring(post.target_did)}/>
                 </Grid>
