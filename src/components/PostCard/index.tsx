@@ -76,7 +76,7 @@ const PostCard = (props) => {
             </Stack>
             <Stack direction="row" alignItems="center" spacing={1}>
               <Icon icon="clarity:chat-bubble-line" width={18}/>
-              <Typography variant="body2" noWrap>0</Typography>
+              <Typography variant="body2" noWrap>{post.commentData?post.commentData.length:0}</Typography>
             </Stack>
           </Stack>
         </Stack>

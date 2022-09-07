@@ -82,6 +82,27 @@ const Home = () => {
                         // console.log(likeRes, "--------------5")
                       })
                   })
+                  const postIds = postArr.map(post=>post.post_id)
+                  hiveApi.queryCommentsFromPosts(item.target_did, item.channel_id, postIds)
+                    .then(commentRes=>{
+                      if(commentRes['find_message'] && commentRes['find_message']['items']) {
+                        const commentArr = commentRes['find_message']['items']
+                        commentArr.forEach(comment=>{
+                          setPosts(prev=>{
+                            const prevState = [...prev]
+                            const postIndex = prevState.findIndex(el=>el.post_id==comment.post_id)
+                            if(postIndex<0)
+                              return prevState
+                            if(prevState[postIndex].commentData)
+                              prevState[postIndex].commentData.push(comment)
+                            else
+                              prevState[postIndex].commentData = [comment]
+                            return prevState
+                          })
+                        })
+                      }
+                      // console.log(commentRes, "--------------6")
+                    })
                   setPosts((prevState)=>sortByDate([...prevState, ...postArr]))
                   // console.log(postArr, "---------------------3")
                 }
