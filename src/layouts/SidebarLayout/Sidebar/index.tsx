@@ -47,6 +47,7 @@ function Sidebar() {
     hiveApi.queryBackupData()
       .then(backupRes=>{
         if(Array.isArray(backupRes)) {
+          console.log(backupRes, "==============backup")
           backupRes.forEach(item=>{
             hiveApi.queryChannelInfo(item.target_did, item.channel_id)
               .then(res=>{
