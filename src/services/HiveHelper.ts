@@ -2154,10 +2154,11 @@ export class HiveHelper {
         })
     }
 
-    private callQueryCommentsFromPosts(targetDid: string, postIds: string[]): Promise<any> {
+    private callQueryCommentsFromPosts(targetDid: string, channelId: string, postIds: string[]): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 const params = {
+                    "channel_id": channelId,
                     "post_ids": postIds
                 }
                 const result = await this.callScript(targetDid, HiveHelper.SCRIPT_QUERY_COMMENT_FROM_POSTS, params)
@@ -2170,8 +2171,8 @@ export class HiveHelper {
         })
     }
 
-    queryCommentsFromPosts(targetDid: string, postIds: string[]): Promise<any> {
-        return this.callQueryCommentsFromPosts(targetDid, postIds)
+    queryCommentsFromPosts(targetDid: string, channelId: string, postIds: string[]): Promise<any> {
+        return this.callQueryCommentsFromPosts(targetDid, channelId, postIds)
     }
 
     /** query public post data by id start*/

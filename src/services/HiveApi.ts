@@ -744,8 +744,8 @@ export class HiveApi {
     * @return 满足条件的所有评论
     * @throws HiveError
   */
-  queryCommentsFromPosts(targetDid: string, postIds: string[]): Promise<any> {
-    return hiveHelper.queryCommentsFromPosts(targetDid, postIds)
+  queryCommentsFromPosts(targetDid: string, channelId: string, postIds: string[]): Promise<any> {
+    return hiveHelper.queryCommentsFromPosts(targetDid, channelId, postIds)
   }
 
   /** query
