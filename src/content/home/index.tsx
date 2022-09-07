@@ -66,6 +66,21 @@ const Home = () => {
                           console.log(err)
                         })
                     })
+                    hiveApi.queryLikeByPost(item.target_did, item.channel_id, post.post_id)
+                      .then(likeRes=>{
+                        if(likeRes['find_message'] && likeRes['find_message']['items']) {
+                          const likeArr = likeRes['find_message']['items']
+                          setPosts(prev=>{
+                            const prevState = [...prev]
+                            const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
+                            if(postIndex<0)
+                              return prevState
+                            prevState[postIndex].likes = likeArr.length
+                            return prevState
+                          })
+                        }
+                        // console.log(likeRes, "--------------5")
+                      })
                   })
                   setPosts((prevState)=>sortByDate([...prevState, ...postArr]))
                   // console.log(postArr, "---------------------3")
