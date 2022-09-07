@@ -9,6 +9,7 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import StyledButton from 'src/components/StyledButton';
 import StyledIconButton from 'src/components/StyledIconButton';
 import StyledTextFieldOutline from 'src/components/StyledTextFieldOutline'
+import { PostContentV3 } from 'src/models/post_content'
 import { reduceDIDstring, getAppPreference } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
@@ -21,29 +22,6 @@ const PostBoxStyle = styled(Box)(({ theme }) => ({
   background: 'rgba(22, 28, 36, 0.8)',
   backdropFilter: 'blur(20px)',
 }));
-
-type mediaDataV3 = {
-  kind: string,           //"image/video/audio"
-  originMediaPath: string,
-  type: string,           //"image/jpg",
-  size: number,           //origin file size
-  thumbnailPath: string    //"thumbnailCid"
-  duration: number,
-  imageIndex: number,
-  additionalInfo: any,
-  memo: any
-} 
-const enum MediaType {
-  noMedia = 0,
-  containsImg = 1,
-  containsVideo = 2,
-}
-class PostContentV3 {
-  version: string = "3.0"
-  content: string = ""
-  mediaData: mediaDataV3[] = []
-  mediaType: MediaType = 0
-}
 
 function Channel() {
   const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);

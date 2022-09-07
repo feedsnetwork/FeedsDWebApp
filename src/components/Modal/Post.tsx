@@ -1,15 +1,45 @@
-import { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, Divider, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { useSnackbar } from 'notistack';
+
 import StyledAvatar from '../StyledAvatar';
 import StyledButton from '../StyledButton';
 import StyledTextFieldOutline from '../StyledTextFieldOutline'
 import StyledIconButton from '../StyledIconButton';
+import { SidebarContext } from 'src/contexts/SidebarContext';
+import { PostContentV3 } from 'src/models/post_content'
+import { HiveApi } from 'src/services/HiveApi'
 
 function PostDlg(props) {
   const { setOpen, isOpen } = props;
-
+  const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);
+  const [isOnValidation, setOnValidation] = React.useState(false);
+  const [postext, setPostext] = React.useState('');
+  const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId) || {}
+  const { enqueueSnackbar } = useSnackbar();
+  const hiveApi = new HiveApi()
+  const postRef = React.useRef(null)
+  
+  const handlePost = (e) => {
+    setOnValidation(true)
+    if(!postext){
+      postRef.current.focus()
+      return
+    }
+    const postContent = new PostContentV3()
+    postContent.content = postext
+    hiveApi.publishPost(focusedChannelId.toString(), "", JSON.stringify(postContent))
+      .then(res=>{
+        // console.log(res, "===============2")
+        enqueueSnackbar('Publish post success', { variant: 'success' });
+      })
+  }
+  
+  const handleChangePostext = (e) => {
+    setPostext(e.target.value)
+  }
   const handleClose = () => {
     setOpen(false);
   };
@@ -32,16 +62,19 @@ function PostDlg(props) {
       </DialogTitle>
       <DialogContent sx={{minWidth: {sm: 'unset', md: 500}}}>
         <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-          <StyledAvatar alt='Elastos' src='/static/images/avatars/2.jpg'/>
-          <Typography variant="subtitle1">
-            MMA Lover
-          </Typography>
+          <StyledAvatar alt={focusedChannel.name} src={focusedChannel.avatarSrc}/>
+          <Typography variant="subtitle1">{focusedChannel.name}</Typography>
         </Stack>
         <Stack spacing={2}>
           <StyledTextFieldOutline
+            inputRef={postRef}
+            value={postext}
             multiline
             rows={3}
             placeholder="What's up"
+            onChange={handleChangePostext}
+            error={isOnValidation&&!postext}
+            helperText={isOnValidation&&!postext?'Description is required':''}
           />
           <Stack direction='row'>
             <Box sx={{ alignItems: 'center', display: 'flex', flexGrow: 1 }}>
@@ -64,7 +97,7 @@ function PostDlg(props) {
               </IconButton>
             </Box>
             <Box width={150}>
-              <StyledButton fullWidth>Post</StyledButton>
+              <StyledButton fullWidth onClick={handlePost}>Post</StyledButton>
             </Box>
           </Stack>
         </Stack>

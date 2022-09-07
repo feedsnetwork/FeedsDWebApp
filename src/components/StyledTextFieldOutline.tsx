@@ -2,7 +2,7 @@ import { TextField, styled } from '@mui/material';
 
 const StyledTextFieldOutline = styled(TextField)(
   ({ theme }) => `
-    &:before {
+    & .MuiInputBase-root:before {
       content: "";
       position: absolute;
       inset: 0;
@@ -14,9 +14,16 @@ const StyledTextFieldOutline = styled(TextField)(
         linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
               mask-composite: exclude; 
+      z-index: 0;
+    }
+    & textarea {
+      z-index: 1;
     }
     & .MuiOutlinedInput-notchedOutline {
       border-width: 0px;
+    }
+    & .Mui-error>.MuiOutlinedInput-notchedOutline {
+      border-width: 1px;
     }
     background: transparent;
 `
