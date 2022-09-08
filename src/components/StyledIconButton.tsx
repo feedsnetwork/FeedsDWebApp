@@ -2,7 +2,7 @@ import { IconButton, styled } from '@mui/material';
 import { Icon } from '@iconify/react';
 
 const StyledIconButton = ({icon}) => 
-  <IconButton sx={{
+  <IconButton component="span" sx={{
     '& .iconify>path[fill=currentColor]': {
       fill: 'unset'
     }

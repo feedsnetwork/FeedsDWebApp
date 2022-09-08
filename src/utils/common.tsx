@@ -96,3 +96,18 @@ export const sortByDate = (objs) => {
   objs.sort( compareDate );
   return objs
 }
+
+export const getBufferFromFile = (f) => (
+  new Promise((resolve, reject)=>{
+    const reader = new window.FileReader();
+    reader.readAsArrayBuffer(f);
+    reader.onloadend = async() => {
+      try {
+        const fileContent = Buffer.from(reader.result as string)
+        resolve(fileContent)
+      } catch (error) {
+        reject(error);
+      }
+    }
+  })
+)
