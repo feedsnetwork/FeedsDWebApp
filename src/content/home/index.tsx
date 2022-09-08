@@ -3,16 +3,19 @@ import { Grid, Container, Box, Typography, Stack } from '@mui/material';
 
 import PostCard from 'src/components/PostCard';
 import { EmptyView } from 'src/components/EmptyView'
+import PostSkeleton from 'src/components/Skeleton/PostSkeleton'
 import { reduceDIDstring, getAppPreference, sortByDate } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const Home = () => {
   const [posts, setPosts] = React.useState([])
+  const [isLoading, setIsLoading] = React.useState(false)
   const [dispNames, setDispNames] = React.useState({})
   const prefConf = getAppPreference()
   const hiveApi = new HiveApi()
 
   React.useEffect(()=>{
+    setIsLoading(true)
     hiveApi.queryBackupData()
       .then(res=>{
         if(Array.isArray(res)) {
@@ -103,6 +106,7 @@ const Home = () => {
                       }
                       // console.log(commentRes, "--------------6")
                     })
+                  setIsLoading(false)
                   setPosts((prevState)=>sortByDate([...prevState, ...postArr]))
                   // console.log(postArr, "---------------------3")
                 }
@@ -112,10 +116,11 @@ const Home = () => {
       })
   }, [])
   
+  const loadingSkeletons = Array(5).fill(null)
   return (
     <>
       {
-        !posts.length?
+        !isLoading && !posts.length?
         <EmptyView/>:
 
         <Container sx={{ my: 3 }} maxWidth="lg">
@@ -127,6 +132,13 @@ const Home = () => {
             spacing={3}
           >
             {
+              isLoading?
+              loadingSkeletons.map((_, _i)=>(
+                <Grid item xs={12} key={_i}>
+                  <PostSkeleton/>
+                </Grid>
+              )):
+
               posts.map((post, _i)=>(
                 <Grid item xs={12} key={_i}>
                   <PostCard post={post} dispName={dispNames[post.channel_id] || reduceDIDstring(post.target_did)}/>
