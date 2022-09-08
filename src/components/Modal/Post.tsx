@@ -20,6 +20,7 @@ function PostDlg(props) {
   const { setOpen, isOpen } = props;
   const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);
   const [isOnValidation, setOnValidation] = React.useState(false);
+  const [onProgress, setOnProgress] = React.useState(false);
   const [postext, setPostext] = React.useState('');
   const [imageAttach, setImageAttach] = React.useState(null);
   
@@ -29,8 +30,11 @@ function PostDlg(props) {
   const postRef = React.useRef(null)
   
   React.useEffect(()=>{
-    if(!isOpen)
+    if(!isOpen) {
       setOnValidation(false)
+      setPostext('')
+      setOnProgress(false)
+    }
   }, [isOpen])
 
   const handlePost = async (e) => {
@@ -39,6 +43,7 @@ function PostDlg(props) {
       postRef.current.focus()
       return
     }
+    setOnProgress(true)
     const postContent = new PostContentV3()
     postContent.content = postext
     if(imageAttach) {
@@ -63,6 +68,8 @@ function PostDlg(props) {
       .then(res=>{
         // console.log(res, "===============2")
         enqueueSnackbar('Publish post success', { variant: 'success' });
+        setOnProgress(false)
+        setOpen(false);
       })
   }
   const handleUploadClick = (e) => {
@@ -202,7 +209,7 @@ function PostDlg(props) {
               </IconButton>
             </Box>
             <Box width={150}>
-              <StyledButton fullWidth onClick={handlePost}>Post</StyledButton>
+              <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={handlePost}>Post</StyledButton>
             </Box>
           </Stack>
         </Stack>
