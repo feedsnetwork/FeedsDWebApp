@@ -1,4 +1,4 @@
-type mediaDataV3 = {
+export type mediaDataV3 = {
   kind: string,           //"image/video/audio"
   originMediaPath: string,
   type: string,           //"image/jpg",
@@ -9,7 +9,7 @@ type mediaDataV3 = {
   additionalInfo: any,
   memo: any
 } 
-const enum MediaType {
+export const enum MediaType {
   noMedia = 0,
   containsImg = 1,
   containsVideo = 2,

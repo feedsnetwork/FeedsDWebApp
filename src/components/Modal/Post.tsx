@@ -12,7 +12,7 @@ import StyledButton from '../StyledButton';
 import StyledTextFieldOutline from '../StyledTextFieldOutline'
 import StyledIconButton from '../StyledIconButton';
 import { SidebarContext } from 'src/contexts/SidebarContext';
-import { PostContentV3 } from 'src/models/post_content'
+import { PostContentV3, mediaDataV3, MediaType } from 'src/models/post_content'
 import { HiveApi } from 'src/services/HiveApi'
 import { getBufferFromFile } from 'src/utils/common'
 
@@ -42,21 +42,32 @@ function PostDlg(props) {
     const postContent = new PostContentV3()
     postContent.content = postext
     if(imageAttach) {
-      const imageBuffer = await getBufferFromFile(imageAttach)
-      hiveApi.uploadMediaDataWithBuffer(imageBuffer as Buffer)
-        .then(res=>{
-          console.log(res, "===============7")
-        })
-    } else {
-      hiveApi.publishPost(focusedChannelId.toString(), "", JSON.stringify(postContent))
-        .then(res=>{
-          // console.log(res, "===============2")
-          enqueueSnackbar('Publish post success', { variant: 'success' });
-        })
+      const imageBuffer = await getBufferFromFile(imageAttach) as Buffer
+      const base64content = imageBuffer.toString('base64')
+      const imageHivePath = await hiveApi.uploadMediaDataWithString(`data:${imageAttach.type};base64,${base64content}`)
+      const tempMediaData: mediaDataV3 = {
+        kind: 'image',
+        originMediaPath: imageHivePath,
+        type: imageAttach.type,
+        size: imageAttach.size,
+        thumbnailPath: imageHivePath,
+        duration: 0,
+        imageIndex: 0,
+        additionalInfo: null,
+        memo: null
+      }
+      postContent.mediaData.push(tempMediaData)
+      postContent.mediaType = MediaType.containsImg
     }
+    hiveApi.publishPost(focusedChannelId.toString(), "", JSON.stringify(postContent))
+      .then(res=>{
+        // console.log(res, "===============2")
+        enqueueSnackbar('Publish post success', { variant: 'success' });
+      })
   }
   const handleUploadClick = (e) => {
     var file = e.target.files[0];
+    console.log(file)
     setImageAttach(
       Object.assign(file, {
         preview: URL.createObjectURL(file)
