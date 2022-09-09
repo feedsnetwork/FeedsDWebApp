@@ -25,7 +25,7 @@ const PostBoxStyle = styled(Box)(({ theme }) => ({
 }));
 
 function Channel() {
-  const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);
+  const { focusedChannelId, selfChannels, publishPostNumber } = React.useContext(SidebarContext);
   const [posts, setPosts] = React.useState([])
   const [dispName, setDispName] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false)
@@ -63,7 +63,7 @@ function Channel() {
           }
         })
     }
-  }, [focusedChannelId])
+  }, [focusedChannelId, publishPostNumber])
 
   const handlePost = (e) => {
     if(!postRef['current'])
