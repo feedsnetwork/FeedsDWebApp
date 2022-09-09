@@ -9,8 +9,9 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import StyledButton from 'src/components/StyledButton';
 import StyledIconButton from 'src/components/StyledIconButton';
 import StyledTextFieldOutline from 'src/components/StyledTextFieldOutline'
+import PostSkeleton from 'src/components/Skeleton/PostSkeleton'
 import { PostContentV3 } from 'src/models/post_content'
-import { reduceDIDstring, getAppPreference } from 'src/utils/common'
+import { reduceDIDstring, getAppPreference, sortByDate } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const PostBoxStyle = styled(Box)(({ theme }) => ({
@@ -27,6 +28,7 @@ function Channel() {
   const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);
   const [posts, setPosts] = React.useState([])
   const [dispName, setDispName] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false)
   const { enqueueSnackbar } = useSnackbar();
   const prefConf = getAppPreference()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -40,6 +42,7 @@ function Channel() {
       // postContent.content = "This is new post"
       // hiveApi.updatePost("4d273607cd54b4850c086ecffd1b059aa7332b35e3c8a153b4d8178f4aa045fc", "396968a639f20908bbe51cba84f14f02620466fc6a103b2c277cc80b3ab22504", "public", "", JSON.stringify(postContent), 0, 1662041339625, "", "")
       //   .then(res=>{console.log(res, '%%%%%%%%%%%%%%%%%%%%%%%%')})
+      setIsLoading(true)
       hiveApi.queryUserDisplayName(userDid, focusedChannelId.toString(), userDid)
         .then(res=>{
           if(res['find_message'])
@@ -48,11 +51,14 @@ function Channel() {
       hiveApi.querySelfPostsByChannel(focusedChannelId.toString())
         .then(res=>{
           // console.log(res, "---------------------3")
+          setIsLoading(false)
           if(Array.isArray(res)) {
             setPosts(
-              prefConf.DP?
-              res:
-              res.filter(item=>!item.status)
+              sortByDate(
+                prefConf.DP?
+                res:
+                res.filter(item=>!item.status)
+              )
             )
           }
         })
@@ -71,6 +77,7 @@ function Channel() {
       })
   }
 
+  const loadingSkeletons = Array(5).fill(null)
   return (
     <>
       {
@@ -87,6 +94,13 @@ function Channel() {
               spacing={3}
             >
               {
+                isLoading?
+                loadingSkeletons.map((_, _i)=>(
+                  <Grid item xs={12} key={_i}>
+                    <PostSkeleton/>
+                  </Grid>
+                )):
+
                 posts.map((post, _i)=>(
                   <Grid item xs={12} key={_i}>
                     <PostCard post={post} dispName={dispName || reduceDIDstring(feedsDid)}/>
