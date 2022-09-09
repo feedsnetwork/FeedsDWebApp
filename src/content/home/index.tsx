@@ -5,9 +5,11 @@ import PostCard from 'src/components/PostCard';
 import { EmptyView } from 'src/components/EmptyView'
 import PostSkeleton from 'src/components/Skeleton/PostSkeleton'
 import { reduceDIDstring, getAppPreference, sortByDate } from 'src/utils/common'
+import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi'
 
 const Home = () => {
+  const { publishPostNumber } = React.useContext(SidebarContext);
   const [posts, setPosts] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(false)
   const [dispNames, setDispNames] = React.useState({})
@@ -114,7 +116,7 @@ const Home = () => {
           })
         }
       })
-  }, [])
+  }, [publishPostNumber])
   
   const loadingSkeletons = Array(5).fill(null)
   return (

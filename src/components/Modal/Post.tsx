@@ -18,7 +18,7 @@ import { getBufferFromFile } from 'src/utils/common'
 
 function PostDlg(props) {
   const { setOpen, isOpen } = props;
-  const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);
+  const { focusedChannelId, selfChannels, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
   const [postext, setPostext] = React.useState('');
@@ -68,6 +68,7 @@ function PostDlg(props) {
       .then(res=>{
         // console.log(res, "===============2")
         enqueueSnackbar('Publish post success', { variant: 'success' });
+        setPublishPostNumber(publishPostNumber+1)
         setOnProgress(false)
         setOpen(false);
       })
