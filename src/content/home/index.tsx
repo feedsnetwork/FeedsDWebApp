@@ -9,14 +9,16 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi'
 
 const Home = () => {
-  const { publishPostNumber } = React.useContext(SidebarContext);
-  const [posts, setPosts] = React.useState([])
+  const { publishPostNumber, postsInHome, setPostsInHome } = React.useContext(SidebarContext);
+  // const [posts, setPosts] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(false)
   const [dispNames, setDispNames] = React.useState({})
   const prefConf = getAppPreference()
   const hiveApi = new HiveApi()
 
   React.useEffect(()=>{
+    if(postsInHome.length)
+      return
     setIsLoading(true)
     hiveApi.queryBackupData()
       .then(res=>{
@@ -54,7 +56,7 @@ const Home = () => {
                       hiveApi.downloadScripting(item.target_did, media.originMediaPath)
                         .then(res=>{
                           if(res) {
-                            setPosts(prev=>{
+                            setPostsInHome(prev=>{
                               const prevState = [...prev]
                               const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
                               if(postIndex<0)
@@ -75,7 +77,7 @@ const Home = () => {
                       .then(likeRes=>{
                         if(likeRes['find_message'] && likeRes['find_message']['items']) {
                           const likeArr = likeRes['find_message']['items']
-                          setPosts(prev=>{
+                          setPostsInHome(prev=>{
                             const prevState = [...prev]
                             const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
                             if(postIndex<0)
@@ -93,7 +95,7 @@ const Home = () => {
                       if(commentRes['find_message'] && commentRes['find_message']['items']) {
                         const commentArr = commentRes['find_message']['items']
                         commentArr.forEach(comment=>{
-                          setPosts(prev=>{
+                          setPostsInHome(prev=>{
                             const prevState = [...prev]
                             const postIndex = prevState.findIndex(el=>el.post_id==comment.post_id)
                             if(postIndex<0)
@@ -109,7 +111,7 @@ const Home = () => {
                       // console.log(commentRes, "--------------6")
                     })
                   setIsLoading(false)
-                  setPosts((prevState)=>sortByDate([...prevState, ...postArr]))
+                  setPostsInHome((prevState)=>sortByDate([...prevState, ...postArr]))
                   // console.log(postArr, "---------------------3")
                 }
               })
@@ -122,7 +124,7 @@ const Home = () => {
   return (
     <>
       {
-        !isLoading && !posts.length?
+        !isLoading && !postsInHome.length?
         <EmptyView/>:
 
         <Container sx={{ my: 3 }} maxWidth="lg">
@@ -141,7 +143,7 @@ const Home = () => {
                 </Grid>
               )):
 
-              posts.map((post, _i)=>(
+              postsInHome.map((post, _i)=>(
                 <Grid item xs={12} key={_i}>
                   <PostCard post={post} dispName={dispNames[post.channel_id] || reduceDIDstring(post.target_did)}/>
                 </Grid>

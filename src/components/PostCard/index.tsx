@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Stack, Typography, Card, CardHeader, Divider, lighten, CardActionArea, CardContent, Tooltip, IconButton, Avatar, styled } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
@@ -9,17 +10,33 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import { getDateDistance, isValidTime } from 'src/utils/common'
 
 const PostCard = (props) => {
-  const { post, dispName } = props
+  const navigate = useNavigate();
+  const { post, dispName, level=1 } = props
   const { selfChannels, subscribedChannels } = React.useContext(SidebarContext);
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
-  const postObj = JSON.parse(post.content)
-  if(post.status == 1)
-    postObj.content = "(post deleted)"
+  
+  const naviage2detail = (e) => {
+    navigate(`/post/${post.post_id}`);
+  }
 
-  const distanceTime = isValidTime(post.created)?getDateDistance(post.created):''
+  let postObj = {content: ''}
+  let distanceTime = ''
+  let cardProps = {}
+  if(level==1) {
+    postObj = JSON.parse(post.content)
+    if(post.status == 1)
+      postObj.content = "(post deleted)"
+    distanceTime = isValidTime(post.created)?getDateDistance(post.created):''
+    cardProps = {style: {cursor: 'pointer'}, onClick: naviage2detail}
+  } 
+  else if(level == 2) {
+    postObj.content = post.content
+    distanceTime = isValidTime(post.created_at/1000)?getDateDistance(post.created_at/1000):''
+  }
+
 
   return (
-    <Card>
+    <Card {...cardProps}>
       <Box p={3}>
         <Stack spacing={2}>
           <Stack direction="row" alignItems="center" spacing={2}>

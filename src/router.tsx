@@ -23,6 +23,9 @@ const SignIn = Loader(lazy(() => import('src/content/signin')));
 const Home = Loader(
   lazy(() => import('src/content/home'))
 );
+const PostDetail = Loader(
+  lazy(() => import('src/content/post'))
+)
 const Profile = Loader(
   lazy(() => import('src/content/profile'))
 );
@@ -118,6 +121,16 @@ const routes: RouteObject[] = [
       {
         path: '',
         element: <Home />
+      }
+    ]
+  },
+  {
+    path: 'post/:post_id',
+    element: <SidebarLayout />,
+    children: [
+      {
+        path: '',
+        element: <PostDetail />
       }
     ]
   },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Stack, Box, Button, Hidden, ListItemText, Typography, styled, alpha, lighten } from '@mui/material';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 
@@ -46,9 +46,11 @@ const HeaderWrapper = styled(Box)(
 );
 function FloatingHeader() {
   const { pageType, setPageType, closeOverPage } = React.useContext(OverPageContext);
-  const { focusedChannelId, selfChannels } = React.useContext(SidebarContext);
+  const { focusedChannelId, selfChannels, postsInHome } = React.useContext(SidebarContext);
   const [secondaryData, setSecondaryData] = React.useState(0)
   const { pathname } = useLocation()
+  const navigate = useNavigate();
+  const params = useParams()
   const hiveApi = new HiveApi()
 
   React.useEffect(()=>{
@@ -68,7 +70,9 @@ function FloatingHeader() {
   }, [focusedChannelId])
 
   const handleClose = (e) => {
-
+    if(pathname.startsWith('/post/')) {
+      navigate('/home')
+    }
   }
   
   const getActionText = () => {
@@ -87,6 +91,11 @@ function FloatingHeader() {
       const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
       primaryText = focusedChannel.name
       secondaryText = `${secondaryData} post`
+    }
+    else if(pathname.startsWith('/post/')) {
+      const focusedPost = postsInHome.find(item=>item.post_id==params.post_id)
+      primaryText = "Post"
+      secondaryText = `${focusedPost.commentData?focusedPost.commentData.length:0} comments`
     }
     else if(pageType==='AddChannel')
       primaryText = "Add Channel"
