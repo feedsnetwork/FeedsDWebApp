@@ -94,7 +94,24 @@ const Home = () => {
                     .then(commentRes=>{
                       if(commentRes['find_message'] && commentRes['find_message']['items']) {
                         const commentArr = commentRes['find_message']['items']
-                        commentArr.forEach(comment=>{
+                        const ascCommentArr = sortByDate(commentArr, 'asc')
+                        const linkedComments = ascCommentArr.reduce((res, item)=>{
+                          if(item.refcomment_id == '0') {
+                              res.push(item)
+                              return res
+                          }
+                          const tempRefIndex = res.findIndex((c) => c.comment_id == item.refcomment_id)
+                          if(tempRefIndex<0){
+                              res.push(item)
+                              return res
+                          }
+                          if(res[tempRefIndex]['commentData'])
+                              res[tempRefIndex]['commentData'].push(item)
+                          else res[tempRefIndex]['commentData'] = [item]
+                          return res
+                        }, []).reverse()
+                      
+                        linkedComments.forEach(comment=>{
                           setPostsInHome(prev=>{
                             const prevState = [...prev]
                             const postIndex = prevState.findIndex(el=>el.post_id==comment.post_id)

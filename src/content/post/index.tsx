@@ -47,7 +47,6 @@ const Post = () => {
         })
     })
   }, [])
-  console.log(dispNames, "======@")
   const dispNameOfPost = dispNames[selectedPost.post_id] || reduceDIDstring(selectedPost.target_did)
   return (
     <>

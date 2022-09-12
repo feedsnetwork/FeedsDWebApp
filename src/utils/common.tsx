@@ -82,7 +82,7 @@ export const getDateDistance = (timestamp) => timestamp ? formatDistance(new Dat
 
 export const isValidTime = (timestamp) => (new Date(timestamp*1000)).getTime() > 0;
 
-function compareDate( a, b ) {
+function compareDateDesc( a, b ) {
   if ( a.created > b.created ){
     return -1;
   }
@@ -92,8 +92,18 @@ function compareDate( a, b ) {
   return 0;
 }
 
-export const sortByDate = (objs) => {
-  objs.sort( compareDate );
+function compareDateAsc( a, b ) {
+  if ( a.created_at > b.created_at ){
+    return 1;
+  }
+  if ( a.created_at < b.created_at ){
+    return -1;
+  }
+  return 0;
+}
+
+export const sortByDate = (objs, direction = 'desc') => {
+  objs.sort( direction=="desc"? compareDateDesc: compareDateAsc );
   return objs
 }
 

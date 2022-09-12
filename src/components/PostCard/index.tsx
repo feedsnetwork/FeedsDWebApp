@@ -34,7 +34,6 @@ const PostCard = (props) => {
     distanceTime = isValidTime(post.created_at/1000)?getDateDistance(post.created_at/1000):''
   }
 
-
   return (
     <Card {...cardProps}>
       <Box p={3}>
