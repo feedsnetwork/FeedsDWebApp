@@ -40,14 +40,15 @@ const Post = () => {
             const dispItem = dispNameRes['find_message']['items'][0]
             setDispNames(prevState=>{
               const tempPrev = {...prevState}
-              tempPrev[comment.post_id] = dispItem.display_name
+              tempPrev[comment.comment_id] = dispItem.display_name
               return tempPrev
             })
           }
         })
     })
   }, [])
-  
+  console.log(dispNames, "======@")
+  const dispNameOfPost = dispNames[selectedPost.post_id] || reduceDIDstring(selectedPost.target_did)
   return (
     <>
       <Container sx={{ my: 3 }} maxWidth="lg">
@@ -59,14 +60,15 @@ const Post = () => {
           spacing={3}
         >
           <Grid item xs={12}>
-            <PostCard post={selectedPost} dispName={dispNames[selectedPost.post_id] || reduceDIDstring(selectedPost.target_did)}/>
+            <PostCard post={selectedPost} dispName={dispNameOfPost}/>
           </Grid>
           {
-            comments.map((comment, _i)=>(
-              <Grid item xs={12} key={_i}>
-                <PostCard post={comment} dispName={dispNames[comment.post_id] || reduceDIDstring(comment.creater_did)} level={2}/>
+            comments.map((comment, _i)=>{
+              const dispNameOfComment = dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)
+              return <Grid item xs={12} key={_i}>
+                <PostCard post={comment} dispName={dispNameOfComment} level={2} replyingTo={dispNameOfPost}/>
               </Grid>
-            ))
+            })
           }
         </Grid>
       </Container>

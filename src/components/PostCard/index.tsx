@@ -11,7 +11,7 @@ import { getDateDistance, isValidTime } from 'src/utils/common'
 
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, dispName, level=1 } = props
+  const { post, dispName, level=1, replyingTo='' } = props
   const { selfChannels, subscribedChannels } = React.useContext(SidebarContext);
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   
@@ -41,14 +41,28 @@ const PostCard = (props) => {
         <Stack spacing={2}>
           <Stack direction="row" alignItems="center" spacing={2}>
             <StyledAvatar alt={currentChannel.name} src={currentChannel.avatarSrc}/>
-            <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-              <Typography component='div' variant="subtitle2" noWrap>
-                {currentChannel.name}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
-              </Typography>
-              <Typography variant="body2" noWrap>
-                @{dispName}
-              </Typography>
-            </Box>
+            {
+              level==1 &&
+              <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                <Typography component='div' variant="subtitle2" noWrap>
+                  {currentChannel.name}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
+                </Typography>
+                <Typography variant="body2" noWrap>
+                  @{dispName}
+                </Typography>
+              </Box>
+            }
+            {
+              level==2 &&
+              <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                <Typography component='div' variant="subtitle2" noWrap>
+                  @{dispName}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
+                </Typography>
+                <Typography variant="body2" noWrap>
+                  <b>Replying to</b> @{replyingTo}
+                </Typography>
+              </Box>
+            }
             <Box>
               <IconButton aria-label="settings" size='small'>
                 <MoreVertIcon />
