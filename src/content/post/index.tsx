@@ -10,13 +10,15 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi'
 
 const Post = () => {
-  const { postsInHome } = React.useContext(SidebarContext);
+  const { postsInHome, selfChannels, subscribedChannels } = React.useContext(SidebarContext);
   const params = useParams()
   const [isLoading, setIsLoading] = React.useState(false)
   const [dispNames, setDispNames] = React.useState({})
+  const [dispAvatar, setDispAvatar] = React.useState({})
   const prefConf = getAppPreference()
   const hiveApi = new HiveApi()
   const selectedPost = postsInHome.find(item=>item.post_id == params.post_id)
+  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==selectedPost.channel_id) || {}
   const comments = selectedPost.commentData || []
   
   console.log(selectedPost, comments, "++++11")
@@ -39,6 +41,26 @@ const Post = () => {
   const getCreatorDispNames = (comments_arr) => {
     if(comments_arr)
       comments_arr.forEach(comment=>{
+        if(comment.creater_did == targetDID) {
+          setDispAvatar(prevState=>{
+            const tempPrev = {...prevState}
+            tempPrev[comment.comment_id] = { name: currentChannel.name, src: currentChannel.avatarSrc }
+            return tempPrev
+          })
+        } else {
+          hiveApi.getHiveUrl(comment.creater_did)
+            .then(async hiveUrl=>{
+              const res =  await hiveApi.downloadFileByHiveUrl(comment.creater_did, hiveUrl)
+              if(res && res.length) {
+                const base64Content = res.toString('base64')
+                setDispAvatar(prevState=>{
+                  const tempPrev = {...prevState}
+                  tempPrev[comment.comment_id] = { src: `data:image/png;base64,${base64Content}` }
+                  return tempPrev
+                })
+              }
+            })
+        }
         hiveApi.queryUserDisplayName(targetDID, selectedPost.channel_id, comment.creater_did)
           .then(dispNameRes=>{
             if(dispNameRes['find_message'] && dispNameRes['find_message']['items']) {
@@ -73,7 +95,7 @@ const Post = () => {
             comments.map((comment, _i)=>{
               const dispNameOfComment = dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)
               return <Grid item xs={12} key={_i}>
-                <PostCard post={comment} dispName={dispNameOfComment} dispNames={dispNames} level={2} replyingTo={dispNameOfPost}/>
+                <PostCard post={comment} dispName={dispNameOfComment} dispNames={dispNames} dispAvatar={dispAvatar} level={2} replyingTo={dispNameOfPost}/>
               </Grid>
             })
           }

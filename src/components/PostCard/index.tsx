@@ -7,7 +7,7 @@ import { Icon } from '@iconify/react';
 import StyledAvatar from 'src/components/StyledAvatar'
 import StyledButton from 'src/components/StyledButton'
 import { SidebarContext } from 'src/contexts/SidebarContext';
-import { getDateDistance, isValidTime } from 'src/utils/common'
+import { getDateDistance, isValidTime, reduceDIDstring } from 'src/utils/common'
 
 const PostBody = (props) => {
   const { post, contentObj, isReply=false } = props
@@ -80,7 +80,7 @@ const PostBody = (props) => {
 }
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, dispName, level=1, replyingTo='', dispNames={} } = props
+  const { post, dispName, level=1, replyingTo='', dispNames={}, dispAvatar={} } = props
   const { selfChannels, subscribedChannels } = React.useContext(SidebarContext);
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   
@@ -98,7 +98,7 @@ const PostCard = (props) => {
     cardProps = {style: {cursor: 'pointer'}, onClick: naviage2detail}
   } 
   else if(level == 2) {
-    contentObj.avatar = { name: currentChannel.name, src: currentChannel.avatarSrc }
+    contentObj.avatar = dispAvatar[post.comment_id] || {}
     contentObj.content = post.content
     contentObj.primaryName = `@${dispName}`
     contentObj.secondaryName = <><b>Replying to</b> @{replyingTo}</>
@@ -111,21 +111,23 @@ const PostCard = (props) => {
     <Card {...cardProps}>
       <Box p={3}>
         <PostBody {...BodyProps}/>
-        <Stack px={3} pt={2} spacing={1}>
           {
             level==2 && post.commentData && 
-            post.commentData.map((comment, _i)=>{
-              let subContentObj = {
-                avatar: {}, 
-                primaryName: dispNames[comment.comment_id], 
-                secondaryName: <><b>Replying to</b> @{dispName}</>, 
-                content: comment.content
+            <Stack px={3} pt={2} spacing={1}>
+              {
+                post.commentData.map((comment, _i)=>{
+                  let subContentObj = {
+                    avatar: dispAvatar[comment.comment_id] || {}, 
+                    primaryName: comment.creater_did == currentChannel.target_did? `@${currentChannel.name}`: `@${dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)}`, 
+                    secondaryName: <><b>Replying to</b> @{dispName}</>, 
+                    content: comment.content
+                  }
+                  const subBodyProps = { post: comment, contentObj: subContentObj, isReply: true }
+                  return <PostBody {...subBodyProps} key={_i}/>
+                })
               }
-              const subBodyProps = { post: comment, contentObj: subContentObj, isReply: true }
-              return <PostBody {...subBodyProps} key={_i}/>
-            })
+            </Stack>
           }
-        </Stack>
       </Box>
     </Card>
   );
