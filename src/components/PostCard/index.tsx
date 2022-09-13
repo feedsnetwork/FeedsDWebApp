@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Stack, Typography, Card, CardHeader, Divider, IconButton } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
+import { useSnackbar } from 'notistack';
 
 import StyledAvatar from 'src/components/StyledAvatar'
 import StyledButton from 'src/components/StyledButton'
@@ -83,7 +84,7 @@ const PostBody = (props) => {
 const PostCard = (props) => {
   const navigate = useNavigate();
   const { post, dispName, level=1, replyingTo='', replyable=false, dispNames={}, dispAvatar={} } = props
-  const { selfChannels, subscribedChannels, myAvatar, userInfo, walletAddress } = React.useContext(SidebarContext);
+  const { selfChannels, subscribedChannels, myAvatar, userInfo, walletAddress, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   
   const [isOnValidation, setOnValidation] = React.useState(false);
@@ -91,9 +92,22 @@ const PostCard = (props) => {
   const [commentext, setCommentext] = React.useState('');
   const commentRef = React.useRef(null)
   const hiveApi = new HiveApi()
+  const { enqueueSnackbar } = useSnackbar();
 
   const handleComment = async (e) => {
-    
+    setOnValidation(true)
+    if(!commentext){
+      commentRef.current.focus()
+      return
+    }
+    setOnProgress(true)
+    hiveApi.createComment(currentChannel.target_did, currentChannel.channel_id, post.post_id, '0', commentext)
+      .then(res=>{
+        // console.log(res, "===============2")
+        enqueueSnackbar('Reply comment success', { variant: 'success' });
+        setPublishPostNumber(publishPostNumber+1)
+        setOnProgress(false)
+      })
   }
   
   const handleChangeCommentext = (e) => {
@@ -153,7 +167,7 @@ const PostCard = (props) => {
                 helperText={isOnValidation&&!commentext?'Message is required':''}
               />
               
-              <Stack direction='row' sx={{textAlign: 'right'}}>
+              <Stack direction='row' sx={{justifyContent: 'end'}}>
                 <Box width={150}>
                   <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={handleComment}>Reply</StyledButton>
                 </Box>
