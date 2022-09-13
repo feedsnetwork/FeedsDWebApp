@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Stack, Typography, Card, CardHeader, Divider, lighten, CardActionArea, CardContent, Tooltip, IconButton, Avatar, styled } from '@mui/material';
+import { Box, Stack, Typography, Card, CardHeader, Divider, IconButton } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
 
@@ -10,13 +10,13 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import { getDateDistance, isValidTime } from 'src/utils/common'
 
 const PostBody = (props) => {
-  const { post, contentObj } = props
+  const { post, contentObj, isReply=false } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
 
   return (
     <Stack spacing={2}>
       <Stack direction="row" alignItems="center" spacing={2}>
-        <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src}/>
+        <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
         <Box sx={{ minWidth: 0, flexGrow: 1 }}>
           <Typography component='div' variant="subtitle2" noWrap>
             {contentObj.primaryName}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
@@ -25,11 +25,14 @@ const PostBody = (props) => {
             {contentObj.secondaryName}
           </Typography>
         </Box>
-        <Box>
-          <IconButton aria-label="settings" size='small'>
-            <MoreVertIcon />
-          </IconButton>
-        </Box>
+        {
+          !isReply &&
+          <Box>
+            <IconButton aria-label="settings" size='small'>
+              <MoreVertIcon />
+            </IconButton>
+          </Box>
+        }
       </Stack>
       <Typography variant="body2" sx={{whiteSpace: 'pre-line'}}>
         {contentObj.content}
@@ -77,7 +80,7 @@ const PostBody = (props) => {
 }
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, dispName, level=1, replyingTo='' } = props
+  const { post, dispName, level=1, replyingTo='', dispNames={} } = props
   const { selfChannels, subscribedChannels } = React.useContext(SidebarContext);
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   
@@ -86,14 +89,12 @@ const PostCard = (props) => {
   }
 
   let contentObj = {avatar: {}, primaryName: '', secondaryName: null, content: ''}
-  let distanceTime = ''
   let cardProps = {}
   if(level == 1) {
     contentObj = JSON.parse(post.content)
     contentObj.avatar = { name: currentChannel.name, src: currentChannel.avatarSrc }
     contentObj.primaryName = currentChannel.name
     contentObj.secondaryName = `@${dispName}`
-    // distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
     cardProps = {style: {cursor: 'pointer'}, onClick: naviage2detail}
   } 
   else if(level == 2) {
@@ -101,7 +102,6 @@ const PostCard = (props) => {
     contentObj.content = post.content
     contentObj.primaryName = `@${dispName}`
     contentObj.secondaryName = <><b>Replying to</b> @{replyingTo}</>
-    // distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   }
   if(post.status == 1)
     contentObj.content = "(post deleted)"
@@ -111,6 +111,21 @@ const PostCard = (props) => {
     <Card {...cardProps}>
       <Box p={3}>
         <PostBody {...BodyProps}/>
+        <Stack px={3} pt={2} spacing={1}>
+          {
+            level==2 && post.commentData && 
+            post.commentData.map((comment, _i)=>{
+              let subContentObj = {
+                avatar: {}, 
+                primaryName: dispNames[comment.comment_id], 
+                secondaryName: <><b>Replying to</b> @{dispName}</>, 
+                content: comment.content
+              }
+              const subBodyProps = { post: comment, contentObj: subContentObj, isReply: true }
+              return <PostBody {...subBodyProps} key={_i}/>
+            })
+          }
+        </Stack>
       </Box>
     </Card>
   );

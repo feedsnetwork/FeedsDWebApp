@@ -125,7 +125,7 @@ const Home = () => {
                           })
                         })
                       }
-                      // console.log(commentRes, "--------------6")
+                      console.log(commentRes, "--------------6")
                     })
                   setIsLoading(false)
                   setPostsInHome((prevState)=>sortByDate([...prevState, ...postArr]))

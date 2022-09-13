@@ -33,20 +33,28 @@ const Post = () => {
           })
         }
       })
-    comments.forEach(comment=>{
-      hiveApi.queryUserDisplayName(targetDID, selectedPost.channel_id, comment.creater_did)
-        .then(dispNameRes=>{
-          if(dispNameRes['find_message'] && dispNameRes['find_message']['items']) {
-            const dispItem = dispNameRes['find_message']['items'][0]
-            setDispNames(prevState=>{
-              const tempPrev = {...prevState}
-              tempPrev[comment.comment_id] = dispItem.display_name
-              return tempPrev
-            })
-          }
-        })
-    })
+    getCreatorDispNames(comments)
   }, [])
+
+  const getCreatorDispNames = (comments_arr) => {
+    if(comments_arr)
+      comments_arr.forEach(comment=>{
+        hiveApi.queryUserDisplayName(targetDID, selectedPost.channel_id, comment.creater_did)
+          .then(dispNameRes=>{
+            if(dispNameRes['find_message'] && dispNameRes['find_message']['items']) {
+              const dispItem = dispNameRes['find_message']['items'][0]
+              setDispNames(prevState=>{
+                const tempPrev = {...prevState}
+                tempPrev[comment.comment_id] = dispItem.display_name
+                return tempPrev
+              })
+            }
+          })
+        if(comment.commentData)
+          getCreatorDispNames(comment.commentData)
+      })
+  }
+
   const dispNameOfPost = dispNames[selectedPost.post_id] || reduceDIDstring(selectedPost.target_did)
   return (
     <>
@@ -65,7 +73,7 @@ const Post = () => {
             comments.map((comment, _i)=>{
               const dispNameOfComment = dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)
               return <Grid item xs={12} key={_i}>
-                <PostCard post={comment} dispName={dispNameOfComment} level={2} replyingTo={dispNameOfPost}/>
+                <PostCard post={comment} dispName={dispNameOfComment} dispNames={dispNames} level={2} replyingTo={dispNameOfPost}/>
               </Grid>
             })
           }
