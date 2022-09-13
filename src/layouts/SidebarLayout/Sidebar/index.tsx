@@ -22,9 +22,7 @@ const SidebarWrapper = styled(Box)(
 );
 
 function Sidebar() {
-  const { sidebarToggle, walletAddress, toggleSidebar, setSubscribedChannels } = React.useContext(SidebarContext);
-  const [userInfo, setUserInfo] = React.useState({})
-  const [avatarSrc, setAvatarSrc] = React.useState('')
+  const { sidebarToggle, walletAddress, myAvatar, userInfo, toggleSidebar, setSubscribedChannels, setMyAvatar, setUserInfo } = React.useContext(SidebarContext);
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -40,7 +38,7 @@ function Sidebar() {
         const res =  await hiveApi.downloadFileByHiveUrl(userDid, hiveUrl)
         if(res && res.length) {
           const base64Content = res.toString('base64')
-          setAvatarSrc(`data:image/png;base64,${base64Content}`)
+          setMyAvatar(`data:image/png;base64,${base64Content}`)
         }
       })
 
@@ -119,7 +117,7 @@ function Sidebar() {
         />
         <Box p={1}>
           <Stack direction="row" alignItems="center" spacing={1}>
-            <StyledAvatar alt="hames" src={avatarSrc} width={36}/>
+            <StyledAvatar alt="" src={myAvatar} width={36}/>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
               <Typography variant="subtitle2" noWrap>
                 {userInfo['name'] || reduceHexAddress(walletAddress)}

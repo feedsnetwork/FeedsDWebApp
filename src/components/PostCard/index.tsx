@@ -7,7 +7,9 @@ import { Icon } from '@iconify/react';
 import StyledAvatar from 'src/components/StyledAvatar'
 import StyledButton from 'src/components/StyledButton'
 import { SidebarContext } from 'src/contexts/SidebarContext';
-import { getDateDistance, isValidTime, reduceDIDstring } from 'src/utils/common'
+import StyledTextFieldOutline from 'src/components/StyledTextFieldOutline'
+import { HiveApi } from 'src/services/HiveApi'
+import { getDateDistance, isValidTime, reduceDIDstring, reduceHexAddress } from 'src/utils/common'
 
 const PostBody = (props) => {
   const { post, contentObj, isReply=false } = props
@@ -80,9 +82,23 @@ const PostBody = (props) => {
 }
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, dispName, level=1, replyingTo='', dispNames={}, dispAvatar={} } = props
-  const { selfChannels, subscribedChannels } = React.useContext(SidebarContext);
+  const { post, dispName, level=1, replyingTo='', replyable=false, dispNames={}, dispAvatar={} } = props
+  const { selfChannels, subscribedChannels, myAvatar, userInfo, walletAddress } = React.useContext(SidebarContext);
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
+  
+  const [isOnValidation, setOnValidation] = React.useState(false);
+  const [onProgress, setOnProgress] = React.useState(false);
+  const [commentext, setCommentext] = React.useState('');
+  const commentRef = React.useRef(null)
+  const hiveApi = new HiveApi()
+
+  const handleComment = async (e) => {
+    
+  }
+  
+  const handleChangeCommentext = (e) => {
+    setCommentext(e.target.value)
+  }
   
   const naviage2detail = (e) => {
     navigate(`/post/${post.post_id}`);
@@ -111,23 +127,57 @@ const PostCard = (props) => {
     <Card {...cardProps}>
       <Box p={3}>
         <PostBody {...BodyProps}/>
-          {
-            level==2 && post.commentData && 
-            <Stack px={3} pt={2} spacing={1}>
-              {
-                post.commentData.map((comment, _i)=>{
-                  let subContentObj = {
-                    avatar: dispAvatar[comment.comment_id] || {}, 
-                    primaryName: comment.creater_did == currentChannel.target_did? `@${currentChannel.name}`: `@${dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)}`, 
-                    secondaryName: <><b>Replying to</b> @{dispName}</>, 
-                    content: comment.content
-                  }
-                  const subBodyProps = { post: comment, contentObj: subContentObj, isReply: true }
-                  return <PostBody {...subBodyProps} key={_i}/>
-                })
-              }
+        {
+          level==1 && replyable &&
+          <Box pl={3} pt={2}>
+            <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+              <StyledAvatar alt="" src={myAvatar}/>
+              <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                <Typography variant="subtitle2" noWrap>
+                  {userInfo['name'] || reduceHexAddress(walletAddress)}
+                </Typography>
+                <Typography variant="body2" noWrap>
+                  <b>Replying to</b> @{dispName}
+                </Typography>
+              </Box>
             </Stack>
-          }
+            <Stack spacing={2}>
+              <StyledTextFieldOutline
+                inputRef={commentRef}
+                value={commentext}
+                multiline
+                rows={3}
+                placeholder="What are you thoughts?"
+                onChange={handleChangeCommentext}
+                error={isOnValidation&&!commentext}
+                helperText={isOnValidation&&!commentext?'Message is required':''}
+              />
+              
+              <Stack direction='row' sx={{textAlign: 'right'}}>
+                <Box width={150}>
+                  <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={handleComment}>Reply</StyledButton>
+                </Box>
+              </Stack>
+            </Stack>
+          </Box>
+        }
+        {
+          level==2 && post.commentData && 
+          <Stack pl={3} pt={2} spacing={1}>
+            {
+              post.commentData.map((comment, _i)=>{
+                let subContentObj = {
+                  avatar: dispAvatar[comment.comment_id] || {}, 
+                  primaryName: comment.creater_did == currentChannel.target_did? `@${currentChannel.name}`: `@${dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)}`, 
+                  secondaryName: <><b>Replying to</b> @{dispName}</>, 
+                  content: comment.content
+                }
+                const subBodyProps = { post: comment, contentObj: subContentObj, isReply: true }
+                return <PostBody {...subBodyProps} key={_i}/>
+              })
+            }
+          </Stack>
+        }
       </Box>
     </Card>
   );

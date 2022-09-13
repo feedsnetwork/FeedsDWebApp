@@ -89,7 +89,7 @@ const Post = () => {
           spacing={3}
         >
           <Grid item xs={12}>
-            <PostCard post={selectedPost} dispName={dispNameOfPost}/>
+            <PostCard post={selectedPost} dispName={dispNameOfPost} replyable={true}/>
           </Grid>
           {
             comments.map((comment, _i)=>{

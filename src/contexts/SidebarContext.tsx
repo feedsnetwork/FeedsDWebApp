@@ -8,6 +8,8 @@ type SidebarContext = {
   walletAddress: any;
   publishPostNumber: number;
   postsInHome: any;
+  myAvatar: any;
+  userInfo: any;
   toggleSidebar: () => void;
   closeSidebar: () => void;
   setSelfChannels: Dispatch<any>;
@@ -17,6 +19,8 @@ type SidebarContext = {
   setWalletAddress: Dispatch<any>;
   setPublishPostNumber: Dispatch<any>;
   setPostsInHome: Dispatch<any>;
+  setMyAvatar: Dispatch<any>;
+  setUserInfo: Dispatch<any>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -33,6 +37,8 @@ export const SidebarProvider: FC = ({ children }) => {
   const [walletAddress, setWalletAddress] = useState(null);
   const [publishPostNumber, setPublishPostNumber] = useState(0);
   const [postsInHome, setPostsInHome] = useState([]);
+  const [myAvatar, setMyAvatar] = useState('');
+  const [userInfo, setUserInfo] = useState('');
 
   const toggleSidebar = () => {
     setSidebarToggle(!sidebarToggle);
@@ -52,6 +58,8 @@ export const SidebarProvider: FC = ({ children }) => {
         walletAddress,
         publishPostNumber,
         postsInHome,
+        myAvatar,
+        userInfo,
         toggleSidebar, 
         closeSidebar, 
         setSelfChannels, 
@@ -60,7 +68,9 @@ export const SidebarProvider: FC = ({ children }) => {
         setSelectChannel,
         setWalletAddress,
         setPublishPostNumber,
-        setPostsInHome
+        setPostsInHome,
+        setMyAvatar,
+        setUserInfo
       }}
     >
       {children}
