@@ -42,6 +42,8 @@ function Channel() {
   const userDid = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
   const postRef = React.useRef(null)
+  const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
+  console.log(focusedChannel, "--------------0")
 
   React.useEffect(()=>{
     if(focusedChannelId) {
@@ -57,16 +59,92 @@ function Channel() {
         })
       hiveApi.querySelfPostsByChannel(focusedChannelId.toString())
         .then(res=>{
-          // console.log(res, "---------------------3")
-          setIsLoading(false)
           if(Array.isArray(res)) {
-            setPosts(
-              sortByDate(
-                prefConf.DP?
-                res:
-                res.filter(item=>!item.status)
-              )
-            )
+            const postArr = prefConf.DP?
+              res:
+              res.filter(item=>!item.status)
+
+            postArr.forEach(post=>{
+              const contentObj = JSON.parse(post.content)
+              contentObj.mediaData.forEach((media, _i)=>{
+                if(!media.originMediaPath)
+                  return
+                hiveApi.downloadScripting(focusedChannel.target_did, media.originMediaPath)
+                  .then(downloadRes=>{
+                    if(downloadRes) {
+                      setPosts(prev=>{
+                        const prevState = [...prev]
+                        const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
+                        if(postIndex<0)
+                          return prevState
+                        if(prevState[postIndex].mediaData)
+                          prevState[postIndex].mediaData.push({...media, mediaSrc: downloadRes})
+                        else
+                          prevState[postIndex].mediaData = [{...media, mediaSrc: downloadRes}]
+                        return prevState
+                      })
+                    }
+                  })
+                  .catch(err=>{
+                    console.log(err)
+                  })
+              })
+              hiveApi.queryLikeByPost(focusedChannel.target_did, focusedChannel.channel_id, post.post_id)
+                .then(likeRes=>{
+                  if(likeRes['find_message'] && likeRes['find_message']['items']) {
+                    const likeArr = likeRes['find_message']['items']
+                    setPosts(prev=>{
+                      const prevState = [...prev]
+                      const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
+                      if(postIndex<0)
+                        return prevState
+                      prevState[postIndex].likes = likeArr.length
+                      return prevState
+                    })
+                  }
+                  // console.log(likeRes, "--------------5")
+                })
+            })
+            const postIds = postArr.map(post=>post.post_id)
+            hiveApi.queryCommentsFromPosts(focusedChannel.target_did, focusedChannel.channel_id, postIds)
+              .then(commentRes=>{
+                if(commentRes['find_message'] && commentRes['find_message']['items']) {
+                  const commentArr = commentRes['find_message']['items']
+                  const ascCommentArr = sortByDate(commentArr, 'asc')
+                  const linkedComments = ascCommentArr.reduce((res, item)=>{
+                    if(item.refcomment_id == '0') {
+                        res.push(item)
+                        return res
+                    }
+                    const tempRefIndex = res.findIndex((c) => c.comment_id == item.refcomment_id)
+                    if(tempRefIndex<0){
+                        res.push(item)
+                        return res
+                    }
+                    if(res[tempRefIndex]['commentData'])
+                        res[tempRefIndex]['commentData'].push(item)
+                    else res[tempRefIndex]['commentData'] = [item]
+                    return res
+                  }, []).reverse()
+                
+                  linkedComments.forEach(comment=>{
+                    setPosts(prev=>{
+                      const prevState = [...prev]
+                      const postIndex = prevState.findIndex(el=>el.post_id==comment.post_id)
+                      if(postIndex<0)
+                        return prevState
+                      if(prevState[postIndex].commentData)
+                        prevState[postIndex].commentData.push(comment)
+                      else
+                        prevState[postIndex].commentData = [comment]
+                      return prevState
+                    })
+                  })
+                }
+                // console.log(commentRes, "--------------6")
+              })
+            setIsLoading(false)
+            setPosts((prevState)=>sortByDate([...prevState, ...postArr]))
           }
         })
     }

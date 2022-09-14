@@ -117,13 +117,20 @@ function SidebarChannel() {
   const theme = useTheme();
   const { pathname } = useLocation();
   const hiveApi = new HiveApi()
+  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const userDid = `did:elastos:${feedsDid}`
   
   useEffect(()=>{
     hiveApi.querySelfChannels()
       .then(res=>{
         // console.log(res)
         if(Array.isArray(res)){
-          setSelfChannels(res)
+          setSelfChannels(
+            res.map(item=>{
+              item.target_did = userDid
+              return item
+            })
+          )
           if(res.length)
             setFocusChannelId(res[0].channel_id)
         }
