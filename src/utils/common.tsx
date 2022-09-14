@@ -1,5 +1,6 @@
 import { DID, DIDBackend, DefaultDIDAdapter } from '@elastosfoundation/did-js-sdk';
 import { formatDistance } from 'date-fns';
+import { createHash } from 'crypto';
 
 export const reduceDIDstring = (strDID) => {
   if(!strDID)
@@ -121,3 +122,7 @@ export const getBufferFromFile = (f) => (
     }
   })
 )
+
+export function hash(string) {
+  return createHash('sha256').update(string).digest('hex');
+}

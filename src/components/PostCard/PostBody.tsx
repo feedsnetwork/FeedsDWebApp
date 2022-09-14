@@ -6,17 +6,42 @@ import { useSnackbar } from 'notistack';
 
 import StyledAvatar from 'src/components/StyledAvatar'
 import CommentDlg from 'src/components/Modal/Comment'
-import { getDateDistance, isValidTime } from 'src/utils/common'
+import { SidebarContext } from 'src/contexts/SidebarContext';
+import { getDateDistance, isValidTime, hash } from 'src/utils/common'
+import { HiveApi } from 'src/services/HiveApi'
 
 const PostBody = (props) => {
   const { post, contentObj, isReply=false } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
+  const { selfChannels, subscribedChannels } = React.useContext(SidebarContext);
+  const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [isOpenComment, setOpenComment] = React.useState(false)
+  const hiveApi = new HiveApi()
+  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
+  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const userDid = `did:elastos:${feedsDid}`
 
+  React.useEffect(()=>{
+    setIsLike(!!post.like_me)
+  }, [post.like_me])
+  
   const handleCommentDlg = (e) => {
     e.stopPropagation()
     setOpenComment(true)
   }
+
+  const handleLike = (e) => {
+    e.stopPropagation()
+    if(!isLike) {
+      const likeId = hash(`${post.post_id}${post.comment_id}${userDid}`)
+      hiveApi.addLike(currentChannel.target_did, likeId, post.channel_id, post.post_id, post.comment_id || 0)
+        .then(res=>{
+          console.log(res)
+          setIsLike(!isLike)
+        })
+    }
+  }
+
   return (
     <>
       <Stack spacing={2}>
@@ -63,20 +88,27 @@ const PostBody = (props) => {
             '& svg': {
               fill: 'url(#linearColors)'
             },
+            '& svg.liked': {
+              fill: 'red'
+            },
             '& svg>path[stroke=currentColor]': {
               stroke: 'url(#linearColors)'
             },
             '& svg>path[fill=currentColor]': {
               fill: 'unset'
+            },
+            '& svg.liked>path': {
+              fill: 'red',
+              stroke: 'red'
             }
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Icon icon="akar-icons:heart" width={18}/>
-            <Typography variant="body2" noWrap>{post.likes || 0}</Typography>
+          <Stack direction="row" alignItems="center" spacing={1} onClick={handleLike}>
+            <Icon className={isLike?"liked":""} icon="akar-icons:heart" width={18}/>
+            <Typography variant="body2" noWrap>{(post.likes || 0)+(isLike as any&1)+(post.like_me?-1:0)}</Typography>
           </Stack>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Icon icon="clarity:chat-bubble-line" width={18} onClick={handleCommentDlg}/>
+          <Stack direction="row" alignItems="center" spacing={1} onClick={handleCommentDlg}>
+            <Icon icon="clarity:chat-bubble-line" width={18}/>
             <Typography variant="body2" noWrap>{post.commentData?post.commentData.length:0}</Typography>
           </Stack>
         </Stack>

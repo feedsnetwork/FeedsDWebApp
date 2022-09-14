@@ -43,7 +43,6 @@ function Channel() {
   const hiveApi = new HiveApi()
   const postRef = React.useRef(null)
   const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
-  console.log(focusedChannel, "--------------0")
 
   React.useEffect(()=>{
     if(focusedChannelId) {
@@ -93,12 +92,15 @@ function Channel() {
                 .then(likeRes=>{
                   if(likeRes['find_message'] && likeRes['find_message']['items']) {
                     const likeArr = likeRes['find_message']['items']
+                    console.log(likeArr, "++++++++++++++++++12")
+                    const likeIndexByMe = likeArr.findIndex(item=>item.creater_did==userDid)
                     setPosts(prev=>{
                       const prevState = [...prev]
                       const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
                       if(postIndex<0)
                         return prevState
                       prevState[postIndex].likes = likeArr.length
+                      prevState[postIndex].like_me = likeIndexByMe>=0
                       return prevState
                     })
                   }
