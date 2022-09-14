@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Stack, Typography, IconButton } from '@mui/material';
+import { Box, Stack, Typography, IconButton, CircularProgress } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
@@ -16,29 +16,41 @@ const PostBody = (props) => {
   const { selfChannels, subscribedChannels } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [isOpenComment, setOpenComment] = React.useState(false)
+  const [isSaving, setIsSaving] = React.useState(false)
   const hiveApi = new HiveApi()
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
+  const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(()=>{
     setIsLike(!!post.like_me)
   }, [post.like_me])
-  
+
   const handleCommentDlg = (e) => {
     e.stopPropagation()
     setOpenComment(true)
   }
 
-  const handleLike = (e) => {
+  const handleLike = async (e) => {
     e.stopPropagation()
-    if(!isLike) {
-      const likeId = hash(`${post.post_id}${post.comment_id}${userDid}`)
-      hiveApi.addLike(currentChannel.target_did, likeId, post.channel_id, post.post_id, post.comment_id || 0)
-        .then(res=>{
-          console.log(res)
-          setIsLike(!isLike)
-        })
+    if(isSaving)
+      return
+    setIsSaving(true)
+    try {
+      if(!isLike) {
+        const likeId = hash(`${post.post_id}${post.comment_id}${userDid}`)
+        await hiveApi.addLike(currentChannel.target_did, likeId, post.channel_id, post.post_id, post.comment_id || '0')
+        enqueueSnackbar('Like post success', { variant: 'success' });
+      } else {
+        await hiveApi.removeLike(currentChannel.target_did, post.channel_id, post.post_id, post.comment_id || '0')
+        enqueueSnackbar('Remove like success', { variant: 'success' });
+      }
+      setIsLike(!isLike)
+      setIsSaving(false)
+    } catch(err) {
+      setIsSaving(false)
+      enqueueSnackbar('Like action error', { variant: 'error' });
     }
   }
 
@@ -104,7 +116,13 @@ const PostBody = (props) => {
           }}
         >
           <Stack direction="row" alignItems="center" spacing={1} onClick={handleLike}>
-            <Icon className={isLike?"liked":""} icon="akar-icons:heart" width={18}/>
+            <Box sx={{position: 'relative', display: 'flex'}}>
+              <Icon className={isLike?"liked":""} icon="akar-icons:heart" width={18}/>
+              {
+                isSaving &&
+                <CircularProgress size={24} disableShrink thickness={3} sx={{position: 'absolute', top: -3, left: -3, color: 'red'}}/>
+              }
+            </Box>
             <Typography variant="body2" noWrap>{(post.likes || 0)+(isLike as any&1)+(post.like_me?-1:0)}</Typography>
           </Stack>
           <Stack direction="row" alignItems="center" spacing={1} onClick={handleCommentDlg}>
