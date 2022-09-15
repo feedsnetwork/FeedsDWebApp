@@ -96,7 +96,8 @@ const PostBody = (props) => {
           spacing={2} 
           sx={{
             '& svg': {
-              fill: 'url(#linearColors)'
+              fill: 'url(#linearColors)',
+              transition: 'transform .2s'
             },
             '& svg.liked': {
               fill: 'red'
@@ -113,16 +114,30 @@ const PostBody = (props) => {
             },
             '& .MuiTypography-root.liked': {
               color: 'red'
+            },
+            '& svg.loading': {
+              animation: `loadingOverlaySpinner 1000ms linear infinite`,
+            },
+            "@keyframes loadingOverlaySpinner": {
+              "0%": {
+                transform: 'scale(0.8)'
+              },
+              "50%": {
+                transform: 'scale(1.3)'
+              },
+              "100%": {
+                transform: 'scale(0.8)'
+              }
             }
           }}
         >
           <Stack direction="row" alignItems="center" spacing={1} onClick={handleLike}>
             <Box sx={{position: 'relative', display: 'flex'}}>
-              <Icon className={isLike?"liked":""} icon="akar-icons:heart" width={18}/>
-              {
+              <Icon className={`${isLike?"liked":""} ${isSaving?"loading":""}`} icon="akar-icons:heart" width={18}/>
+              {/* {
                 isSaving &&
                 <CircularProgress size={24} disableShrink thickness={3} sx={{position: 'absolute', top: -3, left: -3, color: 'red'}}/>
-              }
+              } */}
             </Box>
             <Typography variant="body2" className={isLike?"liked":""} noWrap>{(post.likes || 0)+(isLike as any&1)+(post.like_me?-1:0)}</Typography>
           </Stack>
