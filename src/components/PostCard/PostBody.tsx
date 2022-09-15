@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Stack, Typography, IconButton, CircularProgress } from '@mui/material';
+import { Box, Stack, Typography, IconButton, styled } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
@@ -7,6 +7,7 @@ import { useSnackbar } from 'notistack';
 import StyledAvatar from 'src/components/StyledAvatar'
 import CommentDlg from 'src/components/Modal/Comment'
 import { SidebarContext } from 'src/contexts/SidebarContext';
+import Heart from 'src/components/Heart'
 import { getDateDistance, isValidTime, hash } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
@@ -99,45 +100,20 @@ const PostBody = (props) => {
               fill: 'url(#linearColors)',
               transition: 'transform .2s'
             },
-            '& svg.liked': {
-              fill: 'red'
-            },
             '& svg>path[stroke=currentColor]': {
               stroke: 'url(#linearColors)'
             },
             '& svg>path[fill=currentColor]': {
               fill: 'unset'
             },
-            '& svg.liked>path': {
-              fill: 'red',
-              stroke: 'red'
-            },
             '& .MuiTypography-root.liked': {
-              color: 'red'
-            },
-            '& svg.loading': {
-              animation: `loadingOverlaySpinner 1000ms linear infinite`,
-            },
-            "@keyframes loadingOverlaySpinner": {
-              "0%": {
-                transform: 'scale(0.8)'
-              },
-              "50%": {
-                transform: 'scale(1.3)'
-              },
-              "100%": {
-                transform: 'scale(0.8)'
-              }
+              color: '#ff3333'
             }
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={1} onClick={handleLike}>
+          <Stack direction="row" alignItems="center" spacing='2px' onClick={handleLike}>
             <Box sx={{position: 'relative', display: 'flex'}}>
-              <Icon className={`${isLike?"liked":""} ${isSaving?"loading":""}`} icon="akar-icons:heart" width={18}/>
-              {/* {
-                isSaving &&
-                <CircularProgress size={24} disableShrink thickness={3} sx={{position: 'absolute', top: -3, left: -3, color: 'red'}}/>
-              } */}
+              <Heart isLiked={isLike} isSaving={isSaving}/>
             </Box>
             <Typography variant="body2" className={isLike?"liked":""} noWrap>{(post.likes || 0)+(isLike as any&1)+(post.like_me?-1:0)}</Typography>
           </Stack>
