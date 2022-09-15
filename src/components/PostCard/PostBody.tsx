@@ -41,10 +41,8 @@ const PostBody = (props) => {
       if(!isLike) {
         const likeId = hash(`${post.post_id}${post.comment_id}${userDid}`)
         await hiveApi.addLike(currentChannel.target_did, likeId, post.channel_id, post.post_id, post.comment_id || '0')
-        enqueueSnackbar('Like post success', { variant: 'success' });
       } else {
         await hiveApi.removeLike(currentChannel.target_did, post.channel_id, post.post_id, post.comment_id || '0')
-        enqueueSnackbar('Remove like success', { variant: 'success' });
       }
       setIsLike(!isLike)
       setIsSaving(false)
@@ -112,6 +110,9 @@ const PostBody = (props) => {
             '& svg.liked>path': {
               fill: 'red',
               stroke: 'red'
+            },
+            '& .MuiTypography-root.liked': {
+              color: 'red'
             }
           }}
         >
@@ -123,7 +124,7 @@ const PostBody = (props) => {
                 <CircularProgress size={24} disableShrink thickness={3} sx={{position: 'absolute', top: -3, left: -3, color: 'red'}}/>
               }
             </Box>
-            <Typography variant="body2" noWrap>{(post.likes || 0)+(isLike as any&1)+(post.like_me?-1:0)}</Typography>
+            <Typography variant="body2" className={isLike?"liked":""} noWrap>{(post.likes || 0)+(isLike as any&1)+(post.like_me?-1:0)}</Typography>
           </Stack>
           <Stack direction="row" alignItems="center" spacing={1} onClick={handleCommentDlg}>
             <Icon icon="clarity:chat-bubble-line" width={18}/>
