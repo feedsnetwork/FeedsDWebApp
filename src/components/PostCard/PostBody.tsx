@@ -3,6 +3,8 @@ import { Box, Stack, Typography, IconButton, styled } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
+import Odometer from "react-odometerjs";
+import "odometer/themes/odometer-theme-default.css";
 
 import StyledAvatar from 'src/components/StyledAvatar'
 import CommentDlg from 'src/components/Modal/Comment'
@@ -115,7 +117,20 @@ const PostBody = (props) => {
             <Box sx={{position: 'relative', display: 'flex'}}>
               <Heart isLiked={isLike} isSaving={isSaving}/>
             </Box>
-            <Typography variant="body2" className={isLike?"liked":""} noWrap>{(post.likes || 0)+(isLike as any&1)+(post.like_me?-1:0)}</Typography>
+            <Typography 
+              variant="body2" 
+              className={isLike?"liked":""} 
+              noWrap 
+              sx={{
+                display: 'flex',
+                '& .odometer-digit-inner': {
+                  display: 'flex',
+                  alignItems: 'center'
+                }
+              }}
+            >
+              <Odometer value={(post.likes || 0)+(isLike as any&1)+(post.like_me?-1:0)} format='(,ddd).dd' />
+            </Typography>
           </Stack>
           <Stack direction="row" alignItems="center" spacing={1} onClick={handleCommentDlg}>
             <Icon icon="clarity:chat-bubble-line" width={18}/>
