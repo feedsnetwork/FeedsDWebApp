@@ -33,10 +33,9 @@ function TabPanel(props) {
 
 function Profile() {
   const { setPageType } = React.useContext(OverPageContext)
-  const { walletAddress, selfChannels } = React.useContext(SidebarContext);
+  const { walletAddress, selfChannels, userInfo } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [subscriptions, setSubscriptions] = React.useState([]);
-  const [userInfo, setUserInfo] = React.useState({})
   const [avatarSrc, setAvatarSrc] = React.useState('')
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
@@ -65,10 +64,6 @@ function Profile() {
         if(res['find_message'])
           setSubscriptions(res['find_message']['items'])
       })
-      
-    getInfoFromDID(userDid).then(res=>{
-      setUserInfo(res)
-    })
   }, [])
 
   const backgroundImg = "/temp-back.png"

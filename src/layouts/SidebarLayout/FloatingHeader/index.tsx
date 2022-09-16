@@ -6,7 +6,7 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { HiveApi } from 'src/services/HiveApi'
-import { SettingMenuArray, getAppPreference } from 'src/utils/common'
+import { SettingMenuArray, getAppPreference, reduceDIDstring } from 'src/utils/common'
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -46,12 +46,13 @@ const HeaderWrapper = styled(Box)(
 );
 function FloatingHeader() {
   const { pageType, setPageType, closeOverPage } = React.useContext(OverPageContext);
-  const { focusedChannelId, selfChannels, postsInHome } = React.useContext(SidebarContext);
+  const { focusedChannelId, selfChannels, postsInHome, userInfo } = React.useContext(SidebarContext);
   const [secondaryData, setSecondaryData] = React.useState(0)
   const { pathname } = useLocation()
   const navigate = useNavigate();
   const params = useParams()
   const hiveApi = new HiveApi()
+  const feedsDid = sessionStorage.getItem('FEEDS_DID')
 
   React.useEffect(()=>{
     if(pathname.startsWith('/channel') && focusedChannelId) {
@@ -70,9 +71,7 @@ function FloatingHeader() {
   }, [focusedChannelId])
 
   const handleClose = (e) => {
-    if(pathname.startsWith('/post/')) {
-      navigate('/home')
-    }
+    window.history.back()
   }
   
   const getActionText = () => {
@@ -100,7 +99,7 @@ function FloatingHeader() {
     else if(pageType==='AddChannel')
       primaryText = "Add Channel"
     else if(pageType==='Profile') {
-      primaryText = "asralf"
+      primaryText = userInfo['name'] || `@${reduceDIDstring(feedsDid)}`
       // secondaryText = "0 post"
     }
     if(primaryText) {
