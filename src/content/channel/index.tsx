@@ -13,7 +13,7 @@ import StyledIconButton from 'src/components/StyledIconButton';
 import StyledTextFieldOutline from 'src/components/StyledTextFieldOutline'
 import PostSkeleton from 'src/components/Skeleton/PostSkeleton'
 import { PostContentV3, mediaDataV3, MediaType } from 'src/models/post_content'
-import { reduceDIDstring, getAppPreference, sortByDate, getBufferFromFile } from 'src/utils/common'
+import { reduceDIDstring, getAppPreference, sortByDate, getBufferFromFile, getFilteredArrayByUnique } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const PostBoxStyle = styled(Box)(({ theme }) => ({
@@ -88,18 +88,19 @@ function Channel() {
                     console.log(err)
                   })
               })
-              hiveApi.queryLikeByPost(focusedChannel.target_did, focusedChannel.channel_id, post.post_id)
+              hiveApi.queryLikeById(focusedChannel.target_did, focusedChannel.channel_id, post.post_id, '0')
                 .then(likeRes=>{
                   if(likeRes['find_message'] && likeRes['find_message']['items']) {
                     const likeArr = likeRes['find_message']['items']
-                    console.log(likeArr, "++++++++++++++++++12")
-                    const likeIndexByMe = likeArr.findIndex(item=>item.creater_did==userDid)
+                    const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
+                    // console.log(likeArr, "++++++++++++++++++12")
+                    const likeIndexByMe = filteredLikeArr.findIndex(item=>item.creater_did==userDid)
                     setPosts(prev=>{
                       const prevState = [...prev]
                       const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
                       if(postIndex<0)
                         return prevState
-                      prevState[postIndex].likes = likeArr.length
+                      prevState[postIndex].likes = filteredLikeArr.length
                       prevState[postIndex].like_me = likeIndexByMe>=0
                       return prevState
                     })

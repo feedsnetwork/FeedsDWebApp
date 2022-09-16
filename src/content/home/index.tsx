@@ -4,8 +4,8 @@ import { Grid, Container, Box, Typography, Stack } from '@mui/material';
 import PostCard from 'src/components/PostCard';
 import { EmptyView } from 'src/components/EmptyView'
 import PostSkeleton from 'src/components/Skeleton/PostSkeleton'
-import { reduceDIDstring, getAppPreference, sortByDate } from 'src/utils/common'
 import { SidebarContext } from 'src/contexts/SidebarContext';
+import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const Home = () => {
@@ -14,6 +14,8 @@ const Home = () => {
   const [isLoading, setIsLoading] = React.useState(false)
   const [dispNames, setDispNames] = React.useState({})
   const prefConf = getAppPreference()
+  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const userDid = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
 
   React.useEffect(()=>{
@@ -28,6 +30,8 @@ const Home = () => {
               .then(dispNameRes=>{
                 if(dispNameRes['find_message'] && dispNameRes['find_message']['items']) {
                   const dispItem = dispNameRes['find_message']['items'][0]
+                  if(!dispItem)
+                    return
                   setDispNames(prevState=>{
                     const tempPrev = {...prevState}
                     tempPrev[dispItem.channel_id] = dispItem.display_name
@@ -73,20 +77,24 @@ const Home = () => {
                           console.log(err)
                         })
                     })
-                    hiveApi.queryLikeByPost(item.target_did, item.channel_id, post.post_id)
+                    hiveApi.queryLikeById(item.target_did, item.channel_id, post.post_id, '0')
                       .then(likeRes=>{
                         if(likeRes['find_message'] && likeRes['find_message']['items']) {
                           const likeArr = likeRes['find_message']['items']
+                          const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
+                          const likeIndexByMe = filteredLikeArr.findIndex(item=>item.creater_did==userDid)
+
                           setPostsInHome(prev=>{
                             const prevState = [...prev]
                             const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
                             if(postIndex<0)
                               return prevState
-                            prevState[postIndex].likes = likeArr.length
+                            prevState[postIndex].likes = filteredLikeArr.length
+                            prevState[postIndex].like_me = likeIndexByMe>=0
                             return prevState
                           })
                         }
-                        // console.log(likeRes, "--------------5")
+                        // console.log(likeRes, "--------------5", post)
                       })
                   })
                   const postIds = postArr.map(post=>post.post_id)
@@ -144,7 +152,7 @@ const Home = () => {
         !isLoading && !postsInHome.length?
         <EmptyView/>:
 
-        <Container sx={{ my: 3 }} maxWidth="lg">
+        <Container sx={{ my: 3 }} maxWidth={false}>
           <Grid
             container
             direction="row"
