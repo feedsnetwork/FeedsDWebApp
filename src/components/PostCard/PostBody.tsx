@@ -114,7 +114,7 @@ const PostBody = (props) => {
             </Box>
           }
         </Stack>
-        <Typography variant="body2" sx={{whiteSpace: 'pre-line'}}>
+        <Typography variant="body2" sx={{whiteSpace: 'pre-line', '& a.outer-link': {color: '#368BFF', textDecoration: 'none'}}}>
           {parse(filteredContentByLink)}
         </Typography>
         {
