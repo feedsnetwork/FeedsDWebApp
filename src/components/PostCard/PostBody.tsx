@@ -92,6 +92,10 @@ const PostBody = (props) => {
     filteredContentByLink = autolinker.link(tempContent);
   }
 
+  const handleClickInContent = (e)=>{
+    if(e.target.className.includes('outer-link'))
+      e.stopPropagation()
+  }
   return (
     <>
       <Stack spacing={2}>
@@ -114,7 +118,17 @@ const PostBody = (props) => {
             </Box>
           }
         </Stack>
-        <Typography variant="body2" sx={{whiteSpace: 'pre-line', '& a.outer-link': {color: '#368BFF', textDecoration: 'none'}}}>
+        <Typography 
+          variant="body2" 
+          onClick={handleClickInContent}
+          sx={{
+            whiteSpace: 'pre-line', 
+            '& a.outer-link': {
+              color: '#368BFF', 
+              textDecoration: 'none'
+            }
+          }}
+        >
           {parse(filteredContentByLink)}
         </Typography>
         {
