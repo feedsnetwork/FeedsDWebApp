@@ -3,6 +3,8 @@ import { Box, Stack, Typography, IconButton, styled } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
+import Autolinker from 'autolinker';
+import parse from 'html-react-parser';
 import Odometer from "react-odometerjs";
 import "odometer/themes/odometer-theme-default.css";
 
@@ -25,6 +27,28 @@ const PostBody = (props) => {
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const { enqueueSnackbar } = useSnackbar();
+  var autolinker = new Autolinker( {
+    urls : {
+        schemeMatches : true,
+        tldMatches    : true,
+        ipV4Matches   : true,
+    },
+    email       : true,
+    phone       : true,
+    mention     : 'twitter',
+    hashtag     : 'twitter',
+
+    stripPrefix : true,
+    stripTrailingSlash : true,
+    newWindow   : true,
+
+    truncate : {
+        length   : 0,
+        location : 'end'
+    },
+
+    className : 'outer-link'
+} );
 
   React.useEffect(()=>{
     setIsLike(!!post.like_me)
@@ -55,6 +79,19 @@ const PostBody = (props) => {
     }
   }
 
+  let tempContent = contentObj.content
+  let filteredContentByLink = autolinker.link(tempContent);
+  let splitByHttp = filteredContentByLink.split('http')
+  splitByHttp = splitByHttp.slice(0, splitByHttp.length-1)
+  const brokenLinkStrings = splitByHttp.filter(el=>el.charAt(el.length-1)!='"')
+  if(brokenLinkStrings.length){
+    brokenLinkStrings.forEach(str=>{
+      const lastChar = str.charAt(str.length-1)
+      tempContent = tempContent.replace(`${lastChar}http`, `${lastChar} http`)
+    })
+    filteredContentByLink = autolinker.link(tempContent);
+  }
+
   return (
     <>
       <Stack spacing={2}>
@@ -78,7 +115,7 @@ const PostBody = (props) => {
           }
         </Stack>
         <Typography variant="body2" sx={{whiteSpace: 'pre-line'}}>
-          {contentObj.content}
+          {parse(filteredContentByLink)}
         </Typography>
         {
           !!post.mediaData && post.mediaData.map((media, _i)=>(
