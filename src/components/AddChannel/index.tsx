@@ -2,7 +2,7 @@ import { FC, useState, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSnackbar } from 'notistack';
 import { Icon } from '@iconify/react';
-import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled } from '@mui/material';
+import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormControl, FormHelperText } from '@mui/material';
 
 import StyledButton from 'src/components/StyledButton';
 import { useGlobalState } from 'src/global/store'
@@ -48,6 +48,11 @@ interface AddChannelProps {
 }
 const AddChannel: FC<AddChannelProps> = (props)=>{
   const [avatarUrl, setAvatarUrl] = useState(null);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [tipping, setTipping] = useState('');
+  const [isOnValidation, setOnValidation] = useState(false);
+  const [onProgress, setOnProgress] = useState(false);
   const nameRef = useRef(null)
   const descriptionRef = useRef(null)
   const tippingRef = useRef(null)
@@ -63,24 +68,41 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   };
 
   const saveAction = (e) => {
-    if(avatarUrl) {
-      const reader = new window.FileReader();
-      reader.readAsArrayBuffer(avatarUrl);
-      reader.onloadend = async() => {
-        try {
-          const fileContent = Buffer.from(reader.result as ArrayBuffer)
-          const bs64Content = fileContent.toString('base64')
-          hiveApi.createChannel(nameRef.current.value, descriptionRef.current.value, bs64Content, tippingRef.current.value)
-            .then(result=>{
-              console.log(result)
-              enqueueSnackbar('Add channel success', { variant: 'success' });
-            })
-            .catch(error=>{
-              console.log(error)
-              enqueueSnackbar('Add channel error', { variant: 'error' });
-            })
-        } catch (error) {
-        }
+    setOnValidation(true)
+    if(!avatarUrl)
+      return
+    if(!name) {
+      nameRef.current.focus()
+      return
+    }
+    if(!description) {
+      descriptionRef.current.focus()
+      return
+    }
+    if(!tipping) {
+      tippingRef.current.focus()
+      return
+    }
+
+    setOnProgress(true)
+    const reader = new window.FileReader();
+    reader.readAsArrayBuffer(avatarUrl);
+    reader.onloadend = async() => {
+      try {
+        const fileContent = Buffer.from(reader.result as ArrayBuffer)
+        const bs64Content = fileContent.toString('base64')
+        hiveApi.createChannel(nameRef.current.value, descriptionRef.current.value, bs64Content, tippingRef.current.value)
+          .then(result=>{
+            console.log(result)
+            enqueueSnackbar('Add channel success', { variant: 'success' });
+            setOnProgress(false)
+          })
+          .catch(error=>{
+            console.log(error)
+            enqueueSnackbar('Add channel error', { variant: 'error' });
+            setOnProgress(false)
+          })
+      } catch (error) {
       }
     }
   }
@@ -106,22 +128,55 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
               </label>
             </ButtonUploadWrapper>
           </AvatarWrapper>
+          {
+            isOnValidation && !avatarUrl &&
+            <FormControl error={true} variant="standard" sx={{width: '100%', mt: '0px !important', alignItems: 'center'}}>
+              <FormHelperText id="avatar-error-text">Avatar file is required</FormHelperText>
+            </FormControl>
+          }
           <Grid container direction="column">
             <Grid item>
               <Typography variant='subtitle1'>Name</Typography>
-              <Input placeholder="Add channel name" fullWidth inputRef={nameRef}/>
+              <FormControl error={isOnValidation&&!name.length} variant="standard" sx={{width: '100%'}}>
+                <Input 
+                  placeholder="Add channel name" 
+                  fullWidth 
+                  inputRef={nameRef}
+                  value={name}
+                  onChange={(e)=>{setName(e.target.value)}}
+                />
+                <FormHelperText id="name-error-text" hidden={!isOnValidation||(isOnValidation&&name.length>0)}>Name is required</FormHelperText>
+              </FormControl>
             </Grid>
             <Grid item py={2}>
               <Typography variant='subtitle1'>Description</Typography>
-              <Input placeholder="Add channel description" fullWidth inputRef={descriptionRef}/>
+              <FormControl error={isOnValidation&&!description.length} variant="standard" sx={{width: '100%'}}>
+                <Input 
+                  placeholder="Add channel description" 
+                  fullWidth 
+                  inputRef={descriptionRef}
+                  value={description}
+                  onChange={(e)=>{setDescription(e.target.value)}}
+                />
+                <FormHelperText id="description-error-text" hidden={!isOnValidation||(isOnValidation&&description.length>0)}>Description is required</FormHelperText>
+              </FormControl>
             </Grid>
             <Grid item>
               <Typography variant='subtitle1'>Tipping Address</Typography>
-              <Input placeholder="Enter tipping address" fullWidth inputRef={tippingRef}/>
+              <FormControl error={isOnValidation&&!tipping.length} variant="standard" sx={{width: '100%'}}>
+                <Input 
+                  placeholder="Enter tipping address" 
+                  fullWidth 
+                  inputRef={tippingRef}
+                  value={tipping}
+                  onChange={(e)=>{setTipping(e.target.value)}}
+                />
+                <FormHelperText id="description-error-text" hidden={!isOnValidation||(isOnValidation&&tipping.length>0)}>Tipping Address is required</FormHelperText>
+              </FormControl>
             </Grid>
           </Grid>
           <Box width={200}>
-            <StyledButton fullWidth onClick={saveAction}>Create</StyledButton>
+            <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={saveAction}>Create</StyledButton>
           </Box>
         </Stack>
       </Card>
