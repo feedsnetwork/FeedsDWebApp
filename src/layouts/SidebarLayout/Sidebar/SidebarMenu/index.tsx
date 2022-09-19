@@ -4,7 +4,8 @@ import FadeIn from 'react-fade-in';
 // import { Fade } from "react-awesome-reveal";
 import Reveal from "react-awesome-reveal";
 import { keyframes } from "@emotion/react";
-import { ListSubheader, alpha, Box, List, styled, Button, ListItem, InputAdornment, Divider, Typography } from '@mui/material';
+import { Icon } from '@iconify/react';
+import { ListSubheader, alpha, Box, List, styled, Button, ListItem, InputAdornment, Divider, Typography, ListItemText, ListItemIcon, ListItemButton } from '@mui/material';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -57,6 +58,7 @@ const SubMenuWrapper = styled(Box)(
           }
         }
     
+        .MuiListItemButton-root,
         .MuiButton-root {
           display: flex;
           color: ${theme.colors.alpha.trueWhite[70]};
@@ -159,10 +161,10 @@ const SubMenuWrapper = styled(Box)(
 );
 
 const MainMenuArray = [
-  {to: '/home', name: 'Home'},
-  {to: '/profile', name: 'Profile'},
-  {to: '/channel', name: 'Channel'},
-  {to: '/explorer', name: 'Explorer'},
+  {to: '/home', name: 'Home', icon: 'clarity:home-solid'},
+  {to: '/profile', name: 'Profile', icon: 'clarity:user-line'},
+  {to: '/channel', name: 'Channel', icon: 'bi:grid-3x3-gap'},
+  {to: '/explorer', name: 'Explorer', icon: 'clarity:compass-line'},
 ]
 const customAnimation = keyframes`
   from {
@@ -208,35 +210,33 @@ function SidebarMenu(props) {
               {
                 MainMenuArray.map((menuItem, _i)=>(
                   <ListItem component="div" key={_i}>
-                    <Button
-                      disableRipple
-                      component={RouterLink}
-                      onClick={closeSidebar}
-                      to={menuItem.to}
-                    >
-                      {menuItem.name}
-                    </Button>
+                    <ListItemButton component={RouterLink} to={menuItem.to} onClick={closeSidebar}>
+                      <ListItemIcon sx={{ minWidth: 30 }}>
+                        <Icon icon={menuItem.icon} width={18} height={18} />
+                      </ListItemIcon>
+                      <ListItemText primary={menuItem.name} primaryTypographyProps={{ variant: 'body2' }} />
+                    </ListItemButton>
                   </ListItem>
                 ))
               }
               {
                 subscribedChannels.length>0?
                 <ListItem component="div">
-                  <Button disableRipple onClick={toggleChannels} endIcon={isVisibleChannels ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon />} >
-                    Subscriptions
-                  </Button>
+                  <ListItemButton component={Button} onClick={toggleChannels} endIcon={isVisibleChannels ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon />}>
+                    <ListItemIcon sx={{ minWidth: 30 }}>
+                      <Icon icon='clarity:users-line' width={18} height={18} />
+                    </ListItemIcon>
+                    <ListItemText primary='Subscriptions' primaryTypographyProps={{ variant: 'body2' }} />
+                  </ListItemButton>
                 </ListItem>:
                 
                 <ListItem component="div">
-                  <Button
-                    disableRipple
-                    component={RouterLink}
-                    onClick={closeSidebar}
-                    to='/subscription'
-                    // startIcon={<AccountCircleTwoToneIcon />}
-                  >
-                    Subscription
-                  </Button>
+                  <ListItemButton component={RouterLink} to='/subscription' onClick={closeSidebar}>
+                    <ListItemIcon sx={{ minWidth: 30 }}>
+                      <Icon icon='clarity:users-line' width={18} height={18} />
+                    </ListItemIcon>
+                    <ListItemText primary='Subscription' primaryTypographyProps={{ variant: 'body2' }} />
+                  </ListItemButton>
                 </ListItem>
               }
               {
