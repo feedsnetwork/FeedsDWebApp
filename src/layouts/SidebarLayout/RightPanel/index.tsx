@@ -51,8 +51,10 @@ function RightPanel() {
     if(focusedChannelId) {
       hiveApi.queryUserDisplayName(userDid, focusedChannel.channel_id, userDid)
         .then(res=>{
-          if(res['find_message'])
+          if(res['find_message'] && res['find_message']['items'].length)
             setDispName(res['find_message']['items'][0].display_name)
+          else 
+            setDispName('')
         })
       hiveApi.querySubscriptionInfoByChannelId(userDid, focusedChannel.channel_id)
         .then(res=>{

@@ -16,11 +16,11 @@ const ChannelCard = (props) => {
   const hiveApi = new HiveApi()
   
   React.useEffect(()=>{
-    hiveApi.queryUserDisplayName(userDid, channel.channel_id.toString(), userDid)
-      .then(res=>{
-        if(res['find_message'])
-          setDispName(res['find_message']['items'][0].display_name)
-      })
+    // hiveApi.queryUserDisplayName(userDid, channel.channel_id.toString(), userDid)
+    //   .then(res=>{
+    //     if(res['find_message'])
+    //       setDispName(res['find_message']['items'][0].display_name)
+    //   })
   }, [])
 
   return (

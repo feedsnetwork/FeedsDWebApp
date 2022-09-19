@@ -152,7 +152,7 @@ const Home = () => {
         !isLoading && !postsInHome.length?
         <EmptyView/>:
 
-        <Container sx={{ my: 3 }} maxWidth={false}>
+        <Container sx={{ my: 3 }} maxWidth="lg">
           <Grid
             container
             direction="row"

@@ -1,7 +1,7 @@
 import { FC, ReactNode, useEffect, useContext, useCallback } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
-import { Box, alpha, lighten, useTheme, Hidden, Card, Stack, Input, Typography, Grid, styled, IconButton, Button } from '@mui/material';
+import { Box, alpha, lighten, useTheme, Hidden, Container, Stack, Input, Typography, Grid, styled, IconButton, Button } from '@mui/material';
 
 import Sidebar from './Sidebar';
 import SidebarChannel from './SidebarChannel';
@@ -113,7 +113,9 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
               </Box>:
 
               <Box sx={{ overflow: 'auto', height: (theme)=>floatingHeaderVisible?`calc(100% - ${theme.header.height})`:'100%' }}>
-                <Outlet />
+                <Container sx={{ flexGrow: 1, overFlow: 'auto' }} maxWidth="lg">
+                  <Outlet />
+                </Container>
               </Box>
           }
         </Box>

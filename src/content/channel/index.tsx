@@ -216,7 +216,7 @@ function Channel() {
         <EmptyView type='channel'/>:
 
         <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
-          <Container sx={{ mt: 3, flexGrow: 1, overFlow: 'auto' }} maxWidth={false}>
+          <Container sx={{ mt: 3, flexGrow: 1, overFlow: 'auto' }} maxWidth="lg">
             <Grid
               container
               direction="row"
