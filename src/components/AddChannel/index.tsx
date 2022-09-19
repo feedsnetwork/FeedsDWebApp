@@ -6,6 +6,7 @@ import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormCont
 
 import StyledButton from 'src/components/StyledButton';
 import { useGlobalState } from 'src/global/store'
+import { getBufferFromFile } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const AvatarWrapper = styled(Box)(
@@ -67,7 +68,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
     }
   };
 
-  const saveAction = (e) => {
+  const saveAction = async (e) => {
     setOnValidation(true)
     if(!avatarUrl)
       return
@@ -85,26 +86,20 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
     }
 
     setOnProgress(true)
-    const reader = new window.FileReader();
-    reader.readAsArrayBuffer(avatarUrl);
-    reader.onloadend = async() => {
-      try {
-        const fileContent = Buffer.from(reader.result as ArrayBuffer)
-        const bs64Content = fileContent.toString('base64')
-        hiveApi.createChannel(nameRef.current.value, descriptionRef.current.value, bs64Content, tippingRef.current.value)
-          .then(result=>{
-            console.log(result)
-            enqueueSnackbar('Add channel success', { variant: 'success' });
-            setOnProgress(false)
-          })
-          .catch(error=>{
-            console.log(error)
-            enqueueSnackbar('Add channel error', { variant: 'error' });
-            setOnProgress(false)
-          })
-      } catch (error) {
-      }
-    }
+    const imageBuffer = await getBufferFromFile(avatarUrl) as Buffer
+    const base64content = imageBuffer.toString('base64')
+    const imageHivePath = await hiveApi.uploadMediaDataWithString(`data:${avatarUrl.type};base64,${base64content}`)
+    hiveApi.createChannel(nameRef.current.value, descriptionRef.current.value, imageHivePath, tippingRef.current.value)
+      .then(result=>{
+        console.log(result)
+        enqueueSnackbar('Add channel success', { variant: 'success' });
+        setOnProgress(false)
+      })
+      .catch(error=>{
+        console.log(error)
+        enqueueSnackbar('Add channel error', { variant: 'error' });
+        setOnProgress(false)
+      })
   }
 
   return (
