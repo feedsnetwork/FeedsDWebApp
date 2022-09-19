@@ -11,6 +11,7 @@ import ChannelAvatar from 'src/components/ChannelAvatar'
 import StyledButton from 'src/components/StyledButton'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
+import { CommonStatus } from 'src/models/common_content'
 import { HiveApi } from 'src/services/HiveApi'
 
 const SidebarWrapper = styled(Box)(
@@ -123,13 +124,15 @@ function SidebarChannel() {
   useEffect(()=>{
     hiveApi.querySelfChannels()
       .then(res=>{
-        // console.log(res)
+        // console.log(res, '-----------self')
         if(Array.isArray(res)){
           setSelfChannels(
-            res.map(item=>{
-              item.target_did = userDid
-              return item
-            })
+            res
+              .filter(item=>item.status!=CommonStatus.deleted)
+              .map(item=>{
+                item.target_did = userDid
+                return item
+              })
           )
           if(res.length)
             setFocusChannelId(res[0].channel_id)
