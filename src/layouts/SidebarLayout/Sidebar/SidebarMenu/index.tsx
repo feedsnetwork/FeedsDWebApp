@@ -161,10 +161,10 @@ const SubMenuWrapper = styled(Box)(
 );
 
 const MainMenuArray = [
-  {to: '/home', name: 'Home', icon: 'clarity:home-solid'},
-  {to: '/profile', name: 'Profile', icon: 'clarity:user-line'},
-  {to: '/channel', name: 'Channel', icon: 'bi:grid-3x3-gap'},
-  {to: '/explorer', name: 'Explorer', icon: 'clarity:compass-line'},
+  {to: '/home', name: 'Home', icon: 'clarity:home-line', focus_icon: 'clarity:home-solid'},
+  {to: '/profile', name: 'Profile', icon: 'clarity:user-line', focus_icon: 'clarity:user-solid'},
+  {to: '/channel', name: 'Channel', icon: 'bi:grid-3x3-gap', focus_icon: 'bi:grid-3x3-gap-fill'},
+  {to: '/explorer', name: 'Explorer', icon: 'clarity:compass-line', focus_icon: 'clarity:compass-solid'},
 ]
 const customAnimation = keyframes`
   from {
@@ -189,6 +189,13 @@ const customAnimationForChannels = keyframes`
   }
 `;
 
+const ListItemButtonStyle = {
+  '& svg.focused': {display: 'none'},
+  '& svg.unfocused': {display: 'block'},
+  '&.active svg.focused': {display: 'block'},
+  '&.active svg.unfocused': {display: 'none'}
+}
+
 function SidebarMenu(props) {
   const { closeSidebar, subscribedChannels } = useContext(SidebarContext);
   const { pathname } = useLocation()
@@ -210,9 +217,10 @@ function SidebarMenu(props) {
               {
                 MainMenuArray.map((menuItem, _i)=>(
                   <ListItem component="div" key={_i}>
-                    <ListItemButton component={RouterLink} to={menuItem.to} onClick={closeSidebar}>
+                    <ListItemButton component={RouterLink} to={menuItem.to} onClick={closeSidebar} sx={ListItemButtonStyle}>
                       <ListItemIcon sx={{ minWidth: 30 }}>
-                        <Icon icon={menuItem.icon} width={18} height={18} />
+                        <Icon className='unfocused' icon={menuItem.icon} width={18} height={18} />
+                        <Icon className='focused' icon={menuItem.focus_icon} width={18} height={18} />
                       </ListItemIcon>
                       <ListItemText primary={menuItem.name} primaryTypographyProps={{ variant: 'body2' }} />
                     </ListItemButton>
@@ -222,7 +230,7 @@ function SidebarMenu(props) {
               {
                 subscribedChannels.length>0?
                 <ListItem component="div">
-                  <ListItemButton component={Button} onClick={toggleChannels} endIcon={isVisibleChannels ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon />}>
+                  <ListItemButton component={Button} onClick={toggleChannels} endIcon={isVisibleChannels ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon />} sx={ListItemButtonStyle}>
                     <ListItemIcon sx={{ minWidth: 30 }}>
                       <Icon icon='clarity:users-line' width={18} height={18} />
                     </ListItemIcon>
