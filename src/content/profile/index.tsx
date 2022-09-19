@@ -116,9 +116,13 @@ function Profile() {
             !selfChannels.length?
             <EmptyViewInProfile type='channel'/>:
 
-            selfChannels.map((channel, _i)=>(
-              <ChannelListItem channel={channel} key={_i}/>
-            ))
+            <Stack spacing={1}>
+              {
+                selfChannels.map((channel, _i)=>(
+                  <ChannelListItem channel={channel} key={_i}/>
+                ))
+              }
+            </Stack>
           }
         </TabPanel>
         <TabPanel value={tabValue} index={1}>

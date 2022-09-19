@@ -26,6 +26,7 @@ const ChannelListItem = (props) => {
       <StyledAvatar alt={channel.name} src={channel.avatarSrc}/>
       <Box flex={1}>
         <Hidden mdDown>
+          <Typography variant="subtitle2">{channel.name}</Typography>
           <Typography variant="body2">{channel.intro}</Typography>
           <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
             <Typography variant="body2" pr={3}><strong>{subscribers.length}</strong> Subscribers</Typography>
@@ -36,6 +37,7 @@ const ChannelListItem = (props) => {
     </Stack>
     <Hidden mdUp>
       <Box mt={1}>
+        <Typography variant="subtitle2">{channel.name}</Typography>
         <Typography variant="body2">{channel.intro}</Typography>
         <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
           <Typography variant="body2" pr={3}><strong>{subscribers.length}</strong> Subscribers</Typography>
