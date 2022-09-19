@@ -86,6 +86,8 @@ function FloatingHeader() {
       primaryText = "Settings"
       secondaryText = description
     }
+    else if(pathname.startsWith('/channel/add') || pageType==='AddChannel')
+      primaryText = "Add Channel"
     else if(pathname.startsWith('/channel') && focusedChannelId) {
       const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
       primaryText = focusedChannel.name
@@ -96,8 +98,6 @@ function FloatingHeader() {
       primaryText = "Post"
       secondaryText = `${focusedPost.commentData?focusedPost.commentData.length:0} comments`
     }
-    else if(pageType==='AddChannel')
-      primaryText = "Add Channel"
     else if(pageType==='Profile') {
       primaryText = userInfo['name'] || `@${reduceDIDstring(feedsDid)}`
       // secondaryText = "0 post"

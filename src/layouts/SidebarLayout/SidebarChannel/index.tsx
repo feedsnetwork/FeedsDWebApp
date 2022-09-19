@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { Link as RouterLink, useLocation } from 'react-router-dom'
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import AddIcon from '@mui/icons-material/Add';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
@@ -112,13 +112,13 @@ function SidebarChannel() {
   const [isOpenPopover, setOpenPopover] = useState(false);
   const [popoverChannel, setPopoverChannel] = useState({});
   const [arrowRef, setArrowRef] = useState(null);
-  const { setPageType } = useContext(OverPageContext)
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
   const hiveApi = new HiveApi()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
+  const navigate = useNavigate();
   
   useEffect(()=>{
     hiveApi.querySelfChannels()
@@ -204,7 +204,7 @@ function SidebarChannel() {
                     focused={focusedChannelId&&focusedChannelId===item.channel_id}/>
                 )
               }
-              <GradientOutlineFab aria-label="add" size='medium'>
+              <GradientOutlineFab aria-label="add" size='medium' onClick={()=>{navigate('/channel/add')}}>
                 <svg width={0} height={0}>
                   <linearGradient id="linearColors" x1={0} y1={1} x2={1} y2={1}>
                     <stop offset={0} stopColor="#7624FE" />
@@ -275,8 +275,7 @@ function SidebarChannel() {
             <Stack direction="row">
               <Typography variant="h5" pb={2} flex={1}>{popoverChannel['name']}</Typography>
               <Box sx={{display: 'inline-block'}}>
-                <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main, mr: 1}} size='small'><Icon icon="ant-design:share-alt-outlined" />
-</IconButton>
+                <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main, mr: 1}} size='small'><Icon icon="ant-design:share-alt-outlined" /></IconButton>
                 <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><Icon icon="clarity:note-edit-line" /></IconButton>
               </Box>
             </Stack>

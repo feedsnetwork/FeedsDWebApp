@@ -90,7 +90,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       <Card sx={{ p: 3 }}>
         <Stack spacing={6} alignItems='center'>
           <AvatarWrapper>
-            <Box component='img' src={avatarUrl?avatarUrl.preview:'user-circle.svg'} draggable={false} sx={{ width: 90, height: 90, borderRadius: '50%'}}/>
+            <Box component='img' src={avatarUrl?avatarUrl.preview:'/user-circle.svg'} draggable={false} sx={{ width: 90, height: 90, borderRadius: '50%'}}/>
             <ButtonUploadWrapper>
               <AvatarInput
                 accept="image/*"

@@ -21,7 +21,7 @@ const Post = () => {
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==selectedPost.channel_id) || {}
   const comments = selectedPost.commentData || []
   
-  console.log(selectedPost, comments, "++++11")
+  // console.log(selectedPost, comments, "++++11")
   const targetDID = `did:elastos:${selectedPost.target_did}`
   React.useEffect(()=>{
     hiveApi.queryUserDisplayName(targetDID, selectedPost.channel_id, targetDID)

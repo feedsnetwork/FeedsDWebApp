@@ -32,6 +32,9 @@ const Profile = Loader(
 const Channel = Loader(
   lazy(() => import('src/content/channel'))
 );
+const AddChannel = Loader(
+  lazy(() => import('src/components/AddChannel'))
+);
 const Explorer = Loader(
   lazy(() => import('src/content/explorer'))
 );
@@ -151,6 +154,10 @@ const routes: RouteObject[] = [
       {
         path: '',
         element: <Channel />
+      },
+      {
+        path: 'add',
+        element: <AddChannel />
       }
     ]
   },
