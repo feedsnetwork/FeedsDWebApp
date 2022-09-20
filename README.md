@@ -48,7 +48,7 @@ $ cd feeds-web-dapp
 
 ### Build
 
-Clone the repository on your local device, and enter this project directory.
+Run the command to build application:
 
 ```
 $ npm install
