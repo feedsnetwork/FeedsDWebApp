@@ -1,5 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
+import parse from 'html-react-parser';
 import { Icon } from '@iconify/react';
 import AddIcon from '@mui/icons-material/Add';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
@@ -430,12 +431,15 @@ function SidebarChannel() {
             <Typography variant="body1" component='div' sx={{display: 'flex'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{popoverChannel['subscribers']?popoverChannel['subscribers'].length:0} Subscribers</Typography>
             <Typography variant="h6" py={1}>Recent Posts</Typography>
             {
-              recentPosts.map(post=>(
-                <>
-                  <Typography variant="body2" color='text.secondary'>{post.content_filtered}</Typography>
+              recentPosts.map((post, _i)=>(
+                <Box key={_i}>
+                  <Typography variant="body2" color='text.secondary'>{parse(post.content_filtered)}</Typography>
                   <Typography variant="body2" textAlign='right'>{post.distanceTime}</Typography>
-                  <Divider/>
-                </>
+                  {
+                    _i<recentPosts.length-1 &&
+                    <Divider sx={{mb: 1}}/>
+                  }
+                </Box>
               ))
             }
             {
