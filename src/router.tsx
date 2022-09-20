@@ -183,7 +183,7 @@ const routes: RouteObject[] = [
   },
   {
     path: 'setting',
-    element: <SidebarLayout />,
+    element: <SidebarLayout maxWidth='lg'/>,
     children: [
       {
         path: '',

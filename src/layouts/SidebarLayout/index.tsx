@@ -17,9 +17,11 @@ import { isInAppBrowser } from 'src/utils/common'
 
 interface SidebarLayoutProps {
   children?: ReactNode;
+  maxWidth?: any;
 }
 
-const SidebarLayout: FC<SidebarLayoutProps> = () => {
+const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
+  const { maxWidth=false } = props
   const hiveApi = new HiveApi()
   const {setWalletAddress, focusedChannelId} = useContext(SidebarContext);
   let sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
@@ -113,7 +115,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
               </Box>:
 
               <Box sx={{ overflow: 'auto', height: (theme)=>floatingHeaderVisible?`calc(100% - ${theme.header.height})`:'100%' }}>
-                <Container sx={{ flexGrow: 1, overFlow: 'auto' }} maxWidth="lg">
+                <Container sx={{ flexGrow: 1, overFlow: 'auto' }} maxWidth={maxWidth}>
                   <Outlet />
                 </Container>
               </Box>
