@@ -12,7 +12,7 @@ import StyledAvatar from 'src/components/StyledAvatar'
 import CommentDlg from 'src/components/Modal/Comment'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import Heart from 'src/components/Heart'
-import { getDateDistance, isValidTime, hash } from 'src/utils/common'
+import { getDateDistance, isValidTime, hash, convertAutoLink } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const PostBody = (props) => {
@@ -79,19 +79,7 @@ const PostBody = (props) => {
     }
   }
 
-  let tempContent = contentObj.content
-  let filteredContentByLink = autolinker.link(tempContent);
-  let splitByHttp = filteredContentByLink.split('http')
-  splitByHttp = splitByHttp.slice(0, splitByHttp.length-1)
-  const brokenLinkStrings = splitByHttp.filter(el=>el.charAt(el.length-1)!='"')
-  if(brokenLinkStrings.length){
-    brokenLinkStrings.forEach(str=>{
-      const lastChar = str.charAt(str.length-1)
-      tempContent = tempContent.replace(`${lastChar}http`, `${lastChar} http`)
-    })
-    filteredContentByLink = autolinker.link(tempContent);
-  }
-
+  const filteredContentByLink = convertAutoLink(contentObj.content)
   const handleClickInContent = (e)=>{
     if(e.target.className.includes('outer-link'))
       e.stopPropagation()

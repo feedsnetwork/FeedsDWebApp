@@ -12,6 +12,7 @@ import StyledButton from 'src/components/StyledButton'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { CommonStatus } from 'src/models/common_content'
+import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique, isValidTime, getDateDistance, convertAutoLink } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const SidebarWrapper = styled(Box)(
@@ -107,16 +108,19 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
     },
   },
 }));
+
 function SidebarChannel() {
-  const { selfChannels, setSelfChannels, sidebarToggle, focusedChannelId, toggleSidebar, setFocusChannelId } = useContext(SidebarContext);
+  const { selfChannels, postsInSelf, sidebarToggle, focusedChannelId, setSelfChannels, setPostsInSelf, toggleSidebar, setFocusChannelId } = useContext(SidebarContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
   const [popoverChannel, setPopoverChannel] = useState({});
+  const [recentPosts, setRecentPosts] = useState([]);
   const [arrowRef, setArrowRef] = useState(null);
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
   const hiveApi = new HiveApi()
+  const prefConf = getAppPreference()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const navigate = useNavigate();
@@ -126,16 +130,139 @@ function SidebarChannel() {
       .then(res=>{
         // console.log(res, '-----------self')
         if(Array.isArray(res)){
-          setSelfChannels(
+          const selfChannels = 
             res
               .filter(item=>item.status!=CommonStatus.deleted)
               .map(item=>{
                 item.target_did = userDid
                 return item
               })
-          )
-          if(res.length)
+          setSelfChannels(selfChannels)
+          if(selfChannels.length)
             setFocusChannelId(res[0].channel_id)
+
+          selfChannels.forEach(item=>{
+            hiveApi.querySubscriptionInfoByChannelId(userDid, item.channel_id)
+              .then(res=>{
+                if(res['find_message'])
+                  setSelfChannels(prevState=>{
+                    const tempState = [...prevState]
+                    const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)
+                    if(channelIndex>=0)
+                      tempState[channelIndex]['subscribers'] = res['find_message']['items']
+                    return tempState
+                  })
+              })
+            hiveApi.queryPostByChannelId(item.target_did, item.channel_id)
+              .then(postRes=>{
+                if(postRes['find_message'] && postRes['find_message']['items']) {
+                  const postArr = prefConf.DP?
+                    postRes['find_message']['items']:
+                    postRes['find_message']['items'].filter(postItem=>!postItem.status)
+                  const splitTargetDid = item.target_did.split(':')
+                  postArr.map(post=>{
+                    post.target_did = splitTargetDid[splitTargetDid.length-1]
+                    if(typeof post.created == 'object')
+                      post.created = new Date(post.created['$date']).getTime()/1000
+                  })
+                  postArr.forEach(post=>{
+                    const contentObj = JSON.parse(post.content)
+                    contentObj.mediaData.forEach((media, _i)=>{
+                      if(!media.originMediaPath)
+                        return
+                      hiveApi.downloadScripting(item.target_did, media.originMediaPath)
+                        .then(res=>{
+                          if(res) {
+                            setPostsInSelf((prevState) => {
+                              const tempState = {...prevState}
+                              const currentGroup = tempState[item.channel_id]
+                              const postIndex = currentGroup.findIndex(el=>el.post_id==post.post_id)
+                              if(postIndex<0)
+                                return tempState
+                              if(currentGroup[postIndex].mediaData)
+                                currentGroup[postIndex].mediaData.push({...media, mediaSrc: res})
+                              else
+                                currentGroup[postIndex].mediaData = [{...media, mediaSrc: res}]
+                              return tempState
+                            })
+                          }
+                        })
+                        .catch(err=>{
+                          console.log(err)
+                        })
+                    })
+                    hiveApi.queryLikeById(item.target_did, item.channel_id, post.post_id, '0')
+                      .then(likeRes=>{
+                        if(likeRes['find_message'] && likeRes['find_message']['items']) {
+                          const likeArr = likeRes['find_message']['items']
+                          const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
+                          const likeIndexByMe = filteredLikeArr.findIndex(item=>item.creater_did==userDid)
+  
+                          setPostsInSelf((prevState) => {
+                            const tempState = {...prevState}
+                            const currentGroup = tempState[item.channel_id]
+                            const postIndex = currentGroup.findIndex(el=>el.post_id==post.post_id)
+                            if(postIndex<0)
+                              return tempState
+                            currentGroup[postIndex].likes = filteredLikeArr.length
+                            currentGroup[postIndex].like_me = likeIndexByMe>=0
+                            return tempState
+                          })
+                        }
+                        // console.log(likeRes, "--------------5", post)
+                      })
+                  })
+                  const postIds = postArr.map(post=>post.post_id)
+                  hiveApi.queryCommentsFromPosts(item.target_did, item.channel_id, postIds)
+                    .then(commentRes=>{
+                      if(commentRes['find_message'] && commentRes['find_message']['items']) {
+                        const commentArr = commentRes['find_message']['items']
+                        const ascCommentArr = sortByDate(commentArr, 'asc')
+                        const linkedComments = ascCommentArr.reduce((res, item)=>{
+                          if(item.refcomment_id == '0') {
+                              res.push(item)
+                              return res
+                          }
+                          const tempRefIndex = res.findIndex((c) => c.comment_id == item.refcomment_id)
+                          if(tempRefIndex<0){
+                              res.push(item)
+                              return res
+                          }
+                          if(res[tempRefIndex]['commentData'])
+                              res[tempRefIndex]['commentData'].push(item)
+                          else res[tempRefIndex]['commentData'] = [item]
+                          return res
+                        }, []).reverse()
+                      
+                        linkedComments.forEach(comment=>{
+                          setPostsInSelf((prevState) => {
+                            const tempState = {...prevState}
+                            const currentGroup = tempState[item.channel_id]
+                            const postIndex = currentGroup.findIndex(el=>el.post_id==comment.post_id)
+                            if(postIndex<0)
+                              return tempState
+                            if(currentGroup[postIndex].commentData)
+                              currentGroup[postIndex].commentData.push(comment)
+                            else
+                              currentGroup[postIndex].commentData = [comment]
+                            return tempState
+                          })
+                        })
+                      }
+                      // console.log(commentRes, "--------------6")
+                    })
+                  setPostsInSelf((prevState) => {
+                    const tempState = {...prevState}
+                    tempState[item.channel_id] = sortByDate(postArr)
+                    return tempState
+                  })
+                  // console.log(postArr, "---------------------3")
+                }
+              })
+              .catch(err=>{
+                // console.log(err, item)
+              })
+          })
         }
       })
       .catch(err=>{
@@ -154,6 +281,24 @@ function SidebarChannel() {
     setAnchorEl(event.currentTarget)
     setPopoverChannel(item)
     setOpenPopover(true);
+    const postsInChannel = postsInSelf[item.channel_id]
+    if(postsInChannel) {
+      setRecentPosts(
+        postsInChannel
+        .slice(0, 2)
+        .map(post=>{
+          const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
+          if(post.status == 1)
+            post.content_filtered = "(post deleted)"
+          else {
+            const contentObj = JSON.parse(post.content)
+            post.content_filtered = convertAutoLink(contentObj.content)
+          }
+          post.distanceTime = distanceTime
+          return post
+        })
+      )
+    }
   };
   const handlePopoverClose = () => {
     setOpenPopover(false);
@@ -174,7 +319,7 @@ function SidebarChannel() {
         },
     }
   };
-  
+
   return (
     <>
       <SidebarWrapper
@@ -282,13 +427,23 @@ function SidebarChannel() {
                 <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><Icon icon="clarity:note-edit-line" /></IconButton>
               </Box>
             </Stack>
-            <Typography variant="body1" component='div' sx={{display: 'flex'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;100 Subscribers</Typography>
+            <Typography variant="body1" component='div' sx={{display: 'flex'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{popoverChannel['subscribers']?popoverChannel['subscribers'].length:0} Subscribers</Typography>
             <Typography variant="h6" py={1}>Recent Posts</Typography>
-            <Typography variant="body2" color='text.secondary'>Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though... I hope it’s gonna be alright haha#osaka #japan #spring</Typography>
-            <Typography variant="body2" textAlign='right'>1m</Typography>
-            <Divider/>
-            <Typography variant="body2" color='text.secondary'>Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though... I hope it’s gonna be alright haha#osaka #japan #spring</Typography>
-            <Typography variant="body2" textAlign='right'>1d</Typography>
+            {
+              recentPosts.map(post=>(
+                <>
+                  <Typography variant="body2" color='text.secondary'>{post.content_filtered}</Typography>
+                  <Typography variant="body2" textAlign='right'>{post.distanceTime}</Typography>
+                  <Divider/>
+                </>
+              ))
+            }
+            {
+              !recentPosts.length &&
+              <Typography variant="body2" py={1}>No recent post found</Typography>
+            }
+            {/* <Typography variant="body2" color='text.secondary'>Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though... I hope it’s gonna be alright haha#osaka #japan #spring</Typography>
+            <Typography variant="body2" textAlign='right'>1d</Typography> */}
             <Box sx={{display: 'block'}} textAlign="center" p={2}>
               <StyledButton type="contained" fullWidth>Post</StyledButton>
             </Box>

@@ -1,6 +1,7 @@
 import { DID, DIDBackend, DefaultDIDAdapter } from '@elastosfoundation/did-js-sdk';
 import { formatDistance } from 'date-fns';
 import { createHash } from 'crypto';
+import Autolinker from 'autolinker';
 
 export const reduceDIDstring = (strDID) => {
   if(!strDID)
@@ -135,4 +136,43 @@ export function getFilteredArrayByUnique(arr, field) {
     return unique;
   },[]);
   return result
+}
+
+export function convertAutoLink(content) {
+  var autolinker = new Autolinker( {
+    urls : {
+        schemeMatches : true,
+        tldMatches    : true,
+        ipV4Matches   : true,
+    },
+    email       : true,
+    phone       : true,
+    mention     : 'twitter',
+    hashtag     : 'twitter',
+
+    stripPrefix : true,
+    stripTrailingSlash : true,
+    newWindow   : true,
+
+    truncate : {
+        length   : 0,
+        location : 'end'
+    },
+
+    className : 'outer-link'
+  } );
+
+  let tempContent = content
+  let filteredContentByLink = autolinker.link(tempContent);
+  let splitByHttp = filteredContentByLink.split('http')
+  splitByHttp = splitByHttp.slice(0, splitByHttp.length-1)
+  const brokenLinkStrings = splitByHttp.filter(el=>el.charAt(el.length-1)!='"')
+  if(brokenLinkStrings.length){
+    brokenLinkStrings.forEach(str=>{
+      const lastChar = str.charAt(str.length-1)
+      tempContent = tempContent.replace(`${lastChar}http`, `${lastChar} http`)
+    })
+    filteredContentByLink = autolinker.link(tempContent);
+  }
+  return filteredContentByLink
 }

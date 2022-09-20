@@ -53,7 +53,7 @@ function Channel() {
       setIsLoading(true)
       hiveApi.queryUserDisplayName(userDid, focusedChannelId.toString(), userDid)
         .then(res=>{
-          if(res['find_message'])
+          if(res['find_message'] && res['find_message']['items'].length)
             setDispName(res['find_message']['items'][0].display_name)
         })
       hiveApi.querySelfPostsByChannel(focusedChannelId.toString())

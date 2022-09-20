@@ -36,7 +36,6 @@ const ListWrapper = styled(List)(
 function RightPanel() {
   const { sidebarToggle, focusedChannelId, selfChannels, toggleSidebar } = useContext(SidebarContext);
   const [dispName, setDispName] = React.useState('')
-  const [subscribers, setSubscribers] = React.useState([])
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
@@ -45,6 +44,7 @@ function RightPanel() {
   const userDid = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
   const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
+  const subscribers = (focusedChannel && focusedChannel['subscribers']) || []
   let content = null
 
   React.useEffect(()=>{
@@ -55,11 +55,6 @@ function RightPanel() {
             setDispName(res['find_message']['items'][0].display_name)
           else 
             setDispName('')
-        })
-      hiveApi.querySubscriptionInfoByChannelId(userDid, focusedChannel.channel_id)
-        .then(res=>{
-          if(res['find_message'])
-            setSubscribers(res['find_message']['items'])
         })
     }
   }, [focusedChannelId])
