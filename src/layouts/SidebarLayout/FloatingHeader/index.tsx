@@ -46,29 +46,12 @@ const HeaderWrapper = styled(Box)(
 );
 function FloatingHeader() {
   const { pageType, setPageType, closeOverPage } = React.useContext(OverPageContext);
-  const { focusedChannelId, selfChannels, postsInHome, userInfo } = React.useContext(SidebarContext);
-  const [secondaryData, setSecondaryData] = React.useState(0)
+  const { focusedChannelId, selfChannels, postsInHome, postsInSelf, userInfo } = React.useContext(SidebarContext);
   const { pathname } = useLocation()
   const navigate = useNavigate();
   const params = useParams()
   const hiveApi = new HiveApi()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
-
-  React.useEffect(()=>{
-    if(pathname.startsWith('/channel') && focusedChannelId) {
-      const prefConf = getAppPreference()
-      hiveApi.querySelfPostsByChannel(focusedChannelId.toString())
-        .then((res)=>{
-          if(Array.isArray(res)) {
-            setSecondaryData(
-              prefConf.DP?
-              res.length:
-              res.filter(item=>!item.status).length
-            )
-          }
-        })
-    }
-  }, [focusedChannelId])
 
   const handleClose = (e) => {
     window.history.back()
@@ -90,8 +73,9 @@ function FloatingHeader() {
       primaryText = "Add Channel"
     else if(pathname.startsWith('/channel') && focusedChannelId) {
       const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
+      const postsInFocusedChannel = postsInSelf[focusedChannelId] || []
       primaryText = focusedChannel.name
-      secondaryText = `${secondaryData} post`
+      secondaryText = `${postsInFocusedChannel.length} post`
     }
     else if(pathname.startsWith('/post/')) {
       const focusedPost = postsInHome.find(item=>item.post_id==params.post_id)
@@ -111,7 +95,7 @@ function FloatingHeader() {
     return ""
   }
 
-  const backBtnText = React.useMemo(() => getActionText(), [pageType, pathname, focusedChannelId, secondaryData])
+  const backBtnText = React.useMemo(() => getActionText(), [pageType, pathname, focusedChannelId, postsInSelf])
   return (
     <>
       <Hidden lgDown>

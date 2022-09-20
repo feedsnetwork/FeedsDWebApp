@@ -24,7 +24,8 @@ function PostDlg(props) {
   const [postext, setPostext] = React.useState('');
   const [imageAttach, setImageAttach] = React.useState(null);
   
-  const focusedChannel = selfChannels.find(item=>item.channel_id==(activeChannelId || focusedChannelId)) || {}
+  const currentChannelId = activeChannelId || focusedChannelId
+  const focusedChannel = selfChannels.find(item=>item.channel_id==currentChannelId) || {}
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
   const postRef = React.useRef(null)
@@ -64,7 +65,7 @@ function PostDlg(props) {
       postContent.mediaData.push(tempMediaData)
       postContent.mediaType = MediaType.containsImg
     }
-    hiveApi.publishPost(focusedChannelId.toString(), "", JSON.stringify(postContent))
+    hiveApi.publishPost(currentChannelId.toString(), "", JSON.stringify(postContent))
       .then(res=>{
         // console.log(res, "===============2")
         enqueueSnackbar('Publish post success', { variant: 'success' });
