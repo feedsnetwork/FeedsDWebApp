@@ -17,14 +17,14 @@ import { HiveApi } from 'src/services/HiveApi'
 import { getBufferFromFile } from 'src/utils/common'
 
 function PostDlg(props) {
-  const { setOpen, isOpen } = props;
+  const { setOpen, isOpen, activeChannelId=null } = props;
   const { focusedChannelId, selfChannels, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
   const [postext, setPostext] = React.useState('');
   const [imageAttach, setImageAttach] = React.useState(null);
   
-  const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId) || {}
+  const focusedChannel = selfChannels.find(item=>item.channel_id==(activeChannelId || focusedChannelId)) || {}
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
   const postRef = React.useRef(null)
@@ -218,10 +218,5 @@ function PostDlg(props) {
     </Dialog>
   );
 }
-
-PostDlg.propTypes = {
-  setOpen: PropTypes.func.isRequired,
-  isOpen: PropTypes.bool.isRequired,
-};
 
 export default PostDlg

@@ -10,6 +10,7 @@ import Scrollbar from 'src/components/Scrollbar';
 import Logo from 'src/components/LogoSign';
 import ChannelAvatar from 'src/components/ChannelAvatar'
 import StyledButton from 'src/components/StyledButton'
+import PostDlg from 'src/components/Modal/Post';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { CommonStatus } from 'src/models/common_content'
@@ -117,6 +118,7 @@ function SidebarChannel() {
   const [popoverChannel, setPopoverChannel] = useState({});
   const [recentPosts, setRecentPosts] = useState([]);
   const [arrowRef, setArrowRef] = useState(null);
+  const [isOpenPost, setOpenPost] = useState(false)
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
@@ -304,6 +306,10 @@ function SidebarChannel() {
   const handlePopoverClose = () => {
     setOpenPopover(false);
   };
+  const handleClickPost = (e) => {
+    setOpenPopover(false);
+    setOpenPost(true)
+  }
   const styles = {
     arrow: {
         position: 'absolute',
@@ -449,11 +455,12 @@ function SidebarChannel() {
             {/* <Typography variant="body2" color='text.secondary'>Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though... I hope it’s gonna be alright haha#osaka #japan #spring</Typography>
             <Typography variant="body2" textAlign='right'>1d</Typography> */}
             <Box sx={{display: 'block'}} textAlign="center" p={2}>
-              <StyledButton type="contained" fullWidth>Post</StyledButton>
+              <StyledButton type="contained" fullWidth onClick={handleClickPost}>Post</StyledButton>
             </Box>
           </Paper>
         </StyledPopper>
       </ClickAwayListener>
+      <PostDlg setOpen={setOpenPost} isOpen={isOpenPost} activeChannelId={popoverChannel['channel_id']}/>
       {/* <Drawer
         sx={{
           boxShadow: `${theme.sidebar.boxShadow}`
