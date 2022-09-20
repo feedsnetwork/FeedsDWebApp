@@ -13,6 +13,7 @@ import StyledIconButton from 'src/components/StyledIconButton';
 import StyledTextFieldOutline from 'src/components/StyledTextFieldOutline'
 import PostSkeleton from 'src/components/Skeleton/PostSkeleton'
 import { PostContentV3, mediaDataV3, MediaType } from 'src/models/post_content'
+import { CommonStatus } from 'src/models/common_content'
 import { reduceDIDstring, getAppPreference, sortByDate, getBufferFromFile, getFilteredArrayByUnique } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
@@ -27,8 +28,7 @@ const PostBoxStyle = styled(Box)(({ theme }) => ({
 }));
 
 function Channel() {
-  const { focusedChannelId, selfChannels, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
-  const [posts, setPosts] = React.useState([])
+  const { focusedChannelId, selfChannels, postsInSelf, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const [dispName, setDispName] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false)
   const [isOnValidation, setOnValidation] = React.useState(false);
@@ -37,12 +37,12 @@ function Channel() {
   const [imageAttach, setImageAttach] = React.useState(null);
 
   const { enqueueSnackbar } = useSnackbar();
-  const prefConf = getAppPreference()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
   const postRef = React.useRef(null)
   const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
+  const postsInFocusedChannel = postsInSelf[focusedChannelId] || []
 
   React.useEffect(()=>{
     if(focusedChannelId) {
@@ -50,108 +50,17 @@ function Channel() {
       // postContent.content = "This is new post"
       // hiveApi.updatePost("4d273607cd54b4850c086ecffd1b059aa7332b35e3c8a153b4d8178f4aa045fc", "396968a639f20908bbe51cba84f14f02620466fc6a103b2c277cc80b3ab22504", "public", "", JSON.stringify(postContent), 0, 1662041339625, "", "")
       //   .then(res=>{console.log(res, '%%%%%%%%%%%%%%%%%%%%%%%%')})
-      setIsLoading(true)
+      if(!postsInSelf[focusedChannelId])
+        setIsLoading(true)
+      else
+        setIsLoading(false)
       hiveApi.queryUserDisplayName(userDid, focusedChannelId.toString(), userDid)
         .then(res=>{
           if(res['find_message'] && res['find_message']['items'].length)
             setDispName(res['find_message']['items'][0].display_name)
         })
-      hiveApi.querySelfPostsByChannel(focusedChannelId.toString())
-        .then(res=>{
-          if(Array.isArray(res)) {
-            const postArr = prefConf.DP?
-              res:
-              res.filter(item=>!item.status)
-
-            postArr.forEach(post=>{
-              const contentObj = JSON.parse(post.content)
-              contentObj.mediaData.forEach((media, _i)=>{
-                if(!media.originMediaPath)
-                  return
-                hiveApi.downloadScripting(focusedChannel.target_did, media.originMediaPath)
-                  .then(downloadRes=>{
-                    if(downloadRes) {
-                      setPosts(prev=>{
-                        const prevState = [...prev]
-                        const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
-                        if(postIndex<0)
-                          return prevState
-                        if(prevState[postIndex].mediaData)
-                          prevState[postIndex].mediaData.push({...media, mediaSrc: downloadRes})
-                        else
-                          prevState[postIndex].mediaData = [{...media, mediaSrc: downloadRes}]
-                        return prevState
-                      })
-                    }
-                  })
-                  .catch(err=>{
-                    console.log(err)
-                  })
-              })
-              hiveApi.queryLikeById(focusedChannel.target_did, focusedChannel.channel_id, post.post_id, '0')
-                .then(likeRes=>{
-                  if(likeRes['find_message'] && likeRes['find_message']['items']) {
-                    const likeArr = likeRes['find_message']['items']
-                    const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
-                    // console.log(likeArr, "++++++++++++++++++12")
-                    const likeIndexByMe = filteredLikeArr.findIndex(item=>item.creater_did==userDid)
-                    setPosts(prev=>{
-                      const prevState = [...prev]
-                      const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
-                      if(postIndex<0)
-                        return prevState
-                      prevState[postIndex].likes = filteredLikeArr.length
-                      prevState[postIndex].like_me = likeIndexByMe>=0
-                      return prevState
-                    })
-                  }
-                  // console.log(likeRes, "--------------5")
-                })
-            })
-            const postIds = postArr.map(post=>post.post_id)
-            hiveApi.queryCommentsFromPosts(focusedChannel.target_did, focusedChannel.channel_id, postIds)
-              .then(commentRes=>{
-                if(commentRes['find_message'] && commentRes['find_message']['items']) {
-                  const commentArr = commentRes['find_message']['items']
-                  const ascCommentArr = sortByDate(commentArr, 'asc')
-                  const linkedComments = ascCommentArr.reduce((res, item)=>{
-                    if(item.refcomment_id == '0') {
-                        res.push(item)
-                        return res
-                    }
-                    const tempRefIndex = res.findIndex((c) => c.comment_id == item.refcomment_id)
-                    if(tempRefIndex<0){
-                        res.push(item)
-                        return res
-                    }
-                    if(res[tempRefIndex]['commentData'])
-                        res[tempRefIndex]['commentData'].push(item)
-                    else res[tempRefIndex]['commentData'] = [item]
-                    return res
-                  }, []).reverse()
-                
-                  linkedComments.forEach(comment=>{
-                    setPosts(prev=>{
-                      const prevState = [...prev]
-                      const postIndex = prevState.findIndex(el=>el.post_id==comment.post_id)
-                      if(postIndex<0)
-                        return prevState
-                      if(prevState[postIndex].commentData)
-                        prevState[postIndex].commentData.push(comment)
-                      else
-                        prevState[postIndex].commentData = [comment]
-                      return prevState
-                    })
-                  })
-                }
-                // console.log(commentRes, "--------------6")
-              })
-            setIsLoading(false)
-            setPosts((prevState)=>sortByDate([...prevState, ...postArr]))
-          }
-        })
     }
-  }, [focusedChannelId, publishPostNumber])
+  }, [focusedChannelId, publishPostNumber, postsInSelf])
 
   const handlePost = async (e) => {
     setOnValidation(true)
@@ -232,13 +141,17 @@ function Channel() {
                   </Grid>
                 )):
 
-                posts.map((post, _i)=>(
+                postsInFocusedChannel.map((post, _i)=>(
                   <Grid item xs={12} key={_i}>
                     <PostCard post={post} dispName={dispName || reduceDIDstring(feedsDid)}/>
                   </Grid>
                 ))
               }
             </Grid>
+            {
+              !isLoading && !postsInFocusedChannel.length &&
+              <Typography variant='h5' sx={{mt: 3, textAlign: 'center'}}>No posts found!</Typography>
+            }
           </Container>
           <PostBoxStyle>
             <Stack spacing={2}>
