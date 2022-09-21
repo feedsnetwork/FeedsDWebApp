@@ -88,7 +88,7 @@ function CommentDlg(props) {
               {userInfo['name'] || reduceDIDstring(feedsDid)}
             </Typography>
             <Typography variant="body2" noWrap>
-              <b>Replying to</b> {postProps.contentObj.secondaryName}
+              <b>Replying to</b> {postProps.level==1?postProps.contentObj.secondaryName:postProps.contentObj.primaryName}
             </Typography>
           </Box>
         </Stack>

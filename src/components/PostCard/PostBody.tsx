@@ -1,54 +1,83 @@
 import React from 'react'
-import { Box, Stack, Typography, IconButton, styled } from '@mui/material';
+import { Box, Stack, Typography, IconButton, Popper, Paper, styled } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
-import Autolinker from 'autolinker';
 import parse from 'html-react-parser';
 import Odometer from "react-odometerjs";
 import "odometer/themes/odometer-theme-default.css";
 
 import StyledAvatar from 'src/components/StyledAvatar'
 import CommentDlg from 'src/components/Modal/Comment'
+import StyledButton from 'src/components/StyledButton'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import Heart from 'src/components/Heart'
 import { getDateDistance, isValidTime, hash, convertAutoLink } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
+
+const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
+  maxWidth: '350px',
+  width: '100%',
+  '&[data-popper-placement*="bottom"] .arrow': {
+    top: 0,
+    left: 0,
+    marginTop: '-0.9em',
+    width: '3em',
+    height: '1em',
+    '&::before': {
+      borderWidth: '0 1em 1em 1em',
+      borderColor: `transparent transparent ${theme.palette.background.paper} transparent`,
+    },
+  },
+  '&[data-popper-placement*="top"] .arrow': {
+    bottom: 0,
+    left: 0,
+    marginBottom: '-0.9em',
+    width: '3em',
+    height: '1em',
+    '&::before': {
+      borderWidth: '1em 1em 0 1em',
+      borderColor: `${theme.palette.background.paper} transparent transparent transparent`,
+    },
+  },
+  '&[data-popper-placement*="right"] .arrow': {
+    left: 0,
+    marginLeft: '-0.9em',
+    height: '3em',
+    width: '1em',
+    '&::before': {
+      borderWidth: '1em 1em 1em 0',
+      borderColor: `transparent ${theme.palette.background.paper} transparent transparent`,
+    },
+  },
+  '&[data-popper-placement*="left"] .arrow': {
+    right: 0,
+    marginRight: '-0.9em',
+    height: '3em',
+    width: '1em',
+    '&::before': {
+      borderWidth: '1em 0 1em 1em',
+      borderColor: `transparent transparent transparent ${theme.palette.background.paper}`,
+    },
+  },
+}));
+
 const PostBody = (props) => {
-  const { post, contentObj, isReply=false } = props
+  const { post, contentObj, isReply=false, level=1 } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   const { selfChannels, subscribedChannels } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [isOpenComment, setOpenComment] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [isOpenPopover, setOpenPopover] = React.useState(false);
+  const [isEnterPopover, setEnterPopover] = React.useState(false);
   const hiveApi = new HiveApi()
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const { enqueueSnackbar } = useSnackbar();
-  var autolinker = new Autolinker( {
-    urls : {
-        schemeMatches : true,
-        tldMatches    : true,
-        ipV4Matches   : true,
-    },
-    email       : true,
-    phone       : true,
-    mention     : 'twitter',
-    hashtag     : 'twitter',
-
-    stripPrefix : true,
-    stripTrailingSlash : true,
-    newWindow   : true,
-
-    truncate : {
-        length   : 0,
-        location : 'end'
-    },
-
-    className : 'outer-link'
-} );
 
   React.useEffect(()=>{
     setIsLike(!!post.like_me)
@@ -84,11 +113,27 @@ const PostBody = (props) => {
     if(e.target.className.includes('outer-link'))
       e.stopPropagation()
   }
+
+  const handlePopper = (e, open)=>{
+    if(open) {
+      setAnchorEl(e.target)
+    }
+    else {
+      setAnchorEl(null)
+    }
+    setOpenPopover(open)
+  }
+
   return (
     <>
       <Stack spacing={2}>
         <Stack direction="row" alignItems="center" spacing={2}>
-          <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
+          <Box
+            onMouseEnter={(e)=>{handlePopper(e, true)}}
+            // onMouseLeave={(e)=>{handlePopper(e, false)}}
+          >
+            <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
+          </Box>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography component='div' variant="subtitle2" noWrap>
               {contentObj.primaryName}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
@@ -177,7 +222,77 @@ const PostBody = (props) => {
           </Stack>
         </Stack>
       </Stack>
-      <CommentDlg setOpen={setOpenComment} isOpen={isOpenComment} post={post} postProps={{post, contentObj, isReply: true}}/>
+      <CommentDlg setOpen={setOpenComment} isOpen={isOpenComment} post={post} postProps={{post, contentObj, isReply: true, level}}/>
+      <StyledPopper
+        anchorEl={anchorEl}
+        open={isOpenPopover}
+        disablePortal={false}
+        onMouseLeave={(e)=>{handlePopper(e, false)}}
+        onMouseEnter={(e)=>{setEnterPopover(true)}}
+        modifiers={[
+          {
+            name: 'flip',
+            enabled: true,
+            options: {
+              altBoundary: true,
+              rootBoundary: 'document',
+              padding: 8,
+            },
+          },
+          {
+            name: 'preventOverflow',
+            enabled: false,
+            options: {
+              altAxis: true,
+              altBoundary: true,
+              tether: true,
+              rootBoundary: 'document',
+              padding: 8,
+            },
+          },
+        ]}
+        sx={{zIndex: 100}}
+      >
+        <Paper sx={{p: 2}}>
+          <Stack direction="row">
+            <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={40}/>
+            <Box sx={{flexGrow: 1}} textAlign="right">
+              <StyledButton type="contained">Subscribed</StyledButton>
+            </Box>
+          </Stack>
+          <Box>
+            <Typography component='div' variant="subtitle2" noWrap>{contentObj.primaryName}</Typography>
+          </Box>
+          {/* <Stack direction="row">
+            <Typography variant="h5" pb={2} flex={1}>{popoverChannel['name']}</Typography>
+            <Box sx={{display: 'inline-block'}}>
+              <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main, mr: 1}} size='small'><Icon icon="ant-design:share-alt-outlined" /></IconButton>
+              <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><Icon icon="clarity:note-edit-line" /></IconButton>
+            </Box>
+          </Stack>
+          <Typography variant="body1" component='div' sx={{display: 'flex'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{popoverChannel['subscribers']?popoverChannel['subscribers'].length:0} Subscribers</Typography>
+          <Typography variant="h6" py={1}>Recent Posts</Typography>
+          {
+            recentPosts.map((post, _i)=>(
+              <Box key={_i}>
+                <Typography variant="body2" color='text.secondary'>{parse(post.content_filtered)}</Typography>
+                <Typography variant="body2" textAlign='right'>{post.distanceTime}</Typography>
+                {
+                  _i<recentPosts.length-1 &&
+                  <Divider sx={{mb: 1}}/>
+                }
+              </Box>
+            ))
+          }
+          {
+            !recentPosts.length &&
+            <Typography variant="body2" py={1}>No recent post found</Typography>
+          }
+          <Box sx={{display: 'block'}} textAlign="center" p={2}>
+            <StyledButton type="contained" fullWidth onClick={handleClickPost}>Post</StyledButton>
+          </Box> */}
+        </Paper>
+      </StyledPopper>
     </>
   )
 }

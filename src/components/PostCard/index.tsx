@@ -70,7 +70,7 @@ const PostCard = (props) => {
   if(post.status == 1)
     contentObj.content = "(post deleted)"
 
-  const BodyProps = { post, contentObj }
+  const BodyProps = { post, contentObj, level }
   return (
     <Card {...cardProps}>
       <Box p={3}>
@@ -120,7 +120,7 @@ const PostCard = (props) => {
                   secondaryName: <><b>Replying to</b> @{dispName}</>, 
                   content: comment.content
                 }
-                const subBodyProps = { post: comment, contentObj: subContentObj, isReply: true }
+                const subBodyProps = { post: comment, contentObj: subContentObj, isReply: true, level }
                 return <PostBody {...subBodyProps} key={_i}/>
               })
             }
