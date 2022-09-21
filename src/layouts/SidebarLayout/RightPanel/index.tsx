@@ -84,7 +84,7 @@ function RightPanel() {
               <Stack alignItems='center' my={2}>
                 <StyledAvatar alt={focusedChannel.name} src={focusedChannel.avatarSrc} width={60}/>
                 <Typography variant='h5' mt={1}>{focusedChannel.name}</Typography>
-                <Typography variant='body2'>@{focusedChannel.display_name || reduceDIDstring(feedsDid)}</Typography>
+                <Typography variant='body2'>@{focusedChannel.owner_name || reduceDIDstring(feedsDid)}</Typography>
                 <Typography variant='body2' color='text.secondary' textAlign='center'>{focusedChannel.intro}</Typography>
               </Stack>
               <Stack alignItems='center'>

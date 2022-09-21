@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Stack, Typography, IconButton, Popper, Paper, styled } from '@mui/material';
+import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
@@ -223,77 +223,59 @@ const PostBody = (props) => {
         </Stack>
       </Stack>
       <CommentDlg setOpen={setOpenComment} isOpen={isOpenComment} post={post} postProps={{post, contentObj, isReply: true, level}}/>
-      <StyledPopper
-        anchorEl={anchorEl}
-        open={isOpenPopover}
-        disablePortal={false}
-        onMouseLeave={(e)=>{handlePopper(e, false)}}
-        onMouseEnter={(e)=>{setEnterPopover(true)}}
-        modifiers={[
-          {
-            name: 'flip',
-            enabled: true,
-            options: {
-              altBoundary: true,
-              rootBoundary: 'document',
-              padding: 8,
+      {
+        level==1 &&
+        <StyledPopper
+          anchorEl={anchorEl}
+          open={isOpenPopover}
+          disablePortal={false}
+          onMouseLeave={(e)=>{handlePopper(e, false)}}
+          onMouseEnter={(e)=>{setEnterPopover(true)}}
+          modifiers={[
+            {
+              name: 'flip',
+              enabled: true,
+              options: {
+                altBoundary: true,
+                rootBoundary: 'document',
+                padding: 8,
+              },
             },
-          },
-          {
-            name: 'preventOverflow',
-            enabled: false,
-            options: {
-              altAxis: true,
-              altBoundary: true,
-              tether: true,
-              rootBoundary: 'document',
-              padding: 8,
+            {
+              name: 'preventOverflow',
+              enabled: false,
+              options: {
+                altAxis: true,
+                altBoundary: true,
+                tether: true,
+                rootBoundary: 'document',
+                padding: 8,
+              },
             },
-          },
-        ]}
-        onClick={(e)=>{e.stopPropagation()}}
-        sx={{zIndex: 100}}
-      >
-        <Paper sx={{p: 2}}>
-          <Stack direction="row">
-            <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={40}/>
-            <Box sx={{flexGrow: 1}} textAlign="right">
-              <StyledButton type="contained">Subscribed</StyledButton>
-            </Box>
-          </Stack>
-          <Box>
-            <Typography component='div' variant="subtitle2" noWrap>{contentObj.primaryName}</Typography>
-          </Box>
-          {/* <Stack direction="row">
-            <Typography variant="h5" pb={2} flex={1}>{popoverChannel['name']}</Typography>
-            <Box sx={{display: 'inline-block'}}>
-              <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main, mr: 1}} size='small'><Icon icon="ant-design:share-alt-outlined" /></IconButton>
-              <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><Icon icon="clarity:note-edit-line" /></IconButton>
-            </Box>
-          </Stack>
-          <Typography variant="body1" component='div' sx={{display: 'flex'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{popoverChannel['subscribers']?popoverChannel['subscribers'].length:0} Subscribers</Typography>
-          <Typography variant="h6" py={1}>Recent Posts</Typography>
-          {
-            recentPosts.map((post, _i)=>(
-              <Box key={_i}>
-                <Typography variant="body2" color='text.secondary'>{parse(post.content_filtered)}</Typography>
-                <Typography variant="body2" textAlign='right'>{post.distanceTime}</Typography>
-                {
-                  _i<recentPosts.length-1 &&
-                  <Divider sx={{mb: 1}}/>
-                }
+          ]}
+          onClick={(e)=>{e.stopPropagation()}}
+          sx={{zIndex: 100}}
+        >
+          <Paper sx={{p: 2}}>
+            <Stack direction="row">
+              <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={40}/>
+              <Box sx={{flexGrow: 1}} textAlign="right">
+                <StyledButton type="contained">Subscribed</StyledButton>
               </Box>
-            ))
-          }
-          {
-            !recentPosts.length &&
-            <Typography variant="body2" py={1}>No recent post found</Typography>
-          }
-          <Box sx={{display: 'block'}} textAlign="center" p={2}>
-            <StyledButton type="contained" fullWidth onClick={handleClickPost}>Post</StyledButton>
-          </Box> */}
-        </Paper>
-      </StyledPopper>
+            </Stack>
+            <Box>
+              <Typography component='div' variant="subtitle2" noWrap pt={1}>{contentObj.primaryName}</Typography>
+              <Typography component='div' variant="body2" noWrap>{contentObj.secondaryName}</Typography>
+              <Typography component='div' variant="body2" color="secondary">{currentChannel.intro}</Typography>
+            </Box>
+            <Divider sx={{my: 1}}/>
+            <Typography variant="body2" component='div' sx={{display: 'flex'}}>
+              <Icon icon="clarity:group-line" fontSize='20px' />&nbsp;
+              {currentChannel['subscribers']?currentChannel['subscribers'].length:0} Subscribers
+            </Typography>
+          </Paper>
+        </StyledPopper>
+      }
     </>
   )
 }

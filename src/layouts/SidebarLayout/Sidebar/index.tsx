@@ -53,6 +53,31 @@ function Sidebar() {
                   setSubscribedChannels(prev=>{
                     return [...prev, {...channelInfo, target_did: item.target_did}]
                   })
+                  hiveApi.queryUserDisplayName(item.target_did, item.channel_id, item.target_did)
+                    .then(dispNameRes=>{
+                      if(dispNameRes['find_message'] && dispNameRes['find_message']['items'].length) {
+                        const dispName = res['find_message']['items'][0].display_name
+                        setSubscribedChannels(prev=>{
+                          const prevState = [...prev]
+                          const channelIndex = prevState.findIndex(channel=>channel.channel_id==item.channel_id)
+                          if(channelIndex<0)
+                            return prevState
+                          prevState[channelIndex].owner_name = dispName
+                          return prevState
+                        })
+                      }
+                    })
+                  hiveApi.querySubscriptionInfoByChannelId(item.target_did, item.channel_id)
+                    .then(res=>{
+                      if(res['find_message'])
+                        setSubscribedChannels(prev=>{
+                          const prevState = [...prev]
+                          const channelIndex = prevState.findIndex(channel=>channel.channel_id==item.channel_id)
+                          if(channelIndex>=0)
+                            prevState[channelIndex]['subscribers'] = res['find_message']['items']
+                          return prevState
+                        })
+                    })
                   hiveApi.downloadScripting(item.target_did, channelInfo.avatar)
                     .then(res=>{
                       setSubscribedChannels(prev=>{
