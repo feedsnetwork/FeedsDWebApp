@@ -251,6 +251,7 @@ const PostBody = (props) => {
             },
           },
         ]}
+        onClick={(e)=>{e.stopPropagation()}}
         sx={{zIndex: 100}}
       >
         <Paper sx={{p: 2}}>

@@ -35,7 +35,6 @@ const ListWrapper = styled(List)(
 );
 function RightPanel() {
   const { sidebarToggle, focusedChannelId, selfChannels, toggleSidebar } = useContext(SidebarContext);
-  const [dispName, setDispName] = React.useState('')
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
@@ -46,18 +45,6 @@ function RightPanel() {
   const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
   const subscribers = (focusedChannel && focusedChannel['subscribers']) || []
   let content = null
-
-  React.useEffect(()=>{
-    if(focusedChannelId) {
-      hiveApi.queryUserDisplayName(userDid, focusedChannel.channel_id, userDid)
-        .then(res=>{
-          if(res['find_message'] && res['find_message']['items'].length)
-            setDispName(res['find_message']['items'][0].display_name)
-          else 
-            setDispName('')
-        })
-    }
-  }, [focusedChannelId])
 
   if(isSetting) {
     if(pathname.endsWith('/credentials'))
@@ -97,7 +84,7 @@ function RightPanel() {
               <Stack alignItems='center' my={2}>
                 <StyledAvatar alt={focusedChannel.name} src={focusedChannel.avatarSrc} width={60}/>
                 <Typography variant='h5' mt={1}>{focusedChannel.name}</Typography>
-                <Typography variant='body2'>@{dispName || reduceDIDstring(feedsDid)}</Typography>
+                <Typography variant='body2'>@{focusedChannel.display_name || reduceDIDstring(feedsDid)}</Typography>
                 <Typography variant='body2' color='text.secondary' textAlign='center'>{focusedChannel.intro}</Typography>
               </Stack>
               <Stack alignItems='center'>

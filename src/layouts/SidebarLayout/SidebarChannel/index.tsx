@@ -265,6 +265,19 @@ function SidebarChannel() {
               .catch(err=>{
                 // console.log(err, item)
               })
+            hiveApi.queryUserDisplayName(userDid, item.channel_id, userDid)
+              .then(res=>{
+                let dispName = ''
+                if(res['find_message'] && res['find_message']['items'].length)
+                  dispName = res['find_message']['items'][0].display_name
+                setSelfChannels(prevState=>{
+                  const tempState = [...prevState]
+                  const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)
+                  if(channelIndex>=0)
+                    tempState[channelIndex]['display_name'] = dispName
+                  return tempState
+                })
+              })
           })
         }
       })
