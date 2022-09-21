@@ -56,7 +56,7 @@ function Sidebar() {
                   hiveApi.queryUserDisplayName(item.target_did, item.channel_id, item.target_did)
                     .then(dispNameRes=>{
                       if(dispNameRes['find_message'] && dispNameRes['find_message']['items'].length) {
-                        const dispName = res['find_message']['items'][0].display_name
+                        const dispName = dispNameRes['find_message']['items'][0].display_name
                         setSubscribedChannels(prev=>{
                           const prevState = [...prev]
                           const channelIndex = prevState.findIndex(channel=>channel.channel_id==item.channel_id)

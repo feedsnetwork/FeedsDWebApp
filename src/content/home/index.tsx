@@ -9,10 +9,9 @@ import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique
 import { HiveApi } from 'src/services/HiveApi'
 
 const Home = () => {
-  const { publishPostNumber, postsInHome, setPostsInHome } = React.useContext(SidebarContext);
+  const { publishPostNumber, postsInHome, subscribedChannels, setPostsInHome } = React.useContext(SidebarContext);
   // const [posts, setPosts] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(false)
-  const [dispNames, setDispNames] = React.useState({})
   const prefConf = getAppPreference()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
@@ -26,20 +25,6 @@ const Home = () => {
       .then(res=>{
         if(Array.isArray(res)) {
           res.forEach(item=>{
-            hiveApi.queryUserDisplayName(item.target_did, item.channel_id, item.target_did)
-              .then(dispNameRes=>{
-                if(dispNameRes['find_message'] && dispNameRes['find_message']['items']) {
-                  const dispItem = dispNameRes['find_message']['items'][0]
-                  if(!dispItem)
-                    return
-                  setDispNames(prevState=>{
-                    const tempPrev = {...prevState}
-                    tempPrev[dispItem.channel_id] = dispItem.display_name
-                    return tempPrev
-                  })
-                }
-              })
-              
             hiveApi.queryPostByChannelId(item.target_did, item.channel_id)
               .then(postRes=>{
                 if(postRes['find_message'] && postRes['find_message']['items']) {
@@ -168,11 +153,12 @@ const Home = () => {
                 </Grid>
               )):
 
-              postsInHome.map((post, _i)=>(
-                <Grid item xs={12} key={_i}>
-                  <PostCard post={post} dispName={dispNames[post.channel_id] || reduceDIDstring(post.target_did)}/>
+              postsInHome.map((post, _i)=>{
+                const channelOfPost = subscribedChannels.find(item=>item.channel_id==post.channel_id) || {}
+                return <Grid item xs={12} key={_i}>
+                  <PostCard post={post} dispName={channelOfPost['owner_name'] || reduceDIDstring(post.target_did)}/>
                 </Grid>
-              ))
+              })
             }
           </Grid>
         </Container>
