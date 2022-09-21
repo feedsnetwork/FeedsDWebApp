@@ -112,7 +112,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 }));
 
 function SidebarChannel() {
-  const { selfChannels, postsInSelf, sidebarToggle, focusedChannelId, setSelfChannels, setPostsInSelf, toggleSidebar, setFocusChannelId } = useContext(SidebarContext);
+  const { selfChannels, postsInSelf, sidebarToggle, focusedChannelId, subscriberAvatar, setSelfChannels, setPostsInSelf, toggleSidebar, setFocusChannelId, setSubscriberAvatar } = useContext(SidebarContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
   const [popoverChannel, setPopoverChannel] = useState({});
@@ -146,15 +146,38 @@ function SidebarChannel() {
 
           selfChannels.forEach(item=>{
             hiveApi.querySubscriptionInfoByChannelId(userDid, item.channel_id)
-              .then(res=>{
-                if(res['find_message'])
+              .then(subscriptionRes=>{
+                if(subscriptionRes['find_message']) {
+                  const subscribersArr = subscriptionRes['find_message']['items']
+                  subscribersArr.forEach((subscriber, _i)=>{
+                    if(subscriberAvatar[subscriber.user_did] === undefined) {
+                      setSubscriberAvatar((prev)=>{
+                        const tempState = {...prev}
+                        tempState[subscriber.user_did] = ''
+                        return tempState
+                      })
+                      hiveApi.getHiveUrl(subscriber.user_did)
+                        .then(async hiveUrl=>{
+                          const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
+                          if(response && response.length) {
+                            const base64Content = response.toString('base64')
+                            setSubscriberAvatar((prev)=>{
+                              const tempState = {...prev}
+                              tempState[subscriber.user_did] = `data:image/png;base64,${base64Content}`
+                              return tempState
+                            })
+                          }
+                        })
+                    }
+                  })
                   setSelfChannels(prevState=>{
                     const tempState = [...prevState]
                     const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)
                     if(channelIndex>=0)
-                      tempState[channelIndex]['subscribers'] = res['find_message']['items']
+                      tempState[channelIndex]['subscribers'] = subscribersArr
                     return tempState
                   })
+                }
               })
             hiveApi.queryPostByChannelId(item.target_did, item.channel_id)
               .then(postRes=>{
@@ -265,10 +288,10 @@ function SidebarChannel() {
               .catch(err=>{
                 // console.log(err, item)
               })
-            hiveApi.queryUserDisplayName(userDid, item.channel_id, userDid)
-              .then(res=>{
-                if(res['find_message'] && res['find_message']['items'].length) {
-                  const dispName = res['find_message']['items'][0].display_name
+            hiveApi.queryUserDisplayName(item.target_did, item.channel_id, userDid)
+              .then(dispnameRes=>{
+                if(dispnameRes['find_message'] && dispnameRes['find_message']['items'].length) {
+                  const dispName = dispnameRes['find_message']['items'][0].display_name
                   setSelfChannels(prevState=>{
                     const tempState = [...prevState]
                     const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)

@@ -9,6 +9,7 @@ type SidebarContext = {
   publishPostNumber: number;
   postsInHome: any;
   postsInSelf: any;
+  subscriberAvatar: any;
   myAvatar: any;
   userInfo: any;
   toggleSidebar: () => void;
@@ -21,6 +22,7 @@ type SidebarContext = {
   setPublishPostNumber: Dispatch<any>;
   setPostsInHome: Dispatch<any>;
   setPostsInSelf: Dispatch<any>;
+  setSubscriberAvatar: Dispatch<any>;
   setMyAvatar: Dispatch<any>;
   setUserInfo: Dispatch<any>;
 };
@@ -41,6 +43,7 @@ export const SidebarProvider: FC = ({ children }) => {
   const [postsInHome, setPostsInHome] = useState([]);
   const [postsInSelf, setPostsInSelf] = useState({});
   const [myAvatar, setMyAvatar] = useState('');
+  const [subscriberAvatar, setSubscriberAvatar] = useState({});
   const [userInfo, setUserInfo] = useState('');
 
   const toggleSidebar = () => {
@@ -63,6 +66,7 @@ export const SidebarProvider: FC = ({ children }) => {
         postsInHome,
         postsInSelf,
         myAvatar,
+        subscriberAvatar,
         userInfo,
         toggleSidebar, 
         closeSidebar, 
@@ -74,6 +78,7 @@ export const SidebarProvider: FC = ({ children }) => {
         setPublishPostNumber,
         setPostsInHome,
         setPostsInSelf,
+        setSubscriberAvatar,
         setMyAvatar,
         setUserInfo
       }}

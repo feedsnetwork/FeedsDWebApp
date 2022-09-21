@@ -22,7 +22,7 @@ const SidebarWrapper = styled(Box)(
 );
 
 function Sidebar() {
-  const { sidebarToggle, walletAddress, myAvatar, userInfo, toggleSidebar, setSubscribedChannels, setMyAvatar, setUserInfo } = React.useContext(SidebarContext);
+  const { sidebarToggle, walletAddress, myAvatar, userInfo, subscriberAvatar, toggleSidebar, setSubscribedChannels, setMyAvatar, setUserInfo, setSubscriberAvatar } = React.useContext(SidebarContext);
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -68,24 +68,48 @@ function Sidebar() {
                       }
                     })
                   hiveApi.querySubscriptionInfoByChannelId(item.target_did, item.channel_id)
-                    .then(res=>{
-                      if(res['find_message'])
+                    .then(subscriptionRes=>{
+                      if(subscriptionRes['find_message']) {
+                        const subscribersArr = subscriptionRes['find_message']['items']
+                        subscribersArr.forEach((subscriber, _i)=>{
+                          if(subscriberAvatar[subscriber.user_did] === undefined) {
+                            setSubscriberAvatar((prev)=>{
+                              const tempState = {...prev}
+                              tempState[subscriber.user_did] = ''
+                              return tempState
+                            })
+                            hiveApi.getHiveUrl(subscriber.user_did)
+                              .then(async hiveUrl=>{
+                                const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
+                                if(response && response.length) {
+                                  const base64Content = response.toString('base64')
+                                  setSubscriberAvatar((prev)=>{
+                                    const tempState = {...prev}
+                                    tempState[subscriber.user_did] = `data:image/png;base64,${base64Content}`
+                                    return tempState
+                                  })
+                                }
+                              })
+                          }
+                        })
                         setSubscribedChannels(prev=>{
                           const prevState = [...prev]
                           const channelIndex = prevState.findIndex(channel=>channel.channel_id==item.channel_id)
                           if(channelIndex>=0)
-                            prevState[channelIndex]['subscribers'] = res['find_message']['items']
+                            prevState[channelIndex]['subscribers'] = subscribersArr
                           return prevState
                         })
+                      }
+                        
                     })
                   hiveApi.downloadScripting(item.target_did, channelInfo.avatar)
-                    .then(res=>{
+                    .then(downloadRes=>{
                       setSubscribedChannels(prev=>{
                         const prevState = [...prev]
                         const channelIndex = prevState.findIndex(channel=>channel.channel_id==channelInfo.channel_id)
                         if(channelIndex<0)
                           return prevState
-                        prevState[channelIndex].avatarSrc = res
+                        prevState[channelIndex].avatarSrc = downloadRes
                         return prevState
                       })
                     })
@@ -107,6 +131,8 @@ function Sidebar() {
       setUserInfo(res)
     })
   }, [])
+
+  console.log(subscriberAvatar, "////////////1")
   return (
     <>
       <SidebarWrapper

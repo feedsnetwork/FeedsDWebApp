@@ -3,12 +3,12 @@ import { Stack, Box, Typography } from '@mui/material'
 
 import StyledAvatar from 'src/components/StyledAvatar'
 import { HiveApi } from 'src/services/HiveApi'
+import { SidebarContext } from 'src/contexts/SidebarContext';
 import { getInfoFromDID } from 'src/utils/common'
 
 const SubscriberListItem = (props) => {
     const { subscriber } = props
-    const [avatarSrc, setAvatarSrc] = React.useState('')
-    const hiveApi = new HiveApi()
+    const { subscriberAvatar } = React.useContext(SidebarContext);
 
     // const [moreInfo, setMoreInfo] = React.useState({fullName: '', avatarSrc: ''})
 
@@ -23,17 +23,7 @@ const SubscriberListItem = (props) => {
     //     })
     // }, [])
     // console.log(subscriber)
-    React.useEffect(()=>{
-        hiveApi.getHiveUrl(subscriber.user_did)
-          .then(async hiveUrl=>{
-            const res =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
-            if(res && res.length) {
-              const base64Content = res.toString('base64')
-              setAvatarSrc(`data:image/png;base64,${base64Content}`)
-            }
-          })
-    }, [])
-
+    const avatarSrc = subscriberAvatar[subscriber.user_did] || ''
     return (
         <Stack direction="row" alignItems="center" spacing={1}>
             <StyledAvatar alt={subscriber.display_name} src={avatarSrc} width={32}/>
