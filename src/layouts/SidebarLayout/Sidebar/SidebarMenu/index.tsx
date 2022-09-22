@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { NavLink as RouterLink, useLocation } from 'react-router-dom';
+import { NavLink as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
 // import { Fade } from "react-awesome-reveal";
 import Reveal from "react-awesome-reveal";
@@ -199,6 +199,7 @@ const ListItemButtonStyle = {
 function SidebarMenu(props) {
   const { closeSidebar, subscribedChannels } = useContext(SidebarContext);
   const { pathname } = useLocation()
+  const navigate = useNavigate();
   const [isVisibleChannels, setVisibleChannels] = useState(false)
   const [isOpenPost, setOpenPost] = useState(false)
   const isSettingPage = pathname.startsWith('/setting')
@@ -207,6 +208,10 @@ function SidebarMenu(props) {
     setVisibleChannels(!isVisibleChannels)
   }
 
+  const link2detail = (e) => {
+    const channel_id = e.currentTarget.value
+    navigate('/subscription/channel', {state: {channel_id}});
+  }
   return (
     <>
       <MenuWrapper>
@@ -266,10 +271,9 @@ function SidebarMenu(props) {
                         subscribedChannels.map((channel, _i)=>(
                           <ListItem component="div" key={_i}>
                             <Button
+                              value={channel.channel_id}
                               disableRipple
-                              // component={RouterLink}
-                              // to={menuItem.to}
-                              // onClick={closeSidebar}
+                              onClick={link2detail}
                               startIcon={<SubscriptionAvatar channel={channel} index={_i}/>}
                               sx={{p: '4px 14px !important'}}
                             >

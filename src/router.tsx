@@ -41,6 +41,9 @@ const Explorer = Loader(
 const Subscription = Loader(
   lazy(() => import('src/content/subscription'))
 );
+const SubscriptionChannel = Loader(
+  lazy(() => import('src/content/subscription/channel'))
+);
 const AccountInfo = Loader(
   lazy(() => import('src/content/setting/profile'))
 );
@@ -178,6 +181,10 @@ const routes: RouteObject[] = [
       {
         path: '',
         element: <Subscription />
+      },
+      {
+        path: 'channel',
+        element: <SubscriptionChannel/>
       }
     ]
   },
