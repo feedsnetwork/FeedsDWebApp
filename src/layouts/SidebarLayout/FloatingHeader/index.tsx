@@ -6,7 +6,7 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { HiveApi } from 'src/services/HiveApi'
-import { SettingMenuArray, getAppPreference, reduceDIDstring } from 'src/utils/common'
+import { SettingMenuArray, getAppPreference, reduceDIDstring, getMergedArray } from 'src/utils/common'
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -46,12 +46,13 @@ const HeaderWrapper = styled(Box)(
 );
 function FloatingHeader() {
   const { pageType, setPageType, closeOverPage } = React.useContext(OverPageContext);
-  const { focusedChannelId, selfChannels, postsInHome, postsInSelf, userInfo } = React.useContext(SidebarContext);
+  const { focusedChannelId, selfChannels, postsInSubs, postsInSelf, userInfo } = React.useContext(SidebarContext);
   const { pathname } = useLocation()
   const navigate = useNavigate();
   const params = useParams()
   const hiveApi = new HiveApi()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const postsInHome = getMergedArray(postsInSubs)
 
   const handleClose = (e) => {
     window.history.back()

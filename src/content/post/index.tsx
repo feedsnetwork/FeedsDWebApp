@@ -5,18 +5,19 @@ import { Grid, Container, Box, Typography, Stack } from '@mui/material';
 import PostCard from 'src/components/PostCard';
 import { EmptyView } from 'src/components/EmptyView'
 import PostSkeleton from 'src/components/Skeleton/PostSkeleton'
-import { reduceDIDstring, getAppPreference, sortByDate } from 'src/utils/common'
+import { reduceDIDstring, getAppPreference, sortByDate, getMergedArray } from 'src/utils/common'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi'
 
 const Post = () => {
-  const { postsInHome, selfChannels, subscribedChannels } = React.useContext(SidebarContext);
+  const { postsInSubs, selfChannels, subscribedChannels } = React.useContext(SidebarContext);
   const params = useParams()
   const [isLoading, setIsLoading] = React.useState(false)
   const [dispNames, setDispNames] = React.useState({})
   const [dispAvatar, setDispAvatar] = React.useState({})
   const prefConf = getAppPreference()
   const hiveApi = new HiveApi()
+  const postsInHome = getMergedArray(postsInSubs)
   const selectedPost = postsInHome.find(item=>item.post_id == params.post_id)
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==selectedPost.channel_id) || {}
   const comments = selectedPost.commentData || []

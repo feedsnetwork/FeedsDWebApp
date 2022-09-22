@@ -5,20 +5,20 @@ import PostCard from 'src/components/PostCard';
 import { EmptyView } from 'src/components/EmptyView'
 import PostSkeleton from 'src/components/Skeleton/PostSkeleton'
 import { SidebarContext } from 'src/contexts/SidebarContext';
-import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique } from 'src/utils/common'
+import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique, getMergedArray } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const Home = () => {
-  const { publishPostNumber, postsInHome, subscribedChannels, setPostsInHome } = React.useContext(SidebarContext);
-  // const [posts, setPosts] = React.useState([])
+  const { publishPostNumber, postsInSubs, subscribedChannels, setPostsInSubs } = React.useContext(SidebarContext);
   const [isLoading, setIsLoading] = React.useState(false)
   const prefConf = getAppPreference()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
+  const postsInHome = sortByDate(getMergedArray(postsInSubs))
 
   React.useEffect(()=>{
-    if(postsInHome.length)
+    if(Object.keys(postsInSubs).length)
       return
     setIsLoading(true)
     hiveApi.queryBackupData()
@@ -45,16 +45,17 @@ const Home = () => {
                       hiveApi.downloadScripting(item.target_did, media.originMediaPath)
                         .then(res=>{
                           if(res) {
-                            setPostsInHome(prev=>{
-                              const prevState = [...prev]
-                              const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
+                            setPostsInSubs((prevState) => {
+                              const tempState = {...prevState}
+                              const currentGroup = tempState[item.channel_id]
+                              const postIndex = currentGroup.findIndex(el=>el.post_id==post.post_id)
                               if(postIndex<0)
-                                return prevState
-                              if(prevState[postIndex].mediaData)
-                                prevState[postIndex].mediaData.push({...media, mediaSrc: res})
+                                return tempState
+                              if(currentGroup[postIndex].mediaData)
+                                currentGroup[postIndex].mediaData.push({...media, mediaSrc: res})
                               else
-                                prevState[postIndex].mediaData = [{...media, mediaSrc: res}]
-                              return prevState
+                                currentGroup[postIndex].mediaData = [{...media, mediaSrc: res}]
+                              return tempState
                             })
                           }
                         })
@@ -69,14 +70,15 @@ const Home = () => {
                           const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
                           const likeIndexByMe = filteredLikeArr.findIndex(item=>item.creater_did==userDid)
 
-                          setPostsInHome(prev=>{
-                            const prevState = [...prev]
-                            const postIndex = prevState.findIndex(el=>el.post_id==post.post_id)
+                          setPostsInSubs((prevState) => {
+                            const tempState = {...prevState}
+                            const currentGroup = tempState[item.channel_id]
+                            const postIndex = currentGroup.findIndex(el=>el.post_id==post.post_id)
                             if(postIndex<0)
-                              return prevState
-                            prevState[postIndex].likes = filteredLikeArr.length
-                            prevState[postIndex].like_me = likeIndexByMe>=0
-                            return prevState
+                              return tempState
+                            currentGroup[postIndex].likes = filteredLikeArr.length
+                            currentGroup[postIndex].like_me = likeIndexByMe>=0
+                            return tempState
                           })
                         }
                         // console.log(likeRes, "--------------5", post)
@@ -105,23 +107,28 @@ const Home = () => {
                         }, []).reverse()
                       
                         linkedComments.forEach(comment=>{
-                          setPostsInHome(prev=>{
-                            const prevState = [...prev]
-                            const postIndex = prevState.findIndex(el=>el.post_id==comment.post_id)
+                          setPostsInSubs((prevState) => {
+                            const tempState = {...prevState}
+                            const currentGroup = tempState[item.channel_id]
+                            const postIndex = currentGroup.findIndex(el=>el.post_id==comment.post_id)
                             if(postIndex<0)
-                              return prevState
-                            if(prevState[postIndex].commentData)
-                              prevState[postIndex].commentData.push(comment)
+                              return tempState
+                            if(currentGroup[postIndex].commentData)
+                              currentGroup[postIndex].commentData.push(comment)
                             else
-                              prevState[postIndex].commentData = [comment]
-                            return prevState
+                              currentGroup[postIndex].commentData = [comment]
+                            return tempState
                           })
                         })
                       }
                       // console.log(commentRes, "--------------6")
                     })
                   setIsLoading(false)
-                  setPostsInHome((prevState)=>sortByDate([...prevState, ...postArr]))
+                  setPostsInSubs((prevState) => {
+                    const tempState = {...prevState}
+                    tempState[item.channel_id] = sortByDate(postArr)
+                    return tempState
+                  })
                   // console.log(postArr, "---------------------3")
                 }
               })
@@ -131,6 +138,7 @@ const Home = () => {
   }, [publishPostNumber])
   
   const loadingSkeletons = Array(5).fill(null)
+
   return (
     <>
       {

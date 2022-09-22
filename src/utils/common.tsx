@@ -176,3 +176,7 @@ export function convertAutoLink(content) {
   }
   return filteredContentByLink
 }
+
+export function getMergedArray(obj): any[] {
+  return Object.values(obj).flat(1)
+}

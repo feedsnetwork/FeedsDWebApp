@@ -7,8 +7,8 @@ type SidebarContext = {
   selectedChannel: any;
   walletAddress: any;
   publishPostNumber: number;
-  postsInHome: any;
   postsInSelf: any;
+  postsInSubs: any;
   subscriberAvatar: any;
   myAvatar: any;
   userInfo: any;
@@ -20,8 +20,8 @@ type SidebarContext = {
   setSelectChannel: Dispatch<any>;
   setWalletAddress: Dispatch<any>;
   setPublishPostNumber: Dispatch<any>;
-  setPostsInHome: Dispatch<any>;
   setPostsInSelf: Dispatch<any>;
+  setPostsInSubs: Dispatch<any>;
   setSubscriberAvatar: Dispatch<any>;
   setMyAvatar: Dispatch<any>;
   setUserInfo: Dispatch<any>;
@@ -40,8 +40,8 @@ export const SidebarProvider: FC = ({ children }) => {
   const [selectedChannel, setSelectChannel] = useState(null);
   const [walletAddress, setWalletAddress] = useState(null);
   const [publishPostNumber, setPublishPostNumber] = useState(0);
-  const [postsInHome, setPostsInHome] = useState([]);
   const [postsInSelf, setPostsInSelf] = useState({});
+  const [postsInSubs, setPostsInSubs] = useState({});
   const [myAvatar, setMyAvatar] = useState('');
   const [subscriberAvatar, setSubscriberAvatar] = useState({});
   const [userInfo, setUserInfo] = useState('');
@@ -63,8 +63,8 @@ export const SidebarProvider: FC = ({ children }) => {
         selectedChannel,
         walletAddress,
         publishPostNumber,
-        postsInHome,
         postsInSelf,
+        postsInSubs,
         myAvatar,
         subscriberAvatar,
         userInfo,
@@ -76,8 +76,8 @@ export const SidebarProvider: FC = ({ children }) => {
         setSelectChannel,
         setWalletAddress,
         setPublishPostNumber,
-        setPostsInHome,
         setPostsInSelf,
+        setPostsInSubs,
         setSubscriberAvatar,
         setMyAvatar,
         setUserInfo
