@@ -80,15 +80,17 @@ function Sidebar() {
                             })
                             hiveApi.getHiveUrl(subscriber.user_did)
                               .then(async hiveUrl=>{
-                                const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
-                                if(response && response.length) {
-                                  const base64Content = response.toString('base64')
-                                  setSubscriberAvatar((prev)=>{
-                                    const tempState = {...prev}
-                                    tempState[subscriber.user_did] = `data:image/png;base64,${base64Content}`
-                                    return tempState
-                                  })
-                                }
+                                try {
+                                  const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
+                                  if(response && response.length) {
+                                    const base64Content = response.toString('base64')
+                                    setSubscriberAvatar((prev)=>{
+                                      const tempState = {...prev}
+                                      tempState[subscriber.user_did] = `data:image/png;base64,${base64Content}`
+                                      return tempState
+                                    })
+                                  }
+                                } catch(err) {}
                               })
                           }
                         })
@@ -132,7 +134,6 @@ function Sidebar() {
     })
   }, [])
 
-  console.log(subscriberAvatar, "////////////1")
   return (
     <>
       <SidebarWrapper

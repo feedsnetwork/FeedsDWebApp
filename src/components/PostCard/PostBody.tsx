@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider } from '@mui/material';
+import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
@@ -66,7 +66,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1 } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
-  const { selfChannels, subscribedChannels } = React.useContext(SidebarContext);
+  const { selfChannels, subscribedChannels, subscriberAvatar } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [isOpenComment, setOpenComment] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
@@ -75,6 +75,8 @@ const PostBody = (props) => {
   const [isEnterPopover, setEnterPopover] = React.useState(false);
   const hiveApi = new HiveApi()
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
+  const subscribersOfThis = currentChannel['subscribers'] || []
+  const subscribedByWho = `Subscribed by ${subscribersOfThis.slice(0,3).map(subscriber=>subscriber.display_name).join(', ')}${subscribersOfThis.length>3?' and more!':'.'}`
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const { enqueueSnackbar } = useSnackbar();
@@ -115,12 +117,8 @@ const PostBody = (props) => {
   }
 
   const handlePopper = (e, open)=>{
-    if(open) {
+    if(open)
       setAnchorEl(e.target)
-    }
-    else {
-      setAnchorEl(null)
-    }
     setOpenPopover(open)
   }
 
@@ -130,7 +128,7 @@ const PostBody = (props) => {
         <Stack direction="row" alignItems="center" spacing={2}>
           <Box
             onMouseEnter={(e)=>{handlePopper(e, true)}}
-            // onMouseLeave={(e)=>{handlePopper(e, false)}}
+            onMouseLeave={(e)=>{handlePopper(e, false)}}
           >
             <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
           </Box>
@@ -229,8 +227,8 @@ const PostBody = (props) => {
           anchorEl={anchorEl}
           open={isOpenPopover}
           disablePortal={false}
+          onMouseEnter={(e)=>{setOpenPopover(true)}}
           onMouseLeave={(e)=>{handlePopper(e, false)}}
-          onMouseEnter={(e)=>{setEnterPopover(true)}}
           modifiers={[
             {
               name: 'flip',
@@ -255,25 +253,46 @@ const PostBody = (props) => {
           ]}
           onClick={(e)=>{e.stopPropagation()}}
           sx={{zIndex: 100}}
+          transition
         >
-          <Paper sx={{p: 2}}>
-            <Stack direction="row">
-              <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={40}/>
-              <Box sx={{flexGrow: 1}} textAlign="right">
-                <StyledButton type="contained">Subscribed</StyledButton>
-              </Box>
-            </Stack>
-            <Box>
-              <Typography component='div' variant="subtitle2" noWrap pt={1}>{contentObj.primaryName}</Typography>
-              <Typography component='div' variant="body2" noWrap>{contentObj.secondaryName}</Typography>
-              <Typography component='div' variant="body2" color="secondary">{currentChannel.intro}</Typography>
-            </Box>
-            <Divider sx={{my: 1}}/>
-            <Typography variant="body2" component='div' sx={{display: 'flex'}}>
-              <Icon icon="clarity:group-line" fontSize='20px' />&nbsp;
-              {currentChannel['subscribers']?currentChannel['subscribers'].length:0} Subscribers
-            </Typography>
-          </Paper>
+          {
+            ({ TransitionProps }) => (
+              <Fade {...TransitionProps}>
+                <Paper sx={{p: 2}}>
+                  <Stack direction="row">
+                    <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={40}/>
+                    <Box sx={{flexGrow: 1}} textAlign="right">
+                      <StyledButton type="contained">Subscribed</StyledButton>
+                    </Box>
+                  </Stack>
+                  <Box>
+                    <Typography component='div' variant="subtitle2" noWrap pt={1}>{contentObj.primaryName}</Typography>
+                    <Typography component='div' variant="body2" noWrap>{contentObj.secondaryName}</Typography>
+                    <Typography component='div' variant="body2" color="secondary">{currentChannel.intro}</Typography>
+                  </Box>
+                  <Divider sx={{my: 1}}/>
+                  <Typography variant="body2" component='div' sx={{display: 'flex'}}>
+                    <Icon icon="clarity:group-line" fontSize='20px' />&nbsp;
+                    {subscribersOfThis.length} Subscribers
+                  </Typography>
+                  {
+                    subscribersOfThis.length>0 &&
+                    <Stack direction="row" mt={1} spacing={1}>
+                      <AvatarGroup spacing={10}>
+                        {
+                          subscribersOfThis.slice(0, 3).map(subscriber=>{
+                            const avatarSrc = subscriberAvatar[subscriber.user_did]
+                            return <StyledAvatar alt={subscriber.display_name} src={avatarSrc} width={18}/>
+                          })
+                        }
+                      </AvatarGroup>
+                      <Typography variant="body2" flex={1}>{subscribedByWho}</Typography>
+                    </Stack>
+                  }
+                </Paper>
+              </Fade>
+            )
+          }
         </StyledPopper>
       }
     </>
