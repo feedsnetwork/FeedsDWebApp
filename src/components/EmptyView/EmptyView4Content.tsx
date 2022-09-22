@@ -21,10 +21,14 @@ const EmptyView: FC<EmptyViewProps> = ({ type = 'home' })=>{
     subTitle = 'No subscriptions found'
     description = "Subscribe to channels that maybe of\ninterest to you on Explore Feeds"
   }
+  else if(type==='post'){
+    subTitle = 'No posts found'
+    description = "This user has not posted anything yet.\nPlease come back later!"
+  }
 
   return (
     <Stack alignItems='center'>
-      <Box component='img' src='post-chat.svg' width={{xs: 80, md: 100, lg: 120}} pt={{xs: 5, sm: 6, md: 10, lg: 12}} pb={{xs: 3, sm: 4, md: 6, lg: 8}}/>
+      <Box component='img' src='/post-chat.svg' width={{xs: 80, md: 100, lg: 120}} pt={{xs: 5, sm: 6, md: 10, lg: 12}} pb={{xs: 3, sm: 4, md: 6, lg: 8}}/>
       <Typography variant='h4' align='center'>
         {subTitle}
       </Typography>
@@ -33,7 +37,7 @@ const EmptyView: FC<EmptyViewProps> = ({ type = 'home' })=>{
           {description}
         </Typography>
         {
-          type==='subscription'?
+          type==='subscription' || type==='post'?
           <StyledButton type="outline" fullWidth>Explore Feeds</StyledButton>:
 
           <>

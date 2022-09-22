@@ -46,8 +46,10 @@ const HeaderWrapper = styled(Box)(
 );
 function FloatingHeader() {
   const { pageType, setPageType, closeOverPage } = React.useContext(OverPageContext);
-  const { focusedChannelId, selfChannels, postsInSubs, postsInSelf, userInfo } = React.useContext(SidebarContext);
+  const { focusedChannelId, selfChannels, subscribedChannels, postsInSelf, postsInSubs, userInfo } = React.useContext(SidebarContext);
+  const location = useLocation()
   const { pathname } = useLocation()
+  const { channel_id } = (location.state || {}) as any
   const navigate = useNavigate();
   const params = useParams()
   const hiveApi = new HiveApi()
@@ -76,7 +78,13 @@ function FloatingHeader() {
       const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
       const postsInFocusedChannel = postsInSelf[focusedChannelId] || []
       primaryText = focusedChannel.name
-      secondaryText = `${postsInFocusedChannel.length} post`
+      secondaryText = `${postsInFocusedChannel.length} posts`
+    }
+    else if(pathname.startsWith('/subscription/channel') && channel_id) {
+      const activeChannel = (subscribedChannels.find(item=>item.channel_id==channel_id) || {}) as any
+      const postsInActiveChannel = postsInSubs[channel_id] || []
+      primaryText = activeChannel.name
+      secondaryText = `${postsInActiveChannel.length} posts`
     }
     else if(pathname.startsWith('/post/')) {
       const focusedPost = postsInHome.find(item=>item.post_id==params.post_id)
@@ -96,7 +104,7 @@ function FloatingHeader() {
     return ""
   }
 
-  const backBtnText = React.useMemo(() => getActionText(), [pageType, pathname, focusedChannelId, postsInSelf])
+  const backBtnText = React.useMemo(() => getActionText(), [pageType, pathname, focusedChannelId, postsInSelf, postsInSubs, selfChannels, subscribedChannels, channel_id])
   return (
     <>
       <Hidden lgDown>

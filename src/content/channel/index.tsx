@@ -124,119 +124,122 @@ function Channel() {
         !selfChannels.length?
         <EmptyView type='channel'/>:
 
-        <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
-          <Container sx={{ mt: 3, flexGrow: 1, overFlow: 'auto' }} maxWidth="lg">
-            <Grid
-              container
-              direction="row"
-              justifyContent="center"
-              alignItems="stretch"
-              spacing={3}
-            >
-              {
-                isLoading?
-                loadingSkeletons.map((_, _i)=>(
-                  <Grid item xs={12} key={_i}>
-                    <PostSkeleton/>
-                  </Grid>
-                )):
-
-                postsInFocusedChannel.map((post, _i)=>(
-                  <Grid item xs={12} key={_i}>
-                    <PostCard post={post} dispName={dispName || reduceDIDstring(feedsDid)}/>
-                  </Grid>
-                ))
-              }
-            </Grid>
-            {
-              !isLoading && !postsInFocusedChannel.length &&
-              <Typography variant='h5' sx={{mt: 3, textAlign: 'center'}}>No posts found!</Typography>
-            }
-          </Container>
-          <PostBoxStyle>
-            <Stack spacing={2}>
-              <StyledTextFieldOutline
-                inputRef={postRef}
-                value={postext}
-                multiline
-                rows={3}
-                placeholder="What's up"
-                onChange={handleChangePostext}
-                error={isOnValidation&&!postext}
-                helperText={isOnValidation&&!postext?'Message is required':''}
-              />
-              {
-                !!imageAttach && 
-                <Stack>
+        <>
+          {
+            !isLoading && !postsInFocusedChannel.length?
+            <EmptyView type='post'/>:
+            
+            <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+              <Container sx={{ mt: 3, flexGrow: 1, overFlow: 'auto' }} maxWidth="lg">
+                <Grid
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="stretch"
+                  spacing={3}
+                >
                   {
-                    !!imageAttach &&
-                    <Box sx={{
-                      width: 80,
-                      height: 80,
-                      borderRadius: 1,
-                      overflow: 'hidden',
-                      position: 'relative',
-                      display: 'inline-flex'
-                    }}>
-                      <Paper
-                        variant="outlined"
-                        component="img"
-                        src={isString(imageAttach) ? imageAttach : imageAttach.preview}
-                        sx={{ width: '100%', height: '100%', objectFit: 'fill', position: 'absolute' }}
-                      />
-                      <Box sx={{ top: 6, right: 6, position: 'absolute' }}>
-                        <IconButton
-                          size="small"
-                          onClick={handleImageAttachRemove}
-                          sx={{
-                            p: '2px',
-                            color: 'common.white',
-                          }}
-                        >
-                          <Icon icon={closeFill} />
-                        </IconButton>
-                      </Box>
-                    </Box>
+                    isLoading?
+                    loadingSkeletons.map((_, _i)=>(
+                      <Grid item xs={12} key={_i}>
+                        <PostSkeleton/>
+                      </Grid>
+                    )):
+
+                    postsInFocusedChannel.map((post, _i)=>(
+                      <Grid item xs={12} key={_i}>
+                        <PostCard post={post} dispName={dispName || reduceDIDstring(feedsDid)}/>
+                      </Grid>
+                    ))
                   }
-                </Stack>
-              }
-              <Stack direction='row'>
-                <Box sx={{ alignItems: 'center', display: 'flex', flexGrow: 1 }}>
-                  <input
-                    accept="image/*"
-                    id="contained-button-file"
-                    // multiple
-                    type="file"
-                    onChange={handleUploadClick}
-                    style={{display: 'none'}}
+                </Grid>
+              </Container>
+              <PostBoxStyle>
+                <Stack spacing={2}>
+                  <StyledTextFieldOutline
+                    inputRef={postRef}
+                    value={postext}
+                    multiline
+                    rows={3}
+                    placeholder="What's up"
+                    onChange={handleChangePostext}
+                    error={isOnValidation&&!postext}
+                    helperText={isOnValidation&&!postext?'Message is required':''}
                   />
-                  <label htmlFor="contained-button-file">
-                    <StyledIconButton icon="clarity:picture-line"/>
-                  </label>
-                  <StyledIconButton icon="clarity:camera-line"/>
-                  <StyledIconButton icon="clarity:video-gallery-line"/>
-                  <StyledIconButton icon="clarity:video-camera-line"/>
-                  <IconButton>
-                    <Typography variant='body2' sx={{
-                      backgroundImage: 'linear-gradient(90deg, #7624FE 0%, #368BFF 100%)',
-                      backgroundSize: '100%',
-                      backgroundRepeat: 'repeat',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      MozBackgroundClip: 'text',
-                      MozTextFillColor: 'transparent',
-                    }}>
-                      NFT
-                    </Typography>
-                  </IconButton>
-                </Box>
-                <Box width={150}>
-                  <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={handlePost}>Post</StyledButton>
-                </Box>
-              </Stack>
-            </Stack>
-          </PostBoxStyle>
-        </Box>
+                  {
+                    !!imageAttach && 
+                    <Stack>
+                      {
+                        !!imageAttach &&
+                        <Box sx={{
+                          width: 80,
+                          height: 80,
+                          borderRadius: 1,
+                          overflow: 'hidden',
+                          position: 'relative',
+                          display: 'inline-flex'
+                        }}>
+                          <Paper
+                            variant="outlined"
+                            component="img"
+                            src={isString(imageAttach) ? imageAttach : imageAttach.preview}
+                            sx={{ width: '100%', height: '100%', objectFit: 'fill', position: 'absolute' }}
+                          />
+                          <Box sx={{ top: 6, right: 6, position: 'absolute' }}>
+                            <IconButton
+                              size="small"
+                              onClick={handleImageAttachRemove}
+                              sx={{
+                                p: '2px',
+                                color: 'common.white',
+                              }}
+                            >
+                              <Icon icon={closeFill} />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      }
+                    </Stack>
+                  }
+                  <Stack direction='row'>
+                    <Box sx={{ alignItems: 'center', display: 'flex', flexGrow: 1 }}>
+                      <input
+                        accept="image/*"
+                        id="contained-button-file"
+                        // multiple
+                        type="file"
+                        onChange={handleUploadClick}
+                        style={{display: 'none'}}
+                      />
+                      <label htmlFor="contained-button-file">
+                        <StyledIconButton icon="clarity:picture-line"/>
+                      </label>
+                      <StyledIconButton icon="clarity:camera-line"/>
+                      <StyledIconButton icon="clarity:video-gallery-line"/>
+                      <StyledIconButton icon="clarity:video-camera-line"/>
+                      <IconButton>
+                        <Typography variant='body2' sx={{
+                          backgroundImage: 'linear-gradient(90deg, #7624FE 0%, #368BFF 100%)',
+                          backgroundSize: '100%',
+                          backgroundRepeat: 'repeat',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          MozBackgroundClip: 'text',
+                          MozTextFillColor: 'transparent',
+                        }}>
+                          NFT
+                        </Typography>
+                      </IconButton>
+                    </Box>
+                    <Box width={150}>
+                      <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={handlePost}>Post</StyledButton>
+                    </Box>
+                  </Stack>
+                </Stack>
+              </PostBoxStyle>
+            </Box>
+          }
+        </>
       }
     </>
   );
