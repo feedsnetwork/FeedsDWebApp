@@ -14,7 +14,7 @@ import PostDlg from 'src/components/Modal/Post';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { CommonStatus } from 'src/models/common_content'
-import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique, getInfoFromDID, isValidTime, getDateDistance, convertAutoLink } from 'src/utils/common'
+import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique, getInfoFromDID, isValidTime, getDateDistance, convertAutoLink, getPostByChannelId } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const SidebarWrapper = styled(Box)(
@@ -123,7 +123,6 @@ function SidebarChannel() {
   const theme = useTheme();
   const { pathname } = useLocation();
   const hiveApi = new HiveApi()
-  const prefConf = getAppPreference()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const navigate = useNavigate();
@@ -188,115 +187,7 @@ function SidebarChannel() {
                   })
                 }
               })
-            hiveApi.queryPostByChannelId(item.target_did, item.channel_id)
-              .then(postRes=>{
-                if(postRes['find_message'] && postRes['find_message']['items']) {
-                  const postArr = prefConf.DP?
-                    postRes['find_message']['items']:
-                    postRes['find_message']['items'].filter(postItem=>postItem.status!==CommonStatus.deleted)
-                  const splitTargetDid = item.target_did.split(':')
-                  postArr.map(post=>{
-                    post.target_did = splitTargetDid[splitTargetDid.length-1]
-                    if(typeof post.created == 'object')
-                      post.created = new Date(post.created['$date']).getTime()/1000
-                  })
-                  postArr.forEach(post=>{
-                    const contentObj = JSON.parse(post.content)
-                    contentObj.mediaData.forEach((media, _i)=>{
-                      if(!media.originMediaPath)
-                        return
-                      hiveApi.downloadScripting(item.target_did, media.originMediaPath)
-                        .then(res=>{
-                          if(res) {
-                            setPostsInSelf((prevState) => {
-                              const tempState = {...prevState}
-                              const currentGroup = tempState[item.channel_id]
-                              const postIndex = currentGroup.findIndex(el=>el.post_id==post.post_id)
-                              if(postIndex<0)
-                                return tempState
-                              if(currentGroup[postIndex].mediaData)
-                                currentGroup[postIndex].mediaData.push({...media, mediaSrc: res})
-                              else
-                                currentGroup[postIndex].mediaData = [{...media, mediaSrc: res}]
-                              return tempState
-                            })
-                          }
-                        })
-                        .catch(err=>{
-                          console.log(err)
-                        })
-                    })
-                    hiveApi.queryLikeById(item.target_did, item.channel_id, post.post_id, '0')
-                      .then(likeRes=>{
-                        if(likeRes['find_message'] && likeRes['find_message']['items']) {
-                          const likeArr = likeRes['find_message']['items']
-                          const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
-                          const likeIndexByMe = filteredLikeArr.findIndex(item=>item.creater_did==userDid)
-  
-                          setPostsInSelf((prevState) => {
-                            const tempState = {...prevState}
-                            const currentGroup = tempState[item.channel_id]
-                            const postIndex = currentGroup.findIndex(el=>el.post_id==post.post_id)
-                            if(postIndex<0)
-                              return tempState
-                            currentGroup[postIndex].likes = filteredLikeArr.length
-                            currentGroup[postIndex].like_me = likeIndexByMe>=0
-                            return tempState
-                          })
-                        }
-                        // console.log(likeRes, "--------------5", post)
-                      })
-                  })
-                  const postIds = postArr.map(post=>post.post_id)
-                  hiveApi.queryCommentsFromPosts(item.target_did, item.channel_id, postIds)
-                    .then(commentRes=>{
-                      if(commentRes['find_message'] && commentRes['find_message']['items']) {
-                        const commentArr = commentRes['find_message']['items']
-                        const ascCommentArr = sortByDate(commentArr, 'asc')
-                        const linkedComments = ascCommentArr.reduce((res, item)=>{
-                          if(item.refcomment_id == '0') {
-                              res.push(item)
-                              return res
-                          }
-                          const tempRefIndex = res.findIndex((c) => c.comment_id == item.refcomment_id)
-                          if(tempRefIndex<0){
-                              res.push(item)
-                              return res
-                          }
-                          if(res[tempRefIndex]['commentData'])
-                              res[tempRefIndex]['commentData'].push(item)
-                          else res[tempRefIndex]['commentData'] = [item]
-                          return res
-                        }, []).reverse()
-                      
-                        linkedComments.forEach(comment=>{
-                          setPostsInSelf((prevState) => {
-                            const tempState = {...prevState}
-                            const currentGroup = tempState[item.channel_id]
-                            const postIndex = currentGroup.findIndex(el=>el.post_id==comment.post_id)
-                            if(postIndex<0)
-                              return tempState
-                            if(currentGroup[postIndex].commentData)
-                              currentGroup[postIndex].commentData.push(comment)
-                            else
-                              currentGroup[postIndex].commentData = [comment]
-                            return tempState
-                          })
-                        })
-                      }
-                      // console.log(commentRes, "--------------6")
-                    })
-                  setPostsInSelf((prevState) => {
-                    const tempState = {...prevState}
-                    tempState[item.channel_id] = sortByDate(postArr)
-                    return tempState
-                  })
-                  // console.log(postArr, "---------------------3")
-                }
-              })
-              .catch(err=>{
-                // console.log(err, item)
-              })
+            getPostByChannelId(item, setPostsInSelf)
             hiveApi.queryUserDisplayName(item.target_did, item.channel_id, userDid)
               .then(dispnameRes=>{
                 if(dispnameRes['find_message'] && dispnameRes['find_message']['items'].length) {
