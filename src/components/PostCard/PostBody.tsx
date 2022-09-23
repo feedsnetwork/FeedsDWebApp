@@ -88,7 +88,8 @@ const PostBody = (props) => {
 
   const handleCommentDlg = (e) => {
     e.stopPropagation()
-    setOpenComment(true)
+    if(post.status !== CommonStatus.deleted)
+      setOpenComment(true)
   }
 
   const handleLike = async (e) => {
@@ -118,8 +119,6 @@ const PostBody = (props) => {
   }
 
   const handlePopper = (e, open)=>{
-    if(post.status === CommonStatus.deleted)
-      return
     if(open)
       setAnchorEl(e.target)
     setOpenPopover(open)
