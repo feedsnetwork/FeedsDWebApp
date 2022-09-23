@@ -33,20 +33,77 @@ const ListWrapper = styled(List)(
       }
 `
 );
+const ChannelAbout = (props) => {
+  const { this_channel, editable=true } = props
+  const subscribers = (this_channel && this_channel['subscribers']) || []
+  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+
+  return <>
+    <Card>
+      <CardContent>
+        <Stack alignItems='end'>
+          <Stack direction='row' spacing={1}>
+            <Box m='auto'>
+              <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><ShareIcon fontSize='small'/></IconButton>
+            </Box>
+            {
+              editable &&
+              <StyledButton type='outlined' size='small'>Edit channel</StyledButton>
+            }
+          </Stack>
+        </Stack>
+        <Stack alignItems='center' my={2}>
+          <StyledAvatar alt={this_channel.name} src={this_channel.avatarSrc} width={60}/>
+          <Typography variant='h5' mt={1}>{this_channel.name}</Typography>
+          <Typography variant='body2'>@{this_channel.owner_name || reduceDIDstring(feedsDid)}</Typography>
+          <Typography variant='body2' color='text.secondary' textAlign='center'>{this_channel.intro}</Typography>
+        </Stack>
+        <Stack alignItems='center'>
+          <Stack direction='row' spacing={1}>
+            <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{subscribers.length} Subscribers</Typography>
+            <StyledButton size='small'>Subscribed</StyledButton>
+          </Stack>
+        </Stack>
+      </CardContent>
+    </Card>
+    <Card>
+      <CardHeader 
+        title={
+          <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Subscribers</Typography>
+        } 
+        subheader={
+          <Typography variant='body2' color='text.secondary'>List of Subscribers</Typography>
+        }
+      />
+      <CardContent sx={{pt: 0}}>
+        <Grid container spacing={2}>
+          {
+            subscribers.map((item, index)=>(
+              <Grid item xs={12} key={index}>
+                <SubscriberListItem subscriber={item}/>
+              </Grid>
+            ))
+          }
+          <Grid item xs={12} textAlign='center'>
+            <Button color="inherit">
+              Show more
+            </Button>
+          </Grid>
+        </Grid>
+      </CardContent>
+    </Card>
+  </>
+}
 function RightPanel() {
-  const { sidebarToggle, focusedChannelId, selfChannels, toggleSidebar } = useContext(SidebarContext);
+  const { focusedChannelId, selfChannels, subscribedChannels, toggleSidebar } = useContext(SidebarContext);
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
-  const isSetting = pathname.startsWith('/setting');
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const userDid = `did:elastos:${feedsDid}`
-  const hiveApi = new HiveApi()
+  const location = useLocation();
   const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
-  const subscribers = (focusedChannel && focusedChannel['subscribers']) || []
   let content = null
 
-  if(isSetting) {
+  if(pathname.startsWith('/setting')) {
     if(pathname.endsWith('/credentials'))
       content = 
         <Card>
@@ -67,61 +124,16 @@ function RightPanel() {
             </Stack>
           </CardContent>
         </Card>
-  } else {
+  } else if(pathname.startsWith('/subscription/channel')) {
+    const { channel_id } = (location.state || {}) as any
+    const activeChannel = subscribedChannels.find(item=>item.channel_id==channel_id) || {}
+    if(activeChannel) {
+      content = <ChannelAbout this_channel={activeChannel} editable={false}/>
+    }
+  }
+   else {
     if(focusedChannel) {
-      content = 
-        <>
-          <Card>
-            <CardContent>
-              <Stack alignItems='end'>
-                <Stack direction='row' spacing={1}>
-                  <Box m='auto'>
-                    <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><ShareIcon fontSize='small'/></IconButton>
-                  </Box>
-                  <StyledButton type='outlined' size='small'>Edit channel</StyledButton>
-                </Stack>
-              </Stack>
-              <Stack alignItems='center' my={2}>
-                <StyledAvatar alt={focusedChannel.name} src={focusedChannel.avatarSrc} width={60}/>
-                <Typography variant='h5' mt={1}>{focusedChannel.name}</Typography>
-                <Typography variant='body2'>@{focusedChannel.owner_name || reduceDIDstring(feedsDid)}</Typography>
-                <Typography variant='body2' color='text.secondary' textAlign='center'>{focusedChannel.intro}</Typography>
-              </Stack>
-              <Stack alignItems='center'>
-                <Stack direction='row' spacing={1}>
-                  <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{subscribers.length} Subscribers</Typography>
-                  <StyledButton size='small'>Subscribed</StyledButton>
-                </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader 
-              title={
-                <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Subscribers</Typography>
-              } 
-              subheader={
-                <Typography variant='body2' color='text.secondary'>List of Subscribers</Typography>
-              }
-            />
-            <CardContent sx={{pt: 0}}>
-              <Grid container spacing={2}>
-                {
-                  subscribers.map((item, index)=>(
-                    <Grid item xs={12} key={index}>
-                      <SubscriberListItem subscriber={item}/>
-                    </Grid>
-                  ))
-                }
-                <Grid item xs={12} textAlign='center'>
-                  <Button color="inherit">
-                    Show more
-                  </Button>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </>
+      content = <ChannelAbout this_channel={focusedChannel}/>
     }
     else 
       content = 
