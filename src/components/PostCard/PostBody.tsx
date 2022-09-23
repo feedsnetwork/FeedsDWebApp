@@ -66,7 +66,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1 } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
-  const { selfChannels, subscribedChannels, subscriberAvatar } = React.useContext(SidebarContext);
+  const { selfChannels, subscribedChannels, subscriberInfo } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [isOpenComment, setOpenComment] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
@@ -281,8 +281,8 @@ const PostBody = (props) => {
                       <AvatarGroup spacing={10}>
                         {
                           subscribersOfThis.slice(0, 3).map(subscriber=>{
-                            const avatarSrc = subscriberAvatar[subscriber.user_did]
-                            return <StyledAvatar alt={subscriber.display_name} src={avatarSrc} width={18}/>
+                            const info_data = subscriberInfo[subscriber.user_did] || {}
+                            return <StyledAvatar alt={subscriber.display_name} src={info_data['avatar']} width={18}/>
                           })
                         }
                       </AvatarGroup>

@@ -30,7 +30,7 @@ const GradientStyledButton = (styledBtnFunc, type)=>{
 }
 
 function StyledButton(props) {
-  const { children, type='contained', needLoading=false, size='medium', ...restProps} = props
+  const { children, type='contained', needLoading=false, size='medium', sx={} ...restProps} = props
   const styledBtnFunc = styled(needLoading?LoadingButton:Button)
   const GradientButton = GradientStyledButton(styledBtnFunc, type)
   return (
@@ -38,6 +38,7 @@ function StyledButton(props) {
         {...restProps}
         variant='contained' 
         sx={{
+          ...sx,
           '&:hover': {
             background: 'linear-gradient(90deg, #641fd7 0%, #2f78db 100%)',
           },

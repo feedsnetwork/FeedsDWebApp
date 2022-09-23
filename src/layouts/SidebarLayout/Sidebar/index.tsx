@@ -22,8 +22,8 @@ const SidebarWrapper = styled(Box)(
 );
 
 function Sidebar() {
-  const { sidebarToggle, walletAddress, myAvatar, userInfo, subscriberAvatar, 
-    toggleSidebar, setSubscribedChannels, setMyAvatar, setUserInfo, setSubscriberAvatar, setPostsInSubs } = React.useContext(SidebarContext);
+  const { sidebarToggle, walletAddress, myAvatar, userInfo, subscriberInfo, 
+    toggleSidebar, setSubscribedChannels, setMyAvatar, setUserInfo, setSubscriberInfo, setPostsInSubs } = React.useContext(SidebarContext);
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const prefConf = getAppPreference()
@@ -74,11 +74,18 @@ function Sidebar() {
                       if(subscriptionRes['find_message']) {
                         const subscribersArr = subscriptionRes['find_message']['items']
                         subscribersArr.forEach((subscriber, _i)=>{
-                          if(subscriberAvatar[subscriber.user_did] === undefined) {
-                            setSubscriberAvatar((prev)=>{
+                          if(subscriberInfo[subscriber.user_did] === undefined) {
+                            setSubscriberInfo((prev)=>{
                               const tempState = {...prev}
-                              tempState[subscriber.user_did] = ''
+                              tempState[subscriber.user_did] = {}
                               return tempState
+                            })
+                            getInfoFromDID(subscriber.user_did).then(res=>{
+                              setSubscriberInfo((prev)=>{
+                                const tempState = {...prev}
+                                tempState[subscriber.user_did]['info'] = res
+                                return tempState
+                              })
                             })
                             hiveApi.getHiveUrl(subscriber.user_did)
                               .then(async hiveUrl=>{
@@ -86,9 +93,9 @@ function Sidebar() {
                                   const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
                                   if(response && response.length) {
                                     const base64Content = response.toString('base64')
-                                    setSubscriberAvatar((prev)=>{
+                                    setSubscriberInfo((prev)=>{
                                       const tempState = {...prev}
-                                      tempState[subscriber.user_did] = `data:image/png;base64,${base64Content}`
+                                      tempState[subscriber.user_did]['avatar'] = `data:image/png;base64,${base64Content}`
                                       return tempState
                                     })
                                   }

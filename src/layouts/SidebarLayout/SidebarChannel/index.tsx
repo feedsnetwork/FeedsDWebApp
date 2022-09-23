@@ -14,7 +14,7 @@ import PostDlg from 'src/components/Modal/Post';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { CommonStatus } from 'src/models/common_content'
-import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique, isValidTime, getDateDistance, convertAutoLink } from 'src/utils/common'
+import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique, getInfoFromDID, isValidTime, getDateDistance, convertAutoLink } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 const SidebarWrapper = styled(Box)(
@@ -112,7 +112,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 }));
 
 function SidebarChannel() {
-  const { selfChannels, postsInSelf, sidebarToggle, focusedChannelId, subscriberAvatar, setSelfChannels, setPostsInSelf, toggleSidebar, setFocusChannelId, setSubscriberAvatar } = useContext(SidebarContext);
+  const { selfChannels, postsInSelf, sidebarToggle, focusedChannelId, subscriberInfo, setSelfChannels, setPostsInSelf, toggleSidebar, setFocusChannelId, setSubscriberInfo } = useContext(SidebarContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
   const [popoverChannel, setPopoverChannel] = useState({});
@@ -150,11 +150,18 @@ function SidebarChannel() {
                 if(subscriptionRes['find_message']) {
                   const subscribersArr = subscriptionRes['find_message']['items']
                   subscribersArr.forEach((subscriber, _i)=>{
-                    if(subscriberAvatar[subscriber.user_did] === undefined) {
-                      setSubscriberAvatar((prev)=>{
+                    if(subscriberInfo[subscriber.user_did] === undefined) {
+                      setSubscriberInfo((prev)=>{
                         const tempState = {...prev}
-                        tempState[subscriber.user_did] = ''
+                        tempState[subscriber.user_did] = {}
                         return tempState
+                      })
+                      getInfoFromDID(subscriber.user_did).then(res=>{
+                        setSubscriberInfo((prev)=>{
+                          const tempState = {...prev}
+                          tempState[subscriber.user_did]['info'] = res
+                          return tempState
+                        })
                       })
                       hiveApi.getHiveUrl(subscriber.user_did)
                         .then(async hiveUrl=>{
@@ -162,9 +169,9 @@ function SidebarChannel() {
                             const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
                             if(response && response.length) {
                               const base64Content = response.toString('base64')
-                              setSubscriberAvatar((prev)=>{
+                              setSubscriberInfo((prev)=>{
                                 const tempState = {...prev}
-                                tempState[subscriber.user_did] = `data:image/png;base64,${base64Content}`
+                                tempState[subscriber.user_did]['avatar'] = `data:image/png;base64,${base64Content}`
                                 return tempState
                               })
                             }
