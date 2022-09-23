@@ -10,8 +10,9 @@ import "odometer/themes/odometer-theme-default.css";
 import StyledAvatar from 'src/components/StyledAvatar'
 import CommentDlg from 'src/components/Modal/Comment'
 import StyledButton from 'src/components/StyledButton'
-import { SidebarContext } from 'src/contexts/SidebarContext';
 import Heart from 'src/components/Heart'
+import { SidebarContext } from 'src/contexts/SidebarContext';
+import { CommonStatus } from 'src/models/common_content'
 import { getDateDistance, isValidTime, hash, convertAutoLink } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
@@ -218,6 +219,12 @@ const PostBody = (props) => {
             <Icon icon="clarity:chat-bubble-line" width={18}/>
             <Typography variant="body2" noWrap>{post.commentData?post.commentData.length:0}</Typography>
           </Stack>
+          <Box flexGrow={1} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right'}}>
+            {
+              post.status===CommonStatus.edited &&
+              <Typography variant="body2">(edited)</Typography>
+            }
+          </Box>
         </Stack>
       </Stack>
       <CommentDlg setOpen={setOpenComment} isOpen={isOpenComment} post={post} postProps={{post, contentObj, isReply: true, level}}/>

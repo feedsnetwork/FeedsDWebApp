@@ -193,7 +193,7 @@ function SidebarChannel() {
                 if(postRes['find_message'] && postRes['find_message']['items']) {
                   const postArr = prefConf.DP?
                     postRes['find_message']['items']:
-                    postRes['find_message']['items'].filter(postItem=>!postItem.status)
+                    postRes['find_message']['items'].filter(postItem=>postItem.status!==CommonStatus.deleted)
                   const splitTargetDid = item.target_did.split(':')
                   postArr.map(post=>{
                     post.target_did = splitTargetDid[splitTargetDid.length-1]

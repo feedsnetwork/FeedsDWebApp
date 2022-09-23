@@ -9,6 +9,7 @@ import Logo from 'src/components/LogoSign';
 import StyledAvatar from 'src/components/StyledAvatar'
 import { HiveApi } from 'src/services/HiveApi'
 import { reduceDIDstring, getInfoFromDID, reduceHexAddress, getAppPreference, getFilteredArrayByUnique, sortByDate } from 'src/utils/common'
+import { CommonStatus } from 'src/models/common_content';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -134,7 +135,7 @@ function Sidebar() {
                 if(postRes['find_message'] && postRes['find_message']['items']) {
                   const postArr = prefConf.DP?
                     postRes['find_message']['items']:
-                    postRes['find_message']['items'].filter(postItem=>!postItem.status)
+                    postRes['find_message']['items'].filter(postItem=>postItem.status!==CommonStatus.deleted)
                   const splitTargetDid = item.target_did.split(':')
                   postArr.map(post=>{
                     post.target_did = splitTargetDid[splitTargetDid.length-1]
