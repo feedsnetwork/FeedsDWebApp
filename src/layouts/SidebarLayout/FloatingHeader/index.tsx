@@ -91,7 +91,7 @@ function FloatingHeader() {
       primaryText = "Post"
       secondaryText = `${focusedPost.commentData?focusedPost.commentData.length:0} comments`
     }
-    else if(pageType==='Profile') {
+    else if(pathname.startsWith('/profile')) {
       primaryText = userInfo['name'] || `@${reduceDIDstring(feedsDid)}`
       // secondaryText = "0 post"
     }

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { Card, Container, Box, Typography, Stack, IconButton, Tabs, Tab, Hidden } from '@mui/material';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
 
@@ -12,13 +13,17 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi'
 import { reduceHexAddress, reduceDIDstring, getInfoFromDID } from 'src/utils/common'
 
-function Profile() {
-  const { walletAddress, selfChannels, userInfo } = React.useContext(SidebarContext);
+function OthersProfile() {
+  const { walletAddress, selfChannels, subscriberInfo } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [subscriptions, setSubscriptions] = React.useState([]);
-  const [avatarSrc, setAvatarSrc] = React.useState('')
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const userDid = `did:elastos:${feedsDid}`
+  const location = useLocation();
+  const { user_did } = (location.state || {}) as any
+  const this_user = subscriberInfo[user_did] || {}
+  const userInfo = this_user['info'] || {}
+  const avatarSrc = this_user['avatar']
+  // const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  // const userDid = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
@@ -26,23 +31,14 @@ function Profile() {
   };
 
   React.useEffect(()=>{
-    if(!feedsDid)
-      return
+    // if(!feedsDid)
+    //   return
       
-    hiveApi.getHiveUrl(userDid)
-      .then(async hiveUrl=>{
-        const res =  await hiveApi.downloadFileByHiveUrl(userDid, hiveUrl)
-        if(res && res.length) {
-          const base64Content = res.toString('base64')
-          setAvatarSrc(`data:image/png;base64,${base64Content}`)
-        }
-      })
-
-    hiveApi.querySubscriptionInfoByUserDID(userDid, userDid)
-      .then(res=>{
-        if(res['find_message'])
-          setSubscriptions(res['find_message']['items'])
-      })
+    // hiveApi.querySubscriptionInfoByUserDID(userDid, userDid)
+    //   .then(res=>{
+    //     if(res['find_message'])
+    //       setSubscriptions(res['find_message']['items'])
+    //   })
   }, [])
 
   const backgroundImg = "/temp-back.png"
@@ -59,10 +55,9 @@ function Profile() {
             <Box ml='auto'>
               <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><ShareIcon fontSize='small'/></IconButton>
             </Box>
-            <StyledButton type='outlined' size='small'>Edit Profile</StyledButton>
           </Stack>
           <Stack spacing={1} px={{sm: 0, md: 3}} mt={2}>
-            <Typography variant="h3">@{userInfo['name'] || reduceDIDstring(feedsDid)}</Typography>
+            <Typography variant="h3">@{userInfo['name'] || reduceDIDstring(user_did)}</Typography>
             <Typography variant="body1">{reduceHexAddress(walletAddress)}</Typography>
             <Typography variant="body1">{userInfo['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
@@ -115,4 +110,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default OthersProfile;

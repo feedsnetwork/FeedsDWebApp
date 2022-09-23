@@ -29,6 +29,9 @@ const PostDetail = Loader(
 const Profile = Loader(
   lazy(() => import('src/content/profile'))
 );
+const OthersProfile = Loader(
+  lazy(() => import('src/content/profile/Others'))
+);
 const Channel = Loader(
   lazy(() => import('src/content/channel'))
 );
@@ -147,6 +150,10 @@ const routes: RouteObject[] = [
       {
         path: '',
         element: <Profile />
+      },
+      {
+        path: 'others',
+        element: <OthersProfile />
       }
     ]
   },

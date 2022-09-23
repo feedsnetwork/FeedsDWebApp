@@ -72,7 +72,7 @@ const ChannelAbout = (props) => {
           <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Subscribers</Typography>
         } 
         subheader={
-          <Typography variant='body2' color='text.secondary'>List of Subscribers</Typography>
+          <Typography variant='body2' color='text.secondary'>View all Subscribers</Typography>
         }
       />
       <CardContent sx={{pt: 0}}>
