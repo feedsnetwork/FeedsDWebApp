@@ -93,7 +93,7 @@ const PostBody = (props) => {
 
   const handleLike = async (e) => {
     e.stopPropagation()
-    if(isSaving)
+    if(isSaving || post.status === CommonStatus.deleted)
       return
     setIsSaving(true)
     try {
@@ -118,6 +118,8 @@ const PostBody = (props) => {
   }
 
   const handlePopper = (e, open)=>{
+    if(post.status === CommonStatus.deleted)
+      return
     if(open)
       setAnchorEl(e.target)
     setOpenPopover(open)

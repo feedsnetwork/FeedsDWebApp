@@ -201,31 +201,33 @@ export function getPostByChannelId(channel, setter) {
             post.created = new Date(post.created['$date']).getTime()/1000
         })
         postArr.forEach(post=>{
-          const contentObj = JSON.parse(post.content)
-          contentObj.mediaData.forEach((media, _i)=>{
-            if(!media.originMediaPath)
-              return
-            hiveApi.downloadScripting(channel.target_did, media.originMediaPath)
-              .then(res=>{
-                if(res) {
-                  setter((prevState) => {
-                    const tempState = {...prevState}
-                    const currentGroup = tempState[channel.channel_id]
-                    const postIndex = currentGroup.findIndex(el=>el.post_id==post.post_id)
-                    if(postIndex<0)
+          if(post.status !== CommonStatus.deleted) {
+            const contentObj = JSON.parse(post.content)
+            contentObj.mediaData.forEach((media, _i)=>{
+              if(!media.originMediaPath)
+                return
+              hiveApi.downloadScripting(channel.target_did, media.originMediaPath)
+                .then(res=>{
+                  if(res) {
+                    setter((prevState) => {
+                      const tempState = {...prevState}
+                      const currentGroup = tempState[channel.channel_id]
+                      const postIndex = currentGroup.findIndex(el=>el.post_id==post.post_id)
+                      if(postIndex<0)
+                        return tempState
+                      if(currentGroup[postIndex].mediaData)
+                        currentGroup[postIndex].mediaData.push({...media, mediaSrc: res})
+                      else
+                        currentGroup[postIndex].mediaData = [{...media, mediaSrc: res}]
                       return tempState
-                    if(currentGroup[postIndex].mediaData)
-                      currentGroup[postIndex].mediaData.push({...media, mediaSrc: res})
-                    else
-                      currentGroup[postIndex].mediaData = [{...media, mediaSrc: res}]
-                    return tempState
-                  })
-                }
-              })
-              .catch(err=>{
-                console.log(err)
-              })
-          })
+                    })
+                  }
+                })
+                .catch(err=>{
+                  console.log(err)
+                })
+            })
+          }
           hiveApi.queryLikeById(channel.target_did, channel.channel_id, post.post_id, '0')
             .then(likeRes=>{
               if(likeRes['find_message'] && likeRes['find_message']['items']) {
