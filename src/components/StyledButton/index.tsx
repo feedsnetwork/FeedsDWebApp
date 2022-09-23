@@ -30,7 +30,7 @@ const GradientStyledButton = (styledBtnFunc, type)=>{
 }
 
 function StyledButton(props) {
-  const { children, type='contained', needLoading=false, size='medium', sx={} ...restProps} = props
+  const { children, type='contained', needLoading=false, size='medium', sx={}, ...restProps} = props
   const styledBtnFunc = styled(needLoading?LoadingButton:Button)
   const GradientButton = GradientStyledButton(styledBtnFunc, type)
   return (
