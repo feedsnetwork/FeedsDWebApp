@@ -3,7 +3,7 @@ import { Box, Typography, Tabs, Tab, Stack, Container, InputAdornment, Grid } fr
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 
 import TabPanel from 'src/components/TabPanel'
-import CollectionCard from 'src/components/CollectionCard'
+import ChannelCard from 'src/components/ChannelCard'
 import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 
@@ -52,7 +52,7 @@ function Explorer() {
       <TabPanel value={tabValue} index={0} nopadding={true}>
         <Grid container sx={{pt: 2}}>
           <Grid item sm={4} md={3}>
-            <CollectionCard info={{name: 'MMA Lover', avatarImg: '/twitter.png', intro: 'Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though...I hope it’s gonna be alright haha#osaka #japan #spring'}}/>
+            <ChannelCard info={{name: 'MMA Lover', avatarImg: '/twitter.png', intro: 'Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though...I hope it’s gonna be alright haha#osaka #japan #spring'}}/>
           </Grid>
         </Grid>
       </TabPanel>

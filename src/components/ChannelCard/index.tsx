@@ -1,56 +1,124 @@
 import React from 'react';
-import { Box, Stack, Typography, Card, CardHeader, Divider, lighten, CardActionArea, CardContent, Tooltip, IconButton, Avatar, styled } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { alpha, styled } from '@mui/material/styles';
+import { Box, Typography, Stack, Paper } from '@mui/material';
 
-import StyledAvatar from 'src/components/StyledAvatar'
-import StyledButton from 'src/components/StyledButton'
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { HiveApi } from 'src/services/HiveApi'
-import { reduceDIDstring } from 'src/utils/common'
+// ----------------------------------------------------------------------
+const paperStyle = {
+  boxShadow: 'unset',
+  height: '100%',
+  transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
+  transform: 'translateY(0px)',
+  '.cover-image': {
+    OTransition: 'all .5s',
+    transition: 'all .5s'
+  },
+  '&:hover': {
+    boxShadow: '0 4px 8px 0px rgb(0 0 0 / 30%)',
+    transform: 'translateY(-4px)'
+  },
+  '&:hover .cover-image': {
+    OTransform: 'scale(1.2)',
+    transform: 'scale(1.2)'
+  },
+  '&:hover .network': {
+    display: 'block'
+  }
+}
+const forceHoverStyle = {
+  boxShadow: '0 4px 8px 0px rgb(0 0 0 / 30%)',
+  transform: 'translateY(-4px)',
+  '& .cover-image': {
+    OTransform: 'scale(1.2)',
+    transform: 'scale(1.2)'
+  },
+}
+const TypographyStyle = styled(Typography)(({ theme }) => ({
+  fontWeight: 'normal',
+  whiteSpace: 'pre-wrap',
+  wordWrap: 'break-word'
+}));
+const AvatarBoxStyle = styled(Box)(({ theme }) => ({
+  width: 48,
+  height: 48,
+  borderRadius: '50%',
+  backgroundColor: 'black',
+  display: 'flex',
+  position: 'absolute',
+  left:0,
+  right: 0,
+  bottom: -24,
+  margin: 'auto',
+})) as any;
 
-const ChannelCard = (props) => {
-  const { channel } = props
-  const [dispName, setDispName] = React.useState('');
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const userDid = `did:elastos:${feedsDid}`
-  const hiveApi = new HiveApi()
-  
-  React.useEffect(()=>{
-    // hiveApi.queryUserDisplayName(userDid, channel.channel_id.toString(), userDid)
-    //   .then(res=>{
-    //     if(res['find_message'])
-    //       setDispName(res['find_message']['items'][0].display_name)
-    //   })
-  }, [])
+const PaperRecord = (props)=>(
+  <Paper
+      sx={{
+          border: '1px solid',
+          borderColor: 'action.disabledBackground',
+          ...props.sx
+      }}
+      onClick={props.onClick}
+  >
+      {props.children}
+  </Paper>
+)
+
+const ChannelImgBox = (props) => {
+  const { name, bannerImg=null, avatarImg } = props;
+  const background = bannerImg ? `url(${bannerImg}) no-repeat center` : "linear-gradient(180deg, #000000 0%, #A067FF 300.51%)"
+  return (
+    <Stack sx={{position: 'relative', height: '100px', mb: '25px'}}>
+      <Stack sx={{height: '100%', overflow: 'hidden'}}>
+        <Box className='cover-image' sx={{ display: 'inline-flex', height: '100%', background, backgroundSize: 'cover'}}/>
+      </Stack>
+      <AvatarBoxStyle draggable = {false} component="img" src={avatarImg}/>
+    </Stack>
+  );
+};
+
+const ChannelCardPaper = (props) => {
+  const { info } = props
+  const { name, intro } = info
 
   return (
-    <Card>
-      <Box p={3}>
-        <Stack spacing={2}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <StyledAvatar alt={channel.name} src={channel.avatarSrc}/>
-            <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-              <Typography component='div' variant="subtitle2" noWrap>
-                {channel.name}
-              </Typography>
-              <Typography variant="body2" noWrap>
-                @{dispName || reduceDIDstring(feedsDid)}
-              </Typography>
-            </Box>
-            <Box>
-              <StyledButton type="outlined" size='small'>Subscribe</StyledButton>
-              <IconButton aria-label="settings" size='small'>
-                <MoreVertIcon />
-              </IconButton>
-            </Box>
+      <PaperRecord sx={{ overflow: 'hidden', ...paperStyle }}>
+        <Box>
+          <ChannelImgBox {...info}/>
+        </Box>
+        <Box sx={{px:2, pt: 1, pb: 2}}>
+          <Stack direction="column" sx={{justifyContent: 'center', textAlign: 'center'}}>
+            <Typography variant="h6" noWrap sx={{fontWeight: 'normal'}}>{name}</Typography>
+            <TypographyStyle 
+              variant="subtitle2"
+              color='text.secondary'
+              sx={{ 
+                lineHeight: 1.3,
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                whiteSpace: 'normal',
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+                display: '-webkit-box !important'
+              }}
+            >
+              {intro}
+            </TypographyStyle>
           </Stack>
-          <Typography variant="body2" sx={{whiteSpace: 'pre-line'}}>
-            {channel.intro}
-          </Typography>
-        </Stack>
-      </Box>
-    </Card>
+        </Box>
+      </PaperRecord>
   );
-}
+};
 
-export default ChannelCard;
+export default function ChannelCard(props) {
+  const navigate = useNavigate();
+  const route2Detail = () => {
+    
+  }
+
+  return (
+    <Box onClick={route2Detail} sx={{display: 'contents', cursor: 'pointer'}}>
+      <ChannelCardPaper {...props}/>
+    </Box>
+  );
+};
