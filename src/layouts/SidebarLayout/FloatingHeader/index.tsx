@@ -56,8 +56,12 @@ function FloatingHeader() {
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const postsInHome = getMergedArray(postsInSubs)
 
-  const handleClose = (e) => {
-    window.history.back()
+  const handleBack = (e) => {
+    if(pathname.startsWith('/setting')) {
+      navigate('/home')
+    }
+    else
+      window.history.back()
   }
   
   const getActionText = () => {
@@ -120,7 +124,7 @@ function FloatingHeader() {
                 <Button
                   color="inherit"
                   startIcon={<ArrowBack />}
-                  onClick={handleClose}
+                  onClick={handleBack}
                   sx={{textAlign: 'left'}}
                 >
                   {backBtnText}
