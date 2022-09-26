@@ -25,7 +25,7 @@ const IconInCircle = (props)=>{
   const {type='icon', name} = props
   return (
     type==='icon'?
-    <Box sx={{p: .8, background: (theme)=>theme.palette.primary.main, borderRadius: '50%', display: 'flex', ml: 1, mr: 2}}>
+    <Box sx={{p: .8, background: (theme)=>theme.palette.primary.main, borderRadius: '50%', display: 'flex', ml: 1, mr: 2, color: '#C4C4C4'}}>
       <Icon icon={name} width={20} height={20}/>
     </Box>:
     <Box component='img' draggable={false} src={name} width={34.4} height={34.4} sx={{ml: 1, mr: 2}}/>
