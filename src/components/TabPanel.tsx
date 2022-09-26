@@ -1,7 +1,7 @@
 import { Typography, Box } from '@mui/material';
 
 function TabPanel(props) {
-  const { children, value, index, ...other } = props;
+  const { children, value, index, nopadding=false, ...other } = props;
 
   return (
     <div
@@ -12,7 +12,7 @@ function TabPanel(props) {
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: nopadding?0:3 }}>
           <Typography>{children}</Typography>
         </Box>
       )}

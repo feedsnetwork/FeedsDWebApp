@@ -122,7 +122,10 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               </Box>
           }
         </Box>
-        <RightPanel />
+        {
+          !pathname.startsWith('/explorer') &&
+          <RightPanel />
+        }
       </Stack>
     </Box>
   );
