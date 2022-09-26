@@ -38,8 +38,8 @@ const Channel = Loader(
 const AddChannel = Loader(
   lazy(() => import('src/components/AddChannel'))
 );
-const Explorer = Loader(
-  lazy(() => import('src/content/explorer'))
+const Explore = Loader(
+  lazy(() => import('src/content/explore'))
 );
 const Subscription = Loader(
   lazy(() => import('src/content/subscription'))
@@ -172,12 +172,12 @@ const routes: RouteObject[] = [
     ]
   },
   {
-    path: 'explorer',
+    path: 'explore',
     element: <SidebarLayout />,
     children: [
       {
         path: '',
-        element: <Explorer />
+        element: <Explore />
       }
     ]
   },

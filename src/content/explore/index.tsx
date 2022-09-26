@@ -9,7 +9,7 @@ import PostImgCard from 'src/components/PostCard/PostImgCard'
 import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 
-function Explorer() {
+function Explore() {
   const { selfChannels } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   
@@ -115,4 +115,4 @@ function Explorer() {
   );
 }
 
-export default Explorer;
+export default Explore;

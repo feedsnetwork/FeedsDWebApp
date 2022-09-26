@@ -164,7 +164,7 @@ const MainMenuArray = [
   {to: '/home', name: 'Home', icon: 'clarity:home-line', focus_icon: 'clarity:home-solid'},
   {to: '/profile', name: 'Profile', icon: 'clarity:user-line', focus_icon: 'clarity:user-solid'},
   {to: '/channel', name: 'Channel', icon: 'bi:grid-3x3-gap', focus_icon: 'bi:grid-3x3-gap-fill'},
-  {to: '/explorer', name: 'Explorer', icon: 'clarity:compass-line', focus_icon: 'clarity:compass-solid'},
+  {to: '/explore', name: 'Explore', icon: 'clarity:compass-line', focus_icon: 'clarity:compass-solid'},
 ]
 const customAnimation = keyframes`
   from {
