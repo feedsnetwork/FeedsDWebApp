@@ -11,6 +11,7 @@ import Logo from 'src/components/LogoSign';
 import ChannelAvatar from 'src/components/ChannelAvatar'
 import StyledButton from 'src/components/StyledButton'
 import PostDlg from 'src/components/Modal/Post';
+import SignoutDlg from 'src/components/Modal/Signout';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { CommonStatus } from 'src/models/common_content'
@@ -119,6 +120,7 @@ function SidebarChannel() {
   const [recentPosts, setRecentPosts] = useState([]);
   const [arrowRef, setArrowRef] = useState(null);
   const [isOpenPost, setOpenPost] = useState(false)
+  const [isOpenSignout, setOpenSignout] = useState(false)
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
@@ -319,7 +321,7 @@ function SidebarChannel() {
             }>
             <Icon icon="ep:setting" width={28} height={28} />
           </Fab>
-          <Fab color='primary' aria-label="logout" size='medium'>
+          <Fab color='primary' aria-label="logout" size='medium' onClick={(e)=>setOpenSignout(true)}>
             <Icon icon="clarity:sign-out-line" width={28} height={28} />
           </Fab>
         </Stack>
@@ -397,6 +399,7 @@ function SidebarChannel() {
         </StyledPopper>
       </ClickAwayListener>
       <PostDlg setOpen={setOpenPost} isOpen={isOpenPost} activeChannelId={popoverChannel['channel_id']}/>
+      <SignoutDlg setOpen={setOpenSignout} isOpen={isOpenSignout}/>
       {/* <Drawer
         sx={{
           boxShadow: `${theme.sidebar.boxShadow}`
