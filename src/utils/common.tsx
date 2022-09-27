@@ -300,3 +300,29 @@ export function getPostByChannelId(channel, setter) {
       // console.log(err, item)
     })
 }
+
+export function getPostShortUrl(post) {
+  return new Promise((resolve, reject) => {
+    const {target_did, channel_id, post_id} = post
+    const postUrl = `${process.env.REACT_APP_BASEURL_POST_URL}/?targetDid=${target_did}&channelId=${channel_id}&postId=${post_id}`
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: postUrl })
+    };
+    fetch(`${process.env.REACT_APP_SHORTEN_SERVICE_URL}/api/v2/action/shorten?key=9fa8ef7f86a28829f53375abcb0af5`, requestOptions)
+      .then(response=>response.text())
+      .then(resolve)
+      .catch((err) => {
+        resolve(postUrl)
+      })
+  });
+}
+
+export async function copy2clipboard(text) {
+  if ("clipboard" in navigator) {
+    await navigator.clipboard.writeText(text);
+  } else {
+    document.execCommand("copy", true, text);
+  }
+}

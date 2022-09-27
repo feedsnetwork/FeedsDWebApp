@@ -14,7 +14,7 @@ import StyledButton from 'src/components/StyledButton'
 import Heart from 'src/components/Heart'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { CommonStatus } from 'src/models/common_content'
-import { getDateDistance, isValidTime, hash, convertAutoLink } from 'src/utils/common'
+import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard } from 'src/utils/common'
 import { HiveApi } from 'src/services/HiveApi'
 
 
@@ -147,6 +147,13 @@ const PostBody = (props) => {
     const type = event.currentTarget.getAttribute("value")
     switch(type){
       case 'share':
+        getPostShortUrl(post)
+          .then(shortUrl=>{
+            copy2clipboard(shortUrl)
+              .then(_=>{
+                enqueueSnackbar('Copied to clipboard', { variant: 'success' });
+              })
+          })
         break;
       case 'edit':
         setOpenPost(true)
@@ -200,7 +207,7 @@ const PostBody = (props) => {
                   <div>
                     <MenuItem value='share' onClick={handleClosePopup}>
                       <IconInCircle name='clarity:share-line'/>&nbsp;
-                      <Typography variant="subtitle2">Share Post</Typography>
+                      <Typography variant="subtitle2">Copy Link to share</Typography>
                     </MenuItem>
                     <MenuItem value='edit' onClick={handleClosePopup}>
                       <IconInCircle name='clarity:note-edit-line'/>&nbsp;
@@ -215,7 +222,7 @@ const PostBody = (props) => {
                   <div>
                     <MenuItem value='share' onClick={handleClosePopup}>
                       <IconInCircle name='clarity:share-line'/>&nbsp;
-                      <Typography variant="subtitle2">Share Post</Typography>
+                      <Typography variant="subtitle2">Copy Link to share</Typography>
                     </MenuItem>
                     <MenuItem value='unsubscribe' onClick={handleClosePopup}>
                       <IconInCircle name='clarity:user-solid-alerted' stress={true}/>&nbsp;
