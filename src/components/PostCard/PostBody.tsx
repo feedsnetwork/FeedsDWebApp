@@ -10,6 +10,7 @@ import "odometer/themes/odometer-theme-default.css";
 import StyledAvatar from 'src/components/StyledAvatar'
 import CommentDlg from 'src/components/Modal/Comment'
 import PostDlg from 'src/components/Modal/Post'
+import DeletePostDlg from 'src/components/Modal/DeletePost'
 import StyledButton from 'src/components/StyledButton'
 import Heart from 'src/components/Heart'
 import { SidebarContext } from 'src/contexts/SidebarContext';
@@ -81,6 +82,7 @@ const PostBody = (props) => {
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [isOpenComment, setOpenComment] = React.useState(false)
   const [isOpenPost, setOpenPost] = React.useState(false)
+  const [isOpenDelete, setOpenDelete] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
@@ -159,6 +161,7 @@ const PostBody = (props) => {
         setOpenPost(true)
         break;
       case 'delete':
+        setOpenDelete(true)
         break;
       case 'unsubscribe':
         break;
@@ -187,7 +190,7 @@ const PostBody = (props) => {
             </Typography>
           </Box>
           {
-            !isReply &&
+            !isReply && post.status !== CommonStatus.deleted &&
             <Box>
               <IconButton aria-label="settings" size='small' onClick={openPopupMenu}>
                 <MoreVertIcon />
@@ -388,7 +391,10 @@ const PostBody = (props) => {
       <CommentDlg setOpen={setOpenComment} isOpen={isOpenComment} post={post} postProps={{post, contentObj, isReply: true, level}}/>
       {
         isOwnedChannel&&
-        <PostDlg setOpen={setOpenPost} isOpen={isOpenPost} activePost={post}/>
+        <>
+          <PostDlg setOpen={setOpenPost} isOpen={isOpenPost} activePost={post}/>
+          <DeletePostDlg setOpen={setOpenDelete} isOpen={isOpenDelete} post={post}/>
+        </>
       }
     </>
   )
