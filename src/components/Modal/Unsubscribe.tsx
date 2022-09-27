@@ -1,14 +1,13 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'
-import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, Divider, IconButton, Paper } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack} from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 import StyledButton from '../StyledButton';
 import StyledIcon from '../StyledIcon'
 import { HiveApi } from 'src/services/HiveApi'
 
-function DeletePost(props) {
-  const { setOpen, isOpen, post_id, channel_id } = props;
+function Unsubscribe(props) {
+  const { setOpen, isOpen, target_did, channel_id } = props;
   const [onProgress, setOnProgress] = React.useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
@@ -22,14 +21,14 @@ function DeletePost(props) {
   const handleAction = async (e) => {
     if(e.currentTarget.value === 'ok') {
       setOnProgress(true)
-      hiveApi.deletePost(post_id, channel_id)
+      hiveApi.unSubscribeChannel(target_did, channel_id)
         .then(_=>{
-          enqueueSnackbar('Delete post success', { variant: 'success' });
+          enqueueSnackbar('Unsubscribe channel success', { variant: 'success' });
           setOnProgress(false)
           handleClose()
         })
         .catch(err=>{
-          enqueueSnackbar('Delete post error', { variant: 'error' });
+          enqueueSnackbar('Unsubscribe channel error', { variant: 'error' });
         })
     } else {
       handleClose()
@@ -44,9 +43,9 @@ function DeletePost(props) {
     <Dialog open={isOpen} onClose={handleClose} onClick={(e)=>{e.stopPropagation()}}>
       <DialogContent sx={{minWidth: {sm: 'unset', md: 400}}}>
         <Stack spacing={2} sx={{textAlign: 'center'}}>
-          <Typography variant="h5">Delete Post</Typography>
-          <StyledIcon icon="fa6-solid:trash-can" width={64} height={64}/>
-          <Typography variant="body2">Are you sure you want to delete this post?</Typography>
+          <Typography variant="h5">Unsubscribe Channel</Typography>
+          <StyledIcon icon="clarity:user-solid-alerted" width={64} height={64}/>
+          <Typography variant="body2">Are you sure you want to unsubscribe this channel?</Typography>
           <Stack direction="row" spacing={3}>
             <StyledButton type="outlined" fullWidth value='cancel' onClick={handleAction}>Cancel</StyledButton>
             <StyledButton fullWidth loading={onProgress} needLoading={true} value='ok' onClick={handleAction}>Yes</StyledButton>
@@ -57,4 +56,4 @@ function DeletePost(props) {
   );
 }
 
-export default DeletePost
+export default Unsubscribe

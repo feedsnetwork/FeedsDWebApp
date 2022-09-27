@@ -11,6 +11,7 @@ import StyledAvatar from 'src/components/StyledAvatar'
 import CommentDlg from 'src/components/Modal/Comment'
 import PostDlg from 'src/components/Modal/Post'
 import DeletePostDlg from 'src/components/Modal/DeletePost'
+import UnsubscribeDlg from 'src/components/Modal/Unsubscribe'
 import StyledButton from 'src/components/StyledButton'
 import Heart from 'src/components/Heart'
 import { SidebarContext } from 'src/contexts/SidebarContext';
@@ -83,6 +84,7 @@ const PostBody = (props) => {
   const [isOpenComment, setOpenComment] = React.useState(false)
   const [isOpenPost, setOpenPost] = React.useState(false)
   const [isOpenDelete, setOpenDelete] = React.useState(false)
+  const [isOpenUnsubscribe, setOpenUnsubscribe] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
@@ -164,6 +166,7 @@ const PostBody = (props) => {
         setOpenDelete(true)
         break;
       case 'unsubscribe':
+        setOpenUnsubscribe(true)
         break;
       default:
         break;
@@ -210,7 +213,7 @@ const PostBody = (props) => {
                   <div>
                     <MenuItem value='share' onClick={handleClosePopup}>
                       <IconInCircle name='clarity:share-line'/>&nbsp;
-                      <Typography variant="subtitle2">Copy Link to share</Typography>
+                      <Typography variant="subtitle2">Copy Link to Share</Typography>
                     </MenuItem>
                     <MenuItem value='edit' onClick={handleClosePopup}>
                       <IconInCircle name='clarity:note-edit-line'/>&nbsp;
@@ -225,7 +228,7 @@ const PostBody = (props) => {
                   <div>
                     <MenuItem value='share' onClick={handleClosePopup}>
                       <IconInCircle name='clarity:share-line'/>&nbsp;
-                      <Typography variant="subtitle2">Copy Link to share</Typography>
+                      <Typography variant="subtitle2">Copy Link to Share</Typography>
                     </MenuItem>
                     <MenuItem value='unsubscribe' onClick={handleClosePopup}>
                       <IconInCircle name='clarity:user-solid-alerted' stress={true}/>&nbsp;
@@ -390,11 +393,13 @@ const PostBody = (props) => {
       }
       <CommentDlg setOpen={setOpenComment} isOpen={isOpenComment} post={post} postProps={{post, contentObj, isReply: true, level}}/>
       {
-        isOwnedChannel&&
+        isOwnedChannel?
         <>
           <PostDlg setOpen={setOpenPost} isOpen={isOpenPost} activePost={post}/>
-          <DeletePostDlg setOpen={setOpenDelete} isOpen={isOpenDelete} post={post}/>
-        </>
+          <DeletePostDlg setOpen={setOpenDelete} isOpen={isOpenDelete} post_id={post.post_id} channel_id={post.channel_id}/>
+        </>:
+
+        <UnsubscribeDlg setOpen={setOpenUnsubscribe} isOpen={isOpenUnsubscribe} target_did={currentChannel.target_did} channel_id={post.channel_id}/>
       }
     </>
   )
