@@ -9,6 +9,7 @@ import "odometer/themes/odometer-theme-default.css";
 
 import StyledAvatar from 'src/components/StyledAvatar'
 import CommentDlg from 'src/components/Modal/Comment'
+import PostDlg from 'src/components/Modal/Post'
 import StyledButton from 'src/components/StyledButton'
 import Heart from 'src/components/Heart'
 import { SidebarContext } from 'src/contexts/SidebarContext';
@@ -79,6 +80,7 @@ const PostBody = (props) => {
   const { selfChannels, subscribedChannels, subscriberInfo } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [isOpenComment, setOpenComment] = React.useState(false)
+  const [isOpenPost, setOpenPost] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
@@ -142,11 +144,12 @@ const PostBody = (props) => {
 
   const handleClosePopup = (event) => {
     event.stopPropagation()
-    const type = event.target.getAttribute("value")
+    const type = event.currentTarget.getAttribute("value")
     switch(type){
       case 'share':
         break;
       case 'edit':
+        setOpenPost(true)
         break;
       case 'delete':
         break;
@@ -301,7 +304,6 @@ const PostBody = (props) => {
           </Box>
         </Stack>
       </Stack>
-      <CommentDlg setOpen={setOpenComment} isOpen={isOpenComment} post={post} postProps={{post, contentObj, isReply: true, level}}/>
       {
         level==1 &&
         <StyledPopper
@@ -375,6 +377,11 @@ const PostBody = (props) => {
             )
           }
         </StyledPopper>
+      }
+      <CommentDlg setOpen={setOpenComment} isOpen={isOpenComment} post={post} postProps={{post, contentObj, isReply: true, level}}/>
+      {
+        isOwnedChannel&&
+        <PostDlg setOpen={setOpenPost} isOpen={isOpenPost} activePost={post}/>
       }
     </>
   )

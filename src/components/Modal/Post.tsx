@@ -14,17 +14,18 @@ import StyledIconButton from '../StyledIconButton';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { PostContentV3, mediaDataV3, MediaType } from 'src/models/post_content'
 import { HiveApi } from 'src/services/HiveApi'
-import { getBufferFromFile } from 'src/utils/common'
+import { CommonStatus } from 'src/models/common_content'
+import { getBufferFromFile, getMergedArray } from 'src/utils/common'
 
 function PostDlg(props) {
-  const { setOpen, isOpen, activeChannelId=null } = props;
+  const { setOpen, isOpen, activeChannelId=null, activePost=null } = props;
   const { focusedChannelId, selfChannels, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
   const [postext, setPostext] = React.useState('');
   const [imageAttach, setImageAttach] = React.useState(null);
   
-  const currentChannelId = activeChannelId || focusedChannelId
+  const currentChannelId = activeChannelId || activePost?activePost.channel_id:null || focusedChannelId
   const focusedChannel = selfChannels.find(item=>item.channel_id==currentChannelId) || {}
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
@@ -38,6 +39,20 @@ function PostDlg(props) {
     }
   }, [isOpen])
 
+  React.useEffect(()=>{
+    if(activePost && isOpen) {
+      let contentObj = {content: ''}
+      contentObj = JSON.parse(activePost.content)
+      setPostext(contentObj.content || '')
+      if(activePost.mediaData && activePost.mediaData.length) {
+        const tempMedia = activePost.mediaData[0]
+        if(tempMedia.kind == 'image') {
+          setImageAttach(tempMedia.mediaSrc)
+        }
+      }
+    }
+  }, [activePost, isOpen])
+
   const handlePost = async (e) => {
     setOnValidation(true)
     if(!postext){
@@ -48,31 +63,47 @@ function PostDlg(props) {
     const postContent = new PostContentV3()
     postContent.content = postext
     if(imageAttach) {
-      const imageBuffer = await getBufferFromFile(imageAttach) as Buffer
-      const base64content = imageBuffer.toString('base64')
-      const imageHivePath = await hiveApi.uploadMediaDataWithString(`data:${imageAttach.type};base64,${base64content}`)
-      const tempMediaData: mediaDataV3 = {
-        kind: 'image',
-        originMediaPath: imageHivePath,
-        type: imageAttach.type,
-        size: imageAttach.size,
-        thumbnailPath: imageHivePath,
-        duration: 0,
-        imageIndex: 0,
-        additionalInfo: null,
-        memo: null
+      if(isString(imageAttach)) {
+        const contentObj = JSON.parse(activePost.content)
+        postContent.mediaData = contentObj.mediaData
+        postContent.mediaType = contentObj.mediaType
+      } else {
+        const imageBuffer = await getBufferFromFile(imageAttach) as Buffer
+        const base64content = imageBuffer.toString('base64')
+        const imageHivePath = await hiveApi.uploadMediaDataWithString(`data:${imageAttach.type};base64,${base64content}`)
+        const tempMediaData: mediaDataV3 = {
+          kind: 'image',
+          originMediaPath: imageHivePath,
+          type: imageAttach.type,
+          size: imageAttach.size,
+          thumbnailPath: imageHivePath,
+          duration: 0,
+          imageIndex: 0,
+          additionalInfo: null,
+          memo: null
+        }
+        postContent.mediaData.push(tempMediaData)
+        postContent.mediaType = MediaType.containsImg
       }
-      postContent.mediaData.push(tempMediaData)
-      postContent.mediaType = MediaType.containsImg
     }
-    hiveApi.publishPost(currentChannelId.toString(), "", JSON.stringify(postContent))
-      .then(res=>{
-        // console.log(res, "===============2")
-        enqueueSnackbar('Publish post success', { variant: 'success' });
-        setPublishPostNumber(publishPostNumber+1)
-        setOnProgress(false)
-        setOpen(false);
-      })
+    if(activePost)
+      hiveApi.updatePost(activePost.post_id, currentChannelId.toString(), activePost.type, activePost.tag, JSON.stringify(postContent), CommonStatus.edited, Math.round(new Date().getTime()/1000), activePost.memo, activePost.proof)
+        .then(res=>{
+          // console.log(res, "===============2")
+          enqueueSnackbar('Update post success', { variant: 'success' });
+          setPublishPostNumber(publishPostNumber+1)
+          setOnProgress(false)
+          setOpen(false);
+        })
+    else
+      hiveApi.publishPost(currentChannelId.toString(), "", JSON.stringify(postContent))
+        .then(res=>{
+          // console.log(res, "===============2")
+          enqueueSnackbar('Publish post success', { variant: 'success' });
+          setPublishPostNumber(publishPostNumber+1)
+          setOnProgress(false)
+          setOpen(false);
+        })
   }
   const handleUploadClick = (e) => {
     var file = e.target.files[0];
@@ -105,12 +136,13 @@ function PostDlg(props) {
   const handleChangePostext = (e) => {
     setPostext(e.target.value)
   }
-  const handleClose = () => {
+  const handleClose = (e) => {
+    e.stopPropagation()
     setOpen(false);
   };
 
   return (
-    <Dialog open={isOpen} onClose={handleClose}>
+    <Dialog open={isOpen} onClose={handleClose} onClick={(e)=>{e.stopPropagation()}}>
       <DialogTitle>
         <IconButton
           aria-label="close"
