@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade } from '@mui/material';
+import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade, Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
@@ -64,6 +64,15 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
   },
 }));
 
+const IconInCircle = (props)=>{
+  const {name, stress=false} = props
+  return (
+    <Box sx={{p: .8, background: stress?'#FF453A':(theme)=>theme.palette.primary.main, borderRadius: '50%', display: 'flex', mr: 2, color: stress?'#161C24':'#C4C4C4'}}>
+      <Icon icon={name} width={18} height={18}/>
+    </Box>
+  )
+}
+
 const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1 } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
@@ -74,7 +83,9 @@ const PostBody = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
   const [isEnterPopover, setEnterPopover] = React.useState(false);
+  const [isOpenPopup, setOpenPopup] = React.useState(null);
   const hiveApi = new HiveApi()
+  const isOwnedChannel = selfChannels.findIndex(item=>item.channel_id==post.channel_id)>=0
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   const subscribersOfThis = currentChannel['subscribers'] || []
   const subscribedByWho = `Subscribed by ${subscribersOfThis.slice(0,3).map(subscriber=>subscriber.display_name).join(', ')}${subscribersOfThis.length>3?' and more!':'.'}`
@@ -124,6 +135,29 @@ const PostBody = (props) => {
     setOpenPopover(open)
   }
 
+  const openPopupMenu = (event) => {
+    event.stopPropagation()
+    setOpenPopup(event.currentTarget);
+  };
+
+  const handleClosePopup = (event) => {
+    event.stopPropagation()
+    const type = event.target.getAttribute("value")
+    switch(type){
+      case 'share':
+        break;
+      case 'edit':
+        break;
+      case 'delete':
+        break;
+      case 'unsubscribe':
+        break;
+      default:
+        break;
+    }
+    setOpenPopup(null);
+  };
+  
   return (
     <>
       <Stack spacing={2}>
@@ -145,9 +179,48 @@ const PostBody = (props) => {
           {
             !isReply &&
             <Box>
-              <IconButton aria-label="settings" size='small'>
+              <IconButton aria-label="settings" size='small' onClick={openPopupMenu}>
                 <MoreVertIcon />
               </IconButton>
+              <Menu 
+                keepMounted
+                id="simple-menu"
+                anchorEl={isOpenPopup}
+                onClick={(e)=>{e.stopPropagation()}}
+                onClose={handleClosePopup}
+                open={Boolean(isOpenPopup)}
+                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              >
+                {
+                  isOwnedChannel?
+                  <div>
+                    <MenuItem value='share' onClick={handleClosePopup}>
+                      <IconInCircle name='clarity:share-line'/>&nbsp;
+                      <Typography variant="subtitle2">Share Post</Typography>
+                    </MenuItem>
+                    <MenuItem value='edit' onClick={handleClosePopup}>
+                      <IconInCircle name='clarity:note-edit-line'/>&nbsp;
+                      <Typography variant="subtitle2">Edit Post</Typography>
+                    </MenuItem>
+                    <MenuItem value='delete' onClick={handleClosePopup}>
+                      <IconInCircle name='fa6-solid:trash-can' stress={true}/>&nbsp;
+                      <Typography variant="subtitle2" color="#FF453A">Delete Post</Typography>
+                    </MenuItem>
+                  </div>:
+
+                  <div>
+                    <MenuItem value='share' onClick={handleClosePopup}>
+                      <IconInCircle name='clarity:share-line'/>&nbsp;
+                      <Typography variant="subtitle2">Share Post</Typography>
+                    </MenuItem>
+                    <MenuItem value='unsubscribe' onClick={handleClosePopup}>
+                      <IconInCircle name='clarity:user-solid-alerted' stress={true}/>&nbsp;
+                      <Typography variant="subtitle2" color="#FF453A">Unsubscribe</Typography>
+                    </MenuItem>
+                  </div>
+                }
+              </Menu>
             </Box>
           }
         </Stack>
