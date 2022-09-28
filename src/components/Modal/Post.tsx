@@ -11,6 +11,7 @@ import StyledAvatar from '../StyledAvatar';
 import StyledButton from '../StyledButton';
 import StyledTextFieldOutline from '../StyledTextFieldOutline'
 import StyledIconButton from '../StyledIconButton';
+import EmojiPopper from '../EmojiPopper';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { PostContentV3, mediaDataV3, MediaType } from 'src/models/post_content'
 import { HiveApi } from 'src/services/HiveApi'
@@ -24,6 +25,8 @@ function PostDlg(props) {
   const [onProgress, setOnProgress] = React.useState(false);
   const [postext, setPostext] = React.useState('');
   const [imageAttach, setImageAttach] = React.useState(null);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [isOpenPopover, setOpenPopover] = React.useState(false);
   
   const currentChannelId = activeChannelId || activePost?activePost.channel_id:null || focusedChannelId
   const focusedChannel = selfChannels.find(item=>item.channel_id==currentChannelId) || {}
@@ -130,17 +133,23 @@ function PostDlg(props) {
     // });
   };
   
+  const handlePopper = (e)=>{
+    setAnchorEl(e.currentTarget)
+    setOpenPopover(true)
+  }
   const handleImageAttachRemove = (e) => {
     setImageAttach(null);
   };
   const handleChangePostext = (e) => {
     setPostext(e.target.value)
   }
+  const onEmojiClick = (emojiObject, _) => {
+    setPostext((prev)=>`${prev}${emojiObject.emoji}`);
+  };
   const handleClose = (e) => {
     e.stopPropagation()
     setOpen(false);
   };
-
   return (
     <Dialog open={isOpen} onClose={handleClose} onClick={(e)=>{e.stopPropagation()}}>
       <DialogTitle>
@@ -228,6 +237,7 @@ function PostDlg(props) {
               <StyledIconButton icon="clarity:camera-line"/>
               <StyledIconButton icon="clarity:video-gallery-line"/>
               <StyledIconButton icon="clarity:video-camera-line"/>
+              <StyledIconButton icon="fluent:emoji-laugh-24-regular" onClick={handlePopper}/>
               <IconButton>
                 <Typography variant='body2' sx={{
                   backgroundImage: 'linear-gradient(90deg, #7624FE 0%, #368BFF 100%)',
@@ -248,6 +258,7 @@ function PostDlg(props) {
           </Stack>
         </Stack>
       </DialogContent>
+      <EmojiPopper {...{anchorEl, isOpenPopover, setOpenPopover, onEmojiClick}}/>
     </Dialog>
   );
 }
