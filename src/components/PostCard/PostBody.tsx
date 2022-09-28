@@ -1,5 +1,6 @@
 import React from 'react'
-import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade, Menu, MenuItem } from '@mui/material';
+import { NavLink as RouterLink, useNavigate } from 'react-router-dom'
+import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade, Menu, MenuItem, Link } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
@@ -79,7 +80,7 @@ const IconInCircle = (props)=>{
 const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1 } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
-  const { selfChannels, subscribedChannels, subscriberInfo } = React.useContext(SidebarContext);
+  const { selfChannels, subscribedChannels, subscriberInfo, setFocusChannelId } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [isOpenComment, setOpenComment] = React.useState(false)
   const [isOpenPost, setOpenPost] = React.useState(false)
@@ -97,6 +98,7 @@ const PostBody = (props) => {
   const subscribedByWho = `Subscribed by ${subscribersOfThis.slice(0,3).map(subscriber=>subscriber.display_name).join(', ')}${subscribersOfThis.length>3?' and more!':'.'}`
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
+  const navigate = useNavigate()
   const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(()=>{
@@ -173,7 +175,25 @@ const PostBody = (props) => {
     }
     setOpenPopup(null);
   };
-  
+  const handleLink2Channel = (e)=>{
+    e.stopPropagation()
+    const isSelfChannel = selfChannels.findIndex(item=>item.channel_id==post.channel_id)>=0
+    if(isSelfChannel) {
+      setFocusChannelId(post.channel_id)
+      navigate('/channel')
+    } else {
+      navigate('/subscription/channel', {state: {channel_id: post.channel_id}});
+    }
+  }
+  const handleLink2Profile = (e)=>{
+    e.stopPropagation()
+    const isSelf = post.target_did == feedsDid
+    if(isSelf) {
+      navigate('/profile')
+    } else {
+      navigate('/profile/others', {state: {user_did: `did:elastos:${post.target_did}`}});
+    }
+  }
   return (
     <>
       <Stack spacing={2}>
@@ -181,15 +201,31 @@ const PostBody = (props) => {
           <Box
             onMouseEnter={(e)=>{handlePopper(e, true)}}
             onMouseLeave={(e)=>{handlePopper(e, false)}}
+            onClick={level==1?handleLink2Channel:null}
           >
             <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
           </Box>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography component='div' variant="subtitle2" noWrap>
-              {contentObj.primaryName}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
+              {
+                level==1?
+                <Link sx={{color:'inherit'}} onClick={handleLink2Channel}>
+                  {contentObj.primaryName}
+                </Link>:
+
+                contentObj.primaryName
+              }
+              {' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
             </Typography>
             <Typography variant="body2" noWrap>
-              {contentObj.secondaryName}
+              {
+                level==1?
+                <Link sx={{color:'inherit'}} onClick={handleLink2Profile}>
+                  {contentObj.secondaryName}
+                </Link>:
+
+                contentObj.secondaryName
+              }  
             </Typography>
           </Box>
           {
