@@ -392,14 +392,24 @@ const PostBody = (props) => {
               <Fade {...TransitionProps}>
                 <Paper sx={{p: 2}}>
                   <Stack direction="row">
-                    <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={40}/>
+                    <Box onClick={handleLink2Channel} sx={{cursor: 'pointer'}}>
+                      <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={40}/>
+                    </Box>
                     <Box sx={{flexGrow: 1}} textAlign="right">
                       <StyledButton type="contained">Subscribed</StyledButton>
                     </Box>
                   </Stack>
                   <Box>
-                    <Typography component='div' variant="subtitle2" noWrap pt={1}>{contentObj.primaryName}</Typography>
-                    <Typography component='div' variant="body2" noWrap>{contentObj.secondaryName}</Typography>
+                    <Typography component='div' variant="subtitle2" noWrap pt={1}>
+                      <Link sx={{color:'inherit', cursor: 'pointer'}} onClick={handleLink2Channel}>
+                        {contentObj.primaryName}
+                      </Link>
+                    </Typography>
+                    <Typography component='div' variant="body2" noWrap>
+                      <Link sx={{color:'inherit', cursor: 'pointer'}} onClick={handleLink2Profile}>
+                        {contentObj.secondaryName}
+                      </Link>
+                    </Typography>
                     <Typography component='div' variant="body2" color="secondary">{currentChannel.intro}</Typography>
                   </Box>
                   <Divider sx={{my: 1}}/>
