@@ -170,7 +170,8 @@ function Channel() {
                     inputRef={postRef}
                     value={postext}
                     multiline
-                    rows={3}
+                    minRows={3}
+                    maxRows={10}
                     placeholder="What's up"
                     onChange={handleChangePostext}
                     error={isOnValidation&&!postext}
