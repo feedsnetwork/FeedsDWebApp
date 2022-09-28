@@ -1,16 +1,19 @@
 import { FC, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Box, Typography, Stack } from '@mui/material';
 
 import StyledButton from 'src/components/StyledButton';
 import { OverPageContext } from 'src/contexts/OverPageContext';
+import { Navigate } from 'react-router';
 
 interface EmptyViewProps {
   type?: string;
 }
 const EmptyView: FC<EmptyViewProps> = ({ type = 'home' })=>{
   const { openAddChannelView } = useContext(OverPageContext);
-
+  const navigate = useNavigate()
+  
   let subTitle = 'Your timeline is empty'
   let description = 'Add new channel or find new\nchannels to subscribe!'
   if(type==='channel'){
@@ -26,6 +29,9 @@ const EmptyView: FC<EmptyViewProps> = ({ type = 'home' })=>{
     description = "This user has not posted anything yet.\nPlease come back later!"
   }
 
+  const link2explore = ()=>{
+    navigate('/explore')
+  }
   return (
     <Stack alignItems='center'>
       <Box component='img' src='/post-chat.svg' width={{xs: 80, md: 100, lg: 120}} pt={{xs: 5, sm: 6, md: 10, lg: 12}} pb={{xs: 3, sm: 4, md: 6, lg: 8}}/>
@@ -38,11 +44,11 @@ const EmptyView: FC<EmptyViewProps> = ({ type = 'home' })=>{
         </Typography>
         {
           type==='subscription' || type==='post'?
-          <StyledButton type="outline" fullWidth>Explore Feeds</StyledButton>:
+          <StyledButton type="outline" fullWidth onClick={link2explore}>Explore Feeds</StyledButton>:
 
           <>
             <StyledButton type="outline" fullWidth onClick={()=>{openAddChannelView()}}>Add Channel</StyledButton>
-            <StyledButton type="outline" fullWidth>Explore Feeds</StyledButton>
+            <StyledButton type="outline" fullWidth onClick={link2explore}>Explore Feeds</StyledButton>
           </>
         }
       </Stack>
