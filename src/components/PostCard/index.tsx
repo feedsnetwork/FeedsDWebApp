@@ -15,7 +15,7 @@ import { getDateDistance, isValidTime, reduceDIDstring, reduceHexAddress } from 
 
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, dispName, level=1, replyingTo='', replyable=false, dispNames={}, dispAvatar={} } = props
+  const { post, dispName, level=1, replyingTo='', replyable=false, dispNames={}, dispAvatar={}, direction='column' } = props
   const { selfChannels, subscribedChannels, myAvatar, userInfo, walletAddress, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   
@@ -70,7 +70,7 @@ const PostCard = (props) => {
   if(post.status == 1)
     contentObj.content = "(post deleted)"
 
-  const BodyProps = { post, contentObj, level }
+  const BodyProps = { post, contentObj, level, direction }
   return (
     <Card {...cardProps}>
       <Box p={3}>

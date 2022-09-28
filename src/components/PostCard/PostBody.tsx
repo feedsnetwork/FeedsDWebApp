@@ -78,7 +78,7 @@ const IconInCircle = (props)=>{
 }
 
 const PostBody = (props) => {
-  const { post, contentObj, isReply=false, level=1 } = props
+  const { post, contentObj, isReply=false, level=1, direction } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   const { selfChannels, subscribedChannels, subscriberInfo, setFocusChannelId } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
@@ -276,27 +276,32 @@ const PostBody = (props) => {
             </Box>
           }
         </Stack>
-        <Typography 
-          variant="body2" 
-          onClick={handleClickInContent}
-          sx={{
-            whiteSpace: 'pre-line', 
-            '& a.outer-link': {
-              color: '#368BFF', 
-              textDecoration: 'none'
+        <Stack direction={direction} spacing={2}>
+          <Typography 
+            variant="body2" 
+            onClick={handleClickInContent}
+            sx={{
+              flexGrow: 1,
+              whiteSpace: 'pre-line', 
+              '& a.outer-link': {
+                color: '#368BFF', 
+                textDecoration: 'none'
+              }
+            }}
+          >
+            {parse(filteredContentByLink)}
+          </Typography>
+          <Box>
+            {
+              !!post.mediaData && post.mediaData.map((media, _i)=>(
+                media.kind == 'image'?
+                <Box component='img' src={media.mediaSrc} key={_i} sx={direction==='row'?{width: 150, borderRadius: 1}:{width: '100%'}}/>:
+                <div key={_i}/>
+                // <Box component='video' src={media.mediaSrc}/>
+              ))
             }
-          }}
-        >
-          {parse(filteredContentByLink)}
-        </Typography>
-        {
-          !!post.mediaData && post.mediaData.map((media, _i)=>(
-            media.kind == 'image'?
-            <Box component='img' src={media.mediaSrc} key={_i}/>:
-            <div key={_i}/>
-            // <Box component='video' src={media.mediaSrc}/>
-          ))
-        }
+          </Box>
+        </Stack>
         <svg width={0} height={0}>
           <linearGradient id="linearColors" x1={0} y1={1} x2={1} y2={1}>
             <stop offset={0} stopColor="#7624FE" />
