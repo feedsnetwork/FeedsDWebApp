@@ -276,7 +276,7 @@ const PostBody = (props) => {
             </Box>
           }
         </Stack>
-        <Stack direction={direction} spacing={2}>
+        <Stack direction={direction} spacing={(post.mediaData && post.mediaData.length>0) ?2 :0}>
           <Typography 
             variant="body2" 
             onClick={handleClickInContent}
@@ -302,7 +302,7 @@ const PostBody = (props) => {
             }
           </Box>
         </Stack>
-        <svg width={0} height={0}>
+        <svg width={0} height={0} style={{display: 'none'}}>
           <linearGradient id="linearColors" x1={0} y1={1} x2={1} y2={1}>
             <stop offset={0} stopColor="#7624FE" />
             <stop offset={1} stopColor="#368BFF" />

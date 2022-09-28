@@ -14,21 +14,21 @@ const EmptyViewInProfile: FC<EmptyViewInProfileProps> = ({ type = 'channel' })=>
 
   const contentTypes = {
     channel: {
-      logo: 'post-chat.svg',
+      logo: '/post-chat.svg',
       title: 'No channels found',
       description: "Let's change that, get started with\nyour first channel!",
       buttonName: 'Add Channel',
       buttonFunc: openAddChannelView
     },
     collectible: {
-      logo: 'collectible-group.svg',
+      logo: '/collectible-group.svg',
       title: 'No collectibles found',
       description: "Create a collectible or buy one from\nPasar Lite marketplace!",
       buttonName: 'Create Collectible',
       buttonFunc: ()=>{}
     },
     like: {
-      logo: 'like-logo.svg',
+      logo: '/like-logo.svg',
       title: 'Nothing liked yet',
       description: "See what's being posted on the\ntimeline!",
       buttonName: 'Timeline',

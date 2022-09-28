@@ -233,7 +233,8 @@ export function getPostByChannelId(channel, setter) {
               if(likeRes['find_message'] && likeRes['find_message']['items']) {
                 const likeArr = likeRes['find_message']['items']
                 const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
-                const likeIndexByMe = filteredLikeArr.findIndex(item=>item.creater_did==userDid)
+                const likeCreators = filteredLikeArr.map(item=>item.creater_did)
+                const likeIndexByMe = likeCreators.includes(userDid)
 
                 setter((prevState) => {
                   const tempState = {...prevState}
@@ -242,7 +243,8 @@ export function getPostByChannelId(channel, setter) {
                   if(postIndex<0)
                     return tempState
                   currentGroup[postIndex].likes = filteredLikeArr.length
-                  currentGroup[postIndex].like_me = likeIndexByMe>=0
+                  currentGroup[postIndex].like_me = likeIndexByMe
+                  currentGroup[postIndex].like_creators = likeCreators
                   return tempState
                 })
               }
