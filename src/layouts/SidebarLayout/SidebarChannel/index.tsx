@@ -297,33 +297,39 @@ function SidebarChannel() {
                     focused={focusedChannelId&&focusedChannelId===item.channel_id}/>
                 )
               }
-              <GradientOutlineFab aria-label="add" size='medium' onClick={()=>{navigate('/channel/add')}}>
-                <svg width={0} height={0}>
-                  <linearGradient id="linearColors" x1={0} y1={1} x2={1} y2={1}>
-                    <stop offset={0} stopColor="#7624FE" />
-                    <stop offset={1} stopColor="#368BFF" />
-                  </linearGradient>
-                </svg>
-                <AddIcon sx={{ fill: "url(#linearColors)", fontSize: 24 }}/>
-              </GradientOutlineFab>
+              <Tooltip title="Add new channel" arrow disableInteractive enterTouchDelay={0}>
+                <GradientOutlineFab aria-label="add" size='medium' onClick={()=>{navigate('/channel/add')}}>
+                  <svg width={0} height={0}>
+                    <linearGradient id="linearColors" x1={0} y1={1} x2={1} y2={1}>
+                      <stop offset={0} stopColor="#7624FE" />
+                      <stop offset={1} stopColor="#368BFF" />
+                    </linearGradient>
+                  </svg>
+                  <AddIcon sx={{ fill: "url(#linearColors)", fontSize: 24 }}/>
+                </GradientOutlineFab>
+              </Tooltip>
             </Stack>
           </Scrollbar>
         </Box>
         <Stack spacing={2} alignItems='center' sx={{py: 2}}>
-          <Fab 
-            color='primary' 
-            aria-label="setting" 
-            size='medium' 
-            component={RouterLink} 
-            to='/setting/profile' 
-            sx={
-              pathname.startsWith('/setting') ? { background: 'linear-gradient(90deg, #7624FE 0%, #368BFF 100%)'} : {}
-            }>
-            <Icon icon="ep:setting" width={28} height={28} />
-          </Fab>
-          <Fab color='primary' aria-label="logout" size='medium' onClick={(e)=>setOpenSignout(true)}>
-            <Icon icon="clarity:sign-out-line" width={28} height={28} />
-          </Fab>
+          <Tooltip title="Settings" arrow disableInteractive enterTouchDelay={0}>
+            <Fab 
+              color='primary' 
+              aria-label="setting" 
+              size='medium' 
+              component={RouterLink} 
+              to='/setting/profile' 
+              sx={
+                pathname.startsWith('/setting') ? { background: 'linear-gradient(90deg, #7624FE 0%, #368BFF 100%)'} : {}
+              }>
+              <Icon icon="ep:setting" width={28} height={28} />
+            </Fab>
+          </Tooltip>
+          <Tooltip title="Sign out" arrow disableInteractive enterTouchDelay={0}>
+            <Fab color='primary' aria-label="logout" size='medium' onClick={(e)=>setOpenSignout(true)}>
+              <Icon icon="clarity:sign-out-line" width={28} height={28} />
+            </Fab>
+          </Tooltip>
         </Stack>
       </SidebarWrapper>
       <ClickAwayListener onClickAway={() => handlePopoverClose()}>
