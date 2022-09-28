@@ -12,10 +12,8 @@ import { HiveApi } from 'src/services/HiveApi'
 const Post = () => {
   const { postsInSubs, selfChannels, subscribedChannels } = React.useContext(SidebarContext);
   const params = useParams()
-  const [isLoading, setIsLoading] = React.useState(false)
   const [dispNames, setDispNames] = React.useState({})
   const [dispAvatar, setDispAvatar] = React.useState({})
-  const prefConf = getAppPreference()
   const hiveApi = new HiveApi()
   const postsInHome = getMergedArray(postsInSubs)
   const selectedPost = postsInHome.find(item=>item.post_id == params.post_id)
@@ -80,29 +78,27 @@ const Post = () => {
 
   const dispNameOfPost = dispNames[selectedPost.post_id] || reduceDIDstring(selectedPost.target_did)
   return (
-    <>
-      <Container sx={{ my: 3 }} maxWidth="lg">
-        <Grid
-          container
-          direction="row"
-          justifyContent="center"
-          alignItems="stretch"
-          spacing={3}
-        >
-          <Grid item xs={12}>
-            <PostCard post={selectedPost} dispName={dispNameOfPost} replyable={true}/>
-          </Grid>
-          {
-            comments.map((comment, _i)=>{
-              const dispNameOfComment = dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)
-              return <Grid item xs={12} key={_i}>
-                <PostCard post={comment} dispName={dispNameOfComment} dispNames={dispNames} dispAvatar={dispAvatar} level={2} replyingTo={dispNameOfPost}/>
-              </Grid>
-            })
-          }
+    <Container sx={{ my: 3 }} maxWidth="lg">
+      <Grid
+        container
+        direction="row"
+        justifyContent="center"
+        alignItems="stretch"
+        spacing={3}
+      >
+        <Grid item xs={12}>
+          <PostCard post={selectedPost} dispName={dispNameOfPost} replyable={true}/>
         </Grid>
-      </Container>
-    </>
+        {
+          comments.map((comment, _i)=>{
+            const dispNameOfComment = dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)
+            return <Grid item xs={12} key={_i}>
+              <PostCard post={comment} dispName={dispNameOfComment} dispNames={dispNames} dispAvatar={dispAvatar} level={2} replyingTo={dispNameOfPost}/>
+            </Grid>
+          })
+        }
+      </Grid>
+    </Container>
   );
 }
 

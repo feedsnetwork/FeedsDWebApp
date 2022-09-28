@@ -8,6 +8,7 @@ import closeFill from '@iconify/icons-eva/close-fill';
 import PostCard from 'src/components/PostCard';
 import { EmptyView } from 'src/components/EmptyView'
 import { SidebarContext } from 'src/contexts/SidebarContext';
+import EmojiPopper from 'src/components/EmojiPopper'
 import StyledButton from 'src/components/StyledButton';
 import StyledIconButton from 'src/components/StyledIconButton';
 import StyledTextFieldOutline from 'src/components/StyledTextFieldOutline'
@@ -35,6 +36,8 @@ function Channel() {
   const [onProgress, setOnProgress] = React.useState(false);
   const [postext, setPostext] = React.useState('');
   const [imageAttach, setImageAttach] = React.useState(null);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [isOpenPopover, setOpenPopover] = React.useState(false);
 
   const { enqueueSnackbar } = useSnackbar();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -116,6 +119,13 @@ function Channel() {
   const handleChangePostext = (e) => {
     setPostext(e.target.value)
   }
+  const handlePopper = (e)=>{
+    setAnchorEl(e.currentTarget)
+    setOpenPopover(true)
+  }
+  const onEmojiClick = (emojiObject, _) => {
+    setPostext((prev)=>`${prev}${emojiObject.emoji}`);
+  };
 
   const loadingSkeletons = Array(5).fill(null)
   return (
@@ -217,6 +227,7 @@ function Channel() {
                       <StyledIconButton icon="clarity:camera-line"/>
                       <StyledIconButton icon="clarity:video-gallery-line"/>
                       <StyledIconButton icon="clarity:video-camera-line"/>
+                      <StyledIconButton icon="fluent:emoji-laugh-24-regular" onClick={handlePopper}/>
                       <IconButton>
                         <Typography variant='body2' sx={{
                           backgroundImage: 'linear-gradient(90deg, #7624FE 0%, #368BFF 100%)',
@@ -236,6 +247,7 @@ function Channel() {
                     </Box>
                   </Stack>
                 </Stack>
+                <EmojiPopper {...{anchorEl, isOpenPopover, setOpenPopover, onEmojiClick}}/>
               </PostBoxStyle>
             </Box>
           }
