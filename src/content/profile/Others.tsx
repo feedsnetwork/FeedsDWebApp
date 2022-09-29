@@ -111,7 +111,7 @@ function OthersProfile() {
             !likedPosts.length?
             <EmptyViewInProfile type='like'/>:
 
-            <Stack spacing={1}>
+            <Stack spacing={2}>
               {
                 likedPosts.map((post, _i)=>{
                   const channelOfPost = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}

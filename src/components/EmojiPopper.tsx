@@ -16,7 +16,13 @@ const EmojiPopper = (props)=>{
       {
         ({ TransitionProps }) => (
           <Fade {...TransitionProps}>
-            <Paper>
+            <Paper sx={{
+              '& .EmojiPickerReact': {
+                '--epr-bg-color': (theme)=>theme.colors.alpha.white[100],
+                '--epr-category-label-bg-color': (theme)=>theme.colors.alpha.white[100],
+                '--epr-picker-border-radius': (theme)=>theme.general.borderRadiusXl
+              }
+            }}>
               <Picker 
                 onEmojiClick={onEmojiClick} 
                 theme={Theme.DARK} 
