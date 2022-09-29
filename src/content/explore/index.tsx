@@ -1,18 +1,40 @@
 import React from 'react'
+import Web3 from 'web3';
 import { Box, Typography, Tabs, Tab, Stack, Container, InputAdornment, Grid } from '@mui/material';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 
+import { CHANNEL_REG_CONTRACT_ABI } from 'src/abi/ChannelRegistry';
+import { ChannelRegContractAddress } from 'src/config';
 import TabPanel from 'src/components/TabPanel'
 import ChannelCard from 'src/components/ChannelCard'
 import PostTextCard from 'src/components/PostCard/PostTextCard'
 import PostImgCard from 'src/components/PostCard/PostImgCard'
 import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
+import { essentialsConnector } from 'src/content/signin/EssentialConnectivity';
+import { isInAppBrowser } from 'src/utils/common'
 
 function Explore() {
   const { selfChannels } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
-  
+
+  React.useEffect(()=>{
+    const walletConnectProvider = isInAppBrowser() ? window['elastos'].getWeb3Provider() : essentialsConnector.getWalletConnectProvider();
+    const walletConnectWeb3 = new Web3(walletConnectProvider)
+    const channelRegContract = new walletConnectWeb3.eth.Contract(CHANNEL_REG_CONTRACT_ABI as any, ChannelRegContractAddress)
+    channelRegContract.methods.channelIds().call()
+      .then(res=>{
+        if(Array.isArray(res)) {
+          res.forEach(tokenId=>{
+            channelRegContract.methods.channelInfo(tokenId).call()
+              .then(res=>{
+                console.log(res, '-----------99')
+              })
+          })
+        }
+      })
+  }, [])
+
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };

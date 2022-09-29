@@ -23,3 +23,7 @@ export const ApplicationDID = ApplicationDIDForMain
 export const trustedProviders = [
   "did:elastos:iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK" // Trinity Tech KYC
 ]
+
+const ChannelRegContractMain = "0xc76E72deE2021cc51b094AfcD1e7010c74037bcB"
+const ChannelRegContractTest = "0xc76E72deE2021cc51b094AfcD1e7010c74037bcB"
+export const ChannelRegContractAddress = process.env.REACT_APP_ENV==="production"?ChannelRegContractMain:ChannelRegContractTest
