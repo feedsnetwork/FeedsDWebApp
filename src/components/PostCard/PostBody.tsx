@@ -427,9 +427,9 @@ const PostBody = (props) => {
                     <Stack direction="row" mt={1} spacing={1}>
                       <AvatarGroup spacing={10}>
                         {
-                          subscribersOfThis.slice(0, 3).map(subscriber=>{
+                          subscribersOfThis.slice(0, 3).map((subscriber, _i)=>{
                             const info_data = subscriberInfo[subscriber.user_did] || {}
-                            return <StyledAvatar alt={subscriber.display_name} src={info_data['avatar']} width={18}/>
+                            return <StyledAvatar key={_i} alt={subscriber.display_name} src={info_data['avatar']} width={18}/>
                           })
                         }
                       </AvatarGroup>

@@ -115,7 +115,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                 </FadeIn>
               </Box>:
 
-              <Box sx={{ overflow: 'auto', height: (theme)=>floatingHeaderVisible?`calc(100% - ${theme.header.height})`:'100%' }}>
+              <Box id="scrollableBox" sx={{ overflow: 'auto', height: (theme)=>floatingHeaderVisible?`calc(100% - ${theme.header.height})`:'100%' }}>
                 <Container sx={{ flexGrow: 1, overFlow: 'auto', p: '0px !important', height: '100%' }} maxWidth={maxWidth}>
                   <Outlet />
                 </Container>

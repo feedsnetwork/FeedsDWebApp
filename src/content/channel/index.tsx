@@ -1,6 +1,7 @@
 import React from 'react'
 import { isString } from 'lodash';
 import { Icon } from '@iconify/react';
+import InfiniteScroll from "react-infinite-scroll-component";
 import { Grid, Container, Box, Typography, Stack, styled, IconButton, Paper } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import closeFill from '@iconify/icons-eva/close-fill';
@@ -38,6 +39,7 @@ function Channel() {
   const [imageAttach, setImageAttach] = React.useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
+  const [dispLength, setDispLength] = React.useState(5);
 
   const { enqueueSnackbar } = useSnackbar();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -126,7 +128,10 @@ function Channel() {
   const onEmojiClick = (emojiObject, _) => {
     setPostext((prev)=>`${prev}${emojiObject.emoji}`);
   };
-
+  const appendMoreData = () => {
+    setDispLength(dispLength+5)
+    console.log(dispLength+5)
+  }
   const loadingSkeletons = Array(5).fill(null)
   return (
     <>
@@ -140,29 +145,38 @@ function Channel() {
             <EmptyView type='post'/>:
             
             <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
-              <Container sx={{ mt: 3, flexGrow: 1, overFlow: 'auto' }} maxWidth="lg">
-                <Grid
-                  container
-                  direction="row"
-                  justifyContent="center"
-                  alignItems="stretch"
-                  spacing={3}
+              <Container sx={{ mt: 3, flexGrow: 1 }} maxWidth="lg">
+                <InfiniteScroll
+                  dataLength={Math.min(postsInFocusedChannel.length, dispLength)}
+                  next={appendMoreData}
+                  hasMore={dispLength<postsInFocusedChannel.length}
+                  loader={<h4>Loading...</h4>}
+                  scrollableTarget="scrollableBox"
+                  style={{overflow: 'visible'}}
                 >
-                  {
-                    isLoading?
-                    loadingSkeletons.map((_, _i)=>(
-                      <Grid item xs={12} key={_i}>
-                        <PostSkeleton/>
-                      </Grid>
-                    )):
+                  <Grid
+                    container
+                    direction="row"
+                    justifyContent="center"
+                    alignItems="stretch"
+                    spacing={3}
+                  >
+                    {
+                      isLoading?
+                      loadingSkeletons.map((_, _i)=>(
+                        <Grid item xs={12} key={_i}>
+                          <PostSkeleton/>
+                        </Grid>
+                      )):
 
-                    postsInFocusedChannel.map((post, _i)=>(
-                      <Grid item xs={12} key={_i}>
-                        <PostCard post={post} dispName={dispName || reduceDIDstring(feedsDid)}/>
-                      </Grid>
-                    ))
-                  }
-                </Grid>
+                      postsInFocusedChannel.slice(0, dispLength).map((post, _i)=>(
+                        <Grid item xs={12} key={_i}>
+                          <PostCard post={post} dispName={dispName || reduceDIDstring(feedsDid)}/>
+                        </Grid>
+                      ))
+                    }
+                  </Grid>
+                </InfiniteScroll>
               </Container>
               <PostBoxStyle>
                 <Stack spacing={2}>
