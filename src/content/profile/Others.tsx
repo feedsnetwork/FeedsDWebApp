@@ -15,7 +15,7 @@ import { HiveApi } from 'src/services/HiveApi'
 import { reduceHexAddress, reduceDIDstring, getInfoFromDID, getFilteredArrayByUnique, getMergedArray } from 'src/utils/common'
 
 function OthersProfile() {
-  const { walletAddress, postsInSelf, postsInSubs, selfChannels, subscriberInfo } = React.useContext(SidebarContext);
+  const { walletAddress, postsInSelf, postsInSubs, selfChannels, subscribedChannels, subscriberInfo } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [subscriptions, setSubscriptions] = React.useState([]);
   const location = useLocation();
@@ -113,9 +113,16 @@ function OthersProfile() {
 
             <Stack spacing={1}>
               {
-                likedPosts.map((post, _i)=>(
-                  <PostCard post={post} dispName={userInfo['name'] || reduceDIDstring(user_did)} key={_i} direction='row'/>
-                ))
+                likedPosts.map((post, _i)=>{
+                  const channelOfPost = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
+                  let dispName = ''
+                  if(channelOfPost.target_did === user_did) {
+                    dispName = userInfo['name'] || reduceDIDstring(user_did)
+                  } else {
+                    dispName = channelOfPost['owner_name'] || reduceDIDstring(channelOfPost.target_did)
+                  }
+                  return <PostCard post={post} dispName={dispName} key={_i} direction='row'/>
+                })
               }
             </Stack>
           }

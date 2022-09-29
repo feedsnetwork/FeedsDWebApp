@@ -130,7 +130,6 @@ function Channel() {
   };
   const appendMoreData = () => {
     setDispLength(dispLength+5)
-    console.log(dispLength+5)
   }
   const loadingSkeletons = Array(5).fill(null)
   return (
