@@ -1,3 +1,4 @@
+import Web3 from 'web3';
 import { DID, DIDBackend, DefaultDIDAdapter } from '@elastosfoundation/did-js-sdk';
 import { formatDistance } from 'date-fns';
 import { createHash } from 'crypto';
@@ -5,6 +6,7 @@ import Autolinker from 'autolinker';
 
 import { HiveApi } from 'src/services/HiveApi'
 import { CommonStatus } from 'src/models/common_content'
+import { essentialsConnector } from 'src/content/signin/EssentialConnectivity';
 import { ipfsURL } from 'src/config'
 export const reduceDIDstring = (strDID) => {
   if(!strDID)
@@ -340,3 +342,13 @@ export const getIpfsUrl = (uri) => {
   const tempUri = uri.substring(prefixLen + 1);
   return `${ipfsURL}/ipfs/${tempUri}`;
 };
+
+export const getWeb3Connect = () => {
+  const walletConnectProvider = isInAppBrowser() ? window['elastos'].getWeb3Provider() : essentialsConnector.getWalletConnectProvider();
+  return new Web3(walletConnectProvider)
+}
+export const getWeb3Contract = (abi, address) => {
+  const walletConnectWeb3 = getWeb3Connect()
+  const channelRegContract = new walletConnectWeb3.eth.Contract(abi, address)
+  return channelRegContract
+}

@@ -1,5 +1,4 @@
 import React from 'react'
-import Web3 from 'web3';
 import { Box, Typography, Tabs, Tab, Stack, Container, InputAdornment, Grid } from '@mui/material';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 
@@ -11,8 +10,7 @@ import PostTextCard from 'src/components/PostCard/PostTextCard'
 import PostImgCard from 'src/components/PostCard/PostImgCard'
 import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
-import { essentialsConnector } from 'src/content/signin/EssentialConnectivity';
-import { isInAppBrowser, getIpfsUrl } from 'src/utils/common'
+import { getIpfsUrl, getWeb3Contract } from 'src/utils/common'
 
 function Explore() {
   const { selfChannels } = React.useContext(SidebarContext);
@@ -20,9 +18,7 @@ function Explore() {
   const [publicChannels, setPublicChannels] = React.useState([]);
 
   React.useEffect(()=>{
-    const walletConnectProvider = isInAppBrowser() ? window['elastos'].getWeb3Provider() : essentialsConnector.getWalletConnectProvider();
-    const walletConnectWeb3 = new Web3(walletConnectProvider)
-    const channelRegContract = new walletConnectWeb3.eth.Contract(CHANNEL_REG_CONTRACT_ABI as any, ChannelRegContractAddress)
+    const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress)
     channelRegContract.methods.channelIds().call()
       .then(res=>{
         if(Array.isArray(res)) {
