@@ -132,6 +132,9 @@ export const getBufferFromFile = (f) => (
 export function hash(string) {
   return createHash('sha256').update(string).digest('hex');
 }
+export function decFromHex(hex) {
+  return BigInt(parseInt(hex, 16)).toString(10);
+}
 
 export function getFilteredArrayByUnique(arr, field) {
   var result = arr.reduce((unique, o) => {
