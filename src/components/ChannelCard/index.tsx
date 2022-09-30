@@ -25,21 +25,22 @@ const AvatarBoxStyle = styled(Box)(({ theme }) => ({
 })) as any;
 
 const ChannelImgBox = (props) => {
-  const { name, bannerImg=null, avatarImg } = props;
-  const background = bannerImg ? `url(${bannerImg}) no-repeat center` : "linear-gradient(180deg, #000000 0%, #A067FF 300.51%)"
+  const { name, data } = props;
+  const { bannerUrl=null, avatarUrl } = data
+  const background = bannerUrl ? `url(${bannerUrl}) no-repeat center` : "linear-gradient(180deg, #000000 0%, #A067FF 300.51%)"
   return (
     <Stack sx={{position: 'relative', height: '100px', mb: '25px'}}>
       <Stack sx={{height: '100%', overflow: 'hidden'}}>
         <Box className='cover-image' sx={{ display: 'inline-flex', height: '100%', background, backgroundSize: 'cover'}}/>
       </Stack>
-      <AvatarBoxStyle draggable = {false} component="img" src={avatarImg}/>
+      <AvatarBoxStyle draggable = {false} component="img" src={avatarUrl} alt={name}/>
     </Stack>
   );
 };
 
 const ChannelCardPaper = (props) => {
   const { info } = props
-  const { name, intro } = info
+  const { name, description } = info
 
   return (
       <PaperRecord>
@@ -62,7 +63,7 @@ const ChannelCardPaper = (props) => {
                 display: '-webkit-box !important'
               }}
             >
-              {intro}
+              {description}
             </TypographyStyle>
           </Stack>
         </Box>

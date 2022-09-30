@@ -2,9 +2,10 @@ import { DID, DIDBackend, DefaultDIDAdapter } from '@elastosfoundation/did-js-sd
 import { formatDistance } from 'date-fns';
 import { createHash } from 'crypto';
 import Autolinker from 'autolinker';
+
 import { HiveApi } from 'src/services/HiveApi'
 import { CommonStatus } from 'src/models/common_content'
-
+import { ipfsURL } from 'src/config'
 export const reduceDIDstring = (strDID) => {
   if(!strDID)
     return ''
@@ -328,3 +329,14 @@ export async function copy2clipboard(text) {
     document.execCommand("copy", true, text);
   }
 }
+
+export const getIpfsUrl = (uri) => {
+  if (!uri || (uri.match(/:/g) || []).length!==2)
+    return ''
+
+  const prefixLen = uri.split(':', 2).join(':').length;
+  if (prefixLen >= uri.length)
+    return '';
+  const tempUri = uri.substring(prefixLen + 1);
+  return `${ipfsURL}/ipfs/${tempUri}`;
+};

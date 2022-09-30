@@ -18,6 +18,7 @@ const rpcUrlForMain = "https://api.elastos.io/eth"
 const rpcUrlForTest = "https://api-testnet.elastos.io/eth"
 
 export const rpcURL = process.env.REACT_APP_ENV==="production"?rpcUrlForMain:rpcUrlForTest
+export const ipfsURL = process.env.REACT_APP_ENV === "production" ? process.env.REACT_APP_IPFS_URL_MAIN : process.env.REACT_APP_IPFS_URL_TEST
 export const ApplicationDID = ApplicationDIDForMain
 
 export const trustedProviders = [

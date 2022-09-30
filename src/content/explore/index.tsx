@@ -12,11 +12,12 @@ import PostImgCard from 'src/components/PostCard/PostImgCard'
 import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { essentialsConnector } from 'src/content/signin/EssentialConnectivity';
-import { isInAppBrowser } from 'src/utils/common'
+import { isInAppBrowser, getIpfsUrl } from 'src/utils/common'
 
 function Explore() {
   const { selfChannels } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
+  const [publicChannels, setPublicChannels] = React.useState([]);
 
   React.useEffect(()=>{
     const walletConnectProvider = isInAppBrowser() ? window['elastos'].getWeb3Provider() : essentialsConnector.getWalletConnectProvider();
@@ -25,11 +26,28 @@ function Explore() {
     channelRegContract.methods.channelIds().call()
       .then(res=>{
         if(Array.isArray(res)) {
-          res.forEach(tokenId=>{
-            channelRegContract.methods.channelInfo(tokenId).call()
-              .then(res=>{
-                console.log(res, '-----------99')
-              })
+          res.forEach(async(tokenId)=>{
+            const channelInfo = await channelRegContract.methods.channelInfo(tokenId).call()
+            const metaUri = getIpfsUrl(channelInfo[1])
+            console.log(channelInfo, "----------oo")
+            if(metaUri) {
+              fetch(metaUri)
+                .then(response => response.json())
+                .then(data => {
+                  console.log(data, "---------oo")
+                  const channelData = data
+                  if(channelData.data) {
+                    channelData.data['avatarUrl'] = getIpfsUrl(channelData.data['avatar'])
+                    channelData.data['bannerUrl'] = getIpfsUrl(channelData.data['banner'])
+                  }
+                  setPublicChannels(prevState=>{
+                    const tempState = [...prevState]
+                    tempState.push(channelData)
+                    return tempState
+                  })
+                })
+                .catch(console.log);
+            }
           })
         }
       })
@@ -85,6 +103,15 @@ function Explore() {
       </Stack>
       <TabPanel value={tabValue} index={0} nopadding={true}>
         <Grid container sx={{pt: 2}} spacing={2}>
+          {
+            publicChannels.map((channel, _i)=>(
+              <Grid item sm={4} md={3} key={_i}>
+                <ChannelCard info={channel}/>
+              </Grid>
+            ))
+          }
+        </Grid>
+        {/* <Grid container sx={{pt: 2}} spacing={2}>
           <Grid item sm={4} md={3}>
             <ChannelCard info={tempchannel}/>
           </Grid>
@@ -123,7 +150,7 @@ function Explore() {
               </Grid>
             </Grid>
           </Grid>
-        </Grid>
+        </Grid> */}
       </TabPanel>
       <TabPanel value={tabValue} index={1}>
       </TabPanel>
