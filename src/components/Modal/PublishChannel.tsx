@@ -2,6 +2,7 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, Divider, IconButton, Paper } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { create } from 'ipfs-http-client'
+import { useSelector, useDispatch } from 'react-redux'
 
 import StyledButton from '../StyledButton';
 import StyledIcon from '../StyledIcon'
@@ -10,11 +11,14 @@ import { HiveApi } from 'src/services/HiveApi'
 import { ChannelContent } from 'src/models/channel_content';
 import { CHANNEL_REG_CONTRACT_ABI } from 'src/abi/ChannelRegistry';
 import { ipfsURL, ChannelRegContractAddress } from 'src/config'
+import { selectPublishModalState, selectCreatedChannel, handlePublishModal } from 'src/redux/slices/channel'
 import { getBufferFromFile, getWeb3Contract, getWeb3Connect, decFromHex, hash } from 'src/utils/common'
 
 const client = create({url: ipfsURL})
-function PublishChannel(props) {
-  const { setOpen, isOpen, channel } = props;
+function PublishChannel() {
+  const dispatch = useDispatch()
+  const isOpen = useSelector(selectPublishModalState)
+  const channel = useSelector(selectCreatedChannel)
   const [onProgress, setOnProgress] = React.useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -42,8 +46,7 @@ function PublishChannel(props) {
     if(e.currentTarget.value === 'ok') {
       setOnProgress(true)
       try {
-        const imageBuffer = await getBufferFromFile(channel.avatar) as Buffer
-        const avatarAdded = await client.add(imageBuffer)
+        const avatarAdded = await client.add(channel.avatarBuffer)
         const metaObj = new ChannelContent()
         metaObj.name = channel.name
         metaObj.description = channel.description
@@ -81,16 +84,17 @@ function PublishChannel(props) {
   }
 
   const handleClose = () => {
-    setOpen(false);
+    handlePublishModal(false)(dispatch)
   };
 
+  const avatarContent = `data:${channel.avatarType};base64,${channel.avatarContent.toString('base64')}`
   return (
     <Dialog open={isOpen} onClose={handleClose} onClick={(e)=>{e.stopPropagation()}}>
       <DialogContent sx={{minWidth: {sm: 'unset', md: 400}}}>
         <Stack spacing={2} sx={{textAlign: 'center'}}>
           <Typography variant="h5">Publish Channel</Typography>
           <Stack spacing={1} textAlign="center">
-            <StyledAvatar alt={channel.name} src={channel.avatar['preview']} width={64}/>
+            <StyledAvatar alt={channel.name} src={avatarContent} width={64}/>
             <Typography variant="subtitle2">{channel.name}</Typography>
           </Stack>
           <Typography variant="body2">

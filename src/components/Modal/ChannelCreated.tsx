@@ -5,16 +5,14 @@ import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack } from '@mui
 
 import StyledButton from '../StyledButton';
 import StyledIcon from '../StyledIcon'
-import { selectSuccessModalState, handleSuccessModal } from 'src/redux/slices/addChannel'
+import { selectSuccessModalState, handleSuccessModal, handlePublishModal } from 'src/redux/slices/channel'
 
-function ChannelCreated(props) {
+function ChannelCreated() {
   const isOpen = useSelector(selectSuccessModalState)
-  const setOpenPublish = null
   const dispatch = useDispatch()
-  // const { setOpen, isOpen, setOpenPublish } = props;
   const handleAction = async (e) => {
     if(e.currentTarget.value==='ok') {
-      setOpenPublish(true)
+      handlePublishModal(true)(dispatch)
     } else {
       handleClose()
     }

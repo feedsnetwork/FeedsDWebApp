@@ -8,7 +8,7 @@ import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormCont
 import StyledButton from 'src/components/StyledButton';
 import { useGlobalState } from 'src/global/store'
 import { getBufferFromFile } from 'src/utils/common'
-import { handleSuccessModal } from 'src/redux/slices/addChannel';
+import { handleSuccessModal, setCreatedChannel } from 'src/redux/slices/channel';
 import { HiveApi } from 'src/services/HiveApi'
 
 const AvatarWrapper = styled(Box)(
@@ -92,12 +92,20 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
     const imageBuffer = await getBufferFromFile(avatarUrl) as Buffer
     const base64content = imageBuffer.toString('base64')
     const imageHivePath = await hiveApi.uploadMediaDataWithString(`data:${avatarUrl.type};base64,${base64content}`)
-    hiveApi.createChannel(nameRef.current.value, descriptionRef.current.value, imageHivePath, tippingRef.current.value)
+    const createdChannel = {
+      name: nameRef.current.value,
+      description: descriptionRef.current.value,
+      avatarPath: imageHivePath,
+      avatarType: avatarUrl.type,
+      avatarBuffer: imageBuffer,
+      tippingAddr: tippingRef.current.value
+    }
+    hiveApi.createChannel(createdChannel.name, createdChannel.description, createdChannel.avatarPath, createdChannel.tippingAddr)
       .then(result=>{
-        console.log(result)
         // enqueueSnackbar('Add channel success', { variant: 'success' });
         setOnProgress(false)
         handleSuccessModal(true)(dispatch)
+        dispatch(setCreatedChannel(createdChannel))
       })
       .catch(error=>{
         console.log(error)

@@ -11,6 +11,9 @@
 # production
 /build
 
+# temp source
+*.tsx~
+
 # misc
 .DS_Store
 /.env

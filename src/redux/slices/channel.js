@@ -3,10 +3,12 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   isChannelCreated: false,
+  isOpened2Publish: false,
+  createdChannel: {}
 };
 
 const slice = createSlice({
-  name: 'addChannel',
+  name: 'channel',
   initialState,
   reducers: {
     openSuccessModal(state) {
@@ -15,6 +17,15 @@ const slice = createSlice({
     closeSuccessModal(state) {
       state.isChannelCreated = false;
     },
+    openPublishModal(state) {
+      state.isOpened2Publish = true;
+    },
+    closePublishModal(state) {
+      state.isOpened2Publish = false;
+    },
+    setCreatedChannel(state, action) {
+      state.createdChannel = action.payload
+    }
   }
 });
 
@@ -22,7 +33,7 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { openSuccessModal } = slice.actions;
+export const { setCreatedChannel } = slice.actions;
 
 // ----------------------------------------------------------------------
 
@@ -35,6 +46,21 @@ export function handleSuccessModal(isCreated) {
     );
   };
 }
+export function handlePublishModal(isOpened) {
+  return (dispatch) => {
+    dispatch(
+      isOpened?
+      slice.actions.openPublishModal():
+      slice.actions.closePublishModal()
+    );
+  };
+}
 export function selectSuccessModalState(state) {
-  return state.addChannel.isChannelCreated
+  return state.channel.isChannelCreated
+}
+export function selectPublishModalState(state) {
+  return state.channel.isOpened2Publish
+}
+export function selectCreatedChannel(state) {
+  return state.channel.createdChannel
 }

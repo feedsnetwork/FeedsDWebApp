@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux';
 // slices
-import addChannelReducer from './slices/addChannel';
+import channelReducer from './slices/channel';
 
 // ----------------------------------------------------------------------
 const rootReducer = combineReducers({
-  addChannel: addChannelReducer,
+  channel: channelReducer,
 });
 
 export { rootReducer };
