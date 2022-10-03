@@ -1,8 +1,8 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, Divider, IconButton, Paper } from '@mui/material';
+import { useSelector, useDispatch } from 'react-redux'
 import { useSnackbar } from 'notistack';
 import { create } from 'ipfs-http-client'
-import { useSelector, useDispatch } from 'react-redux'
 
 import StyledButton from '../StyledButton';
 import StyledIcon from '../StyledIcon'
@@ -12,7 +12,7 @@ import { ChannelContent } from 'src/models/channel_content';
 import { CHANNEL_REG_CONTRACT_ABI } from 'src/abi/ChannelRegistry';
 import { ipfsURL, ChannelRegContractAddress } from 'src/config'
 import { selectPublishModalState, selectCreatedChannel, handlePublishModal } from 'src/redux/slices/channel'
-import { getBufferFromFile, getWeb3Contract, getWeb3Connect, decFromHex, hash } from 'src/utils/common'
+import { getBufferFromUrl, getWeb3Contract, getWeb3Connect, decFromHex, hash } from 'src/utils/common'
 
 const client = create({url: ipfsURL})
 function PublishChannel() {
@@ -46,7 +46,9 @@ function PublishChannel() {
     if(e.currentTarget.value === 'ok') {
       setOnProgress(true)
       try {
-        const avatarAdded = await client.add(channel.avatarBuffer)
+        const avatarBuffer = await getBufferFromUrl(channel.avatarPreview) as Buffer
+        console.log(avatarBuffer, "test------")
+        const avatarAdded = await client.add(avatarBuffer)
         const metaObj = new ChannelContent()
         metaObj.name = channel.name
         metaObj.description = channel.description
@@ -73,8 +75,10 @@ function PublishChannel() {
         const mintMethod = channelRegContract.methods.mint(tokenID, tokenURI, channelEntry, accounts[0], accounts[0]).send(transactionParams)
         const mintResult = await promiseReceipt(mintMethod)
         enqueueSnackbar('Publish channel success', { variant: 'success' });
+        setOnProgress(false)
         handleClose()
       } catch(err) {
+        setOnProgress(false)
         enqueueSnackbar('Publish channel error', { variant: 'error' });
       }
       
@@ -87,14 +91,13 @@ function PublishChannel() {
     handlePublishModal(false)(dispatch)
   };
 
-  const avatarContent = `data:${channel.avatarType};base64,${channel.avatarContent.toString('base64')}`
   return (
     <Dialog open={isOpen} onClose={handleClose} onClick={(e)=>{e.stopPropagation()}}>
       <DialogContent sx={{minWidth: {sm: 'unset', md: 400}}}>
         <Stack spacing={2} sx={{textAlign: 'center'}}>
           <Typography variant="h5">Publish Channel</Typography>
-          <Stack spacing={1} textAlign="center">
-            <StyledAvatar alt={channel.name} src={avatarContent} width={64}/>
+          <Stack spacing={1} alignItems="center">
+            <StyledAvatar alt={channel.name} src={channel.avatarPreview} width={64}/>
             <Typography variant="subtitle2">{channel.name}</Typography>
           </Stack>
           <Typography variant="body2">
@@ -106,7 +109,7 @@ function PublishChannel() {
             <StyledButton type="outlined" fullWidth value='cancel' onClick={handleAction}>Cancel</StyledButton>
             <StyledButton fullWidth loading={onProgress} needLoading={true} value='ok' onClick={handleAction}>Yes</StyledButton>
           </Stack>
-          <Typography variant="inherit">
+          <Typography variant="body2">
             We do not own your private keys and cannot access your funds without your confirmation.
           </Typography>
         </Stack>

@@ -3,6 +3,7 @@ import { DID, DIDBackend, DefaultDIDAdapter } from '@elastosfoundation/did-js-sd
 import { formatDistance } from 'date-fns';
 import { createHash } from 'crypto';
 import Autolinker from 'autolinker';
+import axios from 'axios'
 
 import { HiveApi } from 'src/services/HiveApi'
 import { CommonStatus } from 'src/models/common_content'
@@ -128,6 +129,10 @@ export const getBufferFromFile = (f) => (
     }
   })
 )
+export const getBufferFromUrl = async (url) => {
+  const image = await axios.get(url, {responseType: 'arraybuffer'});
+  return Buffer.from(image.data);
+}
 
 export function hash(string) {
   return createHash('sha256').update(string).digest('hex');

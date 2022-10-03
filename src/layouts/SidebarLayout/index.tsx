@@ -11,6 +11,7 @@ import FloatingHeader from './FloatingHeader'
 import { essentialsConnector, initConnectivitySDK } from 'src/content/signin/EssentialConnectivity';
 import AddChannel from 'src/components/AddChannel';
 import ChannelCreatedDlg from 'src/components/Modal/ChannelCreated'
+import PublishChannelDlg from 'src/components/Modal/PublishChannel'
 import { HiveApi } from 'src/services/HiveApi'
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { SidebarContext } from 'src/contexts/SidebarContext';
@@ -129,6 +130,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         }
       </Stack>
       <ChannelCreatedDlg/>
+      <PublishChannelDlg/>
     </Box>
   );
 };

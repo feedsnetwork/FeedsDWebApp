@@ -30,7 +30,7 @@ function ChannelCreated() {
           <StyledIcon icon="bi:check-circle" width={64} height={64}/>
           <Typography variant="body2">
             You have created a new channel!<br/>
-            Do you want to make this channel public for other users to discover?
+            Do you want to make this channel public for other users to discover?<br/>
             You can also publish anytime by accessing the channel preferences.
           </Typography>
           <Stack direction="row" spacing={3}>

@@ -5,7 +5,7 @@ const StyledIcon = (props) => {
   return <Box sx={{
     display: 'flex',
     justifyContent: 'center',
-    '& .iconify>path[fill=currentColor]': {
+    '& .iconify>path[fill=currentColor], & .iconify>g[fill=currentColor]': {
       fill: 'unset'
     }
   }}>
