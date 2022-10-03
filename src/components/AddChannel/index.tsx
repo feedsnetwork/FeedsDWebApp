@@ -97,6 +97,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       description: descriptionRef.current.value,
       avatarPath: imageHivePath,
       avatarPreview: avatarUrl['preview'],
+      avatarContent: base64content,
       tippingAddr: tippingRef.current.value
     }
     hiveApi.createChannel(createdChannel.name, createdChannel.description, createdChannel.avatarPath, createdChannel.tippingAddr)

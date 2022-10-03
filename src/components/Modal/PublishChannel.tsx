@@ -46,7 +46,7 @@ function PublishChannel() {
     if(e.currentTarget.value === 'ok') {
       setOnProgress(true)
       try {
-        const avatarBuffer = await getBufferFromUrl(channel.avatarPreview) as Buffer
+        const avatarBuffer = Buffer.from(channel.avatarContent, 'base64');
         console.log(avatarBuffer, "test------")
         const avatarAdded = await client.add(avatarBuffer)
         const metaObj = new ChannelContent()
