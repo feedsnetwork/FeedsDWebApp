@@ -1,4 +1,5 @@
 import { FC, useState, useCallback, useRef } from 'react';
+import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useSnackbar } from 'notistack';
 import { Icon } from '@iconify/react';
@@ -7,6 +8,7 @@ import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormCont
 import StyledButton from 'src/components/StyledButton';
 import { useGlobalState } from 'src/global/store'
 import { getBufferFromFile } from 'src/utils/common'
+import { handleSuccessModal } from 'src/redux/slices/addChannel';
 import { HiveApi } from 'src/services/HiveApi'
 
 const AvatarWrapper = styled(Box)(
@@ -58,6 +60,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const descriptionRef = useRef(null)
   const tippingRef = useRef(null)
   const hiveApi = new HiveApi()
+  const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   
   const handleFileChange = event => {
@@ -92,8 +95,9 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
     hiveApi.createChannel(nameRef.current.value, descriptionRef.current.value, imageHivePath, tippingRef.current.value)
       .then(result=>{
         console.log(result)
-        enqueueSnackbar('Add channel success', { variant: 'success' });
+        // enqueueSnackbar('Add channel success', { variant: 'success' });
         setOnProgress(false)
+        handleSuccessModal(true)(dispatch)
       })
       .catch(error=>{
         console.log(error)

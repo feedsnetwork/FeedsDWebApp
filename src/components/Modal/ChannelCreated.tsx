@@ -1,13 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
 import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack } from '@mui/material';
 
 import StyledButton from '../StyledButton';
 import StyledIcon from '../StyledIcon'
+import { selectSuccessModalState, handleSuccessModal } from 'src/redux/slices/addChannel'
 
 function ChannelCreated(props) {
-  const { setOpen, isOpen, setOpenPublish } = props;
-
+  const isOpen = useSelector(selectSuccessModalState)
+  const setOpenPublish = null
+  const dispatch = useDispatch()
+  // const { setOpen, isOpen, setOpenPublish } = props;
   const handleAction = async (e) => {
     if(e.currentTarget.value==='ok') {
       setOpenPublish(true)
@@ -17,7 +21,7 @@ function ChannelCreated(props) {
   }
 
   const handleClose = () => {
-    setOpen(false);
+    handleSuccessModal(false)(dispatch);
   };
 
   return (
