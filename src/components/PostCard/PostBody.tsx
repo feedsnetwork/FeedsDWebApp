@@ -96,6 +96,7 @@ const PostBody = (props) => {
   const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   const subscribersOfThis = currentChannel['subscribers'] || []
   const subscribedByWho = `Subscribed by ${subscribersOfThis.slice(0,3).map(subscriber=>subscriber.display_name).join(', ')}${subscribersOfThis.length>3?' and more!':'.'}`
+  const PostOrComment = !post.comment_id?'Post':'Comment'
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const navigate = useNavigate()
@@ -253,11 +254,11 @@ const PostBody = (props) => {
                     </MenuItem>
                     <MenuItem value='edit' onClick={handleClosePopup}>
                       <IconInCircle name='clarity:note-edit-line'/>&nbsp;
-                      <Typography variant="subtitle2">Edit Post</Typography>
+                      <Typography variant="subtitle2">Edit {PostOrComment}</Typography>
                     </MenuItem>
                     <MenuItem value='delete' onClick={handleClosePopup}>
                       <IconInCircle name='fa6-solid:trash-can' stress={true}/>&nbsp;
-                      <Typography variant="subtitle2" color="#FF453A">Delete Post</Typography>
+                      <Typography variant="subtitle2" color="#FF453A">Delete {PostOrComment}</Typography>
                     </MenuItem>
                   </div>:
 

@@ -30,6 +30,7 @@ function PostDlg(props) {
   
   const currentChannelId = activeChannelId || activePost?activePost.channel_id:null || focusedChannelId
   const focusedChannel = selfChannels.find(item=>item.channel_id==currentChannelId) || {}
+  const isComment = activePost && !!activePost.comment_id
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
   const postRef = React.useRef(null)
@@ -45,7 +46,10 @@ function PostDlg(props) {
   React.useEffect(()=>{
     if(activePost && isOpen) {
       let contentObj = {content: ''}
-      contentObj = JSON.parse(activePost.content)
+      if(isComment)
+        contentObj.content = activePost.content
+      else
+        contentObj = JSON.parse(activePost.content)
       setPostext(contentObj.content || '')
       if(activePost.mediaData && activePost.mediaData.length) {
         const tempMedia = activePost.mediaData[0]
@@ -89,15 +93,18 @@ function PostDlg(props) {
         postContent.mediaType = MediaType.containsImg
       }
     }
-    if(activePost)
-      hiveApi.updatePost(activePost.post_id, currentChannelId.toString(), activePost.type, activePost.tag, JSON.stringify(postContent), CommonStatus.edited, Math.round(new Date().getTime()/1000), activePost.memo, activePost.proof)
-        .then(res=>{
-          // console.log(res, "===============2")
-          enqueueSnackbar('Update post success', { variant: 'success' });
-          setPublishPostNumber(publishPostNumber+1)
-          setOnProgress(false)
-          setOpen(false);
-        })
+    if(activePost) {
+      if(!isComment)
+        await hiveApi.updatePost(activePost.post_id, currentChannelId.toString(), activePost.type, activePost.tag, JSON.stringify(postContent), CommonStatus.edited, Math.round(new Date().getTime()/1000), activePost.memo, activePost.proof)
+      else
+        await hiveApi.updateComment(focusedChannel.target_did, currentChannelId.toString(), activePost.post_id, activePost.comment_id, postContent.content)
+      
+      // console.log(res, "===============2")
+      enqueueSnackbar('Update post success', { variant: 'success' });
+      setPublishPostNumber(publishPostNumber+1)
+      setOnProgress(false)
+      setOpen(false);
+    }
     else
       hiveApi.publishPost(currentChannelId.toString(), "", JSON.stringify(postContent))
         .then(res=>{
@@ -254,7 +261,7 @@ function PostDlg(props) {
               </IconButton>
             </Box>
             <Box width={150}>
-              <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={handlePost}>Post</StyledButton>
+              <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={handlePost}>{activePost?'Save changes':'Post'}</StyledButton>
             </Box>
           </Stack>
         </Stack>
