@@ -10,7 +10,7 @@ import StyledAvatar from '../StyledAvatar';
 import { HiveApi } from 'src/services/HiveApi'
 import { ChannelContent } from 'src/models/channel_content';
 import { CHANNEL_REG_CONTRACT_ABI } from 'src/abi/ChannelRegistry';
-import { ipfsURL, ChannelRegContractAddress } from 'src/config'
+import { ipfsURL, ChannelRegContractAddress, blankAddress } from 'src/config'
 import { selectPublishModalState, selectCreatedChannel, handlePublishModal } from 'src/redux/slices/channel'
 import { getBufferFromUrl, getWeb3Contract, getWeb3Connect, decFromHex, hash } from 'src/utils/common'
 
@@ -72,7 +72,7 @@ function PublishChannel() {
           'gas': _gasLimit,
           'value': 0
         };
-        const mintMethod = channelRegContract.methods.mint(tokenID, tokenURI, channelEntry, accounts[0], accounts[0]).send(transactionParams)
+        const mintMethod = channelRegContract.methods.mint(tokenID, tokenURI, channelEntry, blankAddress, 1).send(transactionParams)
         const mintResult = await promiseReceipt(mintMethod)
         enqueueSnackbar('Publish channel success', { variant: 'success' });
         setOnProgress(false)

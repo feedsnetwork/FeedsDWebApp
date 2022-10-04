@@ -13,9 +13,8 @@ function ChannelCreated() {
   const handleAction = async (e) => {
     if(e.currentTarget.value==='ok') {
       handlePublishModal(true)(dispatch)
-    } else {
-      handleClose()
     }
+    handleClose()
   }
 
   const handleClose = () => {
