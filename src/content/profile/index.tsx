@@ -16,7 +16,6 @@ import { reduceHexAddress, reduceDIDstring, getInfoFromDID, getMergedArray, getF
 function Profile() {
   const { walletAddress, selfChannels, subscribedChannels, postsInSelf, postsInSubs, userInfo } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
-  const [subscriptions, setSubscriptions] = React.useState([]);
   const [avatarSrc, setAvatarSrc] = React.useState('')
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
@@ -38,12 +37,6 @@ function Profile() {
           const base64Content = res.toString('base64')
           setAvatarSrc(`data:image/png;base64,${base64Content}`)
         }
-      })
-
-    hiveApi.querySubscriptionInfoByUserDID(userDid, userDid)
-      .then(res=>{
-        if(res['find_message'])
-          setSubscriptions(res['find_message']['items'])
       })
   }, [])
 
@@ -69,7 +62,7 @@ function Profile() {
             <Typography variant="body1">{userInfo['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
-              <Typography variant="body1"><strong>{subscriptions.length}</strong> Subscriptions</Typography>
+              <Typography variant="body1"><strong>{subscribedChannels.length}</strong> Subscriptions</Typography>
             </Stack>
             <Stack direction='row' spacing={1}>
               <Box component="img" src='/pasar-logo.svg' width={30}/>
