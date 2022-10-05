@@ -14,6 +14,7 @@ import PostDlg from 'src/components/Modal/Post'
 import DeletePostDlg from 'src/components/Modal/DeletePost'
 import UnsubscribeDlg from 'src/components/Modal/Unsubscribe'
 import StyledButton from 'src/components/StyledButton'
+import IconInCircle from 'src/components/IconInCircle'
 import Heart from 'src/components/Heart'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { CommonStatus } from 'src/models/common_content'
@@ -68,14 +69,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
   },
 }));
 
-const IconInCircle = (props)=>{
-  const {name, stress=false} = props
-  return (
-    <Box sx={{p: .8, background: stress?'#FF453A':(theme)=>theme.palette.primary.main, borderRadius: '50%', display: 'flex', mr: 2, color: stress?'#161C24':'#C4C4C4'}}>
-      <Icon icon={name} width={18} height={18}/>
-    </Box>
-  )
-}
+
 
 const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1, direction } = props
