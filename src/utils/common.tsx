@@ -363,13 +363,15 @@ export const getIpfsUrl = (uri) => {
   return `${ipfsURL}/ipfs/${tempUri}`;
 };
 
-export const getWeb3Connect = () => {
-  // const walletConnectProvider = isInAppBrowser() ? window['elastos'].getWeb3Provider() : essentialsConnector.getWalletConnectProvider();
-  // return new Web3(walletConnectProvider)
+export const getWeb3Connect = (isWalletConnect=true) => {
+  if(isWalletConnect) {
+    const walletConnectProvider = isInAppBrowser() ? window['elastos'].getWeb3Provider() : essentialsConnector.getWalletConnectProvider();
+    return new Web3(walletConnectProvider)
+  }
   return new Web3(new Web3.providers.HttpProvider(rpcURL));
 }
-export const getWeb3Contract = (abi, address) => {
-  const walletConnectWeb3 = getWeb3Connect()
+export const getWeb3Contract = (abi, address, isWalletConnect=true) => {
+  const walletConnectWeb3 = getWeb3Connect(isWalletConnect)
   const channelRegContract = new walletConnectWeb3.eth.Contract(abi, address)
   return channelRegContract
 }

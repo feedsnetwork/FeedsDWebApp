@@ -10,27 +10,44 @@ import PostTextCard from 'src/components/PostCard/PostTextCard'
 import PostImgCard from 'src/components/PostCard/PostImgCard'
 import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
+import { HiveApi } from 'src/services/HiveApi';
 import { getIpfsUrl, getWeb3Contract } from 'src/utils/common'
 
 function Explore() {
   const { selfChannels } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [publicChannels, setPublicChannels] = React.useState([]);
+  const hiveApi = new HiveApi()
 
   React.useEffect(()=>{
-    const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress)
+    const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress, false)
     channelRegContract.methods.channelIds().call()
       .then(res=>{
         if(Array.isArray(res)) {
           res.forEach(async(tokenId)=>{
             const channelInfo = await channelRegContract.methods.channelInfo(tokenId).call()
-            const metaUri = getIpfsUrl(channelInfo[1])
+            const metaUri = getIpfsUrl(channelInfo['tokenURI'])
+            // 
+            if(channelInfo['channelEntry']) {
+              const splitEntry = channelInfo['channelEntry'].split('/')
+              if(splitEntry.length>1) {
+                const targetDid = splitEntry[splitEntry.length - 2]
+                const channelId = splitEntry[splitEntry.length - 1]
+                hiveApi.queryPublicPostByChannelId(targetDid, channelId)
+                  .then(res=>{
+                    console.log(res, "----------kk")
+                  })
+                  .catch(err=>{
+                    console.log(err, "-----------ek")
+                  })
+              }
+            }
             console.log(channelInfo, "----------oo")
             if(metaUri) {
               fetch(metaUri)
                 .then(response => response.json())
                 .then(data => {
-                  console.log(data, "---------oo")
+                  // console.log(data, "---------oo")
                   const channelData = data
                   if(channelData.data) {
                     channelData.data['avatarUrl'] = getIpfsUrl(channelData.data['avatar'])
