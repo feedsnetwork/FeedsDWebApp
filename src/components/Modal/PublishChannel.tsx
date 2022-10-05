@@ -100,15 +100,27 @@ function PublishChannel() {
             <StyledAvatar alt={channel.name} src={channel.avatarPreview} width={64}/>
             <Typography variant="subtitle2">{channel.name}</Typography>
           </Stack>
-          <Typography variant="body2">
-            This action requires an interaction with the smart contract. 
-            A small transaction fee is required for registering the channel onto the Elastos Smart Chain.
-            Do you still want to continue?
-          </Typography>
-          <Stack direction="row" spacing={3}>
-            <StyledButton type="outlined" fullWidth value='cancel' onClick={handleAction}>Cancel</StyledButton>
-            <StyledButton fullWidth loading={onProgress} needLoading={true} value='ok' onClick={handleAction}>Yes</StyledButton>
-          </Stack>
+          {
+            !onProgress &&
+            <Typography variant="body2">
+              This action requires an interaction with the smart contract. 
+              A small transaction fee is required for registering the channel onto the Elastos Smart Chain.
+              Do you still want to continue?
+            </Typography>
+          }
+          {
+            !onProgress?
+            <Stack direction="row" spacing={3}>
+              <StyledButton type="outlined" fullWidth value='cancel' onClick={handleAction}>Cancel</StyledButton>
+              <StyledButton fullWidth value='ok' onClick={handleAction}>Yes</StyledButton>
+            </Stack>:
+
+            <Stack direction="row" spacing={3}>
+              <StyledButton loadingPosition="start" type="outlined" fullWidth loading={onProgress} needLoading={true} sx={{color: 'inherit !important'}}>
+                Please Sign Transaction From Wallet
+              </StyledButton>
+            </Stack>
+          }
           <Typography variant="body2">
             We do not own your private keys and cannot access your funds without your confirmation.
           </Typography>
