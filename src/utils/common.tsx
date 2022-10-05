@@ -8,7 +8,7 @@ import axios from 'axios'
 import { HiveApi } from 'src/services/HiveApi'
 import { CommonStatus } from 'src/models/common_content'
 import { essentialsConnector } from 'src/content/signin/EssentialConnectivity';
-import { ipfsURL } from 'src/config'
+import { ipfsURL, rpcURL } from 'src/config'
 export const reduceDIDstring = (strDID) => {
   if(!strDID)
     return ''
@@ -364,8 +364,9 @@ export const getIpfsUrl = (uri) => {
 };
 
 export const getWeb3Connect = () => {
-  const walletConnectProvider = isInAppBrowser() ? window['elastos'].getWeb3Provider() : essentialsConnector.getWalletConnectProvider();
-  return new Web3(walletConnectProvider)
+  // const walletConnectProvider = isInAppBrowser() ? window['elastos'].getWeb3Provider() : essentialsConnector.getWalletConnectProvider();
+  // return new Web3(walletConnectProvider)
+  return new Web3(new Web3.providers.HttpProvider(rpcURL));
 }
 export const getWeb3Contract = (abi, address) => {
   const walletConnectWeb3 = getWeb3Connect()
