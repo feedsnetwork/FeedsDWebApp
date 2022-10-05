@@ -51,7 +51,7 @@ function PublishChannel() {
         const avatarAdded = await client.add(avatarBuffer)
         const metaObj = new ChannelContent()
         metaObj.name = channel.name
-        metaObj.description = channel.description
+        metaObj.description = channel.intro
         metaObj.creator['did'] = userDid
         metaObj.data.cname = channel.name
         metaObj.data.avatar = `feeds:image:${avatarAdded.path}`

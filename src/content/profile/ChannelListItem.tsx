@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import { Card, Box, Typography, Stack, Hidden, IconButton, Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useSnackbar } from 'notistack';
@@ -8,6 +9,7 @@ import IconInCircle from 'src/components/IconInCircle'
 import StyledAvatar from 'src/components/StyledAvatar'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi'
+import { handlePublishModal, setCreatedChannel } from 'src/redux/slices/channel';
 import { getChannelShortUrl, copy2clipboard } from 'src/utils/common'
 
 const ChannelListItem = (props) => {
@@ -20,6 +22,7 @@ const ChannelListItem = (props) => {
   const userDid = `did:elastos:${feedsDid}`
   const isOwnedChannel = selfChannels.findIndex(item=>item.channel_id==channel.channel_id)>=0
   const { enqueueSnackbar } = useSnackbar();
+  const dispatch = useDispatch()
 
   React.useEffect(()=>{
     hiveApi.querySubscriptionInfoByChannelId(userDid, channel.channel_id)
@@ -50,7 +53,10 @@ const ChannelListItem = (props) => {
         // setOpenPost(true)
         break;
       case 'publish':
-        // setOpenDelete(true)
+        const splitAvatarContent = channel.avatarSrc.split(';base64,')
+        const channelObj = {...channel, avatarContent: splitAvatarContent[splitAvatarContent.length-1], avatarPreview: channel.avatarSrc}
+        handlePublishModal(true)(dispatch)
+        dispatch(setCreatedChannel(channelObj))
         break;
       default:
         break;

@@ -93,14 +93,14 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
     const base64content = imageBuffer.toString('base64')
     const imageHivePath = await hiveApi.uploadMediaDataWithString(`data:${avatarUrl.type};base64,${base64content}`)
     const createdChannel = {
-      name: nameRef.current.value,
-      description: descriptionRef.current.value,
+      name: name,
+      intro: description,
       avatarPath: imageHivePath,
       avatarPreview: avatarUrl['preview'],
       avatarContent: base64content,
       tippingAddr: tippingRef.current.value
     }
-    hiveApi.createChannel(createdChannel.name, createdChannel.description, createdChannel.avatarPath, createdChannel.tippingAddr)
+    hiveApi.createChannel(createdChannel.name, createdChannel.intro, createdChannel.avatarPath, createdChannel.tippingAddr)
       .then(result=>{
         // enqueueSnackbar('Add channel success', { variant: 'success' });
         setOnProgress(false)
