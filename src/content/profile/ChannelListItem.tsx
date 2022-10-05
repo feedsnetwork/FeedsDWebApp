@@ -1,12 +1,14 @@
 import React from 'react';
 import { Card, Box, Typography, Stack, Hidden, IconButton, Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { useSnackbar } from 'notistack';
 
 import StyledButton from 'src/components/StyledButton'
 import IconInCircle from 'src/components/IconInCircle'
 import StyledAvatar from 'src/components/StyledAvatar'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi'
+import { getChannelShortUrl, copy2clipboard } from 'src/utils/common'
 
 const ChannelListItem = (props) => {
   const {channel} = props
@@ -17,6 +19,7 @@ const ChannelListItem = (props) => {
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const isOwnedChannel = selfChannels.findIndex(item=>item.channel_id==channel.channel_id)>=0
+  const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(()=>{
     hiveApi.querySubscriptionInfoByChannelId(userDid, channel.channel_id)
@@ -35,13 +38,13 @@ const ChannelListItem = (props) => {
     const type = event.currentTarget.getAttribute("value")
     switch(type){
       case 'share':
-        // getPostShortUrl(post)
-        //   .then(shortUrl=>{
-        //     copy2clipboard(shortUrl)
-        //       .then(_=>{
-        //         enqueueSnackbar('Copied to clipboard', { variant: 'success' });
-        //       })
-        //   })
+        getChannelShortUrl(channel)
+          .then(shortUrl=>{
+            copy2clipboard(shortUrl)
+              .then(_=>{
+                enqueueSnackbar('Copied to clipboard', { variant: 'success' });
+              })
+          })
         break;
       case 'edit':
         // setOpenPost(true)

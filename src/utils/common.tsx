@@ -314,24 +314,36 @@ export function getPostByChannelId(channel, setter) {
     })
 }
 
-export function getPostShortUrl(post) {
+function getShortUrl(data, type='post') {
   return new Promise((resolve, reject) => {
-    const {target_did, channel_id, post_id} = post
-    const postUrl = `${process.env.REACT_APP_BASEURL_POST_URL}/?targetDid=${target_did}&channelId=${channel_id}&postId=${post_id}`
+    let shareUrl = ''
+    if(type === 'post') {
+      const {target_did, channel_id, post_id} = data
+      shareUrl = `${process.env.REACT_APP_BASEURL_POST_URL}/v3post/?targetDid=${target_did}&channelId=${channel_id}&postId=${post_id}`
+    } else if (type === 'channel') {
+      const {target_did, channel_id} = data
+      shareUrl = `${process.env.REACT_APP_BASEURL_POST_URL}/v3channel/?targetDid=${target_did}&channelId=${channel_id}`
+    }
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: postUrl })
+      body: JSON.stringify({ url: shareUrl })
     };
     fetch(`${process.env.REACT_APP_SHORTEN_SERVICE_URL}/api/v2/action/shorten?key=9fa8ef7f86a28829f53375abcb0af5`, requestOptions)
       .then(response=>response.text())
       .then(resolve)
       .catch((err) => {
-        resolve(postUrl)
+        resolve(shareUrl)
       })
   });
 }
 
+export function getPostShortUrl(post) {
+  return getShortUrl(post)
+}
+export function getChannelShortUrl(channel) {
+  return getShortUrl(channel, 'channel')
+}
 export async function copy2clipboard(text) {
   if ("clipboard" in navigator) {
     await navigator.clipboard.writeText(text);
