@@ -13,6 +13,7 @@ import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi';
 import { selectPublicChannels, setPublicChannels } from 'src/redux/slices/channel';
+import { selectPublicPosts, setPublicPosts } from 'src/redux/slices/post';
 import { getIpfsUrl, getWeb3Contract } from 'src/utils/common'
 
 function Explore() {
@@ -21,7 +22,7 @@ function Explore() {
   const hiveApi = new HiveApi()
   const dispatch = useDispatch()
   const publicChannels = useSelector(selectPublicChannels)
-
+  const publicPosts = useSelector(selectPublicPosts)
   React.useEffect(()=>{
     if(publicChannels.length>0)
       return
@@ -40,10 +41,13 @@ function Explore() {
                 const channelId = splitEntry[splitEntry.length - 1]
                 hiveApi.queryPublicPostByChannelId(targetDid, channelId)
                   .then(res=>{
-                    console.log(res, "----------kk")
+                    if(res['find_message'] && res['find_message']['items']) {
+                      const tempGroup = {}
+                      tempGroup[channelId] = res['find_message']['items']
+                      dispatch(setPublicPosts(tempGroup))
+                    }
                   })
                   .catch(err=>{
-                    console.log(err, "-----------ek")
                   })
               }
             }
@@ -87,6 +91,7 @@ function Explore() {
     primaryName: 'Test Channel',
     secondaryName: '@Hames',
   }
+  console.log(publicPosts, "==========pp")
   return (
     <Container sx={{ mt: 3 }} maxWidth={false}>
       <Stack direction="row" spacing={4}>
