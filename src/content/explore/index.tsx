@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { Box, Typography, Tabs, Tab, Stack, Container, InputAdornment, Grid } from '@mui/material';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 
@@ -11,15 +12,19 @@ import PostImgCard from 'src/components/PostCard/PostImgCard'
 import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi';
+import { selectPublicChannels, setPublicChannels } from 'src/redux/slices/channel';
 import { getIpfsUrl, getWeb3Contract } from 'src/utils/common'
 
 function Explore() {
   const { selfChannels } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
-  const [publicChannels, setPublicChannels] = React.useState([]);
   const hiveApi = new HiveApi()
+  const dispatch = useDispatch()
+  const publicChannels = useSelector(selectPublicChannels)
 
   React.useEffect(()=>{
+    if(publicChannels.length>0)
+      return
     const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress, false)
     channelRegContract.methods.channelIds().call()
       .then(res=>{
@@ -53,11 +58,12 @@ function Explore() {
                     channelData.data['avatarUrl'] = getIpfsUrl(channelData.data['avatar'])
                     channelData.data['bannerUrl'] = getIpfsUrl(channelData.data['banner'])
                   }
-                  setPublicChannels(prevState=>{
-                    const tempState = [...prevState]
-                    tempState.push(channelData)
-                    return tempState
-                  })
+                  dispatch(setPublicChannels(channelData))
+                  // setPublicChannels(prevState=>{
+                  //   const tempState = [...prevState]
+                  //   tempState.push(channelData)
+                  //   return tempState
+                  // })
                 })
                 .catch(console.log);
             }

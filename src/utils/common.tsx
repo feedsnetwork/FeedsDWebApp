@@ -201,8 +201,9 @@ export function getPostByChannelId(channel, setter) {
   const hiveApi = new HiveApi()
   hiveApi.queryPostByChannelId(channel.target_did, channel.channel_id)
     .then(postRes=>{
+      let postArr = []
       if(postRes['find_message'] && postRes['find_message']['items']) {
-        const postArr = prefConf.DP?
+        postArr = prefConf.DP?
           postRes['find_message']['items']:
           postRes['find_message']['items'].filter(postItem=>postItem.status!==CommonStatus.deleted)
         const splitTargetDid = channel.target_did.split(':')
@@ -301,15 +302,20 @@ export function getPostByChannelId(channel, setter) {
             }
             // console.log(commentRes, "--------------6")
           })
-          setter((prevState) => {
-          const tempState = {...prevState}
-          tempState[channel.channel_id] = sortByDate(postArr)
-          return tempState
-        })
         // console.log(postArr, "---------------------3")
       }
+      setter((prevState) => {
+        const tempState = {...prevState}
+        tempState[channel.channel_id] = sortByDate(postArr)
+        return tempState
+      })
     })
     .catch(err=>{
+      setter((prevState) => {
+        const tempState = {...prevState}
+        tempState[channel.channel_id] = []
+        return tempState
+      })
       // console.log(err, item)
     })
 }

@@ -4,7 +4,8 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   isChannelCreated: false,
   isOpened2Publish: false,
-  createdChannel: {}
+  createdChannel: {},
+  publicChannels: []
 };
 
 const slice = createSlice({
@@ -25,6 +26,9 @@ const slice = createSlice({
     },
     setCreatedChannel(state, action) {
       state.createdChannel = action.payload
+    },
+    setPublicChannels(state, action) {
+      state.publicChannels = [...state.publicChannels, action.payload]
     }
   }
 });
@@ -33,7 +37,7 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setCreatedChannel } = slice.actions;
+export const { setCreatedChannel, setPublicChannels } = slice.actions;
 
 // ----------------------------------------------------------------------
 
@@ -63,4 +67,7 @@ export function selectPublishModalState(state) {
 }
 export function selectCreatedChannel(state) {
   return state.channel.createdChannel
+}
+export function selectPublicChannels(state) {
+  return state.channel.publicChannels
 }
