@@ -13,7 +13,7 @@ import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi';
 import { selectPublicChannels, selectDispNameOfChannels, setPublicChannels, setDispNameOfChannels } from 'src/redux/slices/channel';
-import { selectPublicPosts, setPublicPosts } from 'src/redux/slices/post';
+import { selectPublicPosts, setPublicPosts, updateMediaOfPosts } from 'src/redux/slices/post';
 import { getIpfsUrl, getWeb3Contract, isJson, getMergedArray } from 'src/utils/common'
 
 function Explore() {
@@ -49,6 +49,26 @@ function Explore() {
                           item.content = JSON.parse(item.content)
                         return item
                       })
+                      tempGroup[channelId].forEach(post=>{
+                        if(!post.content.mediaData.length)
+                          return
+                        post.content.mediaData.forEach((media, _i)=>{
+                          if(!media.originMediaPath)
+                            return
+                          hiveApi.downloadScripting(targetDid, media.originMediaPath)
+                            .then(res=>{
+                              if(res) {
+                                const tempost = {...post, mediaSrc: res}
+                                console.log(tempost, "++++++++++pp")
+                                dispatch(updateMediaOfPosts(tempost))
+                              }
+                            })
+                            .catch(err=>{
+                              console.log(err)
+                            })
+                        })
+                      })
+                      console.log(tempGroup, "---------pp")
                       dispatch(setPublicPosts(tempGroup))
                     }
                   })
@@ -75,7 +95,6 @@ function Explore() {
                         channelData.data['avatarUrl'] = getIpfsUrl(channelData.data['avatar'])
                         channelData.data['bannerUrl'] = getIpfsUrl(channelData.data['banner'])
                       }
-                      console.log(channelData, "---------pp")
                       dispatch(
                         setPublicChannels({
                           channel_id: channelId,
@@ -152,11 +171,19 @@ function Explore() {
             ))
           }
           {
-            getMergedArray(publicPosts).map((post, _i)=>(
-              <Grid item sm={4} md={3} key={_i}>
-                <PostTextCard post={post}/>
-              </Grid>
-            ))
+            getMergedArray(publicPosts).map((post, _i)=>{
+              if(!!post.content.mediaData && post.content.mediaData.length)
+                return (
+                  <Grid item xs={12} md={6}>
+                    <PostImgCard post={post}/>
+                  </Grid>
+                )
+              return (
+                <Grid item sm={4} md={3} key={_i}>
+                  <PostTextCard post={post}/>
+                </Grid>
+              )
+            })
           }
         </Grid>
         {/* <Grid container sx={{pt: 2}} spacing={2}>

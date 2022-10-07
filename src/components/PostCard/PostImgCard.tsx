@@ -23,7 +23,8 @@ const PostImgCard = (props) => {
   const publicChannels = useSelector(selectPublicChannels)
   const channelOfPost = publicChannels[post.channel_id] || {}
   const filteredContentByLink = convertAutoLink(typeof post.content==='object'? post.content.content: post.content)
-  const background = 'url(/temp-img.png) no-repeat center'
+  // const background = 'url(/temp-img.png) no-repeat center'
+  const background = post.mediaData? `url(${post.mediaData[0]['mediaSrc']}) no-repeat center`: null
 
   // const handlePopper = (e, open)=>{
   //   if(open)
@@ -34,7 +35,7 @@ const PostImgCard = (props) => {
   return (
     <PaperRecord sx={{display: 'flex'}}>
       <Box sx={{ width: '100%', height: '400px', background, backgroundSize: 'cover', position: 'relative'}}>
-        <Stack direction="row" alignItems="center" spacing={2} sx={{position: 'absolute', bottom: 0, p: 1, background: '#161c24c4'}}>
+        <Stack direction="row" alignItems="center" spacing={2} sx={{position: 'absolute', bottom: 0, p: 1, background: '#161c24c4', width: '100%'}}>
           <Box
             // onMouseEnter={(e)=>{handlePopper(e, true)}}
             // onMouseLeave={(e)=>{handlePopper(e, false)}}
