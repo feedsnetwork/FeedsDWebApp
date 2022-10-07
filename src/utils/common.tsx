@@ -381,3 +381,11 @@ export const getWeb3Contract = (abi, address, isWalletConnect=true) => {
   const channelRegContract = new walletConnectWeb3.eth.Contract(abi, address)
   return channelRegContract
 }
+export function isJson(str) {
+  try {
+      JSON.parse(str);
+  } catch (e) {
+      return false;
+  }
+  return true;
+}

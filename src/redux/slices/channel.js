@@ -5,7 +5,8 @@ const initialState = {
   isChannelCreated: false,
   isOpened2Publish: false,
   createdChannel: {},
-  publicChannels: []
+  dispNameOfChannels: {},
+  publicChannels: {}
 };
 
 const slice = createSlice({
@@ -28,7 +29,14 @@ const slice = createSlice({
       state.createdChannel = action.payload
     },
     setPublicChannels(state, action) {
-      state.publicChannels = [...state.publicChannels, action.payload]
+      const tempState = {...state.publicChannels}
+      tempState[action.payload.channel_id] = action.payload.data
+      state.publicChannels = tempState
+    },
+    setDispNameOfChannels(state, action) {
+      const tempState = {...state.dispNameOfChannels}
+      tempState[action.payload.channel_id] = action.payload.data
+      state.dispNameOfChannels = tempState
     }
   }
 });
@@ -37,7 +45,7 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setCreatedChannel, setPublicChannels } = slice.actions;
+export const { setCreatedChannel, setPublicChannels, setDispNameOfChannels } = slice.actions;
 
 // ----------------------------------------------------------------------
 
@@ -70,4 +78,7 @@ export function selectCreatedChannel(state) {
 }
 export function selectPublicChannels(state) {
   return state.channel.publicChannels
+}
+export function selectDispNameOfChannels(state) {
+  return state.channel.dispNameOfChannels
 }

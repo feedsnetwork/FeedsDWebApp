@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import { Box, Stack, Typography } from '@mui/material';
 import parse from 'html-react-parser';
 import "odometer/themes/odometer-theme-default.css";
@@ -6,10 +7,11 @@ import "odometer/themes/odometer-theme-default.css";
 import StyledAvatar from 'src/components/StyledAvatar'
 import PaperRecord from 'src/components/PaperRecord'
 import { SidebarContext } from 'src/contexts/SidebarContext';
+import { selectPublicChannels, selectDispNameOfChannels } from 'src/redux/slices/channel';
 import { getDateDistance, isValidTime, hash, convertAutoLink } from 'src/utils/common'
 
 const PostTextCard = (props) => {
-  const { post, contentObj, isReply=false, level=1 } = props
+  const { post, contentObj, level=1 } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   const { selfChannels, subscribedChannels, subscriberInfo } = React.useContext(SidebarContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -19,7 +21,10 @@ const PostTextCard = (props) => {
   const subscribersOfThis = currentChannel['subscribers'] || []
   const subscribedByWho = `Subscribed by ${subscribersOfThis.slice(0,3).map(subscriber=>subscriber.display_name).join(', ')}${subscribersOfThis.length>3?' and more!':'.'}`
 
-  const filteredContentByLink = convertAutoLink(contentObj.content)
+  const publicChannels = useSelector(selectPublicChannels)
+  const dispNameOfChannels = useSelector(selectDispNameOfChannels)
+  const channelOfPost = publicChannels[post.channel_id] || {}
+  const filteredContentByLink = convertAutoLink(typeof post.content==='object'? post.content.content: post.content)
   
   const handlePopper = (e, open)=>{
     if(open)
@@ -35,14 +40,14 @@ const PostTextCard = (props) => {
             // onMouseEnter={(e)=>{handlePopper(e, true)}}
             // onMouseLeave={(e)=>{handlePopper(e, false)}}
           >
-            <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
+            <StyledAvatar alt={channelOfPost.name} src={channelOfPost.data.avatarUrl} width={47}/>
           </Box>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography component='div' variant="subtitle2" noWrap>
-              {contentObj.primaryName}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
+              {channelOfPost.name}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
             </Typography>
             <Typography variant="body2" noWrap>
-              {contentObj.secondaryName}
+              {dispNameOfChannels[post.channel_id] || ''}
             </Typography>
           </Box>
         </Stack>

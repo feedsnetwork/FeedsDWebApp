@@ -12,9 +12,9 @@ import PostImgCard from 'src/components/PostCard/PostImgCard'
 import InputOutline from 'src/components/InputOutline'
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi';
-import { selectPublicChannels, setPublicChannels } from 'src/redux/slices/channel';
+import { selectPublicChannels, selectDispNameOfChannels, setPublicChannels, setDispNameOfChannels } from 'src/redux/slices/channel';
 import { selectPublicPosts, setPublicPosts } from 'src/redux/slices/post';
-import { getIpfsUrl, getWeb3Contract } from 'src/utils/common'
+import { getIpfsUrl, getWeb3Contract, isJson, getMergedArray } from 'src/utils/common'
 
 function Explore() {
   const { selfChannels } = React.useContext(SidebarContext);
@@ -33,7 +33,7 @@ function Explore() {
           res.forEach(async(tokenId)=>{
             const channelInfo = await channelRegContract.methods.channelInfo(tokenId).call()
             const metaUri = getIpfsUrl(channelInfo['tokenURI'])
-            // 
+
             if(channelInfo['channelEntry']) {
               const splitEntry = channelInfo['channelEntry'].split('/')
               if(splitEntry.length>1) {
@@ -43,34 +43,51 @@ function Explore() {
                   .then(res=>{
                     if(res['find_message'] && res['find_message']['items']) {
                       const tempGroup = {}
-                      tempGroup[channelId] = res['find_message']['items']
+                      const postItems = res['find_message']['items']
+                      tempGroup[channelId] = postItems.map(item=>{
+                        if(isJson(item.content))
+                          item.content = JSON.parse(item.content)
+                        return item
+                      })
                       dispatch(setPublicPosts(tempGroup))
                     }
                   })
                   .catch(err=>{
                   })
+                
+                hiveApi.queryUserDisplayName(targetDid, channelId, targetDid)
+                  .then(res=>{
+                    if(res['find_message'] && res['find_message']['items'].length)
+                      dispatch(
+                        setDispNameOfChannels({
+                          channel_id: channelId,
+                          data: res['find_message']['items'][0].display_name
+                        })
+                      )
+                  })
+
+                if(metaUri) {
+                  fetch(metaUri)
+                    .then(response => response.json())
+                    .then(data => {
+                      const channelData = data
+                      if(channelData.data) {
+                        channelData.data['avatarUrl'] = getIpfsUrl(channelData.data['avatar'])
+                        channelData.data['bannerUrl'] = getIpfsUrl(channelData.data['banner'])
+                      }
+                      console.log(channelData, "---------pp")
+                      dispatch(
+                        setPublicChannels({
+                          channel_id: channelId,
+                          data: channelData
+                        })
+                      )
+                    })
+                    .catch(console.log);
+                }
               }
             }
             console.log(channelInfo, "----------oo")
-            if(metaUri) {
-              fetch(metaUri)
-                .then(response => response.json())
-                .then(data => {
-                  // console.log(data, "---------oo")
-                  const channelData = data
-                  if(channelData.data) {
-                    channelData.data['avatarUrl'] = getIpfsUrl(channelData.data['avatar'])
-                    channelData.data['bannerUrl'] = getIpfsUrl(channelData.data['banner'])
-                  }
-                  dispatch(setPublicChannels(channelData))
-                  // setPublicChannels(prevState=>{
-                  //   const tempState = [...prevState]
-                  //   tempState.push(channelData)
-                  //   return tempState
-                  // })
-                })
-                .catch(console.log);
-            }
           })
         }
       })
@@ -128,9 +145,16 @@ function Explore() {
       <TabPanel value={tabValue} index={0} nopadding={true}>
         <Grid container sx={{pt: 2}} spacing={2}>
           {
-            publicChannels.map((channel, _i)=>(
+            Object.values(publicChannels).map((channel, _i)=>(
               <Grid item sm={4} md={3} key={_i}>
                 <ChannelCard info={channel}/>
+              </Grid>
+            ))
+          }
+          {
+            getMergedArray(publicPosts).map((post, _i)=>(
+              <Grid item sm={4} md={3} key={_i}>
+                <PostTextCard post={post}/>
               </Grid>
             ))
           }
