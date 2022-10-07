@@ -116,13 +116,17 @@ function PostDlg(props) {
         })
   }
   const handleUploadClick = (e) => {
-    var file = e.target.files[0];
-    console.log(file)
-    setImageAttach(
-      Object.assign(file, {
-        preview: URL.createObjectURL(file)
-      })
-    );
+    if(!e.target.files.length) {
+      setImageAttach(null);
+    } else {
+      var file = e.target.files[0];
+      console.log(file)
+      setImageAttach(
+        Object.assign(file, {
+          preview: URL.createObjectURL(file)
+        })
+      );
+    }
     // const reader = new FileReader();
     // var url = reader.readAsDataURL(file);
 
@@ -233,13 +237,13 @@ function PostDlg(props) {
             <Box sx={{ alignItems: 'center', display: 'flex', flexGrow: 1 }}>
               <input
                 accept="image/*"
-                id="contained-button-file"
+                id="image-button-file"
                 // multiple
                 type="file"
                 onChange={handleUploadClick}
                 style={{display: 'none'}}
               />
-              <label htmlFor="contained-button-file">
+              <label htmlFor="image-button-file">
                 <StyledIconButton icon="clarity:picture-line"/>
               </label>
               <StyledIconButton icon="clarity:camera-line"/>
