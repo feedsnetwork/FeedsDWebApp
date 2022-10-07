@@ -59,7 +59,6 @@ function Explore() {
                             .then(res=>{
                               if(res) {
                                 const tempost = {...post, mediaSrc: res}
-                                console.log(tempost, "++++++++++pp")
                                 dispatch(updateMediaOfPosts(tempost))
                               }
                             })
