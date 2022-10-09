@@ -14,7 +14,7 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import { HiveApi } from 'src/services/HiveApi';
 import { selectPublicChannels, selectDispNameOfChannels, setPublicChannels, setDispNameOfChannels } from 'src/redux/slices/channel';
 import { selectPublicPosts, setPublicPosts, updateMediaOfPosts } from 'src/redux/slices/post';
-import { getIpfsUrl, getWeb3Contract, isJson, getMergedArray } from 'src/utils/common'
+import { getIpfsUrl, getWeb3Contract, isJson, getMergedArray, sortByDate } from 'src/utils/common'
 
 function Explore() {
   const { selfChannels } = React.useContext(SidebarContext);
@@ -23,6 +23,7 @@ function Explore() {
   const dispatch = useDispatch()
   const publicChannels = useSelector(selectPublicChannels)
   const publicPosts = useSelector(selectPublicPosts)
+  const latestPublicPosts = sortByDate(getMergedArray(publicPosts)).slice(0, 10)
   React.useEffect(()=>{
     if(publicChannels.length>0)
       return
@@ -114,18 +115,6 @@ function Explore() {
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-
-  const tempchannel = {name: 'MMA Lover', avatarImg: '/twitter.png', intro: 'Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though...I hope it’s gonna be alright haha#osaka #japan #spring'}
-  const tempost = {created_at: 1664166498000}
-  const tempostcontent = {
-    content: 'Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though...I hope it’s gonna be alright haha#osaka #japan #spring',
-    avatar: {
-      name: 'hames',
-      src: ''
-    },
-    primaryName: 'Test Channel',
-    secondaryName: '@Hames',
-  }
   console.log(publicPosts, "==========pp")
   return (
     <Container sx={{ mt: 3 }} maxWidth={false}>
@@ -170,10 +159,10 @@ function Explore() {
             ))
           }
           {
-            getMergedArray(publicPosts).map((post, _i)=>{
+            latestPublicPosts.map((post, _i)=>{
               if(!!post.content.mediaData && post.content.mediaData.length)
                 return (
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={6} key={_i}>
                     <PostImgCard post={post}/>
                   </Grid>
                 )

@@ -60,7 +60,7 @@ const PostTextCard = (props) => {
               textDecoration: 'none'
             },
             lineHeight: 1.3,
-            WebkitLineClamp: 7,
+            WebkitLineClamp: 5,
             WebkitBoxOrient: 'vertical',
             // whiteSpace: 'normal',
             textOverflow: 'ellipsis',
