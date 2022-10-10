@@ -141,6 +141,46 @@ function Explore() {
       closeAnimation: false
     }
   }
+  const getGridContent = React.useCallback(() => {
+    let content = []
+    if("01".includes(tabValue.toString())) {
+      content = content.concat(
+        Object.values(publicChannels).map((channel, _i)=>{
+          return <div className="item" style={
+            {
+              width: cardWidthUnit,
+              height: 240,
+              paddingRight: 8,
+              paddingBottom: 8,
+            }
+          }>
+            <ChannelCard info={channel} key={_i}/>
+          </div>
+        })
+      )
+    }
+    if("02".includes(tabValue.toString())) {
+      content = content.concat(
+        latestPublicPosts.map((post, _i)=>{
+          const isImageCard = !!post.content.mediaData && post.content.mediaData.length
+          return <div className="item" style={
+            {
+              width: isImageCard? 2*cardWidthUnit: cardWidthUnit,
+              height: isImageCard? 400: 200,
+              paddingRight: 8,
+              paddingBottom: 8,
+            }
+          }>
+            {
+              isImageCard? <PostImgCard post={post}/>: <PostTextCard post={post}/>
+            }
+          </div>
+        })
+      )
+    }
+    return content
+  }, [tabValue, publicChannels, publicPosts])
+  console.log(tabValue.toString(), "01".includes(tabValue.toString()))
   return (
     <Container sx={{ mt: 3 }} maxWidth={false}>
       <Stack direction="row" spacing={4}>
@@ -175,43 +215,11 @@ function Explore() {
         />
       </Stack>
       <Box ref={containerRef}>
-        <TabPanel value={tabValue} index={0} nopadding={true}>
-          <Box pt={2}>
-            <AutoResponsive {...getAutoResponsiveProps()}>
-              {
-                Object.values(publicChannels).map((channel, _i)=>{
-                  return <div className="item" style={
-                    {
-                      width: cardWidthUnit,
-                      height: 240,
-                      paddingRight: 8,
-                      paddingBottom: 8,
-                    }
-                  }>
-                    <ChannelCard info={channel} key={_i}/>
-                  </div>
-                })
-              }
-              {
-                latestPublicPosts.map((post, _i)=>{
-                  const isImageCard = !!post.content.mediaData && post.content.mediaData.length
-                  return <div className="item" style={
-                    {
-                      width: isImageCard? 2*cardWidthUnit: cardWidthUnit,
-                      height: isImageCard? 400: 200,
-                      paddingRight: 8,
-                      paddingBottom: 8,
-                    }
-                  }>
-                    {
-                      isImageCard? <PostImgCard post={post}/>: <PostTextCard post={post}/>
-                    }
-                  </div>
-                })
-              }
-            </AutoResponsive>
-          </Box>
-        </TabPanel>
+        <Box pt={2}>
+          <AutoResponsive {...getAutoResponsiveProps()}>
+            {getGridContent()}
+          </AutoResponsive>
+        </Box>
         <TabPanel value={tabValue} index={1}>
         </TabPanel>
         <TabPanel value={tabValue} index={2}>
