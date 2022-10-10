@@ -36,6 +36,7 @@ function Explore() {
   const lessThanSmall = useMediaQuery(theme.breakpoints.down("sm"));
   const cardWidthRate = (greaterThanMid && .25) || (smallToMid && .33) || (lessThanSmall && .5) || 1
   const cardWidthUnit = Math.floor(containerWidth*cardWidthRate/10)*10
+
   React.useEffect(()=>{
     if(publicChannels.length>0)
       return
@@ -101,7 +102,9 @@ function Explore() {
                   fetch(metaUri)
                     .then(response => response.json())
                     .then(data => {
-                      const channelData = data
+                      const channelData = {...data}
+                      channelData['channel_id'] = channelId
+                      channelData['target_did'] = targetDid
                       if(channelData.data) {
                         channelData.data['avatarUrl'] = getIpfsUrl(channelData.data['avatar'])
                         channelData.data['bannerUrl'] = getIpfsUrl(channelData.data['banner'])
@@ -180,7 +183,7 @@ function Explore() {
     }
     return content
   }, [tabValue, publicChannels, publicPosts])
-  console.log(tabValue.toString(), "01".includes(tabValue.toString()))
+
   return (
     <Container sx={{ mt: 3 }} maxWidth={false}>
       <Stack direction="row" spacing={4}>

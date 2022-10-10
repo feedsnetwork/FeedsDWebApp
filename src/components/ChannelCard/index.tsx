@@ -72,9 +72,10 @@ const ChannelCardPaper = (props) => {
 };
 
 export default function ChannelCard(props) {
+  const { info } = props
   const navigate = useNavigate();
   const route2Detail = () => {
-    
+    navigate('/explore/channel', {state: {channel_id: info.channel_id}});
   }
 
   return (

@@ -41,6 +41,9 @@ const AddChannel = Loader(
 const Explore = Loader(
   lazy(() => import('src/content/explore'))
 );
+const PublicChannel = Loader(
+  lazy(() => import('src/content/explore/channel'))
+);
 const Subscription = Loader(
   lazy(() => import('src/content/subscription'))
 );
@@ -178,6 +181,10 @@ const routes: RouteObject[] = [
       {
         path: '',
         element: <Explore />
+      },
+      {
+        path: 'channel',
+        element: <PublicChannel/>
       }
     ]
   },

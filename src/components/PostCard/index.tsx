@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom';
 import { Box, Stack, Typography, Card, CardHeader, Divider, IconButton } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -11,13 +12,15 @@ import { SidebarContext } from 'src/contexts/SidebarContext';
 import StyledTextFieldOutline from 'src/components/StyledTextFieldOutline'
 import PostBody from './PostBody'
 import { HiveApi } from 'src/services/HiveApi'
+import { selectPublicChannels } from 'src/redux/slices/channel';
 import { getDateDistance, isValidTime, reduceDIDstring, reduceHexAddress } from 'src/utils/common'
 
 const PostCard = (props) => {
   const navigate = useNavigate();
   const { post, dispName, level=1, replyingTo='', replyable=false, dispNames={}, dispAvatar={}, direction='column' } = props
   const { selfChannels, subscribedChannels, myAvatar, userInfo, walletAddress, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
-  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
+  const publicChannels = useSelector(selectPublicChannels)
+  const currentChannel = [...selfChannels, ...subscribedChannels, ...Object.values(publicChannels)].find(item=>item.channel_id==post.channel_id) || {}
   
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
@@ -55,7 +58,7 @@ const PostCard = (props) => {
   let contentObj = {avatar: {}, primaryName: '', secondaryName: null, content: ''}
   let cardProps = {}
   if(level == 1) {
-    contentObj = JSON.parse(post.content)
+    contentObj = typeof post.content === 'object'? {...post.content}: JSON.parse(post.content)
     contentObj.avatar = { name: currentChannel.name, src: currentChannel.avatarSrc }
     contentObj.primaryName = currentChannel.name
     contentObj.secondaryName = `@${dispName}`

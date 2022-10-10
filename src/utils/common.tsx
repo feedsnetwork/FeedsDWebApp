@@ -91,10 +91,10 @@ export const getDateDistance = (timestamp) => timestamp ? formatDistance(new Dat
 export const isValidTime = (timestamp) => (new Date(timestamp)).getTime() > 0;
 
 function compareDateDesc( a, b ) {
-  if ( a.created > b.created ){
+  if ( a.created_at > b.created_at ){
     return -1;
   }
-  if ( a.created < b.created ){
+  if ( a.created_at < b.created_at ){
     return 1;
   }
   return 0;
@@ -111,8 +111,7 @@ function compareDateAsc( a, b ) {
 }
 
 export const sortByDate = (objs, direction = 'desc') => {
-  objs.sort( direction=="desc"? compareDateDesc: compareDateAsc );
-  return objs
+  return objs.slice().sort( direction=="desc"? compareDateDesc: compareDateAsc );
 }
 
 export const getBufferFromFile = (f) => (
