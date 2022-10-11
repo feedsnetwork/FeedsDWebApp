@@ -25,15 +25,14 @@ const AvatarBoxStyle = styled(Box)(({ theme }) => ({
 })) as any;
 
 const ChannelImgBox = (props) => {
-  const { name, data } = props;
-  const { bannerUrl=null, avatarUrl } = data
-  const background = bannerUrl ? `url(${bannerUrl}) no-repeat center` : "linear-gradient(180deg, #000000 0%, #A067FF 300.51%)"
+  const { name, bannerSrc=null, avatarSrc } = props;
+  const background = bannerSrc ? `url(${bannerSrc}) no-repeat center` : "linear-gradient(180deg, #000000 0%, #A067FF 300.51%)"
   return (
     <Stack sx={{position: 'relative', height: '100px', mb: '25px'}}>
       <Stack sx={{height: '100%', overflow: 'hidden'}}>
         <Box className='cover-image' sx={{ display: 'inline-flex', height: '100%', background, backgroundSize: 'cover'}}/>
       </Stack>
-      <AvatarBoxStyle draggable = {false} component="img" src={avatarUrl} alt={name}/>
+      <AvatarBoxStyle draggable = {false} component="img" src={avatarSrc} alt={name}/>
     </Stack>
   );
 };

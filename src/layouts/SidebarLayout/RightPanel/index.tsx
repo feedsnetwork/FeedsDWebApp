@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
@@ -12,6 +13,7 @@ import StyledButton from 'src/components/StyledButton'
 import InputOutline from 'src/components/InputOutline'
 import SubscriberListItem from './SubscriberListItem';
 import { SidebarContext } from 'src/contexts/SidebarContext';
+import { selectPublicChannels, selectDispNameOfChannels } from 'src/redux/slices/channel';
 import { HiveApi } from 'src/services/HiveApi'
 import { reduceHexAddress, reduceDIDstring } from 'src/utils/common'
 
@@ -36,7 +38,6 @@ const ListWrapper = styled(List)(
 const ChannelAbout = (props) => {
   const { this_channel, editable=true } = props
   const subscribers = (this_channel && this_channel['subscribers']) || []
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
 
   return <>
     <Card>
@@ -55,7 +56,7 @@ const ChannelAbout = (props) => {
         <Stack alignItems='center' my={2}>
           <StyledAvatar alt={this_channel.name} src={this_channel.avatarSrc} width={60}/>
           <Typography variant='h5' mt={1}>{this_channel.name}</Typography>
-          <Typography variant='body2'>@{this_channel.owner_name || reduceDIDstring(feedsDid)}</Typography>
+          <Typography variant='body2'>@{this_channel.owner_name || reduceDIDstring(this_channel.target_did)}</Typography>
           <Typography variant='body2' color='text.secondary' textAlign='center'>{this_channel.intro}</Typography>
         </Stack>
         <Stack alignItems='center'>
@@ -100,6 +101,8 @@ function RightPanel() {
   const theme = useTheme();
   const { pathname } = useLocation();
   const location = useLocation();
+  const publicChannels = useSelector(selectPublicChannels)
+  const dispNameOfChannels = useSelector(selectDispNameOfChannels)
   const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
   let content = null
 
@@ -127,6 +130,13 @@ function RightPanel() {
   } else if(pathname.startsWith('/subscription/channel')) {
     const { channel_id } = (location.state || {}) as any
     const activeChannel = subscribedChannels.find(item=>item.channel_id==channel_id) || {}
+    if(activeChannel) {
+      content = <ChannelAbout this_channel={activeChannel} editable={false}/>
+    }
+  } else if(pathname.startsWith('/explore/channel')) {
+    const { channel_id } = (location.state || {}) as any
+    const channelOwnerName = dispNameOfChannels[channel_id]
+    const activeChannel = {...publicChannels[channel_id], owner_name: channelOwnerName} || {}
     if(activeChannel) {
       content = <ChannelAbout this_channel={activeChannel} editable={false}/>
     }

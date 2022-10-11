@@ -49,6 +49,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     ((pathname==='/home' || pathname==='/channel') && pageType==='AddChannel')
     || (pathname.startsWith('/channel') && focusedChannelId)
     || pathname.startsWith('/subscription/channel')
+    || pathname.startsWith('/explore/channel')
     || pathname.startsWith('/setting')
     || pathname.startsWith('/post/')
     || pathname==='/profile'
@@ -125,7 +126,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           }
         </Box>
         {
-          !pathname.startsWith('/explore') &&
+          !(pathname === '/explore' || pathname === '/explore/') &&
           <RightPanel />
         }
       </Stack>

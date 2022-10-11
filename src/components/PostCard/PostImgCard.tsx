@@ -48,7 +48,7 @@ const PostImgCard = (props) => {
           // onMouseEnter={(e)=>{handlePopper(e, true)}}
           // onMouseLeave={(e)=>{handlePopper(e, false)}}
         >
-          <StyledAvatar alt={channelOfPost.name} src={channelOfPost.data.avatarUrl} width={47}/>
+          <StyledAvatar alt={channelOfPost.name} src={channelOfPost.avatarSrc} width={47}/>
         </Box>
         <Box sx={{ minWidth: 0, flexGrow: 1 }}>
           <Typography 

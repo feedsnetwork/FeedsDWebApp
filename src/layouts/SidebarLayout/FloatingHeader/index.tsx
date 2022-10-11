@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux'
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Stack, Box, Button, Hidden, ListItemText, Typography, styled, alpha, lighten } from '@mui/material';
 import ArrowBack from '@mui/icons-material/ArrowBack';
@@ -6,6 +7,8 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { OverPageContext } from 'src/contexts/OverPageContext';
 import { HiveApi } from 'src/services/HiveApi'
+import { selectPublicChannels } from 'src/redux/slices/channel';
+import { selectPublicPosts } from 'src/redux/slices/post';
 import { SettingMenuArray, getAppPreference, reduceDIDstring, getMergedArray } from 'src/utils/common'
 
 const HeaderWrapper = styled(Box)(
@@ -55,6 +58,8 @@ function FloatingHeader() {
   const hiveApi = new HiveApi()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const postsInHome = getMergedArray(postsInSubs)
+  const publicChannels = useSelector(selectPublicChannels)
+  const publicPosts = useSelector(selectPublicPosts)
 
   const handleBack = (e) => {
     if(pathname.startsWith('/setting')) {
@@ -87,6 +92,12 @@ function FloatingHeader() {
     else if(pathname.startsWith('/subscription/channel') && channel_id) {
       const activeChannel = (subscribedChannels.find(item=>item.channel_id==channel_id) || {}) as any
       const postsInActiveChannel = postsInSubs[channel_id] || []
+      primaryText = activeChannel.name
+      secondaryText = `${postsInActiveChannel.length} posts`
+    }
+    else if(pathname.startsWith('/explore/channel') && channel_id) {
+      const activeChannel = (publicChannels[channel_id] || {}) as any
+      const postsInActiveChannel = publicPosts[channel_id] || []
       primaryText = activeChannel.name
       secondaryText = `${postsInActiveChannel.length} posts`
     }

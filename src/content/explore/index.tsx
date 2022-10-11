@@ -106,8 +106,8 @@ function Explore() {
                       channelData['channel_id'] = channelId
                       channelData['target_did'] = targetDid
                       if(channelData.data) {
-                        channelData.data['avatarUrl'] = getIpfsUrl(channelData.data['avatar'])
-                        channelData.data['bannerUrl'] = getIpfsUrl(channelData.data['banner'])
+                        channelData['avatarSrc'] = getIpfsUrl(channelData.data['avatar'])
+                        channelData['bannerSrc'] = getIpfsUrl(channelData.data['banner'])
                       }
                       dispatch(
                         setPublicChannels({
