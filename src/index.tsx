@@ -5,8 +5,8 @@ import { Provider as ReduxProvider } from 'react-redux';
 import 'nprogress/nprogress.css';
 
 import App from './App';
-// import { SidebarProvider } from 'src/contexts/SidebarContext';
-// import { OverPageProvider } from 'src/contexts/OverPageContext';
+import { SidebarProvider } from 'contexts/SidebarContext';
+import { OverPageProvider } from 'contexts/OverPageContext';
 import { store } from './redux/store';
 import reportWebVitals from './reportWebVitals';
 
@@ -16,13 +16,13 @@ const root = ReactDOM.createRoot(
 root.render(
   // <React.StrictMode>
   <ReduxProvider store={store}>
-    {/* <SidebarProvider>
+    <SidebarProvider>
       <OverPageProvider>
-        <BrowserRouter> */}
+        <BrowserRouter>
           <App />
-        {/* </BrowserRouter>
+        </BrowserRouter>
       </OverPageProvider>
-    </SidebarProvider> */}
+    </SidebarProvider>
   </ReduxProvider>
   // </React.StrictMode>
 );

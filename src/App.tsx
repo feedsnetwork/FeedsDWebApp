@@ -1,24 +1,24 @@
-import React from 'react';
+import { useRoutes } from 'react-router-dom';
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import { CssBaseline } from '@mui/material';
+
+import router from 'router';
+import ThemeProvider from './theme/ThemeProvider';
+import NotistackProvider from './components/NotistackProvider';
 
 function App() {
+  const content = useRoutes(router);
   console.log(import.meta.url)
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider>
+      <NotistackProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <CssBaseline />
+          {content}
+        </LocalizationProvider>
+      </NotistackProvider>
+    </ThemeProvider>
   );
 }
-
 export default App;
