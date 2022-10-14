@@ -48,7 +48,7 @@ export const SidebarProvider: FC<React.PropsWithChildren> = (props) => {
   const [myAvatar, setMyAvatar] = useState('');
   const [subscriberInfo, setSubscriberInfo] = useState({});
   const [userInfo, setUserInfo] = useState('');
-  const [queryStep, setQueryStep] = useState('');
+  const [queryStep, setQueryStep] = useState(0);
 
   const toggleSidebar = () => {
     setSidebarToggle(!sidebarToggle);

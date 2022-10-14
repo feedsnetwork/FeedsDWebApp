@@ -18,8 +18,8 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { OverPageContext } from 'contexts/OverPageContext';
 import { CommonStatus } from 'models/common_content'
 import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique, getInfoFromDID, isValidTime, getDateDistance, convertAutoLink, getPostByChannelId } from 'utils/common'
+import { LocalDB, QueryStep } from 'utils/db'
 import { HiveApi } from 'services/HiveApi'
-PouchDB.plugin(PouchdbFind);
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -129,7 +129,6 @@ function SidebarChannel() {
   const theme = useTheme();
   const { pathname } = useLocation();
   const hiveApi = new HiveApi()
-  const db = new PouchDB('local3')
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const navigate = useNavigate();
@@ -219,20 +218,22 @@ function SidebarChannel() {
   }, [])
 
   useEffect(()=>{
-    if(queryStep.includes('channel')) {
-      db.createIndex({
+    if(queryStep >= QueryStep.self_channel && !selfChannels.length) {
+      LocalDB.createIndex({
         index: {
           fields: ['table_type', 'is_self'],
         }
       })
         .then(()=>{
-          db.find({
+          LocalDB.find({
             selector: {
               table_type: 'channel', 
               is_self: true
             },
           })
             .then(response=>{
+              if(!response.docs.length)
+                return
               setSelfChannels(response.docs)
               setFocusChannelId(response.docs[0]['channel_id'])
             })
@@ -240,7 +241,6 @@ function SidebarChannel() {
     }
   }, [queryStep])
   
-  console.log(selfChannels)
   const handleClickChannel = (item)=>{
     setFocusChannelId(item.channel_id); 
   }

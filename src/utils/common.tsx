@@ -9,6 +9,7 @@ import { HiveApi } from 'services/HiveApi'
 import { CommonStatus } from 'models/common_content'
 import { essentialsConnector } from 'content/signin/EssentialConnectivity';
 import { ipfsURL, rpcURL } from 'config'
+
 export const reduceDIDstring = (strDID) => {
   if(!strDID)
     return ''
