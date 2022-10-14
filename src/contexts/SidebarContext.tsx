@@ -12,6 +12,7 @@ type SidebarContext = {
   subscriberInfo: any;
   myAvatar: any;
   userInfo: any;
+  queryStep: any;
   toggleSidebar: () => void;
   closeSidebar: () => void;
   setSelfChannels: Dispatch<any>;
@@ -25,6 +26,7 @@ type SidebarContext = {
   setSubscriberInfo: Dispatch<any>;
   setMyAvatar: Dispatch<any>;
   setUserInfo: Dispatch<any>;
+  setQueryStep: Dispatch<any>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -33,6 +35,7 @@ export const SidebarContext = createContext<SidebarContext>(
 );
 
 export const SidebarProvider: FC<React.PropsWithChildren> = (props) => {
+  
   const [sidebarToggle, setSidebarToggle] = useState(false);
   const [selfChannels, setSelfChannels] = useState([]);
   const [subscribedChannels, setSubscribedChannels] = useState([]);
@@ -45,6 +48,7 @@ export const SidebarProvider: FC<React.PropsWithChildren> = (props) => {
   const [myAvatar, setMyAvatar] = useState('');
   const [subscriberInfo, setSubscriberInfo] = useState({});
   const [userInfo, setUserInfo] = useState('');
+  const [queryStep, setQueryStep] = useState('');
 
   const toggleSidebar = () => {
     setSidebarToggle(!sidebarToggle);
@@ -68,6 +72,7 @@ export const SidebarProvider: FC<React.PropsWithChildren> = (props) => {
         myAvatar,
         subscriberInfo,
         userInfo,
+        queryStep,
         toggleSidebar, 
         closeSidebar, 
         setSelfChannels, 
@@ -80,7 +85,8 @@ export const SidebarProvider: FC<React.PropsWithChildren> = (props) => {
         setPostsInSubs,
         setSubscriberInfo,
         setMyAvatar,
-        setUserInfo
+        setUserInfo,
+        setQueryStep
       }}
     >
       {props.children}

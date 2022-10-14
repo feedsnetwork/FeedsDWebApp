@@ -1,10 +1,12 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useMemo } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import parse from 'html-react-parser';
 import { Icon } from '@iconify/react';
 import AddIcon from '@mui/icons-material/Add';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
 import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, Popper, ClickAwayListener, Tooltip, Fab, Typography, Paper, IconButton } from '@mui/material';
+import PouchDB from 'pouchdb-browser'
+import PouchdbFind from 'pouchdb-find'
 
 import Scrollbar from 'components/Scrollbar';
 import Logo from 'components/LogoSign';
@@ -17,6 +19,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { CommonStatus } from 'models/common_content'
 import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique, getInfoFromDID, isValidTime, getDateDistance, convertAutoLink, getPostByChannelId } from 'utils/common'
 import { HiveApi } from 'services/HiveApi'
+PouchDB.plugin(PouchdbFind);
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -113,7 +116,8 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 }));
 
 function SidebarChannel() {
-  const { selfChannels, postsInSelf, sidebarToggle, focusedChannelId, subscriberInfo, setSelfChannels, setPostsInSelf, toggleSidebar, setFocusChannelId, setSubscriberInfo } = useContext(SidebarContext);
+  const { postsInSelf, sidebarToggle, focusedChannelId, subscriberInfo, queryStep, setPostsInSelf, toggleSidebar, setFocusChannelId, setSubscriberInfo } = useContext(SidebarContext);
+  const [selfChannels, setSelfChannels] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
   const [popoverChannel, setPopoverChannel] = useState({});
@@ -125,92 +129,118 @@ function SidebarChannel() {
   const theme = useTheme();
   const { pathname } = useLocation();
   const hiveApi = new HiveApi()
+  const db = new PouchDB('local3')
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const navigate = useNavigate();
-  
-  useEffect(()=>{
-    hiveApi.querySelfChannels()
-      .then(res=>{
-        // console.log(res, '-----------self')
-        if(Array.isArray(res)){
-          const selfChannels = 
-            res
-              .filter(item=>item.status!=CommonStatus.deleted)
-              .map(item=>{
-                item.target_did = userDid
-                return item
-              })
-          setSelfChannels(selfChannels)
-          if(selfChannels.length)
-            setFocusChannelId(res[0].channel_id)
 
-          selfChannels.forEach(item=>{
-            hiveApi.querySubscriptionInfoByChannelId(userDid, item.channel_id)
-              .then(subscriptionRes=>{
-                if(subscriptionRes['find_message']) {
-                  const subscribersArr = subscriptionRes['find_message']['items']
-                  subscribersArr.forEach((subscriber, _i)=>{
-                    if(subscriberInfo[subscriber.user_did] === undefined) {
-                      setSubscriberInfo((prev)=>{
-                        const tempState = {...prev}
-                        tempState[subscriber.user_did] = {}
-                        return tempState
-                      })
-                      getInfoFromDID(subscriber.user_did).then(res=>{
-                        setSubscriberInfo((prev)=>{
-                          const tempState = {...prev}
-                          tempState[subscriber.user_did]['info'] = res
-                          return tempState
-                        })
-                      })
-                      hiveApi.getHiveUrl(subscriber.user_did)
-                        .then(async hiveUrl=>{
-                          try {
-                            const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
-                            if(response && response.length) {
-                              const base64Content = response.toString('base64')
-                              setSubscriberInfo((prev)=>{
-                                const tempState = {...prev}
-                                tempState[subscriber.user_did]['avatar'] = `data:image/png;base64,${base64Content}`
-                                return tempState
-                              })
-                            }
-                          } catch(err) {}
-                        })
-                    }
-                  })
-                  setSelfChannels(prevState=>{
-                    const tempState = [...prevState]
-                    const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)
-                    if(channelIndex>=0)
-                      tempState[channelIndex]['subscribers'] = subscribersArr
-                    return tempState
-                  })
-                }
-              })
-            getPostByChannelId(item, setPostsInSelf)
-            hiveApi.queryUserDisplayName(item.target_did, item.channel_id, userDid)
-              .then(dispnameRes=>{
-                if(dispnameRes['find_message'] && dispnameRes['find_message']['items'].length) {
-                  const dispName = dispnameRes['find_message']['items'][0].display_name
-                  setSelfChannels(prevState=>{
-                    const tempState = [...prevState]
-                    const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)
-                    if(channelIndex>=0)
-                      tempState[channelIndex]['owner_name'] = dispName
-                    return tempState
-                  })
-                }
-              })
-          })
-        }
-      })
-      .catch(err=>{
-        console.log(err)
-      })
+  // const worker = new Worker(new URL('db.worker', import.meta.url))
+
+  useEffect(()=>{
+    // hiveApi.querySelfChannels()
+    //   .then(res=>{
+    //     // console.log(res, '-----------self')
+    //     if(Array.isArray(res)){
+    //       const selfChannels = 
+    //         res
+    //           .filter(item=>item.status!=CommonStatus.deleted)
+    //           .map(item=>{
+    //             item.target_did = userDid
+    //             return item
+    //           })
+    //       setSelfChannels(selfChannels)
+    //       if(selfChannels.length)
+    //         setFocusChannelId(res[0].channel_id)
+
+    //       selfChannels.forEach(item=>{
+    //         hiveApi.querySubscriptionInfoByChannelId(userDid, item.channel_id)
+    //           .then(subscriptionRes=>{
+    //             if(subscriptionRes['find_message']) {
+    //               const subscribersArr = subscriptionRes['find_message']['items']
+    //               subscribersArr.forEach((subscriber, _i)=>{
+    //                 if(subscriberInfo[subscriber.user_did] === undefined) {
+    //                   setSubscriberInfo((prev)=>{
+    //                     const tempState = {...prev}
+    //                     tempState[subscriber.user_did] = {}
+    //                     return tempState
+    //                   })
+    //                   getInfoFromDID(subscriber.user_did).then(res=>{
+    //                     setSubscriberInfo((prev)=>{
+    //                       const tempState = {...prev}
+    //                       tempState[subscriber.user_did]['info'] = res
+    //                       return tempState
+    //                     })
+    //                   })
+    //                   hiveApi.getHiveUrl(subscriber.user_did)
+    //                     .then(async hiveUrl=>{
+    //                       try {
+    //                         const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
+    //                         if(response && response.length) {
+    //                           const base64Content = response.toString('base64')
+    //                           setSubscriberInfo((prev)=>{
+    //                             const tempState = {...prev}
+    //                             tempState[subscriber.user_did]['avatar'] = `data:image/png;base64,${base64Content}`
+    //                             return tempState
+    //                           })
+    //                         }
+    //                       } catch(err) {}
+    //                     })
+    //                 }
+    //               })
+    //               setSelfChannels(prevState=>{
+    //                 const tempState = [...prevState]
+    //                 const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)
+    //                 if(channelIndex>=0)
+    //                   tempState[channelIndex]['subscribers'] = subscribersArr
+    //                 return tempState
+    //               })
+    //             }
+    //           })
+    //         getPostByChannelId(item, setPostsInSelf)
+    //         hiveApi.queryUserDisplayName(item.target_did, item.channel_id, userDid)
+    //           .then(dispnameRes=>{
+    //             if(dispnameRes['find_message'] && dispnameRes['find_message']['items'].length) {
+    //               const dispName = dispnameRes['find_message']['items'][0].display_name
+    //               setSelfChannels(prevState=>{
+    //                 const tempState = [...prevState]
+    //                 const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)
+    //                 if(channelIndex>=0)
+    //                   tempState[channelIndex]['owner_name'] = dispName
+    //                 return tempState
+    //               })
+    //             }
+    //           })
+    //       })
+    //     }
+    //   })
+    //   .catch(err=>{
+    //     console.log(err)
+    //   })
   }, [])
 
+  useEffect(()=>{
+    if(queryStep.includes('channel')) {
+      db.createIndex({
+        index: {
+          fields: ['table_type', 'is_self'],
+        }
+      })
+        .then(()=>{
+          db.find({
+            selector: {
+              table_type: 'channel', 
+              is_self: true
+            },
+          })
+            .then(response=>{
+              setSelfChannels(response.docs)
+              setFocusChannelId(response.docs[0]['channel_id'])
+            })
+        })
+    }
+  }, [queryStep])
+  
+  console.log(selfChannels)
   const handleClickChannel = (item)=>{
     setFocusChannelId(item.channel_id); 
   }

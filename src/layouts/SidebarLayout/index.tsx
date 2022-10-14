@@ -2,6 +2,8 @@ import { FC, ReactNode, useEffect, useContext, useCallback } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
 import { Box, alpha, lighten, useTheme, Hidden, Container, Stack, Input, Typography, Grid, styled, IconButton, Button } from '@mui/material';
+import PouchDB from 'pouchdb-browser'
+import PouchdbFind from 'pouchdb-find'
 
 import Sidebar from './Sidebar';
 import SidebarChannel from './SidebarChannel';
@@ -12,21 +14,82 @@ import { essentialsConnector, initConnectivitySDK } from 'content/signin/Essenti
 import AddChannel from 'components/AddChannel';
 import ChannelCreatedDlg from 'components/Modal/ChannelCreated'
 import PublishChannelDlg from 'components/Modal/PublishChannel'
-import { HiveApi } from 'services/HiveApi'
 import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
+import { CommonStatus } from 'models/common_content'
+import { HiveApi } from 'services/HiveApi'
 import { isInAppBrowser } from 'utils/common'
+
+PouchDB.plugin(PouchdbFind);
 
 interface SidebarLayoutProps {
   children?: ReactNode;
   maxWidth?: any;
 }
-
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
+  const {setWalletAddress, focusedChannelId, setQueryStep} = useContext(SidebarContext);
   const hiveApi = new HiveApi()
-  const {setWalletAddress, focusedChannelId} = useContext(SidebarContext);
-  let sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
+  const db = new PouchDB('local3')
+  const sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
+  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const myDid = `did:elastos:${feedsDid}`
+
+  // db.createIndex({
+  //   index: {
+  //     fields: ['channel_id'],
+  //     ddoc: "id-design-doc"
+  //   }
+  // })
+  // db.find({
+  //   selector: {channel_id: '123'},
+  //   // fields: ['_id', 'name'],
+  //   // sort: ['name'],
+  //   use_index: 'id-design-doc'
+  // }).then(console.log)
+  
+  useEffect(()=>{
+    db.get('query-step')
+      .then(currentStep=>{
+        console.log(currentStep)
+        setQueryStep('channel')
+      })
+      .catch(err=>{
+        hiveApi.querySelfChannels()
+          .then(res=>{
+            // console.log(res, '-----------self')
+            if(Array.isArray(res)){
+              const selfChannels = 
+                res
+                  .filter(item=>item.status!=CommonStatus.deleted)
+                  .map(item=>{
+                    item.target_did = myDid
+                    return item
+                  })
+                // db.get('ppp').then(console.log)
+    
+                Promise.all(
+                  selfChannels.map(async channel=>{
+                    const parseAvatar = channel['avatar'].split('@')
+                    const avatarRes = await hiveApi.downloadCustomeAvatar(parseAvatar[parseAvatar.length-1])
+                    const dataObj = {...channel, _id: channel.channel_id.toString(), is_self: true, is_subscribed: false, is_public: false, table_type: 'channel'}
+                    if(avatarRes && avatarRes.length) {
+                      dataObj['avatarSrc'] = avatarRes
+                    }
+                    return db.put(dataObj)
+                  })
+                )
+                .then(response=>{
+                  return db.put({_id: 'query-step', step: 'channel'})
+                })
+                .then(response=>{
+                  setQueryStep('channel')
+                })
+            }
+          })
+      })
+  }, [])
+
   const initializeWalletConnection = () => {
     if (sessionLinkFlag === '1') {
       setWalletAddress(
