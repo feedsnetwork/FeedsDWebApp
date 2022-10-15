@@ -73,7 +73,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     })
   )
 
-  const querySubscribedChannelStep = () => {
+  const querySubscribedChannelStep = () => (
     new Promise((resolve, reject) => {
       hiveApi.queryBackupData()
         .then(backupRes=>{
@@ -83,8 +83,12 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               if(channelInfoRes['find_message'] && channelInfoRes['find_message']['items'].length) {
                 const channelInfo = channelInfoRes['find_message']['items'][0]
                 const dataObj = {...channelInfo, _id: channel.channel_id.toString(), target_did: channel.target_did, is_self: false, is_subscribed: true, is_public: false, table_type: 'channel'}
-                const avatarRes = await hiveApi.downloadScripting(channel.target_did, channelInfo.avatar)
-                dataObj['avatarSrc'] = avatarRes
+                try {
+                  const avatarRes = await hiveApi.downloadScripting(channel.target_did, channelInfo.avatar)
+                  dataObj['avatarSrc'] = avatarRes
+                } catch(err) {
+                  console.log(err)
+                }
                 return dataObj
               }
             })
@@ -97,10 +101,10 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               .then(subscribedChannelData => {
                 const insertOtherChannelAction = LocalDB.bulkDocs(subscribedChannelData.others)
                 const updateSelfChannelAction = subscribedChannelData.self.map(channelDoc=>(
-                  new Promise((resolve, reject)=>{
+                  new Promise((resolveSub, rejectSub)=>{
                     LocalDB.get(channelDoc.channel_id.toString())
-                      .then(doc => resolve(LocalDB.put({ ...doc, is_subscribed: true })))
-                      .catch(err => resolve(LocalDB.put(channelDoc)))
+                      .then(doc => resolveSub(LocalDB.put({ ...doc, is_subscribed: true })))
+                      .catch(err => resolveSub(LocalDB.put(channelDoc)))
                   })
                 ))
                 return Promise.all([insertOtherChannelAction, ...updateSelfChannelAction])
@@ -124,18 +128,23 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           reject(err)
         })
     })
-  }
+  )
     
   const querySteps = [querySelfChannelStep, querySubscribedChannelStep]
   useEffect(()=>{
     LocalDB.createIndex({
       index: {
-        fields: ['table_type', 'is_self', 'is_subscribed'],
+        fields: ['table_type', 'is_self', 'is_subscribed', 'is_public'],
       }
     })
     LocalDB.get('query-step')
       .then(currentStep=>{
         setQueryStep(currentStep['step'])
+        const remainedSteps = querySteps.slice(currentStep['step']).map(func=>func())
+        Promise.all(remainedSteps)
+          .then(res=>{
+            console.log(res, "---oo")
+          })
       })
       .catch(err=>{
         Promise.all(querySteps.map(func=>func()))

@@ -219,24 +219,17 @@ function SidebarChannel() {
 
   useEffect(()=>{
     if(queryStep >= QueryStep.self_channel && !selfChannels.length) {
-      LocalDB.createIndex({
-        index: {
-          fields: ['table_type', 'is_self'],
-        }
+      LocalDB.find({
+        selector: {
+          table_type: 'channel', 
+          is_self: true
+        },
       })
-        .then(()=>{
-          LocalDB.find({
-            selector: {
-              table_type: 'channel', 
-              is_self: true
-            },
-          })
-            .then(response=>{
-              if(!response.docs.length)
-                return
-              setSelfChannels(response.docs)
-              setFocusChannelId(response.docs[0]['channel_id'])
-            })
+        .then(response=>{
+          if(!response.docs.length)
+            return
+          setSelfChannels(response.docs)
+          setFocusChannelId(response.docs[0]['channel_id'])
         })
     }
   }, [queryStep])
