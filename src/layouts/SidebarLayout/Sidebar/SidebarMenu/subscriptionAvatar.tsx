@@ -4,10 +4,9 @@ import StyledAvatar from 'components/StyledAvatar'
 import { SidebarContext } from 'contexts/SidebarContext';
 
 const SubscriptionAvatar = (props) => {
-    const { channel, index } = props
-    const { subscribedChannels } = React.useContext(SidebarContext);
+    const { channel } = props
 
-    return <StyledAvatar alt={channel.name} src={subscribedChannels[index].avatarSrc} width={20}/>
+    return <StyledAvatar alt={channel.name} src={channel.avatarSrc} width={20}/>
 }
 
 export default SubscriptionAvatar

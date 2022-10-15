@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { NavLink as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
 // import { Fade } from "react-awesome-reveal";
@@ -16,6 +16,7 @@ import StyledButton from 'components/StyledButton';
 import PostDlg from 'components/Modal/Post';
 import SubscriptionAvatar from './subscriptionAvatar'
 import { SettingMenuArray } from 'utils/common'
+import { LocalDB, QueryStep } from 'utils/db'
 
 const MenuWrapper = styled(Box)(
   ({ theme }) => `
@@ -197,13 +198,30 @@ const ListItemButtonStyle = {
 }
 
 function SidebarMenu(props) {
-  const { closeSidebar, subscribedChannels } = useContext(SidebarContext);
+  const { closeSidebar, queryStep } = useContext(SidebarContext);
+  const [subscribedChannels, setSubscribedChannels] = useState([]);
   const { pathname } = useLocation()
   const navigate = useNavigate();
   const [isVisibleChannels, setVisibleChannels] = useState(false)
   const [isOpenPost, setOpenPost] = useState(false)
   const isSettingPage = pathname.startsWith('/setting')
   
+  useEffect(()=>{
+    if(queryStep >= QueryStep.subscribed_channel && !subscribedChannels.length) {
+      LocalDB.find({
+        selector: {
+          table_type: 'channel', 
+          is_subscribed: true
+        },
+      })
+        .then(response=>{
+          if(!response.docs.length)
+            return
+          setSubscribedChannels(response.docs)
+        })
+    }
+  }, [queryStep])
+
   const toggleChannels = (e) => {
     setVisibleChannels(!isVisibleChannels)
   }
@@ -274,7 +292,7 @@ function SidebarMenu(props) {
                               value={channel.channel_id}
                               disableRipple
                               onClick={link2detail}
-                              startIcon={<SubscriptionAvatar channel={channel} index={_i}/>}
+                              startIcon={<SubscriptionAvatar channel={channel}/>}
                               sx={{p: '4px 14px !important'}}
                             >
                               <Typography variant="body2" sx={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>{channel.name}</Typography>
