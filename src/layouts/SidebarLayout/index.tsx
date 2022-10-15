@@ -30,39 +30,61 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myDid = `did:elastos:${feedsDid}`
-  
+  // LocalDB.destroy()
+
+  const querySelfChannelStep = () => (
+    new Promise((resolve, reject) => {
+      hiveApi.querySelfChannels()
+        .then(res=>{
+          // console.log(res, '-----------self')
+          if(Array.isArray(res)){
+            const selfChannels = 
+              res.filter(item=>item.status!=CommonStatus.deleted)
+                .map(item=>{
+                  item.target_did = myDid
+                  return item
+                })
+            Promise.all(selfChannels.map(async channel=>{
+              const parseAvatar = channel['avatar'].split('@')
+              const avatarRes = await hiveApi.downloadCustomeAvatar(parseAvatar[parseAvatar.length-1])
+              const dataObj = {...channel, _id: channel.channel_id.toString(), is_self: true, is_subscribed: false, is_public: false, table_type: 'channel'}
+              if(avatarRes && avatarRes.length) {
+                dataObj['avatarSrc'] = avatarRes
+              }
+              return dataObj
+            }))
+              .then(selfChannelData => LocalDB.bulkDocs(selfChannelData))
+              .then(_=>LocalDB.put({_id: 'query-step', step: QueryStep.self_channel}))
+              .then(_=>{ 
+                setQueryStep(QueryStep.self_channel) 
+                resolve({success: true})
+              })
+              .catch(err=>{
+                resolve({success: false, error: err})
+              })
+          }
+          else
+            resolve({success: true})
+        })
+        .catch(err=>{
+          reject(err)
+        })
+    })
+  )
+  const querySteps = [querySelfChannelStep()]
   useEffect(()=>{
     LocalDB.get('query-step')
       .then(currentStep=>{
         setQueryStep(currentStep['step'])
       })
       .catch(err=>{
-        hiveApi.querySelfChannels()
+        Promise.all(querySteps)
           .then(res=>{
-            // console.log(res, '-----------self')
-            if(Array.isArray(res)){
-              const selfChannels = 
-                res.filter(item=>item.status!=CommonStatus.deleted)
-                  .map(item=>{
-                    item.target_did = myDid
-                    return item
-                  })
-              Promise.all(selfChannels.map(async channel=>{
-                const parseAvatar = channel['avatar'].split('@')
-                const avatarRes = await hiveApi.downloadCustomeAvatar(parseAvatar[parseAvatar.length-1])
-                const dataObj = {...channel, _id: channel.channel_id.toString(), is_self: true, is_subscribed: false, is_public: false, table_type: 'channel'}
-                if(avatarRes && avatarRes.length) {
-                  dataObj['avatarSrc'] = avatarRes
-                }
-                return dataObj
-              }))
-                .then(selfChannelData => LocalDB.bulkDocs(selfChannelData))
-                .then(_=>LocalDB.put({_id: 'query-step', step: QueryStep.self_channel}))
-                .then(_=>{ setQueryStep(QueryStep.self_channel) })
-            }
+            console.log(res)
           })
       })
   }, [])
+
 
   const initializeWalletConnection = () => {
     if (sessionLinkFlag === '1') {
