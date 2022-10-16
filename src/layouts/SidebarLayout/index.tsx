@@ -129,8 +129,46 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         })
     })
   )
+
+  const queryDispNameStep = () => (
+    new Promise((resolve, reject) => {
+      LocalDB.find({
+        selector: {
+          table_type: 'channel'
+        },
+      })
+        .then(response=>{
+          // setFocusChannelId(response.docs[0]['channel_id'])
+          const channelDocWithDispName = response.docs.map(async channel=>{
+            const dispNameRes = await hiveApi.queryUserDisplayName(channel['target_did'], channel['channel_id'], myDID)
+            const channelDoc = {...channel}
+            if(dispNameRes['find_message'] && dispNameRes['find_message']['items'].length) {
+              const dispName = dispNameRes['find_message']['items'][0].display_name
+              channelDoc['owner_name'] = dispName
+            }
+            return channelDoc
+          })
+          Promise.all(channelDocWithDispName)
+            .then(channelData => LocalDB.bulkDocs(channelData))
+            .then(async _=>{
+              const stepDoc = await LocalDB.get('query-step')
+              return LocalDB.put({_id: 'query-step', step: QueryStep.channel_dispname, _rev: stepDoc._rev})
+            })
+            .then(_=>{ 
+              setQueryStep(QueryStep.channel_dispname) 
+              resolve({success: true})
+            })
+            .catch(err=>{
+              resolve({success: false, error: err})
+            })
+        })
+        .catch(err=>{
+          reject(err)
+        })
+    })
+  )
     
-  const querySteps = [querySelfChannelStep, querySubscribedChannelStep]
+  const querySteps = [querySelfChannelStep, querySubscribedChannelStep, queryDispNameStep]
   useEffect(()=>{
     LocalDB.createIndex({
       index: {
@@ -143,7 +181,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         const remainedSteps = querySteps.slice(currentStep['step']).map(func=>func())
         Promise.all(remainedSteps)
           .then(res=>{
-            console.log(res, "---oo")
+            console.log(res, "---result")
           })
       })
       .catch(err=>{
