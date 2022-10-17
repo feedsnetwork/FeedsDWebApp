@@ -223,23 +223,28 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           }, [])
           subscribers = getFilteredArrayByUnique(subscribers, 'user_did')
           const subscriberInfoDoc = subscribers.map(async subscriber=>{
-            const userInfo = await getInfoFromDID(subscriber.user_did)
-            const infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
+            let infoDoc = null
             try {
-              const hiveUrl = await hiveApi.getHiveUrl(subscriber.user_did)
-              const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
-              if(response && response.length) {
-                const base64Content = response.toString('base64')
-                infoDoc['avatarSrc'] = encodeBase64(`data:image/png;base64,${base64Content}`)
-              }
+              const userInfo = await getInfoFromDID(subscriber.user_did)
+              infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
             } catch(err) {
+
             }
+            // try {
+            //   const hiveUrl = await hiveApi.getHiveUrl(subscriber.user_did)
+            //   const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
+            //   if(response && response.length) {
+            //     const base64Content = response.toString('base64')
+            //     infoDoc['avatarSrc'] = encodeBase64(`data:image/png;base64,${base64Content}`)
+            //   }
+            // } catch(err) {
+            // }
             return infoDoc
           })
           Promise.all(subscriberInfoDoc)
             .then(userData => {
               console.log(userData)
-              LocalDB.bulkDocs(userData)
+              LocalDB.bulkDocs(userData.filter(item=>item!==null))
             })
             .then(async _=>{
               const stepDoc = await LocalDB.get('query-step')

@@ -7,12 +7,29 @@ import StyledButton from 'components/StyledButton'
 import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { getInfoFromDID } from 'utils/common'
+import { LocalDB, QueryStep } from 'utils/db'
 
 const SubscriberListItem = (props) => {
     const { subscriber } = props
-    const { subscriberInfo } = React.useContext(SidebarContext);
-    const info_data = subscriberInfo[subscriber.user_did] || {}
+    const { queryStep } = React.useContext(SidebarContext);
+    const [ userInfo, setSubscriberInfo] = React.useState({})
     const navigate = useNavigate();
+
+    React.useEffect(()=>{
+        if(queryStep>=QueryStep.subscriber_info) {
+            LocalDB.find({
+                selector: {
+                    table_type: 'user'
+                }
+            })
+                .then(res=>console.log(res, "---userdoc"))
+            LocalDB.get(subscriber.user_did)
+                .then(doc=>{
+                    console.log(doc, "---userdoc")
+                    setSubscriberInfo(doc)
+                })
+        }
+    }, [queryStep])
 
     const handleLink2Profile = (user_did)=>{
         navigate('/profile/others', {state: {user_did}});
@@ -21,7 +38,7 @@ const SubscriberListItem = (props) => {
     return (
         <Stack direction="row" alignItems="center" spacing={1}>
             <Box onClick={(e)=>{handleLink2Profile(subscriber.user_did)}} sx={{cursor: 'pointer'}}>
-                <StyledAvatar alt={subscriber.display_name} src={info_data['avatar']} width={32}/>
+                <StyledAvatar alt={subscriber.display_name} src={userInfo['avatar']} width={32}/>
             </Box>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
                 <Typography variant="subtitle2" noWrap>
@@ -30,8 +47,8 @@ const SubscriberListItem = (props) => {
                     </Link>
                 </Typography>
                 {
-                    info_data['info'] && info_data['info']['description'] &&
-                    <Typography variant="body2" color='text.secondary' noWrap>{info_data['info']['description']}</Typography>
+                    userInfo['description'] &&
+                    <Typography variant="body2" color='text.secondary' noWrap>{userInfo['description']}</Typography>
                 }
             </Box>
         </Stack>
