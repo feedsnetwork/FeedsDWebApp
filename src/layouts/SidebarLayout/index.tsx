@@ -142,7 +142,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         },
       })
         .then(response=>{
-          // setFocusChannelId(response.docs[0]['channel_id'])
           const channelDocWithDispName = response.docs.map(async channel=>{
             const dispNameRes = await hiveApi.queryUserDisplayName(channel['target_did'], channel['channel_id'], myDID)
             const channelDoc = {...channel}
@@ -171,8 +170,45 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         })
     })
   )
+
+  const querySubscriptionInfoStep = () => (
+    new Promise((resolve, reject) => {
+      LocalDB.find({
+        selector: {
+          table_type: 'channel'
+        },
+      })
+        .then(response=>{
+          const channelDocWithSubcriptionInfo = response.docs.map(async channel=>{
+            const subscriptionRes = await hiveApi.querySubscriptionInfoByChannelId(channel['target_did'], channel['channel_id'])
+            const channelDoc = {...channel}
+            if(subscriptionRes['find_message']) {
+              const subscribersArr = subscriptionRes['find_message']['items']
+              channelDoc['subscribers'] = subscribersArr
+            }
+            return channelDoc
+          })
+          Promise.all(channelDocWithSubcriptionInfo)
+            .then(channelData => LocalDB.bulkDocs(channelData))
+            .then(async _=>{
+              const stepDoc = await LocalDB.get('query-step')
+              return LocalDB.put({_id: 'query-step', step: QueryStep.subscription_info, _rev: stepDoc._rev})
+            })
+            .then(_=>{ 
+              setQueryStep(QueryStep.subscription_info) 
+              resolve({success: true})
+            })
+            .catch(err=>{
+              resolve({success: false, error: err})
+            })
+        })
+        .catch(err=>{
+          reject(err)
+        })
+    })
+  )
     
-  const querySteps = [querySelfChannelStep, querySubscribedChannelStep, queryDispNameStep]
+  const querySteps = [querySelfChannelStep, querySubscribedChannelStep, queryDispNameStep, querySubscriptionInfoStep]
   useEffect(()=>{
     LocalDB.createIndex({
       index: {
