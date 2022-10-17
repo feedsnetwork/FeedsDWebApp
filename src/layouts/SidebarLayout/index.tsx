@@ -16,7 +16,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { isInAppBrowser } from 'utils/common'
+import { encodeBase64, isInAppBrowser } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
 
 interface SidebarLayoutProps {
@@ -49,7 +49,11 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               const avatarRes = await hiveApi.downloadCustomeAvatar(parseAvatar[parseAvatar.length-1])
               const dataObj = {...channel, _id: channel.channel_id.toString(), is_self: true, is_subscribed: false, is_public: false, table_type: 'channel'}
               if(avatarRes && avatarRes.length) {
-                dataObj['avatarSrc'] = avatarRes
+                const avatarSrc = avatarRes.reduce((content, code)=>{
+                  content=`${content}${String.fromCharCode(code)}`;
+                  return content
+                }, '')
+                dataObj['avatarSrc'] = encodeBase64(avatarSrc)
               }
               return dataObj
             })
@@ -85,7 +89,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                 const dataObj = {...channelInfo, _id: channel.channel_id.toString(), target_did: channel.target_did, is_self: false, is_subscribed: true, is_public: false, table_type: 'channel'}
                 try {
                   const avatarRes = await hiveApi.downloadScripting(channel.target_did, channelInfo.avatar)
-                  dataObj['avatarSrc'] = avatarRes
+                  dataObj['avatarSrc'] = encodeBase64(avatarRes)
                 } catch(err) {
                   console.log(err)
                 }

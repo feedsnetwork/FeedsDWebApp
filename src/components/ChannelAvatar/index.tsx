@@ -5,6 +5,7 @@ import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
 
 import { SidebarContext } from 'contexts/SidebarContext';
 import { HiveApi } from 'services/HiveApi'
+import { decodeBase64 } from 'utils/common'
 
 const ChannelWrapper = styled(Box)(
   ({ theme }) => `
@@ -90,39 +91,11 @@ interface ChannelAvatarProps {
 }
 
 const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
-  const { channel, width=40, variant = 'circular', onClick=(e)=>{}, onRightClick=(e)=>{}, focused=false, index } = props
-  const { setSelfChannels } = useContext(SidebarContext);
-  // const [avatarSrc, setAvatarSrc] = useState('')
-  const hiveApi = new HiveApi()
+  const { channel, width=40, variant = 'circular', onClick=(e)=>{}, onRightClick=(e)=>{}, focused=false } = props
   let avatarSrc = ""
   if(channel['avatarSrc']) {
-    avatarSrc = channel['avatarSrc'].reduce((content, code)=>{
-      content=`${content}${String.fromCharCode(code)}`;
-      return content
-    }, '')
+    avatarSrc = decodeBase64(channel['avatarSrc'])
   }
-  useEffect(()=>{
-    // const parseAvatar = channel['avatar'].split('@')
-    // hiveApi.downloadCustomeAvatar(parseAvatar[parseAvatar.length-1])
-    //   .then(res=>{
-    //     if(res && res.length) {
-    //       const base64Content = res.reduce((content, code)=>{
-    //         content=`${content}${String.fromCharCode(code)}`;
-    //         return content
-    //       }, '')
-    //       setSelfChannels(prev=>{
-    //         const prevState = [...prev]
-    //         prevState[index].avatarSrc = base64Content
-    //         return prevState
-    //       })
-    //       setAvatarSrc(base64Content)
-    //     }
-    //   })
-    //   .catch(err=>{
-    //     console.log(err)
-    //   })
-    
-  }, [])
   const rippleRef = useRef(null);
   const onRippleStart = (e) => {
     rippleRef.current.start(e);

@@ -15,7 +15,8 @@ import SubscriberListItem from './SubscriberListItem';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectPublicChannels, selectDispNameOfChannels } from 'redux/slices/channel';
 import { HiveApi } from 'services/HiveApi'
-import { reduceHexAddress, reduceDIDstring } from 'utils/common'
+import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
+import { LocalDB } from 'utils/db'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -96,15 +97,27 @@ const ChannelAbout = (props) => {
   </>
 }
 function RightPanel() {
-  const { focusedChannelId, selfChannels, subscribedChannels, toggleSidebar } = useContext(SidebarContext);
+  const { focusedChannelId, selfChannels, subscribedChannels, queryStep, toggleSidebar } = useContext(SidebarContext);
+  const [focusedChannel, setFocusChannel] = React.useState(null)
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
   const location = useLocation();
   const publicChannels = useSelector(selectPublicChannels)
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
-  const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
   let content = null
+
+  React.useEffect(()=>{
+    if(queryStep && focusedChannelId) {
+      LocalDB.get(focusedChannelId.toString())
+        .then(doc=>{
+          const channelObj = {...doc}
+          if(channelObj['avatarSrc'])
+            channelObj['avatarSrc'] = decodeBase64(channelObj['avatarSrc'])
+          setFocusChannel(channelObj)
+        })
+    }
+  }, [queryStep, focusedChannelId])
 
   if(pathname.startsWith('/setting')) {
     if(pathname.endsWith('/credentials'))
