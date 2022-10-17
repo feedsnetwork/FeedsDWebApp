@@ -395,3 +395,17 @@ export const encodeBase64 = (data) => {
 export const decodeBase64 = (data) => {
   return Buffer.from(data, 'base64').toString('ascii');
 }
+export function promiseSeries(arrayOfPromises) {
+  var results = [];
+  return arrayOfPromises.reduce(function(seriesPromise, promise) {
+    return seriesPromise
+      .then(() => promise())
+      .then((result) => {
+        results.push(result)
+        return Promise.resolve()
+      })
+  }, Promise.resolve())
+  .then(function() {
+    return results;
+  });
+};

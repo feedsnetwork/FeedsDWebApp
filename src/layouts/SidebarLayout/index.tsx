@@ -16,7 +16,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { encodeBase64, isInAppBrowser } from 'utils/common'
+import { encodeBase64, isInAppBrowser, promiseSeries } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
 
 interface SidebarLayoutProps {
@@ -189,7 +189,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           })
       })
       .catch(err=>{
-        Promise.all(querySteps.map(func=>func()))
+        promiseSeries(querySteps)
           .then(res=>{
             console.log(res)
           })
