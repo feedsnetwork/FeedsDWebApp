@@ -16,7 +16,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { encodeBase64, isInAppBrowser, promiseSeries } from 'utils/common'
+import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
 
 interface SidebarLayoutProps {
@@ -207,8 +207,59 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         })
     })
   )
-    
-  const querySteps = [querySelfChannelStep, querySubscribedChannelStep, queryDispNameStep, querySubscriptionInfoStep]
+  
+  const querySubscriberInfoStep = () => (
+    new Promise((resolve, reject) => {
+      LocalDB.find({
+        selector: {
+          table_type: 'channel'
+        },
+      })
+        .then(response=>{
+          let subscribers = response.docs.reduce((group, channel)=>{
+            if(channel['subscribers'])
+              group = [...group, ...channel['subscribers']]
+            return group
+          }, [])
+          subscribers = getFilteredArrayByUnique(subscribers, 'user_did')
+          const subscriberInfoDoc = subscribers.map(async subscriber=>{
+            const userInfo = await getInfoFromDID(subscriber.user_did)
+            const infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
+            try {
+              const hiveUrl = await hiveApi.getHiveUrl(subscriber.user_did)
+              const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
+              if(response && response.length) {
+                const base64Content = response.toString('base64')
+                infoDoc['avatarSrc'] = encodeBase64(`data:image/png;base64,${base64Content}`)
+              }
+            } catch(err) {
+            }
+            return infoDoc
+          })
+          Promise.all(subscriberInfoDoc)
+            .then(userData => {
+              console.log(userData)
+              LocalDB.bulkDocs(userData)
+            })
+            .then(async _=>{
+              const stepDoc = await LocalDB.get('query-step')
+              return LocalDB.put({_id: 'query-step', step: QueryStep.subscriber_info, _rev: stepDoc._rev})
+            })
+            .then(_=>{ 
+              setQueryStep(QueryStep.subscriber_info) 
+              resolve({success: true})
+            })
+            .catch(err=>{
+              resolve({success: false, error: err})
+            })
+        })
+        .catch(err=>{
+          reject(err)
+        })
+    })
+  )
+
+  const querySteps = [querySelfChannelStep, querySubscribedChannelStep, queryDispNameStep, querySubscriptionInfoStep, querySubscriberInfoStep]
   useEffect(()=>{
     LocalDB.createIndex({
       index: {

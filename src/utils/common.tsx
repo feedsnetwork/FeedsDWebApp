@@ -147,7 +147,7 @@ export function getFilteredArrayByUnique(arr, field) {
       unique.push(o);
     }
     return unique;
-  },[]);
+  }, []);
   return result
 }
 

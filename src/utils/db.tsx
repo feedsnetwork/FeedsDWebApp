@@ -9,4 +9,5 @@ export const enum QueryStep {
   subscribed_channel = 2,
   channel_dispname = 3,
   subscription_info = 4,
+  subscriber_info = 5,
 }
