@@ -10,6 +10,7 @@ import { HiveApi } from 'services/HiveApi'
 import { selectPublicChannels } from 'redux/slices/channel';
 import { selectPublicPosts } from 'redux/slices/post';
 import { SettingMenuArray, getAppPreference, reduceDIDstring, getMergedArray } from 'utils/common'
+import { LocalDB, QueryStep } from 'utils/db';
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -49,7 +50,7 @@ const HeaderWrapper = styled(Box)(
 );
 function FloatingHeader() {
   const { pageType, setPageType, closeOverPage } = React.useContext(OverPageContext);
-  const { focusedChannelId, selfChannels, subscribedChannels, postsInSelf, postsInSubs, userInfo } = React.useContext(SidebarContext);
+  const { queryStep, focusedChannelId, selfChannels, subscribedChannels, postsInSelf, postsInSubs, userInfo } = React.useContext(SidebarContext);
   const location = useLocation()
   const { pathname } = useLocation()
   const { channel_id } = (location.state || {}) as any
@@ -60,6 +61,24 @@ function FloatingHeader() {
   const postsInHome = getMergedArray(postsInSubs)
   const publicChannels = useSelector(selectPublicChannels)
   const publicPosts = useSelector(selectPublicPosts)
+  const [focusedChannel, setFocusedChannel] = React.useState({})
+  const [postCountInFocus, setPostCountInFocus] = React.useState(0)
+
+  React.useEffect(()=>{
+    if(queryStep && focusedChannelId) {
+      LocalDB.get(focusedChannelId.toString())
+        .then(doc=>setFocusedChannel(doc))
+      if(queryStep>=QueryStep.post_data) {
+        LocalDB.find({
+          selector: {
+            channel_id: focusedChannelId,
+            table_type: 'post'
+          }
+        })
+          .then(res=>setPostCountInFocus(res.docs.length))
+      }
+    }
+  }, [queryStep, focusedChannelId])
 
   const handleBack = (e) => {
     if(pathname.startsWith('/setting')) {
@@ -84,10 +103,8 @@ function FloatingHeader() {
     else if(pathname.startsWith('/channel/add') || pageType==='AddChannel')
       primaryText = "Add Channel"
     else if(pathname.startsWith('/channel') && focusedChannelId) {
-      const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
-      const postsInFocusedChannel = postsInSelf[focusedChannelId] || []
-      primaryText = focusedChannel.name
-      secondaryText = `${postsInFocusedChannel.length} posts`
+      primaryText = focusedChannel['name']
+      secondaryText = `${postCountInFocus} posts`
     }
     else if(pathname.startsWith('/subscription/channel') && channel_id) {
       const activeChannel = (subscribedChannels.find(item=>item.channel_id==channel_id) || {}) as any
@@ -119,7 +136,7 @@ function FloatingHeader() {
     return ""
   }
 
-  const backBtnText = React.useMemo(() => getActionText(), [pageType, pathname, focusedChannelId, postsInSelf, postsInSubs, selfChannels, subscribedChannels, channel_id])
+  const backBtnText = React.useMemo(() => getActionText(), [pageType, pathname, focusedChannel, postCountInFocus, channel_id])
   return (
     <>
       <Hidden lgDown>

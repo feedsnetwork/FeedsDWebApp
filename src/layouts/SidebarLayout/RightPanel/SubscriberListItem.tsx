@@ -17,12 +17,6 @@ const SubscriberListItem = (props) => {
 
     React.useEffect(()=>{
         if(queryStep>=QueryStep.subscriber_info) {
-            LocalDB.find({
-                selector: {
-                    table_type: 'user'
-                }
-            })
-                .then(res=>console.log(res, "---userdoc"))
             LocalDB.get(subscriber.user_did)
                 .then(doc=>{
                     console.log(doc, "---userdoc")
