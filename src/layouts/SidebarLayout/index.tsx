@@ -16,7 +16,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique } from 'utils/common'
+import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
 
 interface SidebarLayoutProps {
@@ -264,7 +264,71 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     })
   )
 
-  const querySteps = [querySelfChannelStep, querySubscribedChannelStep, queryDispNameStep, querySubscriptionInfoStep, querySubscriberInfoStep]
+  const queryPostStep = () => (
+    new Promise((resolve, reject) => {
+      const prefConf = getAppPreference()
+      LocalDB.find({
+        selector: {
+          table_type: 'channel'
+        },
+      })
+        .then(response=>{
+          const postsByChannel = response.docs.map(async channel=>{
+            try {
+              const postRes = await hiveApi.queryPostByChannelId(channel['target_did'], channel['channel_id'])
+              if(postRes['find_message'] && postRes['find_message']['items']) {
+                const postArr = prefConf.DP?
+                  postRes['find_message']['items']:
+                  postRes['find_message']['items'].filter(postItem=>postItem.status!==CommonStatus.deleted)
+                const splitTargetDid = channel['target_did'].split(':')
+                const postDocArr = postArr.map(post=>{
+                  const tempost = {...post}
+                  tempost._id = post.post_id
+                  tempost.target_did = splitTargetDid[splitTargetDid.length-1]
+                  tempost.table_type = 'post'
+                  tempost.is_in_favour = true
+                  tempost.likes = 0
+                  tempost.like_me = false
+                  tempost.like_creators = []
+                  if(typeof post.created == 'object')
+                    tempost.created = new Date(post.created['$date']).getTime()/1000
+                  return tempost
+                })
+                return postDocArr
+              }
+            } catch(err) {}
+            return []
+          })
+          Promise.all(postsByChannel)
+            .then(postGroup=> Promise.resolve(getMergedArray(postGroup)))
+            .then(postData => LocalDB.bulkDocs(postData))
+            .then(async _=>{
+              const stepDoc = await LocalDB.get('query-step')
+              return LocalDB.put({_id: 'query-step', step: QueryStep.post_data, _rev: stepDoc._rev})
+            })
+            .then(_=>{ 
+              setQueryStep(QueryStep.post_data) 
+              resolve({success: true})
+            })
+            .catch(err=>{
+              resolve({success: false, error: err})
+            })
+        })
+        .catch(err=>{
+          reject(err)
+        })
+    })
+  )
+
+  const querySteps = [
+    querySelfChannelStep, 
+    querySubscribedChannelStep, 
+    queryDispNameStep, 
+    querySubscriptionInfoStep, 
+    querySubscriberInfoStep, 
+    queryPostStep
+  ]
+
   useEffect(()=>{
     LocalDB.createIndex({
       index: {
