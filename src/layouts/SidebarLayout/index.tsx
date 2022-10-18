@@ -289,6 +289,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                   tempost.likes = 0
                   tempost.like_me = false
                   tempost.like_creators = []
+                  tempost.mediaData = []
                   if(typeof post.created == 'object')
                     tempost.created = new Date(post.created['$date']).getTime()/1000
                   return tempost
@@ -343,15 +344,63 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             return postDoc
           })
           Promise.all(postDocWithLikeInfo)
-            .then(postData => {
-              return LocalDB.bulkDocs(postData)
-            })
+            .then(postData => LocalDB.bulkDocs(postData))
             .then(async _=>{
               const stepDoc = await LocalDB.get('query-step')
               return LocalDB.put({_id: 'query-step', step: QueryStep.post_like, _rev: stepDoc._rev})
             })
             .then(_=>{ 
               setQueryStep(QueryStep.post_like) 
+              resolve({success: true})
+            })
+            .catch(err=>{
+              resolve({success: false, error: err})
+            })
+        })
+        .catch(err=>{
+          reject(err)
+        })
+    })
+  )
+
+  const queryPostImgStep = () => (
+    new Promise((resolve, reject) => {
+      LocalDB.find({
+        selector: {
+          table_type: 'post'
+        },
+      })
+        .then(response=>{
+          const postDocWithImg = response.docs.map(async post=>{
+            const postDoc = {...post}
+            if(post['status'] !== CommonStatus.deleted) {
+              try {
+                const contentObj = JSON.parse(post['content'])
+                const mediaData = contentObj.mediaData.filter(media=>!!media.originMediaPath).map(async media => {
+                  const mediaObj = {...media}
+                  try {
+                    const mediaSrc = await hiveApi.downloadScripting(post['target_did'], media.originMediaPath)
+                    if(mediaSrc) {
+                      mediaObj['mediaSrc'] = mediaSrc
+                    }
+                  } catch(err) {
+                    console.log(err)
+                  }
+                  return mediaObj
+                })
+                postDoc['mediaData'] = await Promise.all(mediaData)
+              } catch(err) {}
+            }
+            return postDoc
+          })
+          Promise.all(postDocWithImg)
+            .then(postData => LocalDB.bulkDocs(postData))
+            .then(async _=>{
+              const stepDoc = await LocalDB.get('query-step')
+              return LocalDB.put({_id: 'query-step', step: QueryStep.post_image, _rev: stepDoc._rev})
+            })
+            .then(_=>{ 
+              setQueryStep(QueryStep.post_image) 
               resolve({success: true})
             })
             .catch(err=>{
@@ -371,7 +420,8 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     querySubscriptionInfoStep, 
     querySubscriberInfoStep, 
     queryPostStep,
-    queryLikeInfoStep
+    queryLikeInfoStep,
+    queryPostImgStep
   ]
 
   useEffect(()=>{
