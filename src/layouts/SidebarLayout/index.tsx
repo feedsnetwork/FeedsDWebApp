@@ -280,11 +280,10 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                 const postArr = prefConf.DP?
                   postRes['find_message']['items']:
                   postRes['find_message']['items'].filter(postItem=>postItem.status!==CommonStatus.deleted)
-                const splitTargetDid = channel['target_did'].split(':')
                 const postDocArr = postArr.map(post=>{
                   const tempost = {...post}
                   tempost._id = post.post_id
-                  tempost.target_did = splitTargetDid[splitTargetDid.length-1]
+                  tempost.target_did = channel['target_did']
                   tempost.table_type = 'post'
                   tempost.is_in_favour = true
                   tempost.likes = 0
@@ -319,6 +318,51 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         })
     })
   )
+  
+  const queryLikeInfoStep = () => (
+    new Promise((resolve, reject) => {
+      LocalDB.find({
+        selector: {
+          table_type: 'post'
+        },
+      })
+        .then(response=>{
+          const postDocWithLikeInfo = response.docs.map(async post=>{
+            const postDoc = {...post}
+            try {
+              const likeRes = await hiveApi.queryLikeById(post['target_did'], post['channel_id'], post['post_id'], '0')
+              if(likeRes['find_message'] && likeRes['find_message']['items']) {
+                const likeArr = likeRes['find_message']['items']
+                const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
+                const likeCreators = filteredLikeArr.map(item=>item.creater_did)
+                postDoc['likes'] = filteredLikeArr.length
+                postDoc['like_me'] = likeCreators.includes(myDID)
+                postDoc['like_creators'] = likeCreators
+              }
+            } catch(err) {}
+            return postDoc
+          })
+          Promise.all(postDocWithLikeInfo)
+            .then(postData => {
+              return LocalDB.bulkDocs(postData)
+            })
+            .then(async _=>{
+              const stepDoc = await LocalDB.get('query-step')
+              return LocalDB.put({_id: 'query-step', step: QueryStep.post_like, _rev: stepDoc._rev})
+            })
+            .then(_=>{ 
+              setQueryStep(QueryStep.post_like) 
+              resolve({success: true})
+            })
+            .catch(err=>{
+              resolve({success: false, error: err})
+            })
+        })
+        .catch(err=>{
+          reject(err)
+        })
+    })
+  )
 
   const querySteps = [
     querySelfChannelStep, 
@@ -326,7 +370,8 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     queryDispNameStep, 
     querySubscriptionInfoStep, 
     querySubscriberInfoStep, 
-    queryPostStep
+    queryPostStep,
+    queryLikeInfoStep
   ]
 
   useEffect(()=>{

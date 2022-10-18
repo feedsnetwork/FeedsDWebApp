@@ -71,7 +71,7 @@ function Channel() {
           setDispName(doc['owner_name'])
         })
     }
-    if(queryStep >= QueryStep.channel_dispname && !selfChannelCount) {
+    if(queryStep && !selfChannelCount) {
       LocalDB.find({
         selector: {
           is_self: true,

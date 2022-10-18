@@ -19,7 +19,6 @@ const SubscriberListItem = (props) => {
         if(queryStep>=QueryStep.subscriber_info) {
             LocalDB.get(subscriber.user_did)
                 .then(doc=>{
-                    console.log(doc, "---userdoc")
                     setSubscriberInfo(doc)
                 })
                 .catch(err=>{})
