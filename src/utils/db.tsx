@@ -13,4 +13,5 @@ export const enum QueryStep {
   post_data = 6,
   post_like = 7,
   post_image = 8,
+  comment_data = 9,
 }

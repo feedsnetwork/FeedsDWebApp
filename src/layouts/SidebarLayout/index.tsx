@@ -1,7 +1,7 @@
 import { FC, ReactNode, useEffect, useContext, useCallback } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
-import { Box, alpha, lighten, useTheme, Hidden, Container, Stack, Input, Typography, Grid, styled, IconButton, Button } from '@mui/material';
+import { Box, alpha, lighten, useTheme, Hidden, Container, Stack } from '@mui/material';
 
 import Sidebar from './Sidebar';
 import SidebarChannel from './SidebarChannel';
@@ -16,7 +16,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray } from 'utils/common'
+import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
 
 interface SidebarLayoutProps {
@@ -413,6 +413,68 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     })
   )
 
+  const queryCommentStep = () => (
+    new Promise((resolve, reject) => {
+      LocalDB.find({
+        selector: {
+          table_type: 'post'
+        },
+      })
+        .then(response=>{
+          var postGroup = response.docs.reduce((group, p) => {
+            const {target_did=null, channel_id=null, post_id=null} = {...p}
+            if(group.some(obj => obj['channel_id'] === channel_id)) {
+              const gId = group.findIndex(obj => obj['channel_id'] === channel_id)
+              group[gId]['postIds'].push(post_id)
+            }
+            else {
+              group.push({target_did, channel_id, postIds: [post_id]})
+            }
+            return group;
+          }, []);
+          const commentsByPost = postGroup.map(async group => {
+            const {target_did, channel_id, postIds} = group
+            const commentRes = await hiveApi.queryCommentsFromPosts(target_did, channel_id, postIds)
+            if(commentRes['find_message'] && commentRes['find_message']['items']) {
+              const commentArr = commentRes['find_message']['items']
+              const ascCommentArr = sortByDate(commentArr, 'asc')
+              const linkedComments = ascCommentArr.reduce((res, item)=>{
+                if(item.refcomment_id=='0' || !res.some((c) => c.comment_id === item.refcomment_id)) {
+                  const commentDoc = {...item, _id: item.comment_id, table_type: 'comment'}
+                  res.push(commentDoc)
+                  return res
+                }
+                const tempRefIndex = res.findIndex((c) => c.comment_id == item.refcomment_id)
+                if(res[tempRefIndex]['commentData'])
+                  res[tempRefIndex]['commentData'].push(item)
+                else res[tempRefIndex]['commentData'] = [item]
+                return res
+              }, []).reverse()
+              return linkedComments
+            }
+            return []
+          })
+          Promise.all(commentsByPost)
+            .then(commentGroup=> Promise.resolve(getMergedArray(commentGroup)))
+            .then(commentData => LocalDB.bulkDocs(commentData))
+            .then(async _=>{
+              const stepDoc = await LocalDB.get('query-step')
+              return LocalDB.put({_id: 'query-step', step: QueryStep.comment_data, _rev: stepDoc._rev})
+            })
+            .then(_=>{ 
+              setQueryStep(QueryStep.comment_data) 
+              resolve({success: true})
+            })
+            .catch(err=>{
+              resolve({success: false, error: err})
+            })
+        })
+        .catch(err=>{
+          reject(err)
+        })
+    })
+  )
+
   const querySteps = [
     querySelfChannelStep, 
     querySubscribedChannelStep, 
@@ -421,7 +483,8 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     querySubscriberInfoStep, 
     queryPostStep,
     queryLikeInfoStep,
-    queryPostImgStep
+    queryPostImgStep,
+    queryCommentStep
   ]
 
   useEffect(()=>{
