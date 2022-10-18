@@ -18,6 +18,7 @@ import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
 import { CommonStatus } from 'models/common_content'
 import { reduceDIDstring, getAppPreference, sortByDate, getBufferFromFile, getFilteredArrayByUnique } from 'utils/common'
 import { HiveApi } from 'services/HiveApi'
+import { LocalDB, QueryStep } from 'utils/db';
 
 const PostBoxStyle = styled(Box)(({ theme }) => ({
   position: 'sticky',
@@ -30,8 +31,10 @@ const PostBoxStyle = styled(Box)(({ theme }) => ({
 }));
 
 function Channel() {
-  const { focusedChannelId, selfChannels, postsInSelf, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
+  const { queryStep, focusedChannelId, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
+  const [posts, setPosts] = React.useState([]);
   const [dispName, setDispName] = React.useState('');
+  const [selfChannelCount, setSelfChannelCount] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(false)
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
@@ -46,26 +49,40 @@ function Channel() {
   const userDid = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
   const postRef = React.useRef(null)
-  const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
-  const postsInFocusedChannel = postsInSelf[focusedChannelId] || []
 
   React.useEffect(()=>{
-    if(focusedChannelId) {
-      // const postContent = new PostContentV3()
-      // postContent.content = "This is new post"
-      // hiveApi.updatePost("4d273607cd54b4850c086ecffd1b059aa7332b35e3c8a153b4d8178f4aa045fc", "396968a639f20908bbe51cba84f14f02620466fc6a103b2c277cc80b3ab22504", "public", "", JSON.stringify(postContent), 0, 1662041339625, "", "")
-      //   .then(res=>{console.log(res, '%%%%%%%%%%%%%%%%%%%%%%%%')})
-      if(!postsInSelf[focusedChannelId])
-        setIsLoading(true)
-      else
-        setIsLoading(false)
-      hiveApi.queryUserDisplayName(userDid, focusedChannelId.toString(), userDid)
+    if(queryStep < QueryStep.post_data)
+      setIsLoading(true)
+    else if(queryStep >= QueryStep.post_data && focusedChannelId) {
+      setIsLoading(false)
+      LocalDB.find({
+        selector: {
+          channel_id: focusedChannelId,
+          table_type: 'post'
+        }
+      })
         .then(res=>{
-          if(res['find_message'] && res['find_message']['items'].length)
-            setDispName(res['find_message']['items'][0].display_name)
+          setPosts(res.docs)
         })
     }
-  }, [focusedChannelId, publishPostNumber, postsInSelf])
+    if(queryStep >= QueryStep.channel_dispname && focusedChannelId) {
+      LocalDB.get(focusedChannelId.toString())
+        .then(doc=>{
+          setDispName(doc['owner_name'])
+        })
+    }
+    if(queryStep >= QueryStep.channel_dispname && !selfChannelCount) {
+      LocalDB.find({
+        selector: {
+          is_self: true,
+          table_type: 'channel'
+        }
+      })
+        .then(res=>{
+          setSelfChannelCount(res.docs.length)
+        })
+    }
+  }, [focusedChannelId, publishPostNumber, queryStep])
 
   const handlePost = async (e) => {
     setOnValidation(true)
@@ -135,20 +152,20 @@ function Channel() {
   return (
     <>
       {
-        !selfChannels.length?
+        !selfChannelCount?
         <EmptyView type='channel'/>:
 
         <>
           {
-            !isLoading && !postsInFocusedChannel.length?
+            !isLoading && !posts.length?
             <EmptyView type='post'/>:
             
             <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
               <Container sx={{ mt: 3, flexGrow: 1 }} maxWidth="lg">
                 <InfiniteScroll
-                  dataLength={Math.min(postsInFocusedChannel.length, dispLength)}
+                  dataLength={Math.min(posts.length, dispLength)}
                   next={appendMoreData}
-                  hasMore={dispLength<postsInFocusedChannel.length}
+                  hasMore={dispLength<posts.length}
                   loader={<h4>Loading...</h4>}
                   scrollableTarget="scrollableBox"
                   style={{overflow: 'visible'}}
@@ -168,7 +185,7 @@ function Channel() {
                         </Grid>
                       )):
 
-                      postsInFocusedChannel.slice(0, dispLength).map((post, _i)=>(
+                      posts.slice(0, dispLength).map((post, _i)=>(
                         <Grid item xs={12} key={_i}>
                           <PostCard post={post} dispName={dispName || reduceDIDstring(feedsDid)}/>
                         </Grid>

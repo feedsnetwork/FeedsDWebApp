@@ -60,6 +60,7 @@ EmptyView.propTypes = {
   type: PropTypes.oneOf([
     'home',
     'channel',
+    'post',
     'subscription',
   ])
 };

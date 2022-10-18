@@ -22,6 +22,7 @@ const SubscriberListItem = (props) => {
                     console.log(doc, "---userdoc")
                     setSubscriberInfo(doc)
                 })
+                .catch(err=>{})
         }
     }, [queryStep])
 
