@@ -20,8 +20,7 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard } from 'utils/common'
 import { HiveApi } from 'services/HiveApi'
-import { LocalDB } from 'utils/db';
-
+import { LocalDB, QueryStep } from 'utils/db';
 
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
   maxWidth: '350px',
@@ -70,14 +69,14 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
   },
 }));
 
-
-
 const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1, direction } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
-  const { subscriberInfo, setFocusChannelId } = React.useContext(SidebarContext);
+  const { subscriberInfo, queryStep, setFocusChannelId } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [currentChannel, setCurrentChannel] = React.useState({})
+  const [commentCount, setCommentCount] = React.useState(0)
+
   const [isOpenComment, setOpenComment] = React.useState(false)
   const [isOpenPost, setOpenPost] = React.useState(false)
   const [isOpenDelete, setOpenDelete] = React.useState(false)
@@ -102,6 +101,20 @@ const PostBody = (props) => {
         setCurrentChannel(channelDoc)
       })
   }, [])
+
+  React.useEffect(()=>{
+    if(queryStep >= QueryStep.comment_data) {
+      LocalDB.find({
+        selector: {
+          table_type: 'comment',
+          post_id: post.post_id
+        }
+      })
+        .then(response => {
+          setCommentCount(response.docs.length)
+        })
+    }
+  }, [queryStep])
 
   React.useEffect(()=>{
     setIsLike(!!post.like_me)
@@ -369,7 +382,7 @@ const PostBody = (props) => {
           </Stack>
           <Stack direction="row" alignItems="center" spacing={1} onClick={handleCommentDlg}>
             <Icon icon="clarity:chat-bubble-line" width={18}/>
-            <Typography variant="body2" noWrap>{post.commentData?post.commentData.length:0}</Typography>
+            <Typography variant="body2" noWrap>{commentCount}</Typography>
           </Stack>
           <Box flexGrow={1} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right'}}>
             {
