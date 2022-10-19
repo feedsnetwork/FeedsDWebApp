@@ -13,14 +13,13 @@ import StyledTextFieldOutline from 'components/StyledTextFieldOutline'
 import PostBody from './PostBody'
 import { HiveApi } from 'services/HiveApi'
 import { selectPublicChannels } from 'redux/slices/channel';
-import { getDateDistance, isValidTime, reduceDIDstring, reduceHexAddress } from 'utils/common'
+import { decodeBase64, reduceDIDstring } from 'utils/common'
 
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, dispName, level=1, replyingTo='', replyable=false, dispNames={}, dispAvatar={}, direction='column' } = props
-  const { selfChannels, subscribedChannels, myAvatar, userInfo, walletAddress, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
+  const { post, channel, dispName, level=1, replyingTo='', replyable=false, dispNames={}, dispAvatar={}, direction='column' } = props
+  const { myAvatar, userInfo, walletAddress, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const publicChannels = useSelector(selectPublicChannels)
-  const currentChannel = [...selfChannels, ...subscribedChannels, ...Object.values(publicChannels)].find(item=>item.channel_id==post.channel_id) || {}
   
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
@@ -38,7 +37,7 @@ const PostCard = (props) => {
       return
     }
     setOnProgress(true)
-    hiveApi.createComment(currentChannel.target_did, currentChannel.channel_id, post.post_id, '0', commentext)
+    hiveApi.createComment(post.target_did, post.channel_id, post.post_id, '0', commentext)
       .then(res=>{
         // console.log(res, "===============2")
         enqueueSnackbar('Reply comment success', { variant: 'success' });
@@ -59,8 +58,8 @@ const PostCard = (props) => {
   let cardProps = {}
   if(level == 1) {
     contentObj = typeof post.content === 'object'? {...post.content}: JSON.parse(post.content)
-    contentObj.avatar = { name: currentChannel.name, src: currentChannel.avatarSrc }
-    contentObj.primaryName = currentChannel.name
+    contentObj.avatar = { name: channel.name, src: decodeBase64(channel.avatarSrc) }
+    contentObj.primaryName = channel.name
     contentObj.secondaryName = `@${dispName}`
     cardProps = {style: {cursor: 'pointer'}, onClick: naviage2detail}
   } 
@@ -119,7 +118,7 @@ const PostCard = (props) => {
               post.commentData.map((comment, _i)=>{
                 let subContentObj = {
                   avatar: dispAvatar[comment.comment_id] || {}, 
-                  primaryName: comment.creater_did == currentChannel.target_did? `@${currentChannel.name}`: `@${dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)}`, 
+                  primaryName: comment.creater_did == channel.target_did? `@${channel.name}`: `@${dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)}`, 
                   secondaryName: <><b>Replying to</b> @{dispName}</>, 
                   content: comment.content
                 }

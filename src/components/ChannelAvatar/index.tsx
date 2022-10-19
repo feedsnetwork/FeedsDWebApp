@@ -81,7 +81,6 @@ const AvatarWrapper = styled(Box)(
 );
 
 interface ChannelAvatarProps {
-  index: number;
   channel: object;
   variant?: "circular" | "square" | "rounded";
   width?: number;

@@ -313,7 +313,6 @@ function SidebarChannel() {
                 selfChannels.map((item, _i)=>
                   <ChannelAvatar 
                     key={_i} 
-                    index={_i}
                     channel={item}
                     onClick={(e)=>{handleClickChannel(item)}} 
                     onRightClick={(e)=>{handleRightClickChannel(e, item)}} 

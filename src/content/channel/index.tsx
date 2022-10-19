@@ -13,7 +13,7 @@ import { LocalDB, QueryStep } from 'utils/db';
 function Channel() {
   const { queryStep, focusedChannelId, publishPostNumber } = React.useContext(SidebarContext);
   const [posts, setPosts] = React.useState([]);
-  const [dispName, setDispName] = React.useState('');
+  const [channelInfo, setChannelInfo] = React.useState({});
   const [selfChannelCount, setSelfChannelCount] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(false)
   const [dispLength, setDispLength] = React.useState(5);
@@ -37,7 +37,7 @@ function Channel() {
     if(queryStep >= QueryStep.channel_dispname && focusedChannelId) {
       LocalDB.get(focusedChannelId.toString())
         .then(doc=>{
-          setDispName(doc['owner_name'])
+          setChannelInfo(doc)
         })
     }
     if(queryStep && !selfChannelCount) {
@@ -95,7 +95,7 @@ function Channel() {
 
                       posts.slice(0, dispLength).map((post, _i)=>(
                         <Grid item xs={12} key={_i}>
-                          <PostCard post={post} dispName={dispName || reduceDIDstring(feedsDid)}/>
+                          <PostCard post={post} channel={channelInfo} dispName={channelInfo['owner_name'] || reduceDIDstring(feedsDid)}/>
                         </Grid>
                       ))
                     }
