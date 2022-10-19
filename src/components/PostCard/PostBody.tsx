@@ -20,6 +20,7 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard } from 'utils/common'
 import { HiveApi } from 'services/HiveApi'
+import { LocalDB } from 'utils/db';
 
 
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
@@ -74,8 +75,9 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1, direction } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
-  const { selfChannels, subscribedChannels, subscriberInfo, setFocusChannelId } = React.useContext(SidebarContext);
+  const { subscriberInfo, setFocusChannelId } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
+  const [currentChannel, setCurrentChannel] = React.useState({})
   const [isOpenComment, setOpenComment] = React.useState(false)
   const [isOpenPost, setOpenPost] = React.useState(false)
   const [isOpenDelete, setOpenDelete] = React.useState(false)
@@ -86,15 +88,20 @@ const PostBody = (props) => {
   const [isEnterPopover, setEnterPopover] = React.useState(false);
   const [isOpenPopup, setOpenPopup] = React.useState(null);
   const hiveApi = new HiveApi()
-  const isOwnedChannel = selfChannels.findIndex(item=>item.channel_id==post.channel_id)>=0
-  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   const subscribersOfThis = currentChannel['subscribers'] || []
   const subscribedByWho = `Subscribed by ${subscribersOfThis.slice(0,3).map(subscriber=>subscriber.display_name).join(', ')}${subscribersOfThis.length>3?' and more!':'.'}`
   const PostOrComment = !post.comment_id?'Post':'Comment'
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const userDid = `did:elastos:${feedsDid}`
+  const myDID = `did:elastos:${feedsDid}`
   const navigate = useNavigate()
   const { enqueueSnackbar } = useSnackbar();
+
+  React.useEffect(()=>{
+    LocalDB.get(post.channel_id.toString())
+      .then(channelDoc => {
+        setCurrentChannel(channelDoc)
+      })
+  }, [])
 
   React.useEffect(()=>{
     setIsLike(!!post.like_me)
@@ -111,19 +118,39 @@ const PostBody = (props) => {
     if(isSaving || post.status === CommonStatus.deleted)
       return
     setIsSaving(true)
-    try {
-      if(!isLike) {
-        const likeId = hash(`${post.post_id}${post.comment_id}${userDid}`)
-        await hiveApi.addLike(currentChannel.target_did, likeId, post.channel_id, post.post_id, post.comment_id || '0')
-      } else {
-        await hiveApi.removeLike(currentChannel.target_did, post.channel_id, post.post_id, post.comment_id || '0')
-      }
-      setIsLike(!isLike)
-      setIsSaving(false)
-    } catch(err) {
-      setIsSaving(false)
-      enqueueSnackbar('Like action error', { variant: 'error' });
+    let hiveAction = null
+    if(!isLike) {
+      const likeId = hash(`${post.post_id}${post.comment_id}${myDID}`)
+      hiveAction = hiveApi.addLike(post.target_did, likeId, post.channel_id, post.post_id, post.comment_id || '0')
+    } else {
+      hiveAction = hiveApi.removeLike(post.target_did, post.channel_id, post.post_id, post.comment_id || '0')
     }
+    Promise.resolve()
+      .then(_=>hiveAction)
+      .then(_=>LocalDB.get(post.post_id))
+      .then(doc=>{
+        const tempDoc = {...doc}
+        if(!isLike) {
+          tempDoc['likes'] += 1
+          tempDoc['like_me'] = true
+          tempDoc['like_creators'].push(myDID)
+        } else {
+          const myDIDindex = tempDoc['like_creators'].indexOf(myDID)
+          tempDoc['likes'] -= 1
+          tempDoc['like_me'] = false
+          if(myDIDindex>=0)
+            tempDoc['like_creators'].splice(myDIDindex, 1)
+        }
+        return LocalDB.put(tempDoc)
+      })
+      .then(_=>{
+        setIsLike(!isLike)
+        setIsSaving(false)
+      })
+      .catch(err=>{
+        setIsSaving(false)
+        enqueueSnackbar('Like action error', { variant: 'error' });
+      })
   }
 
   const filteredContentByLink = convertAutoLink(contentObj.content)
@@ -172,8 +199,7 @@ const PostBody = (props) => {
   };
   const handleLink2Channel = (e)=>{
     e.stopPropagation()
-    const isSelfChannel = selfChannels.findIndex(item=>item.channel_id==post.channel_id)>=0
-    if(isSelfChannel) {
+    if(currentChannel['is_self']) {
       setFocusChannelId(post.channel_id)
       navigate('/channel')
     } else {
@@ -240,7 +266,7 @@ const PostBody = (props) => {
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
               >
                 {
-                  isOwnedChannel?
+                  currentChannel['is_self']?
                   <div>
                     <MenuItem value='share' onClick={handleClosePopup}>
                       <IconInCircle name='clarity:share-line'/>&nbsp;
@@ -410,7 +436,7 @@ const PostBody = (props) => {
                         {contentObj.secondaryName}
                       </Link>
                     </Typography>
-                    <Typography component='div' variant="body2" color="secondary">{currentChannel.intro}</Typography>
+                    <Typography component='div' variant="body2" color="secondary">{currentChannel['intro']}</Typography>
                   </Box>
                   <Divider sx={{my: 1}}/>
                   <Typography variant="body2" component='div' sx={{display: 'flex'}}>
@@ -439,13 +465,13 @@ const PostBody = (props) => {
       }
       <CommentDlg setOpen={setOpenComment} isOpen={isOpenComment} post={post} postProps={{post, contentObj, isReply: true, level}}/>
       {
-        isOwnedChannel?
+        currentChannel['is_self']?
         <>
           <PostDlg setOpen={setOpenPost} isOpen={isOpenPost} activePost={post}/>
           <DeletePostDlg setOpen={setOpenDelete} isOpen={isOpenDelete} post_id={post.post_id} channel_id={post.channel_id}/>
         </>:
 
-        <UnsubscribeDlg setOpen={setOpenUnsubscribe} isOpen={isOpenUnsubscribe} target_did={currentChannel.target_did} channel_id={post.channel_id}/>
+        <UnsubscribeDlg setOpen={setOpenUnsubscribe} isOpen={isOpenUnsubscribe} target_did={post.target_did} channel_id={post.channel_id}/>
       }
     </>
   )
