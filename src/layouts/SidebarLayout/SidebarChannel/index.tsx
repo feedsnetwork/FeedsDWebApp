@@ -63,11 +63,6 @@ const GradientOutlineFab = styled(Fab)(
     background: transparent;
 `
 );
-const GradientFab = styled(Fab)(
-  ({ theme }) => `
-    background: linear-gradient(90deg, #7624FE 0%, #368BFF 100%);
-`
-);
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
   maxWidth: '350px',
   width: '100%',
@@ -128,7 +123,6 @@ function SidebarChannel() {
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
-  const hiveApi = new HiveApi()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const navigate = useNavigate();
@@ -245,24 +239,29 @@ function SidebarChannel() {
     setAnchorEl(event.currentTarget)
     setPopoverChannel(item)
     setOpenPopover(true);
-    const postsInChannel = postsInSelf[item.channel_id]
-    if(postsInChannel) {
-      setRecentPosts(
-        postsInChannel
-        .slice(0, 2)
-        .map(post=>{
-          const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
-          if(post.status == 1)
-            post.content_filtered = "(post deleted)"
-          else {
-            const contentObj = JSON.parse(post.content)
-            post.content_filtered = convertAutoLink(contentObj.content)
-          }
-          post.distanceTime = distanceTime
-          return post
-        })
-      )
-    }
+    LocalDB.find({
+      selector: {
+        table_type: 'post',
+        channel_id: item.channel_id
+      }
+    })
+      .then(response => {
+        const recentPosts = sortByDate(response.docs)
+          .slice(0, 2)
+          .map(post=>{
+            const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
+            if(post.status == 1)
+              post.content_filtered = "(post deleted)"
+            else {
+              const contentObj = JSON.parse(post.content)
+              post.content_filtered = convertAutoLink(contentObj.content)
+            }
+            post.distanceTime = distanceTime
+            return post
+          })
+        setRecentPosts(recentPosts)
+      })
+      .catch(err => {})
   };
   const handlePopoverClose = () => {
     setOpenPopover(false);
@@ -418,8 +417,6 @@ function SidebarChannel() {
               !recentPosts.length &&
               <Typography variant="body2" py={1}>No recent post found</Typography>
             }
-            {/* <Typography variant="body2" color='text.secondary'>Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though... I hope it’s gonna be alright haha#osaka #japan #spring</Typography>
-            <Typography variant="body2" textAlign='right'>1d</Typography> */}
             <Box sx={{display: 'block'}} textAlign="center" p={2}>
               <StyledButton type="contained" fullWidth onClick={handleClickPost}>Post</StyledButton>
             </Box>

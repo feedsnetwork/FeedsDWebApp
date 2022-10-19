@@ -28,7 +28,7 @@ function PostDlg(props) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
   
-  const currentChannelId = activeChannelId || activePost?activePost.channel_id:null || focusedChannelId
+  const currentChannelId = activeChannelId || (activePost?activePost.channel_id:null) || focusedChannelId
   const focusedChannel = selfChannels.find(item=>item.channel_id==currentChannelId) || {}
   const isComment = activePost && !!activePost.comment_id
   const { enqueueSnackbar } = useSnackbar();
