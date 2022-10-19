@@ -11,15 +11,17 @@ import ChannelListItem from './ChannelListItem'
 import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { HiveApi } from 'services/HiveApi'
-import { reduceHexAddress, reduceDIDstring, getInfoFromDID, getMergedArray, getFilteredArrayByUnique } from 'utils/common'
+import { reduceHexAddress, reduceDIDstring, getInfoFromDID, getMergedArray, getFilteredArrayByUnique, decodeBase64 } from 'utils/common'
+import { LocalDB, QueryStep } from 'utils/db';
 
 function Profile() {
-  const { walletAddress, selfChannels, subscribedChannels, postsInSelf, postsInSubs, userInfo } = React.useContext(SidebarContext);
+  const { walletAddress, queryStep, userInfo } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [avatarSrc, setAvatarSrc] = React.useState('')
+  const [channels, setChannels] = React.useState([])
+  const [likedPosts, setLikedPosts] = React.useState([])
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const userDid = `did:elastos:${feedsDid}`
-  const selfLikedPosts = getFilteredArrayByUnique([...getMergedArray(postsInSelf), ...getMergedArray(postsInSubs)].filter(item=>item.like_me), 'post_id')
+  const myDID = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
@@ -27,12 +29,36 @@ function Profile() {
   };
 
   React.useEffect(()=>{
+    if(queryStep) {
+      LocalDB.find({
+        selector: {
+          table_type: 'channel'
+        }
+      })
+        .then(response => {
+          setChannels(response.docs)
+        })
+    }
+    if(queryStep >= QueryStep.post_like) {
+      LocalDB.find({
+        selector: {
+          table_type: 'post',
+          like_me: true
+        }
+      })
+        .then(response => {
+          setLikedPosts(response.docs)
+        })
+    }
+  }, [queryStep])
+
+  React.useEffect(()=>{
     if(!feedsDid)
       return
       
-    hiveApi.getHiveUrl(userDid)
+    hiveApi.getHiveUrl(myDID)
       .then(async hiveUrl=>{
-        const res =  await hiveApi.downloadFileByHiveUrl(userDid, hiveUrl)
+        const res =  await hiveApi.downloadFileByHiveUrl(myDID, hiveUrl)
         if(res && res.length) {
           const base64Content = res.toString('base64')
           setAvatarSrc(`data:image/png;base64,${base64Content}`)
@@ -41,6 +67,8 @@ function Profile() {
   }, [])
 
   const backgroundImg = "/temp-back.png"
+  const selfChannels = channels.filter(channel=>channel['is_self'] === true)
+  const subscribedChannels = channels.filter(channel=>channel['is_subscribed'] === true)
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
       <Card>
@@ -104,20 +132,15 @@ function Profile() {
         </TabPanel>
         <TabPanel value={tabValue} index={2}>
           {
-            !selfLikedPosts.length?
+            !likedPosts.length?
             <EmptyViewInProfile type='like'/>:
 
             <Stack spacing={2}>
               {
-                selfLikedPosts.map((post, _i)=>{
-                  const channelOfPost = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
-                  let dispName = ''
-                  if(channelOfPost.target_did === userDid) {
-                    dispName = userInfo['name'] || reduceDIDstring(feedsDid)
-                  } else {
-                    dispName = channelOfPost['owner_name'] || reduceDIDstring(channelOfPost.target_did)
-                  }
-                  return <PostCard post={post} dispName={dispName} key={_i} direction='row'/>
+                likedPosts.map((post, _i)=>{
+                  const channelOfPost = channels.find(item=>item.channel_id === post.channel_id) || {}
+                  let dispName = channelOfPost['owner_name'] || reduceDIDstring(channelOfPost.target_did)
+                  return <PostCard post={post} channel={channelOfPost} dispName={dispName} key={_i} direction='row'/>
                 })
               }
             </Stack>

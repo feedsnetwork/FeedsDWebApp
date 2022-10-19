@@ -10,6 +10,7 @@ import { OverPageProvider } from 'contexts/OverPageContext';
 import { store } from './redux/store';
 import reportWebVitals from './reportWebVitals';
 
+console.log = ()=>{}
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
