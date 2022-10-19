@@ -1,5 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import { NavLink as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import FadeIn from 'react-fade-in';
 // import { Fade } from "react-awesome-reveal";
 import Reveal from "react-awesome-reveal";
@@ -17,6 +18,7 @@ import PostDlg from 'components/Modal/Post';
 import SubscriptionAvatar from './subscriptionAvatar'
 import { SettingMenuArray } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
+import { setActiveChannelId } from 'redux/slices/channel';
 
 const MenuWrapper = styled(Box)(
   ({ theme }) => `
@@ -201,6 +203,7 @@ function SidebarMenu(props) {
   const { closeSidebar, queryStep } = useContext(SidebarContext);
   const [subscribedChannels, setSubscribedChannels] = useState([]);
   const { pathname } = useLocation()
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isVisibleChannels, setVisibleChannels] = useState(false)
   const [isOpenPost, setOpenPost] = useState(false)
@@ -228,7 +231,8 @@ function SidebarMenu(props) {
 
   const link2detail = (e) => {
     const channel_id = e.currentTarget.value
-    navigate('/subscription/channel', {state: {channel_id}});
+    dispatch(setActiveChannelId(channel_id))
+    navigate('/subscription/channel');
   }
   return (
     <>

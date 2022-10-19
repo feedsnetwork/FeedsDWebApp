@@ -58,8 +58,8 @@ const PostCard = (props) => {
   let cardProps = {}
   if(level == 1) {
     contentObj = typeof post.content === 'object'? {...post.content}: JSON.parse(post.content)
-    contentObj.avatar = { name: channel.name, src: decodeBase64(channel.avatarSrc) }
-    contentObj.primaryName = channel.name
+    contentObj.avatar = { name: channel['name'], src: !channel['avatarSrc'] || decodeBase64(channel['avatarSrc']) }
+    contentObj.primaryName = channel['name']
     contentObj.secondaryName = `@${dispName}`
     cardProps = {style: {cursor: 'pointer'}, onClick: naviage2detail}
   } 

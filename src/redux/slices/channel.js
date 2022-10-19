@@ -4,6 +4,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   isChannelCreated: false,
   isOpened2Publish: false,
+  activeChannelId: 0,
   createdChannel: {},
   dispNameOfChannels: {},
   publicChannels: {}
@@ -37,7 +38,10 @@ const slice = createSlice({
       const tempState = {...state.dispNameOfChannels}
       tempState[action.payload.channel_id] = action.payload.data
       state.dispNameOfChannels = tempState
-    }
+    },
+    setActiveChannelId(state, action) {
+      state.activeChannelId = action.payload
+    },
   }
 });
 
@@ -45,7 +49,7 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setCreatedChannel, setPublicChannels, setDispNameOfChannels } = slice.actions;
+export const { setCreatedChannel, setPublicChannels, setDispNameOfChannels, setActiveChannelId } = slice.actions;
 
 // ----------------------------------------------------------------------
 
@@ -81,4 +85,7 @@ export function selectPublicChannels(state) {
 }
 export function selectDispNameOfChannels(state) {
   return state.channel.dispNameOfChannels
+}
+export function selectActiveChannelId(state) {
+  return state.channel.activeChannelId
 }

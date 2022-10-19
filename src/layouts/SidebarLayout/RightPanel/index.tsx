@@ -13,7 +13,7 @@ import StyledButton from 'components/StyledButton'
 import InputOutline from 'components/InputOutline'
 import SubscriberListItem from './SubscriberListItem';
 import { SidebarContext } from 'contexts/SidebarContext';
-import { selectPublicChannels, selectDispNameOfChannels } from 'redux/slices/channel';
+import { selectPublicChannels, selectDispNameOfChannels, selectActiveChannelId } from 'redux/slices/channel';
 import { HiveApi } from 'services/HiveApi'
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
 import { LocalDB } from 'utils/db'
@@ -37,9 +37,9 @@ const ListWrapper = styled(List)(
 `
 );
 const ChannelAbout = (props) => {
-  const { this_channel, editable=true } = props
+  const { this_channel } = props
   const subscribers = (this_channel && this_channel['subscribers']) || []
-
+  const editable = this_channel['is_self']
   return <>
     <Card>
       <CardContent>
@@ -98,6 +98,7 @@ const ChannelAbout = (props) => {
 }
 function RightPanel() {
   const { focusedChannelId, selfChannels, subscribedChannels, queryStep, toggleSidebar } = useContext(SidebarContext);
+  const activeChannelId = useSelector(selectActiveChannelId)
   const [focusedChannel, setFocusChannel] = React.useState(null)
   const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
@@ -106,10 +107,11 @@ function RightPanel() {
   const publicChannels = useSelector(selectPublicChannels)
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
   let content = null
+  const selectedChannelId = activeChannelId || focusedChannelId
 
   React.useEffect(()=>{
-    if(queryStep && focusedChannelId) {
-      LocalDB.get(focusedChannelId.toString())
+    if(queryStep && selectedChannelId) {
+      LocalDB.get(selectedChannelId.toString())
         .then(doc=>{
           const channelObj = {...doc}
           if(channelObj['avatarSrc'])
@@ -117,7 +119,7 @@ function RightPanel() {
           setFocusChannel(channelObj)
         })
     }
-  }, [queryStep, focusedChannelId])
+  }, [queryStep, selectedChannelId])
 
   if(pathname.startsWith('/setting')) {
     if(pathname.endsWith('/credentials'))
@@ -140,18 +142,12 @@ function RightPanel() {
             </Stack>
           </CardContent>
         </Card>
-  } else if(pathname.startsWith('/subscription/channel')) {
-    const { channel_id } = (location.state || {}) as any
-    const activeChannel = subscribedChannels.find(item=>item.channel_id==channel_id) || {}
-    if(activeChannel) {
-      content = <ChannelAbout this_channel={activeChannel} editable={false}/>
-    }
   } else if(pathname.startsWith('/explore/channel')) {
     const { channel_id } = (location.state || {}) as any
     const channelOwnerName = dispNameOfChannels[channel_id]
     const activeChannel = {...publicChannels[channel_id], owner_name: channelOwnerName} || {}
     if(activeChannel) {
-      content = <ChannelAbout this_channel={activeChannel} editable={false}/>
+      content = <ChannelAbout this_channel={activeChannel}/>
     }
   }
    else {
