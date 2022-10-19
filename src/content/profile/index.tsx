@@ -11,7 +11,7 @@ import ChannelListItem from './ChannelListItem'
 import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { HiveApi } from 'services/HiveApi'
-import { reduceHexAddress, reduceDIDstring, getInfoFromDID, getMergedArray, getFilteredArrayByUnique, decodeBase64 } from 'utils/common'
+import { reduceHexAddress, reduceDIDstring } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
 
 function Profile() {

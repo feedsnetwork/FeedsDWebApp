@@ -6,18 +6,40 @@ import { EmptyView } from 'components/EmptyView'
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceDIDstring, sortByDate, getMergedArray } from 'utils/common'
+import { LocalDB, QueryStep } from 'utils/db';
 
 const Home = () => {
-  const { postsInSubs, subscribedChannels } = React.useContext(SidebarContext);
+  const { queryStep } = React.useContext(SidebarContext);
+  const [channels, setChannels] = React.useState([])
+  const [posts, setPosts] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(false)
-  const postsInHome = sortByDate(getMergedArray(postsInSubs))
+  const postsInHome = sortByDate(posts)
 
   React.useEffect(()=>{
-    if(subscribedChannels.length>0 && !Object.keys(postsInSubs).length)
+    if(queryStep < QueryStep.post_data) {
       setIsLoading(true)
-    else
-      setIsLoading(false)
-  }, [postsInSubs, subscribedChannels])
+    }
+    else {
+      LocalDB.find({
+        selector: {
+          table_type: 'post'
+        }
+      })
+        .then(response => {
+          setPosts(response.docs)
+        })
+    }
+    if(queryStep && !setChannels.length) {
+      LocalDB.find({
+        selector: {
+          table_type: 'channel'
+        }
+      })
+        .then(response => {
+          setChannels(response.docs)
+        })
+    }
+  }, [queryStep])
   
   const loadingSkeletons = Array(5).fill(null)
 
@@ -44,10 +66,12 @@ const Home = () => {
               )):
 
               postsInHome.slice(0, 5).map((post, _i)=>{
-                const channelOfPost = subscribedChannels.find(item=>item.channel_id==post.channel_id) || {}
-                return <Grid item xs={12} key={_i}>
-                  <PostCard post={post} dispName={channelOfPost['owner_name'] || reduceDIDstring(post.target_did)}/>
-                </Grid>
+                const channelOfPost = channels.find(item=>item.channel_id === post.channel_id) || {}
+                return (
+                  <Grid item xs={12} key={_i}>
+                    <PostCard post={post} channel={channelOfPost} dispName={channelOfPost['owner_name'] || reduceDIDstring(post.target_did)}/>
+                  </Grid>
+                )
               })
             }
           </Grid>
