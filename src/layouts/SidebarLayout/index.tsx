@@ -543,24 +543,25 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   useEffect(()=>{
     LocalDB.createIndex({
       index: {
-        fields: ['table_type', 'is_self', 'is_subscribed', 'is_public'],
+        fields: ['table_type', 'is_self', 'is_subscribed', 'is_public', 'created_at'],
       }
+    }).then(()=>{
+      LocalDB.get('query-step')
+        .then(currentStep=>{
+          setQueryStep(currentStep['step'])
+          const remainedSteps = querySteps.slice(currentStep['step']).map(func=>func())
+          Promise.all(remainedSteps)
+            .then(res=>{
+              console.log(res, "---result")
+            })
+        })
+        .catch(err=>{
+          promiseSeries(querySteps)
+            .then(res=>{
+              console.log(res)
+            })
+        })
     })
-    LocalDB.get('query-step')
-      .then(currentStep=>{
-        setQueryStep(currentStep['step'])
-        const remainedSteps = querySteps.slice(currentStep['step']).map(func=>func())
-        Promise.all(remainedSteps)
-          .then(res=>{
-            console.log(res, "---result")
-          })
-      })
-      .catch(err=>{
-        promiseSeries(querySteps)
-          .then(res=>{
-            console.log(res)
-          })
-      })
   }, [])
 
 
