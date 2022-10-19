@@ -6,7 +6,6 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 
 import { SidebarContext } from 'contexts/SidebarContext';
 import { OverPageContext } from 'contexts/OverPageContext';
-import { HiveApi } from 'services/HiveApi'
 import { selectActiveChannelId, selectPublicChannels } from 'redux/slices/channel';
 import { selectPublicPosts } from 'redux/slices/post';
 import { SettingMenuArray, getAppPreference, reduceDIDstring, getMergedArray } from 'utils/common'
@@ -49,27 +48,26 @@ const HeaderWrapper = styled(Box)(
 `
 );
 function FloatingHeader() {
-  const { pageType, setPageType, closeOverPage } = React.useContext(OverPageContext);
-  const { queryStep, focusedChannelId, selfChannels, subscribedChannels, postsInSelf, postsInSubs, userInfo } = React.useContext(SidebarContext);
+  const { pageType } = React.useContext(OverPageContext);
+  const { queryStep, focusedChannelId, userInfo } = React.useContext(SidebarContext);
   const location = useLocation()
   const { pathname } = useLocation()
   const activeChannelId = useSelector(selectActiveChannelId)
   const navigate = useNavigate();
   const params = useParams()
-  const hiveApi = new HiveApi()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const postsInHome = getMergedArray(postsInSubs)
   const publicChannels = useSelector(selectPublicChannels)
   const publicPosts = useSelector(selectPublicPosts)
   const [focusedChannel, setFocusedChannel] = React.useState({})
   const [postCountInFocus, setPostCountInFocus] = React.useState(0)
+  const [focusedPost, setFocusedPost] = React.useState({})
   const selectedChannelId = activeChannelId || focusedChannelId
 
   React.useEffect(()=>{
     if(queryStep && selectedChannelId) {
       LocalDB.get(selectedChannelId.toString())
         .then(doc=>setFocusedChannel(doc))
-      if(queryStep>=QueryStep.post_data) {
+      if(queryStep >= QueryStep.post_data) {
         LocalDB.find({
           selector: {
             channel_id: selectedChannelId,
@@ -81,6 +79,13 @@ function FloatingHeader() {
     }
   }, [queryStep, selectedChannelId])
 
+  React.useEffect(()=>{
+    if(params.post_id) {
+      LocalDB.get(params.post_id.toString())
+        .then(doc=>setFocusedPost(doc))
+    }
+  }, [params])
+  
   const handleBack = (e) => {
     if(pathname.startsWith('/setting')) {
       navigate('/home')
@@ -117,9 +122,8 @@ function FloatingHeader() {
       secondaryText = `${postsInActiveChannel.length} posts`
     }
     else if(pathname.startsWith('/post/')) {
-      const focusedPost = postsInHome.find(item=>item.post_id==params.post_id)
       primaryText = "Post"
-      secondaryText = `${focusedPost.commentData?focusedPost.commentData.length:0} comments`
+      secondaryText = `${focusedPost['commentData']?.length || 0} comments`
     }
     else if(pathname.startsWith('/profile')) {
       primaryText = userInfo['name'] || `@${reduceDIDstring(feedsDid)}`

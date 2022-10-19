@@ -17,7 +17,7 @@ import { decodeBase64, reduceDIDstring } from 'utils/common'
 
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, channel, dispName, level=1, replyingTo='', replyable=false, dispNames={}, dispAvatar={}, direction='column' } = props
+  const { post, channel, dispName, level=1, replyingTo='', replyable=false, users=[], dispAvatar={}, direction='column' } = props
   const { myAvatar, userInfo, walletAddress, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const publicChannels = useSelector(selectPublicChannels)
   
@@ -116,11 +116,16 @@ const PostCard = (props) => {
           <Stack pl={3} pt={2} spacing={1}>
             {
               post.commentData.map((comment, _i)=>{
-                let subContentObj = {
+                const commentUser = users.find(user=>user['_id']===comment.creator_did) || {}
+                const subContentObj = {
                   avatar: dispAvatar[comment.comment_id] || {}, 
-                  primaryName: comment.creater_did == channel.target_did? `@${channel.name}`: `@${dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)}`, 
+                  primaryName: `@${commentUser['name'] || reduceDIDstring(comment.creater_did)}`, 
                   secondaryName: <><b>Replying to</b> @{dispName}</>, 
                   content: comment.content
+                }
+                if(channel['target_did'] === comment.creater_did) {
+                  subContentObj['avatar'] = channel['avatarSrc']
+                  subContentObj['primaryName'] = `@${channel.name}`
                 }
                 const subBodyProps = { post: comment, contentObj: subContentObj, isReply: true, level }
                 return <PostBody {...subBodyProps} key={_i}/>

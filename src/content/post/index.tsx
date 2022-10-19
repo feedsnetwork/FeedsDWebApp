@@ -7,76 +7,50 @@ import { EmptyView } from 'components/EmptyView'
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import { reduceDIDstring, getAppPreference, sortByDate, getMergedArray } from 'utils/common'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { HiveApi } from 'services/HiveApi'
+import { LocalDB, QueryStep } from 'utils/db';
 
 const Post = () => {
-  const { postsInSubs, selfChannels, subscribedChannels } = React.useContext(SidebarContext);
+  const { queryStep } = React.useContext(SidebarContext);
   const params = useParams()
-  const [dispNames, setDispNames] = React.useState({})
-  const [dispAvatar, setDispAvatar] = React.useState({})
-  const hiveApi = new HiveApi()
-  const postsInHome = getMergedArray(postsInSubs)
-  const selectedPost = postsInHome.find(item=>item.post_id == params.post_id)
-  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==selectedPost.channel_id) || {}
-  const comments = selectedPost.commentData || []
+  const [postInfo, setPostInfo] = React.useState(null)
+  const [channelInfo, setChannelInfo] = React.useState({})
+  const [users, setUsers] = React.useState([])
+  const [comments, setComments] = React.useState([])
+  const [isLoading, setIsLoading] = React.useState(false)
   
-  // console.log(selectedPost, comments, "++++11")
-  const targetDID = `did:elastos:${selectedPost.target_did}`
   React.useEffect(()=>{
-    hiveApi.queryUserDisplayName(targetDID, selectedPost.channel_id, targetDID)
-      .then(dispNameRes=>{
-        if(dispNameRes['find_message'] && dispNameRes['find_message']['items']) {
-          const dispItem = dispNameRes['find_message']['items'][0]
-          setDispNames(prevState=>{
-            const tempPrev = {...prevState}
-            tempPrev[selectedPost.post_id] = dispItem.display_name
-            return tempPrev
-          })
+    if(queryStep < QueryStep.post_data)
+      setIsLoading(true)
+    else if(queryStep >= QueryStep.post_data) {
+      setIsLoading(false)
+      LocalDB.get(params.post_id.toString())
+        .then(doc=>{
+          setPostInfo(doc)
+          return LocalDB.get(doc['channel_id'].toString())
+        })
+        .then(doc=>setChannelInfo(doc))
+      LocalDB.find({
+        selector: {
+          table_type: 'comment',
+          post_id: params.post_id
         }
       })
-    getCreatorDispNames(comments)
-  }, [])
-
-  const getCreatorDispNames = (comments_arr) => {
-    if(comments_arr)
-      comments_arr.forEach(comment=>{
-        if(comment.creater_did == targetDID) {
-          setDispAvatar(prevState=>{
-            const tempPrev = {...prevState}
-            tempPrev[comment.comment_id] = { name: currentChannel.name, src: currentChannel.avatarSrc }
-            return tempPrev
-          })
-        } else {
-          hiveApi.getHiveUrl(comment.creater_did)
-            .then(async hiveUrl=>{
-              const res =  await hiveApi.downloadFileByHiveUrl(comment.creater_did, hiveUrl)
-              if(res && res.length) {
-                const base64Content = res.toString('base64')
-                setDispAvatar(prevState=>{
-                  const tempPrev = {...prevState}
-                  tempPrev[comment.comment_id] = { src: `data:image/png;base64,${base64Content}` }
-                  return tempPrev
-                })
-              }
-            })
+        .then(response=>{
+          setComments(response.docs)
+        })
+    }
+    if(queryStep >= QueryStep.subscriber_info) {
+      LocalDB.find({
+        selector: {
+          table_type: 'user'
         }
-        hiveApi.queryUserDisplayName(targetDID, selectedPost.channel_id, comment.creater_did)
-          .then(dispNameRes=>{
-            if(dispNameRes['find_message'] && dispNameRes['find_message']['items']) {
-              const dispItem = dispNameRes['find_message']['items'][0]
-              setDispNames(prevState=>{
-                const tempPrev = {...prevState}
-                tempPrev[comment.comment_id] = dispItem.display_name
-                return tempPrev
-              })
-            }
-          })
-        if(comment.commentData)
-          getCreatorDispNames(comment.commentData)
       })
-  }
+        .then(response=>setUsers(response.docs))
+    }
+  }, [queryStep])
 
-  const dispNameOfPost = dispNames[selectedPost.post_id] || reduceDIDstring(selectedPost.target_did)
+  const loadingSkeletons = Array(5).fill(null)
+  const dispNameOfPost = channelInfo['owner_name'] || reduceDIDstring(channelInfo['target_did'])
   return (
     <Container sx={{ my: 3 }} maxWidth="lg">
       <Grid
@@ -86,16 +60,43 @@ const Post = () => {
         alignItems="stretch"
         spacing={3}
       >
-        <Grid item xs={12}>
-          <PostCard post={selectedPost} dispName={dispNameOfPost} replyable={true}/>
-        </Grid>
         {
-          comments.map((comment, _i)=>{
-            const dispNameOfComment = dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)
-            return <Grid item xs={12} key={_i}>
-              <PostCard post={comment} dispName={dispNameOfComment} dispNames={dispNames} dispAvatar={dispAvatar} level={2} replyingTo={dispNameOfPost}/>
+          isLoading?
+          loadingSkeletons.map((_, _i)=>(
+            <Grid item xs={12} key={_i}>
+              <PostSkeleton/>
             </Grid>
-          })
+          )):
+
+          <>
+            {
+              !!postInfo &&
+              <Grid item xs={12}>
+                <PostCard post={postInfo} channel={channelInfo} dispName={dispNameOfPost} replyable={true}/>
+              </Grid>
+            }
+            {
+              comments.map((comment, _i)=>{
+                const commentUser = users.find(user=>user['_id']===comment.creator_did) || {}
+                const commentProps = {
+                  post: comment,
+                  channel: channelInfo,
+                  dispName: commentUser['name'] || reduceDIDstring(comment.creater_did),
+                  dispAvatar: commentUser['avatarSrc'],
+                  replyingTo: dispNameOfPost,
+                  users,
+                  level: 2
+                }
+                if(channelInfo['target_did'] === comment.creater_did) {
+                  commentProps['dispName'] = channelInfo['name']
+                  commentProps['dispAvatar'] = channelInfo['avatarSrc']
+                }
+                return <Grid item xs={12} key={_i}>
+                  <PostCard {...commentProps}/>
+                </Grid>
+              })
+            }
+          </>
         }
       </Grid>
     </Container>
