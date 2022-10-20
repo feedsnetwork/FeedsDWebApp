@@ -82,6 +82,9 @@
       "last 1 safari version"
     ]
   },
+  "browser": {
+    "crypto": false
+  },
   "devDependencies": {
     "@types/pouchdb-browser": "^6.1.3",
     "react-app-rewired": "^2.2.1"
