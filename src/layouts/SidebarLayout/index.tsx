@@ -1,4 +1,5 @@
 import { FC, ReactNode, useEffect, useContext, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import { Outlet, useLocation } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
 import { Box, alpha, lighten, useTheme, Hidden, Container, Stack } from '@mui/material';
@@ -16,6 +17,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
+import { setUserAvatarSrc } from 'redux/slices/user'
 import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
 
@@ -30,6 +32,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
+  const dispatch = useDispatch()
   // LocalDB.destroy()
 
   const querySelfChannelStep = () => (
@@ -242,10 +245,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             return infoDoc
           })
           Promise.all(subscriberInfoDoc)
-            .then(userData => {
-              console.log(userData)
-              LocalDB.bulkDocs(userData.filter(item=>item!==null))
-            })
+            .then(userData => LocalDB.bulkDocs(userData.filter(item=>item!==null)))
             .then(async _=>{
               const stepDoc = await LocalDB.get('query-step')
               return LocalDB.put({_id: 'query-step', step: QueryStep.subscriber_info, _rev: stepDoc._rev})
@@ -264,8 +264,9 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     })
   )
 
-  const queryPostStep = () => (
-    new Promise((resolve, reject) => {
+  const queryPostStep = () => {
+    queryUserAvatarStep()
+    return new Promise((resolve, reject) => {
       const prefConf = getAppPreference()
       LocalDB.find({
         selector: {
@@ -318,7 +319,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           reject(err)
         })
     })
-  )
+  }
   
   const queryLikeInfoStep = () => (
     new Promise((resolve, reject) => {
@@ -527,6 +528,49 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     })
   )
 
+  const queryUserAvatarStep = () => (
+    new Promise((resolve, reject) => {
+      LocalDB.find({
+        selector: {
+          table_type: 'user'
+        },
+      })
+        .then(response=>{
+          const subscriberWithAvatar = response.docs.filter(doc=>!!doc['avatarSrc'])
+          const subscriberDocNoAvatar = response.docs.filter(doc=>!doc['avatarSrc'])
+          const avatarObjs = subscriberWithAvatar.reduce((objs, subscriber) => {
+            const s_did = subscriber['_id']
+            objs[s_did] = subscriber['avatarSrc']
+            return objs
+          }, {})
+          dispatch(setUserAvatarSrc(avatarObjs))
+
+          subscriberDocNoAvatar.forEach(subscriber=>{
+            let infoDoc = {...subscriber}
+            const { _id } = infoDoc
+            const avatarObj = {}
+            Promise.resolve()
+              .then(_=>hiveApi.getHiveUrl(infoDoc['_id']))
+              .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(infoDoc['_id'], hiveUrl))
+              .then(response=>{
+                if(response && response.length) {
+                  const base64Content = response.toString('base64')
+                  infoDoc['avatarSrc'] = encodeBase64(`data:image/png;base64,${base64Content}`)
+                  avatarObj[_id] = infoDoc['avatarSrc']
+                  return LocalDB.put(infoDoc)
+                }
+              })
+              .then(res=>{
+                dispatch(setUserAvatarSrc(avatarObj))
+              })
+          })
+        })
+        .catch(err=>{
+          reject(err)
+        })
+    })
+  )
+
   const querySteps = [
     querySelfChannelStep, 
     querySubscribedChannelStep, 
@@ -554,6 +598,8 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             .then(res=>{
               console.log(res, "---result")
             })
+          if(currentStep['step'] > QueryStep.post_data)
+            queryUserAvatarStep()
         })
         .catch(err=>{
           promiseSeries(querySteps)
