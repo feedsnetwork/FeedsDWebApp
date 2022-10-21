@@ -1,46 +1,91 @@
-# Getting Started with Create React App
+# Feeds - A decentralized social platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Feeds is a new, decentralized social platform where users remain in full control of generated data. The platform is fully complying with concept of web5 vision on three pillars: 
 
-## Available Scripts
+- Elastos decentralized identifier (Decentralized Identifier, DID) to sign in applications and therefore fully control the ownership of application data
+- Verifiable credentials (Verfiable Credentials, VC) to reprent user social graph with sepcial formats and data model for cryptographic representation and verification of assertions
+- Decentralized web nodes (DWN) with Hive network and blockchain to store generated data to communicate between users and applications as well.
 
-In the project directory, you can run:
+Currently we have two types of Feeds applications:
 
-### `npm start`
+- Feeds mobile application (Android & iOS)
+- Feeds web application
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Here is the repository of Feeds web application. Users need to use `Essentials` wallet to signin the application with #Elastos DID.  **Ownship of your data is happening here**.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Features 
 
-### `npm run build`
+Feeds is still on the first stage of developing features with the following list:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- [x]  Sign-in with DID
+- [x]  Basic channel features (post/comment/like/subscription)
+- [x]  Make posts to Twitter/Reddit from Feeds
+- [ ]  Improvement on social graph content
+- [x]  Pin post
+- [x]  Repost 
+- [x]  Feeds channel exploring service
+- [ ]  NFT collectible integration
+- [ ]  ElaDomain integration
+- [ ]  Decentralized mechanism for reporting spam/illegal content 
+- [ ]  Credenitals/Badge for channel customization 
+- [ ]  Tipping post
+- [ ]  Ads mechanism integration
+- [ ]  Topic trend management
+- [ ]  More ... 
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
+## Run web App
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Prepared that `Nodejs`need to be installed on your local device, then clone  the repository with the commands:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```shell
+$ git clone https://github.com/feedsnetwork/feeds-web-dapp
+$ cd feeds-web-dapp
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Build
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Run the command to build application:
 
-## Learn More
+```
+$ npm install
+$ npm start
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Then run the command above to start running the app in `developement` mode, and then open http://localhost:3000 to view it in your browser.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+**Notice:** *The page will reload when you make changes, and you may also see any lint errors in the console*
+
+### Deploy to run
+
+```
+$ npm run build
+```
+
+Builds the app for production to the `build` folder.  It correctly bundles React in production mode and optimizes the build for the best performance.
+
+The build is minified and the filenames include the hashes. Your app is ready to be deployed!
+
+***Notice: You also can choose to use `yarn` command to build or deploy the web application instead of using `npm` package tools.***
+
+
+
+## Contribution
+
+Any contributions  to this project would be highly appreciated, including
+
+- Building docs
+- Report bug and bugfix
+- UI/UX improvement
+- Suggestion or advices
+
+The contribution acitivities can be either by creating an issue or pushing a pull request.
+
+
+
+## License
+
+This project is licensed under the terms of the [MIT license](https://github.com/feedsnetwork/feeds-web-dapp/blob/main/LICENSE).

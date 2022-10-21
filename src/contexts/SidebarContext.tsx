@@ -34,7 +34,7 @@ export const SidebarContext = createContext<SidebarContext>(
   {} as SidebarContext
 );
 
-export const SidebarProvider: FC<React.PropsWithChildren> = (props) => {
+export const SidebarProvider = (props) => {
   
   const [sidebarToggle, setSidebarToggle] = useState(false);
   const [selfChannels, setSelfChannels] = useState([]);

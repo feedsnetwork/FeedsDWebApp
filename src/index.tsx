@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider as ReduxProvider } from 'react-redux';
 import 'nprogress/nprogress.css';
@@ -11,10 +11,8 @@ import { store } from './redux/store';
 import reportWebVitals from './reportWebVitals';
 
 console.log = ()=>{}
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
-root.render(
+
+ReactDOM.render(
   // <React.StrictMode>
   <ReduxProvider store={store}>
     <SidebarProvider>
@@ -24,8 +22,9 @@ root.render(
         </BrowserRouter>
       </OverPageProvider>
     </SidebarProvider>
-  </ReduxProvider>
+  </ReduxProvider>,
   // </React.StrictMode>
+  document.getElementById('root')
 );
 
 // If you want to start measuring performance in your app, pass a function

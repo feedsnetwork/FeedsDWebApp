@@ -127,7 +127,14 @@ function SidebarChannel() {
   const userDid = `did:elastos:${feedsDid}`
   const navigate = useNavigate();
 
-  // const worker = new Worker(new URL('db.worker', import.meta.url))
+  // useEffect(()=>{
+  //   const worker = new Worker('worker.js');
+  //   worker.addEventListener('message', event => {
+  //     console.info(event.data)
+  //   });
+  //   worker.postMessage("hello")
+
+  // }, [])
 
   useEffect(()=>{
     // hiveApi.querySelfChannels()

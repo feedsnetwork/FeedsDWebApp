@@ -42,7 +42,7 @@ function Hero() {
   // const [hiveApi, updateAction] = useGlobalState("hiveApi");
   const hiveApi = new HiveApi()
   let sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
-
+  
   const initializeWalletConnection = React.useCallback(async () => {
     if (sessionLinkFlag === '1' && !activatingConnector) {
       setWalletAddress(

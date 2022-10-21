@@ -11,7 +11,7 @@ export const OverPageContext = createContext<OverPageContext>(
   {} as OverPageContext
 );
 
-export const OverPageProvider: FC<React.PropsWithChildren> = (props) => {
+export const OverPageProvider = (props) => {
   const [pageType, setPageType] = useState('');
   const openAddChannelView = () => {
     setPageType('AddChannel');
