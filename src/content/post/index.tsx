@@ -1,11 +1,10 @@
 import React from 'react'
 import { useParams } from 'react-router-dom';
-import { Grid, Container, Box, Typography, Stack } from '@mui/material';
+import { Grid, Container } from '@mui/material';
 
 import PostCard from 'components/PostCard';
-import { EmptyView } from 'components/EmptyView'
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
-import { reduceDIDstring, getAppPreference, sortByDate, getMergedArray } from 'utils/common'
+import { reduceDIDstring } from 'utils/common'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { LocalDB, QueryStep } from 'utils/db';
 
@@ -47,6 +46,7 @@ const Post = () => {
       })
         .then(response=>setUsers(response.docs))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep])
 
   const loadingSkeletons = Array(5).fill(null)

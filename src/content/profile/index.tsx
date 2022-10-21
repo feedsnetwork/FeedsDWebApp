@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Container, Box, Typography, Stack, IconButton, Tabs, Tab, Hidden } from '@mui/material';
+import { Card, Container, Box, Typography, Stack, IconButton, Tabs, Tab } from '@mui/material';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
 
 import StyledButton from 'components/StyledButton'
@@ -8,7 +8,6 @@ import { EmptyViewInProfile } from 'components/EmptyView'
 import PostCard from 'components/PostCard';
 import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
-import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { HiveApi } from 'services/HiveApi'
 import { reduceHexAddress, reduceDIDstring } from 'utils/common'
@@ -64,9 +63,10 @@ function Profile() {
           setAvatarSrc(`data:image/png;base64,${base64Content}`)
         }
       })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const backgroundImg = "/temp-back.png"
+  // const backgroundImg = "/temp-back.png"
   const selfChannels = channels.filter(channel=>channel['is_self'] === true)
   const subscribedChannels = channels.filter(channel=>channel['is_subscribed'] === true)
   return (

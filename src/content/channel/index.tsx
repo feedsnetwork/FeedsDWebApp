@@ -53,6 +53,7 @@ function Channel() {
           setSelfChannelCount(res.docs.length)
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusedChannelId, publishPostNumber, queryStep])
 
   const appendMoreData = () => {

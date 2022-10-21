@@ -1,12 +1,12 @@
 import React from 'react'
-import { Grid, Container, Box, Typography, Stack } from '@mui/material';
+import { Grid, Container } from '@mui/material';
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import PostCard from 'components/PostCard';
 import { EmptyView } from 'components/EmptyView'
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { reduceDIDstring, sortByDate, getMergedArray } from 'utils/common'
+import { reduceDIDstring } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
 
 const Home = () => {
@@ -43,6 +43,7 @@ const Home = () => {
           setChannels(response.docs)
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep])
   
   const appendMoreData = () => {

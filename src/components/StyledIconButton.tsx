@@ -1,5 +1,4 @@
-import { IconButton, styled } from '@mui/material';
-import { Icon } from '@iconify/react';
+import { IconButton } from '@mui/material';
 
 import StyledIcon from './StyledIcon'
 

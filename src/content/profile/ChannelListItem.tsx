@@ -4,7 +4,6 @@ import { Card, Box, Typography, Stack, Hidden, IconButton, Menu, MenuItem } from
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useSnackbar } from 'notistack';
 
-import StyledButton from 'components/StyledButton'
 import IconInCircle from 'components/IconInCircle'
 import StyledAvatar from 'components/StyledAvatar'
 import { handlePublishModal, setCreatedChannel } from 'redux/slices/channel';

@@ -1,7 +1,6 @@
 import React from 'react'
-import ReactDOM from "react-dom";
 import { useSelector, useDispatch } from 'react-redux'
-import { Box, Typography, Tabs, Tab, Stack, Container, InputAdornment, Grid } from '@mui/material';
+import { Box, Tabs, Tab, Stack, Container, InputAdornment } from '@mui/material';
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
@@ -14,14 +13,12 @@ import ChannelCard from 'components/ChannelCard'
 import PostTextCard from 'components/PostCard/PostTextCard'
 import PostImgCard from 'components/PostCard/PostImgCard'
 import InputOutline from 'components/InputOutline'
-import { SidebarContext } from 'contexts/SidebarContext';
 import { HiveApi } from 'services/HiveApi';
-import { selectPublicChannels, selectDispNameOfChannels, setPublicChannels, setDispNameOfChannels } from 'redux/slices/channel';
+import { selectPublicChannels, setPublicChannels, setDispNameOfChannels } from 'redux/slices/channel';
 import { selectPublicPosts, setPublicPosts, updateMediaOfPosts } from 'redux/slices/post';
 import { getIpfsUrl, getWeb3Contract, isJson, getMergedArray, sortByDate } from 'utils/common'
 
 function Explore() {
-  const { selfChannels } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [containerWidth, setContainerWidth] = React.useState(0);
   const hiveApi = new HiveApi()
@@ -124,7 +121,8 @@ function Explore() {
         }
       })
     handleResize()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicChannels])
   
   const handleResize = () => {
     setContainerWidth(containerRef.current.clientWidth);
@@ -182,6 +180,7 @@ function Explore() {
       )
     }
     return content
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabValue, publicChannels, publicPosts])
 
   return (

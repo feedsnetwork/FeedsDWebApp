@@ -1,8 +1,6 @@
 import React from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom';
-import { Icon } from '@iconify/react';
-import { Grid, Container, Box, Typography } from '@mui/material';
 
 import PostList from 'components/PostList';
 import { selectPublicChannels, selectDispNameOfChannels } from 'redux/slices/channel';
@@ -26,7 +24,7 @@ function Channel() {
       else
         setIsLoading(false)
     }
-  }, [publicPosts])
+  }, [publicPosts, channel_id])
 
   const postListProps = { isLoading, postsInActiveChannel, dispName: dispNameOfChannels[channel_id] || reduceDIDstring(activeChannel.target_did) }
   return (
