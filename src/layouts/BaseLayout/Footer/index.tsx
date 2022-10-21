@@ -1,4 +1,4 @@
-import { Box, Container, Link, Typography, styled } from '@mui/material';
+import { Box, Container, Typography } from '@mui/material';
 import generatedGitInfo from 'generatedGitInfo.json';
 
 function Footer() {

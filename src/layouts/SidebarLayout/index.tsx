@@ -1,4 +1,4 @@
-import { FC, ReactNode, useEffect, useContext, useCallback } from 'react';
+import { FC, ReactNode, useEffect, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { Outlet, useLocation } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
@@ -42,7 +42,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           // console.log(res, '-----------self')
           if(Array.isArray(res)){
             const selfChannels = 
-              res.filter(item=>item.status!=CommonStatus.deleted)
+              res.filter(item=>item.status !== CommonStatus.deleted)
                 .map(item=>{
                   item.target_did = myDID
                   return item
@@ -291,7 +291,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                   tempost.like_me = false
                   tempost.like_creators = []
                   tempost.mediaData = []
-                  if(typeof post.created == 'object')
+                  if(typeof post.created === 'object')
                     tempost.created = new Date(post.created['$date']).getTime()/1000
                   return tempost
                 })
@@ -440,7 +440,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               const commentArr = commentRes['find_message']['items']
               const ascCommentArr = sortByDate(commentArr, 'asc')
               const linkedComments = ascCommentArr.reduce((res, item)=>{
-                if(item.refcomment_id=='0' || !res.some((c) => c.comment_id === item.refcomment_id)) {
+                if(item.refcomment_id === '0' || !res.some((c) => c.comment_id === item.refcomment_id)) {
                   const commentDoc = {
                     ...item, 
                     _id: item.comment_id, 
@@ -453,7 +453,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                   res.push(commentDoc)
                   return res
                 }
-                const tempRefIndex = res.findIndex((c) => c.comment_id == item.refcomment_id)
+                const tempRefIndex = res.findIndex((c) => c.comment_id === item.refcomment_id)
                 if(res[tempRefIndex]['commentData'])
                   res[tempRefIndex]['commentData'].push(item)
                 else res[tempRefIndex]['commentData'] = [item]
@@ -608,6 +608,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             })
         })
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
 

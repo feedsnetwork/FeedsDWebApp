@@ -1,6 +1,4 @@
-import BigNumber from 'bignumber.js'
-
-const TAG: string = 'HiveData'
+// const TAG: string = 'HiveData'
 
 export class HiveData {
 

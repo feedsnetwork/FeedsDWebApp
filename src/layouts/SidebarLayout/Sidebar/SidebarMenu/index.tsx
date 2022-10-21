@@ -1,12 +1,10 @@
 import { useState, useContext, useEffect } from 'react';
 import { NavLink as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import FadeIn from 'react-fade-in';
-// import { Fade } from "react-awesome-reveal";
 import Reveal from "react-awesome-reveal";
 import { keyframes } from "@emotion/react";
 import { Icon } from '@iconify/react';
-import { ListSubheader, alpha, Box, List, styled, Button, ListItem, InputAdornment, Divider, Typography, ListItemText, ListItemIcon, ListItemButton } from '@mui/material';
+import { alpha, Box, List, styled, Button, ListItem, InputAdornment, Divider, Typography, ListItemText, ListItemIcon, ListItemButton } from '@mui/material';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -223,6 +221,7 @@ function SidebarMenu(props) {
           setSubscribedChannels(response.docs)
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep])
 
   const toggleChannels = (e) => {

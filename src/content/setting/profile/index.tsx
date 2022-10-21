@@ -1,7 +1,6 @@
 import React from 'react';
-import { Box, Typography, Stack, Card, Input, Divider, IconButton, Grid, styled } from '@mui/material';
+import { Box, Typography, Stack, Card, Divider, Grid } from '@mui/material';
 
-import StyledButton from 'components/StyledButton';
 import StyledAvatar from 'components/StyledAvatar';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { HiveApi } from 'services/HiveApi'
@@ -34,6 +33,7 @@ const AccountInfo: React.FC<AccountInfoProps> = (props)=>{
     getInfoFromDID(userDid).then(res=>{
       setUserInfo(res)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

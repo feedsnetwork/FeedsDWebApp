@@ -1,5 +1,4 @@
-import { Box, Typography, Stack, Card, Input, Divider, IconButton, Grid, Avatar, Link, styled } from '@mui/material';
-import { Icon } from '@iconify/react';
+import { Box, Typography, Stack, Card, Divider, Grid, styled } from '@mui/material';
 
 import SwitchUI from 'components/SwitchUI'
 

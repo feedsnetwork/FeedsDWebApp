@@ -1,4 +1,4 @@
-import { FC, useState, createContext, Dispatch } from 'react';
+import { useState, createContext, Dispatch } from 'react';
 type OverPageContext = {
   pageType: string;
   openAddChannelView: () => void;

@@ -8,7 +8,7 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { OverPageContext } from 'contexts/OverPageContext';
 import { selectActiveChannelId, selectPublicChannels } from 'redux/slices/channel';
 import { selectPublicPosts } from 'redux/slices/post';
-import { SettingMenuArray, getAppPreference, reduceDIDstring, getMergedArray } from 'utils/common'
+import { SettingMenuArray, reduceDIDstring } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
 
 const HeaderWrapper = styled(Box)(
@@ -50,7 +50,6 @@ const HeaderWrapper = styled(Box)(
 function FloatingHeader() {
   const { pageType } = React.useContext(OverPageContext);
   const { queryStep, focusedChannelId, userInfo } = React.useContext(SidebarContext);
-  const location = useLocation()
   const { pathname } = useLocation()
   const activeChannelId = useSelector(selectActiveChannelId)
   const navigate = useNavigate();
@@ -138,7 +137,10 @@ function FloatingHeader() {
     return ""
   }
 
-  const backBtnText = React.useMemo(() => getActionText(), [pageType, pathname, focusedChannel, postCountInFocus])
+  const backBtnText = React.useMemo(() => {
+    return getActionText()
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageType, pathname, focusedChannel, postCountInFocus])
   return (
     <>
       <Hidden lgDown>

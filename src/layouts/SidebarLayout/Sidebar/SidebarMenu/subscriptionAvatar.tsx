@@ -1,7 +1,6 @@
 import React from 'react'
 
 import StyledAvatar from 'components/StyledAvatar'
-import { SidebarContext } from 'contexts/SidebarContext';
 import { decodeBase64 } from 'utils/common';
 
 const SubscriptionAvatar = (props) => {

@@ -4,8 +4,8 @@ import { useLocation } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
-import { Stack, Box, Drawer, alpha, styled, Divider, useTheme, Button, lighten, Card, CardHeader, CardContent, List, ListItem, ListItemText, 
-  darken, Tooltip, InputAdornment, Typography, Grid, IconButton } from '@mui/material';
+import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, List, ListItem, ListItemText, 
+  InputAdornment, Typography, Grid, IconButton } from '@mui/material';
 
 import Scrollbar from 'components/Scrollbar';
 import StyledAvatar from 'components/StyledAvatar'
@@ -14,7 +14,6 @@ import InputOutline from 'components/InputOutline'
 import SubscriberListItem from './SubscriberListItem';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectPublicChannels, selectDispNameOfChannels, selectActiveChannelId } from 'redux/slices/channel';
-import { HiveApi } from 'services/HiveApi'
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
 import { LocalDB } from 'utils/db'
 
@@ -97,10 +96,10 @@ const ChannelAbout = (props) => {
   </>
 }
 function RightPanel() {
-  const { focusedChannelId, selfChannels, subscribedChannels, queryStep, toggleSidebar } = useContext(SidebarContext);
+  const { focusedChannelId, queryStep } = useContext(SidebarContext);
   const activeChannelId = useSelector(selectActiveChannelId)
   const [focusedChannel, setFocusChannel] = React.useState(null)
-  const closeSidebar = () => toggleSidebar();
+  // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
   const location = useLocation();

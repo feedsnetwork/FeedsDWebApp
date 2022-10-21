@@ -1,4 +1,4 @@
-import React, { FC, useState, createContext, Dispatch } from 'react';
+import React, { useState, createContext, Dispatch } from 'react';
 type SidebarContext = {
   sidebarToggle: any;
   selfChannels: any;

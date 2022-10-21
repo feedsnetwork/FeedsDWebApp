@@ -1,5 +1,4 @@
-import Footer from 'components/Footer';
-import { Grid, Container, Box, Typography, Stack } from '@mui/material';
+import { Container } from '@mui/material';
 
 import { EmptyView } from 'components/EmptyView'
 

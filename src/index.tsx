@@ -8,7 +8,7 @@ import App from './App';
 import { SidebarProvider } from 'contexts/SidebarContext';
 import { OverPageProvider } from 'contexts/OverPageContext';
 import { store } from './redux/store';
-import reportWebVitals from './reportWebVitals';
+// import reportWebVitals from './reportWebVitals';
 
 console.log = ()=>{}
 

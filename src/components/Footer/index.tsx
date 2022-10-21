@@ -1,4 +1,4 @@
-import { Box, Container, Link, Typography, styled } from '@mui/material';
+import { Box, Container, Typography, styled } from '@mui/material';
 import generatedGitInfo from 'generatedGitInfo.json';
 
 const FooterWrapper = styled(Container)(

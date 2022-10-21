@@ -1,12 +1,9 @@
-import { useState, useContext, useEffect, useMemo } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import parse from 'html-react-parser';
 import { Icon } from '@iconify/react';
 import AddIcon from '@mui/icons-material/Add';
-import ShareIcon from '@mui/icons-material/ShareOutlined';
-import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, Popper, ClickAwayListener, Tooltip, Fab, Typography, Paper, IconButton } from '@mui/material';
-import PouchDB from 'pouchdb-browser'
-import PouchdbFind from 'pouchdb-find'
+import { Box, styled, Divider, useTheme, Stack, Popper, ClickAwayListener, Tooltip, Fab, Typography, Paper, IconButton } from '@mui/material';
 
 import Scrollbar from 'components/Scrollbar';
 import Logo from 'components/LogoSign';
@@ -15,11 +12,8 @@ import StyledButton from 'components/StyledButton'
 import PostDlg from 'components/Modal/Post';
 import SignoutDlg from 'components/Modal/Signout';
 import { SidebarContext } from 'contexts/SidebarContext';
-import { OverPageContext } from 'contexts/OverPageContext';
-import { CommonStatus } from 'models/common_content'
-import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique, getInfoFromDID, isValidTime, getDateDistance, convertAutoLink, getPostByChannelId } from 'utils/common'
+import { sortByDate, isValidTime, getDateDistance, convertAutoLink } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
-import { HiveApi } from 'services/HiveApi'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -111,7 +105,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 }));
 
 function SidebarChannel() {
-  const { postsInSelf, sidebarToggle, focusedChannelId, subscriberInfo, queryStep, setPostsInSelf, toggleSidebar, setFocusChannelId, setSubscriberInfo } = useContext(SidebarContext);
+  const { focusedChannelId, queryStep, setFocusChannelId } = useContext(SidebarContext);
   const [selfChannels, setSelfChannels] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
@@ -120,11 +114,9 @@ function SidebarChannel() {
   const [arrowRef, setArrowRef] = useState(null);
   const [isOpenPost, setOpenPost] = useState(false)
   const [isOpenSignout, setOpenSignout] = useState(false)
-  const closeSidebar = () => toggleSidebar();
+  // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const userDid = `did:elastos:${feedsDid}`
   const navigate = useNavigate();
 
   // useEffect(()=>{
@@ -233,6 +225,7 @@ function SidebarChannel() {
           setFocusChannelId(response.docs[0]['channel_id'])
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep])
   
   const handleClickChannel = (item)=>{
@@ -257,7 +250,7 @@ function SidebarChannel() {
           .slice(0, 2)
           .map(post=>{
             const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
-            if(post.status == 1)
+            if(post.status === 1)
               post.content_filtered = "(post deleted)"
             else {
               const contentObj = JSON.parse(post.content)

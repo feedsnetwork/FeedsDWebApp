@@ -1,10 +1,9 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
 import { useNavigate, NavLink as RouterLink } from 'react-router-dom';
-import { Stack, Box, Typography, Link, styled } from '@mui/material'
+import { Stack, Box, Typography, Link } from '@mui/material'
 
 import StyledAvatar from 'components/StyledAvatar'
-import StyledButton from 'components/StyledButton'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectUserAvatar } from 'redux/slices/user';
 import { LocalDB, QueryStep } from 'utils/db'
@@ -25,7 +24,7 @@ const SubscriberListItem = (props) => {
                 })
                 .catch(err=>{})
         }
-    }, [queryStep])
+    }, [queryStep, subscriber])
 
     const handleLink2Profile = (user_did)=>{
         navigate('/profile/others', {state: {user_did}});

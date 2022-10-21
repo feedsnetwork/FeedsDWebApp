@@ -1,15 +1,12 @@
 import React from 'react';
-import Scrollbar from 'components/Scrollbar';
-import { SidebarContext } from 'contexts/SidebarContext';
-
-import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, Avatar, Tooltip, Typography } from '@mui/material';
+import { Box, styled, Divider, useTheme, Stack, Typography } from '@mui/material';
 
 import SidebarMenu from './SidebarMenu';
-import Logo from 'components/LogoSign';
 import StyledAvatar from 'components/StyledAvatar'
+import Scrollbar from 'components/Scrollbar';
 import { HiveApi } from 'services/HiveApi'
-import { reduceDIDstring, getInfoFromDID, reduceHexAddress, getAppPreference, getFilteredArrayByUnique, sortByDate, getPostByChannelId } from 'utils/common'
-import { CommonStatus } from 'models/common_content';
+import { SidebarContext } from 'contexts/SidebarContext';
+import { reduceDIDstring, getInfoFromDID, reduceHexAddress } from 'utils/common'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -23,9 +20,8 @@ const SidebarWrapper = styled(Box)(
 );
 
 function Sidebar() {
-  const { sidebarToggle, walletAddress, myAvatar, userInfo, subscriberInfo, 
-    toggleSidebar, setSubscribedChannels, setMyAvatar, setUserInfo, setSubscriberInfo, setPostsInSubs } = React.useContext(SidebarContext);
-  const closeSidebar = () => toggleSidebar();
+  const { walletAddress, myAvatar, userInfo, setMyAvatar, setUserInfo } = React.useContext(SidebarContext);
+  // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
@@ -142,6 +138,7 @@ function Sidebar() {
     getInfoFromDID(userDid).then(res=>{
       setUserInfo(res)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

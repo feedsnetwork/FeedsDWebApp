@@ -1,4 +1,4 @@
-import { Box, Typography, Stack, Card, Input, Divider, IconButton, Grid, styled } from '@mui/material';
+import { Box, Typography, Stack, Card, Divider, Grid } from '@mui/material';
 import generatedGitInfo from 'generatedGitInfo.json';
 
 const aboutData = [

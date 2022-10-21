@@ -5,11 +5,10 @@ import FadeIn from 'react-fade-in';
 import { DID } from '@elastosfoundation/elastos-connectivity-sdk-js';
 import { VerifiablePresentation, DefaultDIDAdapter, DIDBackend } from '@elastosfoundation/did-js-sdk';
 import jwt from 'jsonwebtoken';
-import { Box, Button, Container, Grid, Typography, Link, Stack, LinearProgress, Fade, Paper } from '@mui/material';
+import { Box, Button, Container, Grid, Typography, Link, Stack, LinearProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 
-import Logo from 'components/LogoSign';
 import StyledButton from 'components/StyledButton';
 import { essentialsConnector, initConnectivitySDK, isUsingEssentialsConnector } from '../EssentialConnectivity';
 import { isInAppBrowser } from 'utils/common'
@@ -50,14 +49,16 @@ function Hero() {
           ? await window['elastos'].getWeb3Provider().address
           : essentialsConnector.getWalletConnectProvider().wc.accounts[0]
       );
-      const mydid = sessionStorage.getItem('PASAR_DID')
+      // const mydid = sessionStorage.getItem('PASAR_DID')
       // getAvatarUrl(mydid)
       setActivatingConnector(essentialsConnector);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionLinkFlag, activatingConnector]);
 
   React.useEffect(()=>{
     initializeWalletConnection()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   React.useEffect(()=>{
@@ -123,7 +124,7 @@ function Hero() {
         };
         // succeed
         const token = jwt.sign(user, 'feeds', { expiresIn: 60 * 60 * 24 * 7 });
-        // sessionStorage.setItem('FEEDS_TOKEN', token);
+        sessionStorage.setItem('FEEDS_TOKEN', token);
         sessionStorage.setItem('FEEDS_DID', did);
         sessionStorage.setItem('FEEDS_LINK', '1');
         sessionLinkFlag = '1';
