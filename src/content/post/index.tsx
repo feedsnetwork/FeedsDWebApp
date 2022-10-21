@@ -82,14 +82,14 @@ const Post = () => {
                   post: comment,
                   channel: channelInfo,
                   dispName: commentUser['name'] || reduceDIDstring(comment.creater_did),
-                  dispAvatar: commentUser['avatarSrc'],
+                  dispAvatar: { name: commentUser['name'], src: commentUser['avatarSrc']},
                   replyingTo: dispNameOfPost,
                   users,
                   level: 2
                 }
                 if(channelInfo['target_did'] === comment.creater_did) {
                   commentProps['dispName'] = channelInfo['name']
-                  commentProps['dispAvatar'] = channelInfo['avatarSrc']
+                  commentProps['dispAvatar'] = { name: channelInfo['name'], src: channelInfo['avatarSrc'] }
                 }
                 return <Grid item xs={12} key={_i}>
                   <PostCard {...commentProps}/>

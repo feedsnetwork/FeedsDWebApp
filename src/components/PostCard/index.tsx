@@ -64,7 +64,7 @@ const PostCard = (props) => {
     cardProps = {style: {cursor: 'pointer'}, onClick: naviage2detail}
   } 
   else if(level == 2) {
-    contentObj.avatar = dispAvatar[post.comment_id] || {}
+    contentObj.avatar = dispAvatar || {}
     contentObj.content = post.content
     contentObj.primaryName = `@${dispName}`
     contentObj.secondaryName = <><b>Replying to</b> @{replyingTo}</>
@@ -118,13 +118,13 @@ const PostCard = (props) => {
               post.commentData.map((comment, _i)=>{
                 const commentUser = users.find(user=>user['_id']===comment.creator_did) || {}
                 const subContentObj = {
-                  avatar: dispAvatar[comment.comment_id] || {}, 
+                  avatar: { name: commentUser['name'], src: commentUser['avatarSrc']},
                   primaryName: `@${commentUser['name'] || reduceDIDstring(comment.creater_did)}`, 
                   secondaryName: <><b>Replying to</b> @{dispName}</>, 
                   content: comment.content
                 }
                 if(channel['target_did'] === comment.creater_did) {
-                  subContentObj['avatar'] = channel['avatarSrc']
+                  subContentObj['avatar'] = { name: channel['name'], src: channel['avatarSrc']}
                   subContentObj['primaryName'] = `@${channel.name}`
                 }
                 const subBodyProps = { post: comment, contentObj: subContentObj, isReply: true, level }

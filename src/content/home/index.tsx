@@ -46,18 +46,26 @@ const Home = () => {
   }, [queryStep])
   
   const appendMoreData = () => {
-    LocalDB.find({
-      selector: {
-        table_type: 'post',
-        created_at: pageEndTime? {$lt: pageEndTime}: {$gt: true}
-      },
-      sort: [{'created_at': 'desc'}],
-      limit: 10
+    LocalDB.createIndex({
+      index: {
+        fields: ['created_at'],
+      }
     })
+      .then(_=>(
+        LocalDB.find({
+          selector: {
+            table_type: 'post',
+            created_at: pageEndTime? {$lt: pageEndTime}: {$gt: true}
+          },
+          sort: [{'created_at': 'desc'}],
+          limit: 10
+        })
+      ))
       .then(response => {
         setPosts([...posts, ...response.docs])
         const pageEndPost = response.docs[response.docs.length-1]
-        setPageEndTime(pageEndPost['created_at'])
+        if(pageEndPost)
+          setPageEndTime(pageEndPost['created_at'])
       })
   }
 
@@ -70,7 +78,7 @@ const Home = () => {
 
         <Container sx={{ my: 3 }} maxWidth="lg">
           <InfiniteScroll
-            dataLength={Math.min(posts.length, totalCount)}
+            dataLength={posts.length}
             next={appendMoreData}
             hasMore={posts.length<totalCount}
             loader={<h4>Loading...</h4>}
