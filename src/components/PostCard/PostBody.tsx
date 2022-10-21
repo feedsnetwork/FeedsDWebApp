@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavLink as RouterLink, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade, Menu, MenuItem, Link } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
@@ -84,7 +84,6 @@ const PostBody = (props) => {
   const [isSaving, setIsSaving] = React.useState(false)
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
-  const [isEnterPopover, setEnterPopover] = React.useState(false);
   const [isOpenPopup, setOpenPopup] = React.useState(null);
   const hiveApi = new HiveApi()
   const subscribersOfThis = currentChannel['subscribers'] || []
@@ -100,7 +99,7 @@ const PostBody = (props) => {
       .then(channelDoc => {
         setCurrentChannel(channelDoc)
       })
-  }, [])
+  }, [post])
 
   React.useEffect(()=>{
     if(queryStep >= QueryStep.comment_data) {
@@ -114,7 +113,7 @@ const PostBody = (props) => {
           setCommentCount(response.docs.length)
         })
     }
-  }, [queryStep])
+  }, [queryStep, post])
 
   React.useEffect(()=>{
     setIsLike(!!post.like_me)
@@ -221,7 +220,7 @@ const PostBody = (props) => {
   }
   const handleLink2Profile = (e)=>{
     e.stopPropagation()
-    const isSelf = post.target_did == feedsDid
+    const isSelf = post.target_did === feedsDid
     if(isSelf) {
       navigate('/profile')
     } else {
@@ -235,14 +234,14 @@ const PostBody = (props) => {
           <Box
             onMouseEnter={(e)=>{handlePopper(e, true)}}
             onMouseLeave={(e)=>{handlePopper(e, false)}}
-            onClick={level==1?handleLink2Channel:null}
+            onClick={level===1? handleLink2Channel: null}
           >
             <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
           </Box>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography component='div' variant="subtitle2" noWrap>
               {
-                level==1?
+                level===1?
                 <Link sx={{color:'inherit'}} onClick={handleLink2Channel}>
                   {contentObj.primaryName}
                 </Link>:
@@ -253,7 +252,7 @@ const PostBody = (props) => {
             </Typography>
             <Typography variant="body2" noWrap>
               {
-                level==1?
+                level===1?
                 <Link sx={{color:'inherit'}} onClick={handleLink2Profile}>
                   {contentObj.secondaryName}
                 </Link>:
@@ -328,8 +327,8 @@ const PostBody = (props) => {
           <Box>
             {
               !!post.mediaData && post.mediaData.map((media, _i)=>(
-                media.kind == 'image'?
-                <Box component='img' src={media.mediaSrc} key={_i} sx={direction==='row'?{width: 150, borderRadius: 1}:{width: '100%'}}/>:
+                media.kind === 'image'?
+                <Box component='img' src={media.mediaSrc} key={_i} sx={direction==='row'? {width: 150, borderRadius: 1}: {width: '100%'}}/>:
                 <div key={_i}/>
                 // <Box component='video' src={media.mediaSrc}/>
               ))
@@ -393,7 +392,7 @@ const PostBody = (props) => {
         </Stack>
       </Stack>
       {
-        level==1 &&
+        level===1 &&
         <StyledPopper
           anchorEl={anchorEl}
           open={isOpenPopover}

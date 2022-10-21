@@ -6,12 +6,11 @@ import "odometer/themes/odometer-theme-default.css";
 
 import StyledAvatar from 'components/StyledAvatar'
 import PaperRecord from 'components/PaperRecord'
-import { SidebarContext } from 'contexts/SidebarContext';
 import { selectPublicChannels, selectDispNameOfChannels } from 'redux/slices/channel';
-import { getDateDistance, isValidTime, hash, convertAutoLink } from 'utils/common'
+import { getDateDistance, isValidTime, convertAutoLink } from 'utils/common'
 
 const PostTextCard = (props) => {
-  const { post, contentObj, level=1 } = props
+  const { post } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   // const { selfChannels, subscribedChannels, subscriberInfo } = React.useContext(SidebarContext);
   // const [anchorEl, setAnchorEl] = React.useState(null);

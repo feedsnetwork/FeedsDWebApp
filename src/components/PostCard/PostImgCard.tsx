@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
+import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { Box, Stack, Typography } from '@mui/material';
 import parse from 'html-react-parser';
@@ -8,12 +8,11 @@ import "odometer/themes/odometer-theme-default.css";
 
 import StyledAvatar from 'components/StyledAvatar'
 import PaperRecord from 'components/PaperRecord'
-import { SidebarContext } from 'contexts/SidebarContext';
 import { selectPublicChannels } from 'redux/slices/channel';
-import { getDateDistance, isValidTime, hash, convertAutoLink } from 'utils/common'
+import { convertAutoLink } from 'utils/common'
 
 const PostImgCard = (props) => {
-  const { post, contentObj, level=1 } = props
+  const { post } = props
   // const { selfChannels, subscribedChannels, subscriberInfo } = React.useContext(SidebarContext);
   // const [anchorEl, setAnchorEl] = React.useState(null);
   // const [isOpenPopover, setOpenPopover] = React.useState(false);

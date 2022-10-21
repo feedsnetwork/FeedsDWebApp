@@ -5,7 +5,6 @@ import { Box, Typography, Stack } from '@mui/material';
 
 import StyledButton from 'components/StyledButton';
 import { OverPageContext } from 'contexts/OverPageContext';
-import { Navigate } from 'react-router';
 
 interface EmptyViewProps {
   type?: string;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack} from '@mui/material';
+import { Dialog, DialogContent, Typography, Stack} from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 import StyledButton from '../StyledButton';

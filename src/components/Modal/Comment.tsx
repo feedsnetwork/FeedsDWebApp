@@ -1,21 +1,16 @@
 import React from 'react';
-import { isString } from 'lodash';
 import PropTypes from 'prop-types';
-import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, Divider, IconButton, Paper } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSnackbar } from 'notistack';
-import closeFill from '@iconify/icons-eva/close-fill';
-import { Icon } from '@iconify/react';
 
 import StyledAvatar from '../StyledAvatar';
 import StyledButton from '../StyledButton';
 import StyledTextFieldOutline from '../StyledTextFieldOutline'
-import StyledIconButton from '../StyledIconButton';
 import { SidebarContext } from 'contexts/SidebarContext';
-import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
 import PostBody from '../PostCard/PostBody'
 import { HiveApi } from 'services/HiveApi'
-import { getBufferFromFile, reduceDIDstring } from 'utils/common'
+import { reduceDIDstring } from 'utils/common'
 
 function CommentDlg(props) {
   const { post, postProps, setOpen, isOpen } = props;
@@ -24,12 +19,12 @@ function CommentDlg(props) {
   const [onProgress, setOnProgress] = React.useState(false);
   const [commentext, setCommentext] = React.useState('');
   
-  const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId) || {}
+  const focusedChannel = selfChannels.find(item=>item.channel_id === focusedChannelId) || {}
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
   const commentRef = React.useRef(null)
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
+  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id === post.channel_id) || {}
   
   React.useEffect(()=>{
     if(!isOpen) {
@@ -88,7 +83,7 @@ function CommentDlg(props) {
               {userInfo['name'] || reduceDIDstring(feedsDid)}
             </Typography>
             <Typography variant="body2" noWrap>
-              <b>Replying to</b> {postProps.level==1?postProps.contentObj.secondaryName:postProps.contentObj.primaryName}
+              <b>Replying to</b> {postProps.level === 1? postProps.contentObj.secondaryName: postProps.contentObj.primaryName}
             </Typography>
           </Box>
         </Stack>

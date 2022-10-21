@@ -1,6 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'
-import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, Divider, IconButton, Paper } from '@mui/material';
+import { Dialog, DialogContent, Typography, Stack } from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 import StyledButton from '../StyledButton';

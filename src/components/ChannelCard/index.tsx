@@ -1,7 +1,7 @@
 import React from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { alpha, styled } from '@mui/material/styles';
-import { Box, Typography, Stack, Paper } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { styled } from '@mui/material/styles';
+import { Box, Typography, Stack } from '@mui/material';
 
 import PaperRecord from 'components/PaperRecord'
 // ----------------------------------------------------------------------

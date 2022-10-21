@@ -1,10 +1,8 @@
-import { FC, useRef, useEffect, useState, useContext } from 'react'
+import { FC, useRef } from 'react'
 import PropTypes from 'prop-types';
 import { Avatar, Box, styled } from '@mui/material';
 import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
 
-import { SidebarContext } from 'contexts/SidebarContext';
-import { HiveApi } from 'services/HiveApi'
 import { decodeBase64 } from 'utils/common'
 
 const ChannelWrapper = styled(Box)(

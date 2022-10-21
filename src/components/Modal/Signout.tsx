@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom'
-import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, Divider, IconButton, Paper } from '@mui/material';
-import { Icon } from '@iconify/react';
+import { Dialog, DialogContent, Typography, Stack } from '@mui/material';
 
 import StyledButton from '../StyledButton';
 import StyledIcon from '../StyledIcon'
