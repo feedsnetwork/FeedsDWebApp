@@ -82,12 +82,12 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               if(channelInfoRes['find_message'] && channelInfoRes['find_message']['items'].length) {
                 const channelInfo = channelInfoRes['find_message']['items'][0]
                 const dataObj = {...channelInfo, _id: channel.channel_id.toString(), target_did: channel.target_did, is_self: false, is_subscribed: true, is_public: false, table_type: 'channel'}
-                try {
-                  const avatarRes = await hiveApi.downloadScripting(channel.target_did, channelInfo.avatar)
-                  dataObj['avatarSrc'] = encodeBase64(avatarRes)
-                } catch(err) {
-                  console.log(err)
-                }
+                // try {
+                //   const avatarRes = await hiveApi.downloadScripting(channel.target_did, channelInfo.avatar)
+                //   dataObj['avatarSrc'] = encodeBase64(avatarRes)
+                // } catch(err) {
+                //   console.log(err)
+                // }
                 return dataObj
               }
             })
@@ -113,6 +113,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                 return LocalDB.put({_id: 'query-step', step: QueryStep.subscribed_channel, _rev: stepDoc._rev})
               })
               .then(_=>{ 
+                queryChannelAvatarStep()
                 setQueryStep(QueryStep.subscribed_channel) 
                 resolve({success: true})
               })
@@ -520,25 +521,25 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     })
   )
 
-  const queryChannelAvatarStep = () => (
-    new Promise((resolve, reject) => {
-      LocalDB.find({
-        selector: {
-          table_type: 'channel'
-        },
-      })
-        .then(response=>{
-          const channelWithAvatar = response.docs.filter(doc=>!!doc['avatarSrc'])
-          const channelDocNoAvatar = response.docs.filter(doc=>!doc['avatarSrc'])
-          const avatarObjs = channelWithAvatar.reduce((objs, channel) => {
-            const c_id = channel['channel_id']
-            objs[c_id] = channel['avatarSrc']
-            return objs
-          }, {})
-          dispatch(setChannelAvatarSrc(avatarObjs))
+  const queryChannelAvatarStep = () => {
+    LocalDB.find({
+      selector: {
+        table_type: 'channel'
+      },
+    })
+      .then(response=>{
+        const channelWithAvatar = response.docs.filter(doc=>!!doc['avatarSrc'])
+        const channelDocNoAvatar = response.docs.filter(doc=>!doc['avatarSrc'])
+        const avatarObjs = channelWithAvatar.reduce((objs, channel) => {
+          const c_id = channel['channel_id']
+          objs[c_id] = channel['avatarSrc']
+          return objs
+        }, {})
+        dispatch(setChannelAvatarSrc(avatarObjs))
 
-          channelDocNoAvatar.forEach(channel=>{
-            let infoDoc = {...channel}
+        channelDocNoAvatar.forEach(channel=>{
+          let infoDoc = {...channel}
+          if(channel['is_self']) {
             const parseAvatar = infoDoc['avatar'].split('@')
             Promise.resolve()
               .then(_=>hiveApi.downloadCustomeAvatar(parseAvatar[parseAvatar.length-1]))
@@ -556,56 +557,62 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                   dispatch(setChannelAvatarSrc(avatarObj))
                 }
               })
-          })
-        })
-        .catch(err=>{
-          reject(err)
-        })
-    })
-  )
-
-  const queryUserAvatarStep = () => (
-    new Promise((resolve, reject) => {
-      LocalDB.find({
-        selector: {
-          table_type: 'user'
-        },
-      })
-        .then(response=>{
-          const subscriberWithAvatar = response.docs.filter(doc=>!!doc['avatarSrc'])
-          const subscriberDocNoAvatar = response.docs.filter(doc=>!doc['avatarSrc'])
-          const avatarObjs = subscriberWithAvatar.reduce((objs, subscriber) => {
-            const s_did = subscriber['_id']
-            objs[s_did] = subscriber['avatarSrc']
-            return objs
-          }, {})
-          dispatch(setUserAvatarSrc(avatarObjs))
-
-          subscriberDocNoAvatar.forEach(subscriber=>{
-            let infoDoc = {...subscriber}
-            const { _id } = infoDoc
-            const avatarObj = {}
+          }
+          else {
             Promise.resolve()
-              .then(_=>hiveApi.getHiveUrl(infoDoc['_id']))
-              .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(infoDoc['_id'], hiveUrl))
-              .then(response=>{
-                if(response && response.length) {
-                  const base64Content = response.toString('base64')
-                  infoDoc['avatarSrc'] = encodeBase64(`data:image/png;base64,${base64Content}`)
-                  avatarObj[_id] = infoDoc['avatarSrc']
-                  return LocalDB.put(infoDoc)
-                }
+              .then(_=>hiveApi.downloadScripting(infoDoc['target_did'], infoDoc['avatar']))
+              .then(avatarRes=>{
+                const avatarObj = {}
+                const channel_id = infoDoc['channel_id']
+                infoDoc['avatarSrc'] = encodeBase64(avatarRes)
+                LocalDB.put(infoDoc)
+                avatarObj[channel_id] = infoDoc['avatarSrc']
+                dispatch(setChannelAvatarSrc(avatarObj))
               })
-              .then(res=>{
-                dispatch(setUserAvatarSrc(avatarObj))
-              })
-          })
+          }
         })
-        .catch(err=>{
-          reject(err)
-        })
+      })
+      .catch(err=>{})
+  }
+
+  const queryUserAvatarStep = () => {
+    LocalDB.find({
+      selector: {
+        table_type: 'user'
+      },
     })
-  )
+      .then(response=>{
+        const subscriberWithAvatar = response.docs.filter(doc=>!!doc['avatarSrc'])
+        const subscriberDocNoAvatar = response.docs.filter(doc=>!doc['avatarSrc'])
+        const avatarObjs = subscriberWithAvatar.reduce((objs, subscriber) => {
+          const s_did = subscriber['_id']
+          objs[s_did] = subscriber['avatarSrc']
+          return objs
+        }, {})
+        dispatch(setUserAvatarSrc(avatarObjs))
+
+        subscriberDocNoAvatar.forEach(subscriber=>{
+          let infoDoc = {...subscriber}
+          const { _id } = infoDoc
+          const avatarObj = {}
+          Promise.resolve()
+            .then(_=>hiveApi.getHiveUrl(infoDoc['_id']))
+            .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(infoDoc['_id'], hiveUrl))
+            .then(response=>{
+              if(response && response.length) {
+                const base64Content = response.toString('base64')
+                infoDoc['avatarSrc'] = encodeBase64(`data:image/png;base64,${base64Content}`)
+                avatarObj[_id] = infoDoc['avatarSrc']
+                return LocalDB.put(infoDoc)
+              }
+            })
+            .then(res=>{
+              dispatch(setUserAvatarSrc(avatarObj))
+            })
+        })
+      })
+      .catch(err=>{})
+  }
 
   const querySteps = [
     querySelfChannelStep, 
