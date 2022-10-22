@@ -1,8 +1,10 @@
 import { FC, useRef } from 'react'
+import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types';
 import { Avatar, Box, styled } from '@mui/material';
 import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
 
+import { selectChannelAvatar } from 'redux/slices/channel';
 import { decodeBase64 } from 'utils/common'
 
 const ChannelWrapper = styled(Box)(
@@ -89,10 +91,9 @@ interface ChannelAvatarProps {
 
 const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
   const { channel, width=40, variant = 'circular', onClick=(e)=>{}, onRightClick=(e)=>{}, focused=false } = props
+  const channelAvatarSrc = useSelector(selectChannelAvatar)
   const channelInfo = {...channel}
-  if(channelInfo['avatarSrc']) {
-    channelInfo['avatarSrc'] = decodeBase64(channelInfo['avatarSrc'])
-  }
+  let avatarSrc = decodeBase64(channelAvatarSrc[channel['channel_id']] || "")
   const rippleRef = useRef(null);
   const onRippleStart = (e) => {
     rippleRef.current.start(e);
@@ -126,7 +127,7 @@ const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
             transition: 'border-radius .2s',
           }}
           alt={channelInfo['name']}
-          src={channelInfo['avatarSrc']}
+          src={avatarSrc}
         />
         <TouchRipple ref={rippleRef} center={false} />
       </AvatarWrapper>

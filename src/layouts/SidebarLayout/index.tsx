@@ -17,6 +17,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
+import { setChannelAvatarSrc } from 'redux/slices/channel'
 import { setUserAvatarSrc } from 'redux/slices/user'
 import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
@@ -47,23 +48,14 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                   item.target_did = myDID
                   return item
                 })
-            const selfChannelDoc = selfChannels.map(async channel=>{
-              const parseAvatar = channel['avatar'].split('@')
-              const avatarRes = await hiveApi.downloadCustomeAvatar(parseAvatar[parseAvatar.length-1])
-              const dataObj = {...channel, _id: channel.channel_id.toString(), is_self: true, is_subscribed: false, is_public: false, table_type: 'channel'}
-              if(avatarRes && avatarRes.length) {
-                const avatarSrc = avatarRes.reduce((content, code)=>{
-                  content=`${content}${String.fromCharCode(code)}`;
-                  return content
-                }, '')
-                dataObj['avatarSrc'] = encodeBase64(avatarSrc)
-              }
-              return dataObj
-            })
-            Promise.all(selfChannelDoc)
-              .then(selfChannelData => LocalDB.bulkDocs(selfChannelData))
+            const selfChannelDoc = selfChannels.map(channel=>(
+              {...channel, _id: channel.channel_id.toString(), is_self: true, is_subscribed: false, is_public: false, table_type: 'channel'}
+            ))
+            Promise.resolve()
+              .then(_=>LocalDB.bulkDocs(selfChannelDoc))
               .then(_=>LocalDB.put({_id: 'query-step', step: QueryStep.self_channel}))
               .then(_=>{ 
+                queryChannelAvatarStep()
                 setQueryStep(QueryStep.self_channel) 
                 resolve({success: true})
               })
@@ -528,6 +520,50 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     })
   )
 
+  const queryChannelAvatarStep = () => (
+    new Promise((resolve, reject) => {
+      LocalDB.find({
+        selector: {
+          table_type: 'channel'
+        },
+      })
+        .then(response=>{
+          const channelWithAvatar = response.docs.filter(doc=>!!doc['avatarSrc'])
+          const channelDocNoAvatar = response.docs.filter(doc=>!doc['avatarSrc'])
+          const avatarObjs = channelWithAvatar.reduce((objs, channel) => {
+            const c_id = channel['channel_id']
+            objs[c_id] = channel['avatarSrc']
+            return objs
+          }, {})
+          dispatch(setChannelAvatarSrc(avatarObjs))
+
+          channelDocNoAvatar.forEach(channel=>{
+            let infoDoc = {...channel}
+            const parseAvatar = infoDoc['avatar'].split('@')
+            Promise.resolve()
+              .then(_=>hiveApi.downloadCustomeAvatar(parseAvatar[parseAvatar.length-1]))
+              .then(avatarRes=>{
+                if(avatarRes && avatarRes.length) {
+                  const avatarObj = {}
+                  const channel_id = infoDoc['channel_id']
+                  const avatarSrc = avatarRes.reduce((content, code)=>{
+                    content=`${content}${String.fromCharCode(code)}`;
+                    return content
+                  }, '')
+                  infoDoc['avatarSrc'] = encodeBase64(avatarSrc)
+                  LocalDB.put(infoDoc)
+                  avatarObj[channel_id] = infoDoc['avatarSrc']
+                  dispatch(setChannelAvatarSrc(avatarObj))
+                }
+              })
+          })
+        })
+        .catch(err=>{
+          reject(err)
+        })
+    })
+  )
+
   const queryUserAvatarStep = () => (
     new Promise((resolve, reject) => {
       LocalDB.find({
@@ -598,6 +634,8 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             .then(res=>{
               console.log(res, "---result")
             })
+          if(currentStep['step'] >= QueryStep.subscribed_channel)
+            queryChannelAvatarStep()
           if(currentStep['step'] > QueryStep.post_data)
             queryUserAvatarStep()
         })

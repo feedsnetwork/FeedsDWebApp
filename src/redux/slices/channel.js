@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 // ----------------------------------------------------------------------
 
 const initialState = {
+  avatarSrc: {},
   isChannelCreated: false,
   isOpened2Publish: false,
   activeChannelId: 0,
@@ -42,6 +43,9 @@ const slice = createSlice({
     setActiveChannelId(state, action) {
       state.activeChannelId = action.payload
     },
+    setChannelAvatarSrc(state, action) {
+      state.avatarSrc = {...state.avatarSrc, ...action.payload}
+    },
   }
 });
 
@@ -49,7 +53,7 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setCreatedChannel, setPublicChannels, setDispNameOfChannels, setActiveChannelId } = slice.actions;
+export const { setCreatedChannel, setPublicChannels, setDispNameOfChannels, setActiveChannelId, setChannelAvatarSrc } = slice.actions;
 
 // ----------------------------------------------------------------------
 
@@ -88,4 +92,7 @@ export function selectDispNameOfChannels(state) {
 }
 export function selectActiveChannelId(state) {
   return state.channel.activeChannelId
+}
+export function selectChannelAvatar(state) {
+  return state.channel.avatarSrc
 }
