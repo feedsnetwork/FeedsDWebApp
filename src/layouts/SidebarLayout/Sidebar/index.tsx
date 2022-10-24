@@ -34,11 +34,13 @@ function Sidebar() {
     hiveApi.getHiveUrl(userDid)
       .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(userDid, hiveUrl))
       .then(res=>{
-        if(res && res.length) {
-          const base64Content = res.toString('base64')
+        const resBuf = res as Buffer
+        if(resBuf && resBuf.length) {
+          const base64Content = resBuf.toString('base64')
           setMyAvatar(`data:image/png;base64,${base64Content}`)
         }
       })
+      .catch(err=>{})
 
     // hiveApi.queryBackupData()
     //   .then(backupRes=>{

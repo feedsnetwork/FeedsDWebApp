@@ -22,13 +22,15 @@ const AccountInfo: React.FC<AccountInfoProps> = (props)=>{
       return
       
     hiveApi.getHiveUrl(userDid)
-      .then(async hiveUrl=>{
-        const res = await hiveApi.downloadFileByHiveUrl(userDid, hiveUrl)
-        if(res && res.length) {
-          const base64Content = res.toString('base64')
+      .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(userDid, hiveUrl))
+      .then(res=>{
+        const resBuf = res as Buffer
+        if(resBuf && resBuf.length) {
+          const base64Content = resBuf.toString('base64')
           setAvatarSrc(`data:image/png;base64,${base64Content}`)
         }
       })
+      .catch(err=>{})
       
     getInfoFromDID(userDid).then(res=>{
       setUserInfo(res)

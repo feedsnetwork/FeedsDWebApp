@@ -56,13 +56,15 @@ function Profile() {
       return
       
     hiveApi.getHiveUrl(myDID)
-      .then(async hiveUrl=>{
-        const res =  await hiveApi.downloadFileByHiveUrl(myDID, hiveUrl)
-        if(res && res.length) {
-          const base64Content = res.toString('base64')
+      .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(myDID, hiveUrl))
+      .then(res=>{
+        const resBuf = res as Buffer
+        if(resBuf && resBuf.length) {
+          const base64Content = resBuf.toString('base64')
           setAvatarSrc(`data:image/png;base64,${base64Content}`)
         }
       })
+      .catch(err=>{})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

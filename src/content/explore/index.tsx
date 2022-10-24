@@ -9,7 +9,6 @@ import AutoResponsive from 'autoresponsive-react'
 
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config';
-import TabPanel from 'components/TabPanel'
 import ChannelCard from 'components/ChannelCard'
 import PostTextCard from 'components/PostCard/PostTextCard'
 import PostImgCard from 'components/PostCard/PostImgCard'
@@ -42,6 +41,7 @@ function Explore() {
     // if(publicChannels.length>0)
     //   return
     appendMoreData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   React.useEffect(()=>{
     handleResize()

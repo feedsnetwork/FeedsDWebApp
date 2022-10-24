@@ -299,12 +299,12 @@ export class HiveService {
   }
 
   async downloadFileByHiveUrl(targetDid: string, url: string) {
-    try {
-      const scriptRunner = await this.getScriptRunner(targetDid)
-      return await scriptRunner.downloadFileByHiveUrl(url)
-    } catch (error) {
-      throw error
-    }
+    return new Promise((resolve, reject) => {
+      this.getScriptRunner(targetDid)
+        .then(scriptRunner=>scriptRunner.downloadFileByHiveUrl(url))
+        .then(resolve)
+        .catch(reject)
+    })
   }
 
   async downloadScripting(targetDid: string, transaction_id: string) {
