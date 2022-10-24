@@ -1,5 +1,6 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import InfiniteScroll from "react-infinite-scroll-component";
 import { Box, Tabs, Tab, Stack, Container, InputAdornment } from '@mui/material';
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -21,6 +22,8 @@ import { getIpfsUrl, getWeb3Contract, isJson, getMergedArray, sortByDate } from 
 function Explore() {
   const [tabValue, setTabValue] = React.useState(0);
   const [containerWidth, setContainerWidth] = React.useState(0);
+  const [startChannelIndex, setStartChannelIndex] = React.useState(0);
+  const [isLastPage, setIsLastPage] = React.useState(false);
   const hiveApi = new HiveApi()
   const dispatch = useDispatch()
   const publicChannels = useSelector(selectPublicChannels)
@@ -33,14 +36,29 @@ function Explore() {
   const lessThanSmall = useMediaQuery(theme.breakpoints.down("sm"));
   const cardWidthRate = (greaterThanMid && .25) || (smallToMid && .33) || (lessThanSmall && .5) || 1
   const cardWidthUnit = Math.floor(containerWidth*cardWidthRate/10)*10
+  const pageLimit = 10
 
   React.useEffect(()=>{
-    if(publicChannels.length>0)
+    // if(publicChannels.length>0)
+    //   return
+    appendMoreData()
+  }, [])
+  React.useEffect(()=>{
+    handleResize()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicChannels])
+  
+  const appendMoreData = () => {
+    if(isLastPage)
       return
     const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress, false)
-    channelRegContract.methods.channelIds().call()
+    channelRegContract.methods.channelIds(startChannelIndex, pageLimit).call()
       .then(res=>{
         if(Array.isArray(res)) {
+          if(res.length < pageLimit)
+            setIsLastPage(true)
+          if(res.length)
+            setStartChannelIndex(res[res.length-1])
           res.forEach(async(tokenId)=>{
             const channelInfo = await channelRegContract.methods.channelInfo(tokenId).call()
             const metaUri = getIpfsUrl(channelInfo['tokenURI'])
@@ -120,10 +138,7 @@ function Explore() {
           })
         }
       })
-    handleResize()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicChannels])
-  
+  }
   const handleResize = () => {
     setContainerWidth(containerRef.current.clientWidth);
   }
@@ -146,8 +161,8 @@ function Explore() {
     let content = []
     if("01".includes(tabValue.toString())) {
       content = content.concat(
-        Object.values(publicChannels).map((channel, _i)=>{
-          return <div className="item" style={
+        Object.values(publicChannels).map((channel, _i)=>(
+          <div className="item" key={_i} style={
             {
               width: cardWidthUnit,
               height: 240,
@@ -157,14 +172,14 @@ function Explore() {
           }>
             <ChannelCard info={channel} key={_i}/>
           </div>
-        })
+        ))
       )
     }
     if("02".includes(tabValue.toString())) {
       content = content.concat(
         latestPublicPosts.map((post, _i)=>{
           const isImageCard = !!post.content.mediaData && post.content.mediaData.length
-          return <div className="item" style={
+          return <div className="item" key={_i} style={
             {
               width: isImageCard? 2*cardWidthUnit: cardWidthUnit,
               height: isImageCard? 400: 200,
@@ -216,21 +231,30 @@ function Explore() {
           style={{flexGrow: 1}}
         />
       </Stack>
-      <Box ref={containerRef}>
-        <Box pt={2}>
-          <AutoResponsive {...getAutoResponsiveProps()}>
-            {getGridContent()}
-          </AutoResponsive>
+      <InfiniteScroll
+        dataLength={Object.keys(publicChannels).length}
+        next={appendMoreData}
+        hasMore={!isLastPage}
+        loader={<h4>Loading...</h4>}
+        scrollableTarget="scrollableBox"
+        style={{overflow: 'visible'}}
+      >
+        <Box ref={containerRef}>
+          <Box pt={2}>
+            <AutoResponsive {...getAutoResponsiveProps()}>
+              {getGridContent()}
+            </AutoResponsive>
+          </Box>
+          {/* <TabPanel value={tabValue} index={1}>
+          </TabPanel>
+          <TabPanel value={tabValue} index={2}>
+          </TabPanel>
+          <TabPanel value={tabValue} index={3}>
+          </TabPanel>
+          <TabPanel value={tabValue} index={4}>
+          </TabPanel> */}
         </Box>
-        <TabPanel value={tabValue} index={1}>
-        </TabPanel>
-        <TabPanel value={tabValue} index={2}>
-        </TabPanel>
-        <TabPanel value={tabValue} index={3}>
-        </TabPanel>
-        <TabPanel value={tabValue} index={4}>
-        </TabPanel>
-      </Box>
+      </InfiniteScroll>
     </Container>
   );
 }
