@@ -32,8 +32,8 @@ function Sidebar() {
       return
       
     hiveApi.getHiveUrl(userDid)
-      .then(async hiveUrl=>{
-        const res =  await hiveApi.downloadFileByHiveUrl(userDid, hiveUrl)
+      .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(userDid, hiveUrl))
+      .then(res=>{
         if(res && res.length) {
           const base64Content = res.toString('base64')
           setMyAvatar(`data:image/png;base64,${base64Content}`)
