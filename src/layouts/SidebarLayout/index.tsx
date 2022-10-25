@@ -81,14 +81,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               const channelInfoRes = await hiveApi.queryChannelInfo(channel.target_did, channel.channel_id)
               if(channelInfoRes['find_message'] && channelInfoRes['find_message']['items'].length) {
                 const channelInfo = channelInfoRes['find_message']['items'][0]
-                const dataObj = {...channelInfo, _id: channel.channel_id.toString(), target_did: channel.target_did, is_self: false, is_subscribed: true, is_public: false, table_type: 'channel'}
-                // try {
-                //   const avatarRes = await hiveApi.downloadScripting(channel.target_did, channelInfo.avatar)
-                //   dataObj['avatarSrc'] = encodeBase64(avatarRes)
-                // } catch(err) {
-                //   console.log(err)
-                // }
-                return dataObj
+                return {...channelInfo, _id: channel.channel_id.toString(), target_did: channel.target_did, is_self: false, is_subscribed: true, is_public: false, table_type: 'channel'}
               }
             })
             Promise.all(backupChannelDocs)
@@ -598,9 +591,10 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           Promise.resolve()
             .then(_=>hiveApi.getHiveUrl(infoDoc['_id']))
             .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(infoDoc['_id'], hiveUrl))
-            .then(response=>{
-              if(response && response.length) {
-                const base64Content = response.toString('base64')
+            .then(res=>{
+              const resBuf = res as Buffer
+              if(resBuf && resBuf.length) {
+                const base64Content = resBuf.toString('base64')
                 infoDoc['avatarSrc'] = encodeBase64(`data:image/png;base64,${base64Content}`)
                 avatarObj[_id] = infoDoc['avatarSrc']
                 return LocalDB.put(infoDoc)
@@ -609,6 +603,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             .then(res=>{
               dispatch(setUserAvatarSrc(avatarObj))
             })
+            .catch(err=>{})
         })
       })
       .catch(err=>{})
