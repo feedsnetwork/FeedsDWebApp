@@ -132,7 +132,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
       })
         .then(response=>{
           const channelDocWithDispName = response.docs.map(async channel=>{
-            const dispNameRes = await hiveApi.queryUserDisplayName(channel['target_did'], channel['channel_id'], myDID)
+            const dispNameRes = await hiveApi.queryUserDisplayName(channel['target_did'], channel['channel_id'], channel['target_did'])
             const channelDoc = {...channel}
             if(dispNameRes['find_message'] && dispNameRes['find_message']['items'].length) {
               const dispName = dispNameRes['find_message']['items'][0].display_name
@@ -650,7 +650,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
 
   const initializeWalletConnection = () => {
     if (sessionLinkFlag === '1') {

@@ -38,7 +38,6 @@ function Hero() {
   const [authProgress, setAuthProgress] = React.useState(0)
   const [activatingConnector, setActivatingConnector] = React.useState(null);
   const { setWalletAddress } = React.useContext(SidebarContext);
-  // const [hiveApi, updateAction] = useGlobalState("hiveApi");
   const hiveApi = new HiveApi()
   let sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
   
