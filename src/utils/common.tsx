@@ -391,9 +391,13 @@ export function isJson(str) {
   return true;
 }
 export const encodeBase64 = (data) => {
+  if(!data)
+    return ''
   return Buffer.from(data).toString('base64');
 }
 export const decodeBase64 = (data) => {
+  if(!data)
+    return ''
   return Buffer.from(data, 'base64').toString('ascii');
 }
 export function promiseSeries(arrayOfPromises) {
@@ -410,3 +414,6 @@ export function promiseSeries(arrayOfPromises) {
     return results;
   });
 };
+export function getMinValueFromArray(arrayOfObject, field) {
+  return Math.min(...arrayOfObject.map(obj=>(obj[field] || Infinity)))
+}

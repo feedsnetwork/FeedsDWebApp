@@ -19,7 +19,7 @@ import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
 import { setChannelAvatarSrc } from 'redux/slices/channel'
 import { setUserAvatarSrc } from 'redux/slices/user'
-import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate } from 'utils/common'
+import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate, getMinValueFromArray } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
 
 interface SidebarLayoutProps {
@@ -254,11 +254,19 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         .then(response=>{
           const postsByChannel = response.docs.map(async channel=>{
             try {
-              const postRes = await hiveApi.queryPostByChannelId(channel['target_did'], channel['channel_id'])
+              const currentime = new Date().getTime()
+              const postRes = await hiveApi.queryPostByRangeOfTime(channel['target_did'], channel['channel_id'], 0, currentime)
               if(postRes['find_message'] && postRes['find_message']['items']) {
-                const postArr = prefConf.DP?
-                  postRes['find_message']['items']:
-                  postRes['find_message']['items'].filter(postItem=>postItem.status!==CommonStatus.deleted)
+                let postArr = postRes['find_message']['items']
+                const timeRangeObj = {start: 0, end: currentime}
+                if(postArr.length>=30) {
+                  const earliestime = getMinValueFromArray(postArr, 'updated_at')
+                  timeRangeObj.start = earliestime
+                }
+                LocalDB.put({...channel, time_range: [timeRangeObj]})
+                if(prefConf.DP)
+                  postArr = postArr.filter(postItem=>postItem.status!==CommonStatus.deleted)
+
                 const postDocArr = postArr.map(post=>{
                   const tempost = {...post}
                   tempost._id = post.post_id
