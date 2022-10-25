@@ -4,18 +4,18 @@ import { useLocation } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
-import { Stack, Box, Drawer, alpha, styled, Divider, useTheme, Button, lighten, Card, CardHeader, CardContent, List, ListItem, ListItemText, 
-  darken, Tooltip, InputAdornment, Typography, Grid, IconButton } from '@mui/material';
+import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, List, ListItem, ListItemText, 
+  InputAdornment, Typography, Grid, IconButton } from '@mui/material';
 
-import Scrollbar from 'src/components/Scrollbar';
-import StyledAvatar from 'src/components/StyledAvatar'
-import StyledButton from 'src/components/StyledButton'
-import InputOutline from 'src/components/InputOutline'
+import Scrollbar from 'components/Scrollbar';
+import StyledAvatar from 'components/StyledAvatar'
+import StyledButton from 'components/StyledButton'
+import InputOutline from 'components/InputOutline'
 import SubscriberListItem from './SubscriberListItem';
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { selectPublicChannels, selectDispNameOfChannels } from 'src/redux/slices/channel';
-import { HiveApi } from 'src/services/HiveApi'
-import { reduceHexAddress, reduceDIDstring } from 'src/utils/common'
+import { SidebarContext } from 'contexts/SidebarContext';
+import { selectPublicChannels, selectDispNameOfChannels, selectActiveChannelId } from 'redux/slices/channel';
+import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
+import { LocalDB } from 'utils/db'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -36,9 +36,9 @@ const ListWrapper = styled(List)(
 `
 );
 const ChannelAbout = (props) => {
-  const { this_channel, editable=true } = props
+  const { this_channel } = props
   const subscribers = (this_channel && this_channel['subscribers']) || []
-
+  const editable = this_channel['is_self']
   return <>
     <Card>
       <CardContent>
@@ -96,15 +96,29 @@ const ChannelAbout = (props) => {
   </>
 }
 function RightPanel() {
-  const { focusedChannelId, selfChannels, subscribedChannels, toggleSidebar } = useContext(SidebarContext);
-  const closeSidebar = () => toggleSidebar();
+  const { focusedChannelId, queryStep } = useContext(SidebarContext);
+  const activeChannelId = useSelector(selectActiveChannelId)
+  const [focusedChannel, setFocusChannel] = React.useState(null)
+  // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
   const location = useLocation();
   const publicChannels = useSelector(selectPublicChannels)
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
-  const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
   let content = null
+  const selectedChannelId = activeChannelId || focusedChannelId
+
+  React.useEffect(()=>{
+    if(queryStep && selectedChannelId) {
+      LocalDB.get(selectedChannelId.toString())
+        .then(doc=>{
+          const channelObj = {...doc}
+          if(channelObj['avatarSrc'])
+            channelObj['avatarSrc'] = decodeBase64(channelObj['avatarSrc'])
+          setFocusChannel(channelObj)
+        })
+    }
+  }, [queryStep, selectedChannelId])
 
   if(pathname.startsWith('/setting')) {
     if(pathname.endsWith('/credentials'))
@@ -127,18 +141,12 @@ function RightPanel() {
             </Stack>
           </CardContent>
         </Card>
-  } else if(pathname.startsWith('/subscription/channel')) {
-    const { channel_id } = (location.state || {}) as any
-    const activeChannel = subscribedChannels.find(item=>item.channel_id==channel_id) || {}
-    if(activeChannel) {
-      content = <ChannelAbout this_channel={activeChannel} editable={false}/>
-    }
   } else if(pathname.startsWith('/explore/channel')) {
     const { channel_id } = (location.state || {}) as any
     const channelOwnerName = dispNameOfChannels[channel_id]
     const activeChannel = {...publicChannels[channel_id], owner_name: channelOwnerName} || {}
     if(activeChannel) {
-      content = <ChannelAbout this_channel={activeChannel} editable={false}/>
+      content = <ChannelAbout this_channel={activeChannel}/>
     }
   }
    else {

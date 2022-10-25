@@ -1,9 +1,9 @@
 import { connectivity, DID as ConDID } from "@elastosfoundation/elastos-connectivity-sdk-js";
-import { Executable, InsertOptions, File as HiveFile, ScriptRunner, Vault, AppContext, Logger as HiveLogger, UpdateResult, UpdateOptions, Condition, InsertResult } from "@elastosfoundation/hive-js-sdk";
-import { Claims, DIDDocument, JWTHeader, JWTParserBuilder, DID, DIDBackend, DefaultDIDAdapter, JSONObject, VerifiablePresentation } from '@elastosfoundation/did-js-sdk'
+import { Executable, InsertOptions, ScriptRunner, Vault, AppContext, Logger as HiveLogger, UpdateResult, UpdateOptions, Condition, InsertResult } from "@elastosfoundation/hive-js-sdk";
+import { DIDDocument, JWTHeader, JWTParserBuilder, DID, DIDBackend, DefaultDIDAdapter, JSONObject, VerifiablePresentation } from '@elastosfoundation/did-js-sdk'
 import { ApplicationDID, DidResolverUrl } from '../config'
 
-let TAG: string = 'Feeds-web-dapp-HiveService'
+// let TAG: string = 'Feeds-web-dapp-HiveService'
 
 let scriptRunners = {}
 
@@ -16,7 +16,7 @@ export class HiveService {
   private scriptRunner: ScriptRunner
   private scriptRunners: { [key: string]: ScriptRunner } = {}
 
-  constructor() { }
+  // constructor() { }
 
   public async creatAppContext(appInstanceDocument, userDidString: string): Promise<AppContext> {
     return new Promise(async (resolve, reject) => {
@@ -163,16 +163,16 @@ export class HiveService {
         // this.avatarParam = avatarParam
         const parts = avatarParam.split("/")
         if (parts.length < 2) // TODO 验证parts是否大于2个 ，否则 抛出异常
-          throw "userDIDDocument 中缺少参数"
+          throw new Error("userDIDDocument 中缺少参数")
 
         const dids = parts[0].split("@")
-        if (dids.length != 2) // TODO 验证dids是否等于2个 ，否则 抛出异常
-          throw "userDIDDocument 中缺少参数"
+        if (dids.length !== 2) // TODO 验证dids是否等于2个 ，否则 抛出异常
+          throw new Error("userDIDDocument 中缺少参数")
 
         // const star = data.length - (prefix.length + parts[0].length + 1)
         const values = parts[1].split("?")
-        if (values.length != 2) // TODO 验证values是否等于2个 ，否则 抛出异常
-          throw "userDIDDocument 中缺少参数"
+        if (values.length !== 2) // TODO 验证values是否等于2个 ，否则 抛出异常
+          throw new Error("userDIDDocument 中缺少参数")
 
         const avatarScriptName = values[0]
         // this.avatarScriptName = avatarScriptName
@@ -299,12 +299,12 @@ export class HiveService {
   }
 
   async downloadFileByHiveUrl(targetDid: string, url: string) {
-    try {
-      const scriptRunner = await this.getScriptRunner(targetDid)
-      return await scriptRunner.downloadFileByHiveUrl(url)
-    } catch (error) {
-      throw error
-    }
+    return new Promise((resolve, reject) => {
+      this.getScriptRunner(targetDid)
+        .then(scriptRunner=>scriptRunner.downloadFileByHiveUrl(url))
+        .then(resolve)
+        .catch(reject)
+    })
   }
 
   async downloadScripting(targetDid: string, transaction_id: string) {

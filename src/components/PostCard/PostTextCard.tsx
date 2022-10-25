@@ -4,14 +4,13 @@ import { Box, Stack, Typography } from '@mui/material';
 import parse from 'html-react-parser';
 import "odometer/themes/odometer-theme-default.css";
 
-import StyledAvatar from 'src/components/StyledAvatar'
-import PaperRecord from 'src/components/PaperRecord'
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { selectPublicChannels, selectDispNameOfChannels } from 'src/redux/slices/channel';
-import { getDateDistance, isValidTime, hash, convertAutoLink } from 'src/utils/common'
+import StyledAvatar from 'components/StyledAvatar'
+import PaperRecord from 'components/PaperRecord'
+import { selectPublicChannels, selectDispNameOfChannels } from 'redux/slices/channel';
+import { getDateDistance, isValidTime, convertAutoLink } from 'utils/common'
 
 const PostTextCard = (props) => {
-  const { post, contentObj, level=1 } = props
+  const { post } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   // const { selfChannels, subscribedChannels, subscriberInfo } = React.useContext(SidebarContext);
   // const [anchorEl, setAnchorEl] = React.useState(null);

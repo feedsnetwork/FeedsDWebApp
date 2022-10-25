@@ -1,9 +1,9 @@
-import { FC, useContext } from 'react';
-import { Box, Typography, Stack, Card, Input, Divider, IconButton, Grid, Link, styled } from '@mui/material';
+import { FC } from 'react';
+import { Box, Typography, Stack, Card, Divider, Grid, Link } from '@mui/material';
 import { Icon } from '@iconify/react';
 
-import StyledButton from 'src/components/StyledButton';
-import SwitchUI from 'src/components/SwitchUI'
+import StyledButton from 'components/StyledButton';
+import SwitchUI from 'components/SwitchUI'
 
 const credentialItems = [
   {title: 'Avatar', description: 'avatar', id: 'avatar', icon: {name: 'clarity:user-solid'}},

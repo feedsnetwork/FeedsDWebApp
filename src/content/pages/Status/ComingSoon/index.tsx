@@ -12,8 +12,7 @@ import {
   Button,
   FormHelperText
 } from '@mui/material';
-// import { Helmet } from 'react-helmet';
-import Logo from 'src/components/LogoSign';
+import Logo from 'components/LogoSign';
 
 import { styled } from '@mui/material/styles';
 import FacebookIcon from '@mui/icons-material/Facebook';

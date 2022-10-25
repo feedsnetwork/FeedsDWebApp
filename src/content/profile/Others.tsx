@@ -1,18 +1,16 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { Card, Container, Box, Typography, Stack, IconButton, Tabs, Tab, Hidden } from '@mui/material';
+import { Card, Container, Box, Typography, Stack, IconButton, Tabs, Tab } from '@mui/material';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
 
-import StyledButton from 'src/components/StyledButton'
-import StyledAvatar from 'src/components/StyledAvatar'
-import { EmptyViewInProfile } from 'src/components/EmptyView'
-import PostCard from 'src/components/PostCard';
-import TabPanel from 'src/components/TabPanel'
+import StyledAvatar from 'components/StyledAvatar'
+import { EmptyViewInProfile } from 'components/EmptyView'
+import PostCard from 'components/PostCard';
+import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
-import { OverPageContext } from 'src/contexts/OverPageContext';
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { HiveApi } from 'src/services/HiveApi'
-import { reduceHexAddress, reduceDIDstring, getInfoFromDID, getFilteredArrayByUnique, getMergedArray } from 'src/utils/common'
+import { SidebarContext } from 'contexts/SidebarContext';
+// import { HiveApi } from 'services/HiveApi'
+import { reduceHexAddress, reduceDIDstring, getFilteredArrayByUnique, getMergedArray } from 'utils/common'
 
 function OthersProfile() {
   const { walletAddress, postsInSelf, postsInSubs, selfChannels, subscribedChannels, subscriberInfo } = React.useContext(SidebarContext);
@@ -28,13 +26,14 @@ function OthersProfile() {
       .filter(item=>item.like_creators && item.like_creators.includes(user_did)), 'post_id')
   // const feedsDid = sessionStorage.getItem('FEEDS_DID')
   // const userDid = `did:elastos:${feedsDid}`
-  const hiveApi = new HiveApi()
+  // const hiveApi = new HiveApi()
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
   React.useEffect(()=>{
+    setSubscriptions([])
     // if(!feedsDid)
     //   return
       
@@ -45,7 +44,7 @@ function OthersProfile() {
     //   })
   }, [])
 
-  const backgroundImg = "/temp-back.png"
+  // const backgroundImg = "/temp-back.png"
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
       <Card>
@@ -114,7 +113,7 @@ function OthersProfile() {
             <Stack spacing={2}>
               {
                 likedPosts.map((post, _i)=>{
-                  const channelOfPost = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
+                  const channelOfPost = [...selfChannels, ...subscribedChannels].find(item => item.channel_id === post.channel_id) || {}
                   let dispName = ''
                   if(channelOfPost.target_did === user_did) {
                     dispName = userInfo['name'] || reduceDIDstring(user_did)

@@ -1,12 +1,10 @@
-import { HiveHelper } from 'src/services/HiveHelper'
-import { HiveData } from 'src/services/HiveData'
+import { HiveHelper } from 'services/HiveHelper'
+import { HiveData } from 'services/HiveData'
 
-const TAG = 'HiveApi'
+// const TAG = 'HiveApi'
 
 const hiveHelper = new HiveHelper()
 export class HiveApi {
-  constructor() { }
-
   /** registe
     * 注册所有的脚本： 
     * channel、post、Public post、subscription、comment、like、DisplayName

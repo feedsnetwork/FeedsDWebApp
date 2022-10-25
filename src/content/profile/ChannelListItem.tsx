@@ -4,34 +4,18 @@ import { Card, Box, Typography, Stack, Hidden, IconButton, Menu, MenuItem } from
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useSnackbar } from 'notistack';
 
-import StyledButton from 'src/components/StyledButton'
-import IconInCircle from 'src/components/IconInCircle'
-import StyledAvatar from 'src/components/StyledAvatar'
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { HiveApi } from 'src/services/HiveApi'
-import { handlePublishModal, setCreatedChannel } from 'src/redux/slices/channel';
-import { getChannelShortUrl, copy2clipboard } from 'src/utils/common'
+import IconInCircle from 'components/IconInCircle'
+import StyledAvatar from 'components/StyledAvatar'
+import { handlePublishModal, setCreatedChannel } from 'redux/slices/channel';
+import { getChannelShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
 
 const ChannelListItem = (props) => {
   const {channel} = props
-  const { selfChannels } = React.useContext(SidebarContext);
-  const [subscribers, setSubscribers] = React.useState([])
+  const {name, avatarSrc, intro} = channel
+  const avatarImg = decodeBase64(avatarSrc)
   const [isOpenPopup, setOpenPopup] = React.useState(null);
-  const hiveApi = new HiveApi()
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const userDid = `did:elastos:${feedsDid}`
-  const isOwnedChannel = selfChannels.findIndex(item=>item.channel_id==channel.channel_id)>=0
   const { enqueueSnackbar } = useSnackbar();
   const dispatch = useDispatch()
-
-  React.useEffect(()=>{
-    hiveApi.querySubscriptionInfoByChannelId(userDid, channel.channel_id)
-      .then(res=>{
-        if(res['find_message'])
-          setSubscribers(res['find_message']['items'])
-        console.log(res, "===========1")
-      })
-  }, [])
 
   const openPopupMenu = (event) => {
     setOpenPopup(event.currentTarget);
@@ -66,18 +50,18 @@ const ChannelListItem = (props) => {
 
   return <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
     <Stack direction="row" spacing={2} alignItems="center">
-      <StyledAvatar alt={channel.name} src={channel.avatarSrc}/>
+      <StyledAvatar alt={name} src={avatarImg}/>
       <Box flex={1}>
         <Hidden mdDown>
-          <Typography variant="subtitle2">{channel.name}</Typography>
-          <Typography variant="body2">{channel.intro}</Typography>
+          <Typography variant="subtitle2">{name}</Typography>
+          <Typography variant="body2">{intro}</Typography>
           <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
-            <Typography variant="body2" pr={3}><strong>{subscribers.length}</strong> Subscribers</Typography>
+            <Typography variant="body2" pr={3}><strong>{channel['subscribers'].length}</strong> Subscribers</Typography>
           </Stack>
         </Hidden>
       </Box>
       {
-        isOwnedChannel &&
+        channel['is_self'] &&
         <Box sx={{mb: 'auto !important'}}>
           <IconButton aria-label="settings" size='small' onClick={openPopupMenu}>
             <MoreVertIcon />
@@ -114,7 +98,7 @@ const ChannelListItem = (props) => {
         <Typography variant="subtitle2">{channel.name}</Typography>
         <Typography variant="body2">{channel.intro}</Typography>
         <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
-          <Typography variant="body2" pr={3}><strong>{subscribers.length}</strong> Subscribers</Typography>
+          <Typography variant="body2" pr={3}><strong>{channel['subscribers'].length}</strong> Subscribers</Typography>
         </Stack>
       </Box>
     </Hidden>

@@ -1,30 +1,43 @@
 import React from 'react'
-import { useLocation } from 'react-router-dom';
-import { Icon } from '@iconify/react';
-import { Grid, Container, Box, Typography } from '@mui/material';
+import { useSelector } from 'react-redux';
 
-import PostList from 'src/components/PostList';
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { reduceDIDstring, sortByDate } from 'src/utils/common'
+import PostList from 'components/PostList';
+import { SidebarContext } from 'contexts/SidebarContext';
+import { reduceDIDstring, sortByDate } from 'utils/common'
+import { LocalDB, QueryStep } from 'utils/db'
+import { selectActiveChannelId } from 'redux/slices/channel'
 
 function Channel() {
-  const location = useLocation();
-  const { channel_id } = (location.state || {}) as any
-  const { subscribedChannels, postsInSubs } = React.useContext(SidebarContext);
+  const channel_id = useSelector(selectActiveChannelId)
+  const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
   const [isLoading, setIsLoading] = React.useState(false)
-  const activeChannel = subscribedChannels.find(item=>item.channel_id==channel_id) || {}
-  const postsInActiveChannel = sortByDate(postsInSubs[channel_id] || [])
-  
-  React.useEffect(()=>{
-    if(channel_id) {
-      if(!postsInSubs[channel_id])
-        setIsLoading(true)
-      else
-        setIsLoading(false)
-    }
-  }, [postsInSubs])
+  const [channelInfo, setChannelInfo] = React.useState({});
+  const [posts, setPosts] = React.useState([]);
 
-  const postListProps = { isLoading, postsInActiveChannel, dispName: activeChannel.owner_name || reduceDIDstring(activeChannel.target_did) }
+  React.useEffect(()=>{
+    if(queryStep < QueryStep.post_data)
+      setIsLoading(true)
+    else if(queryStep >= QueryStep.post_data && channel_id) {
+      setIsLoading(false)
+      LocalDB.find({
+        selector: {
+          channel_id: channel_id,
+          table_type: 'post'
+        }
+      })
+        .then(res=>{
+          setPosts(sortByDate(res.docs))
+        })
+    }
+    if(queryStep && channel_id) {
+      LocalDB.get(channel_id.toString())
+        .then(doc=>{
+          setChannelInfo(doc)
+        })
+    }
+  }, [publishPostNumber, queryStep, channel_id])
+
+  const postListProps = { isLoading, postsInActiveChannel: posts, channel: channelInfo, dispName: channelInfo['owner_name'] || reduceDIDstring(channelInfo['target_did']) }
   return (
     <PostList {...postListProps}/>
   );

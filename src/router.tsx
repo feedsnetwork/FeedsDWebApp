@@ -2,10 +2,10 @@ import { Suspense, lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import { RouteObject } from 'react-router';
 
-import SidebarLayout from 'src/layouts/SidebarLayout';
-import BaseLayout from 'src/layouts/BaseLayout';
+import SidebarLayout from 'layouts/SidebarLayout';
+import BaseLayout from 'layouts/BaseLayout';
 
-import SuspenseLoader from 'src/components/SuspenseLoader';
+import SuspenseLoader from 'components/SuspenseLoader';
 
 const Loader = (Component) => (props) =>
   (
@@ -16,74 +16,74 @@ const Loader = (Component) => (props) =>
 
 // Pages
 
-const SignIn = Loader(lazy(() => import('src/content/signin')));
+const SignIn = Loader(lazy(() => import('content/signin')));
 
 // Applications
 
 const Home = Loader(
-  lazy(() => import('src/content/home'))
+  lazy(() => import('content/home'))
 );
 const PostDetail = Loader(
-  lazy(() => import('src/content/post'))
+  lazy(() => import('content/post'))
 )
 const Profile = Loader(
-  lazy(() => import('src/content/profile'))
+  lazy(() => import('content/profile'))
 );
 const OthersProfile = Loader(
-  lazy(() => import('src/content/profile/Others'))
+  lazy(() => import('content/profile/Others'))
 );
 const Channel = Loader(
-  lazy(() => import('src/content/channel'))
+  lazy(() => import('content/channel'))
 );
 const AddChannel = Loader(
-  lazy(() => import('src/components/AddChannel'))
+  lazy(() => import('components/AddChannel'))
 );
 const Explore = Loader(
-  lazy(() => import('src/content/explore'))
+  lazy(() => import('content/explore'))
 );
 const PublicChannel = Loader(
-  lazy(() => import('src/content/explore/channel'))
+  lazy(() => import('content/explore/channel'))
 );
 const Subscription = Loader(
-  lazy(() => import('src/content/subscription'))
+  lazy(() => import('content/subscription'))
 );
 const SubscriptionChannel = Loader(
-  lazy(() => import('src/content/subscription/channel'))
+  lazy(() => import('content/subscription/channel'))
 );
 const AccountInfo = Loader(
-  lazy(() => import('src/content/setting/profile'))
+  lazy(() => import('content/setting/profile'))
 );
 const Credentials = Loader(
-  lazy(() => import('src/content/setting/credentials'))
+  lazy(() => import('content/setting/credentials'))
 );
 const Language = Loader(
-  lazy(() => import('src/content/setting/language'))
+  lazy(() => import('content/setting/language'))
 );
 const ApiProvider = Loader(
-  lazy(() => import('src/content/setting/api-provider'))
+  lazy(() => import('content/setting/api-provider'))
 );
 const AppPreference = Loader(
-  lazy(() => import('src/content/setting/app-preference'))
+  lazy(() => import('content/setting/app-preference'))
 );
 const Connections = Loader(
-  lazy(() => import('src/content/setting/connections'))
+  lazy(() => import('content/setting/connections'))
 );
 const About = Loader(
-  lazy(() => import('src/content/setting/about'))
+  lazy(() => import('content/setting/about'))
 );
 // Status
 
 const Status404 = Loader(
-  lazy(() => import('src/content/pages/Status/Status404'))
+  lazy(() => import('content/pages/Status/Status404'))
 );
 const Status500 = Loader(
-  lazy(() => import('src/content/pages/Status/Status500'))
+  lazy(() => import('content/pages/Status/Status500'))
 );
 const StatusComingSoon = Loader(
-  lazy(() => import('src/content/pages/Status/ComingSoon'))
+  lazy(() => import('content/pages/Status/ComingSoon'))
 );
 const StatusMaintenance = Loader(
-  lazy(() => import('src/content/pages/Status/Maintenance'))
+  lazy(() => import('content/pages/Status/Maintenance'))
 );
 
 const routes: RouteObject[] = [

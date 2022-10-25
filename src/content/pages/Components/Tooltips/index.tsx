@@ -1,6 +1,5 @@
-import { Helmet } from 'react-helmet';
-import PageTitle from 'src/components/PageTitle';
-import PageTitleWrapper from 'src/components/PageTitleWrapper';
+import PageTitle from 'components/PageTitle';
+import PageTitleWrapper from 'components/PageTitleWrapper';
 import {
   Container,
   Grid,
@@ -12,7 +11,7 @@ import {
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
-import Footer from 'src/components/Footer';
+import Footer from 'components/Footer';
 
 function Tooltips() {
   return (

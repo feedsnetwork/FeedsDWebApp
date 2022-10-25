@@ -2,8 +2,8 @@ import { FC, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography, Stack } from '@mui/material';
 
-import StyledButton from 'src/components/StyledButton';
-import { OverPageContext } from 'src/contexts/OverPageContext';
+import StyledButton from 'components/StyledButton';
+import { OverPageContext } from 'contexts/OverPageContext';
 
 interface EmptyViewInProfileProps {
   type?: string;

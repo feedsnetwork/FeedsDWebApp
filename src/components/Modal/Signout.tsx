@@ -1,13 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom'
-import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, Divider, IconButton, Paper } from '@mui/material';
-import { Icon } from '@iconify/react';
+import { Dialog, DialogContent, Typography, Stack } from '@mui/material';
 
 import StyledButton from '../StyledButton';
 import StyledIcon from '../StyledIcon'
-import { essentialsConnector, isUsingEssentialsConnector } from 'src/content/signin/EssentialConnectivity';
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { isInAppBrowser } from 'src/utils/common'
+import { essentialsConnector, isUsingEssentialsConnector } from 'content/signin/EssentialConnectivity';
+import { SidebarContext } from 'contexts/SidebarContext';
+import { isInAppBrowser } from 'utils/common'
 
 function SignoutDlg(props) {
   const { setOpen, isOpen } = props;

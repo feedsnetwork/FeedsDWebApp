@@ -1,7 +1,6 @@
 import React from 'react';
 import { isString } from 'lodash';
-import PropTypes from 'prop-types';
-import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, Divider, IconButton, Paper } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, IconButton, Paper } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSnackbar } from 'notistack';
 import closeFill from '@iconify/icons-eva/close-fill';
@@ -12,11 +11,11 @@ import StyledButton from '../StyledButton';
 import StyledTextFieldOutline from '../StyledTextFieldOutline'
 import StyledIconButton from '../StyledIconButton';
 import EmojiPopper from '../EmojiPopper';
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { PostContentV3, mediaDataV3, MediaType } from 'src/models/post_content'
-import { HiveApi } from 'src/services/HiveApi'
-import { CommonStatus } from 'src/models/common_content'
-import { getBufferFromFile, getMergedArray } from 'src/utils/common'
+import { SidebarContext } from 'contexts/SidebarContext';
+import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
+import { HiveApi } from 'services/HiveApi'
+import { CommonStatus } from 'models/common_content'
+import { getBufferFromFile } from 'utils/common'
 
 function PostDlg(props) {
   const { setOpen, isOpen, activeChannelId=null, activePost=null } = props;
@@ -28,8 +27,8 @@ function PostDlg(props) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
   
-  const currentChannelId = activeChannelId || activePost?activePost.channel_id:null || focusedChannelId
-  const focusedChannel = selfChannels.find(item=>item.channel_id==currentChannelId) || {}
+  const currentChannelId = activeChannelId || (activePost?activePost.channel_id:null) || focusedChannelId
+  const focusedChannel = selfChannels.find(item=>item.channel_id === currentChannelId) || {}
   const isComment = activePost && !!activePost.comment_id
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
@@ -46,14 +45,14 @@ function PostDlg(props) {
   React.useEffect(()=>{
     if(activePost && isOpen) {
       let contentObj = {content: ''}
-      if(isComment)
+      if(activePost && !!activePost.comment_id)
         contentObj.content = activePost.content
       else
         contentObj = JSON.parse(activePost.content)
       setPostext(contentObj.content || '')
       if(activePost.mediaData && activePost.mediaData.length) {
         const tempMedia = activePost.mediaData[0]
-        if(tempMedia.kind == 'image') {
+        if(tempMedia.kind === 'image') {
           setImageAttach(tempMedia.mediaSrc)
         }
       }

@@ -1,5 +1,16 @@
 module.exports.CHANNEL_REG_CONTRACT_ABI = [
   {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "categoryURI_",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -158,6 +169,18 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
         "internalType": "string",
         "name": "newChannelURI",
         "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "newChannelEntry",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "receiptAddr",
+        "type": "address"
       }
     ],
     "name": "ChannelUpdated",
@@ -188,11 +211,11 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
       {
         "indexed": false,
         "internalType": "address",
-        "name": "platformAddress",
+        "name": "account",
         "type": "address"
       }
     ],
-    "name": "PlatformFeeChanged",
+    "name": "Paused",
     "type": "event"
   },
   {
@@ -201,29 +224,11 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "platformAddr",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "quoteToken",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "registerFee",
+        "name": "state",
         "type": "uint256"
       }
     ],
-    "name": "RegisteredFees",
+    "name": "Revealed",
     "type": "event"
   },
   {
@@ -249,6 +254,19 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
       }
     ],
     "name": "Transfer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Unpaused",
     "type": "event"
   },
   {
@@ -316,7 +334,7 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
             "type": "address"
           }
         ],
-        "internalType": "struct ChannelRegistry.Channel",
+        "internalType": "struct IChannelRegistryDataAndEvents.Channel",
         "name": "",
         "type": "tuple"
       }
@@ -349,6 +367,16 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
         "internalType": "address",
         "name": "agentAddr",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "count",
+        "type": "uint256"
       }
     ],
     "name": "agentChannelIds",
@@ -455,24 +483,6 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "ownerAddr",
-        "type": "address"
-      }
-    ],
-    "name": "burn",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "index",
         "type": "uint256"
       }
@@ -512,7 +522,7 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
             "type": "address"
           }
         ],
-        "internalType": "struct ChannelRegistry.Channel",
+        "internalType": "struct IChannelRegistryDataAndEvents.Channel",
         "name": "",
         "type": "tuple"
       }
@@ -534,7 +544,18 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "startIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "count",
+        "type": "uint256"
+      }
+    ],
     "name": "channelIds",
     "outputs": [
       {
@@ -589,7 +610,7 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
             "type": "address"
           }
         ],
-        "internalType": "struct ChannelRegistry.Channel",
+        "internalType": "struct IChannelRegistryDataAndEvents.Channel",
         "name": "",
         "type": "tuple"
       }
@@ -632,9 +653,38 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "channelEntry",
+        "type": "string"
+      }
+    ],
+    "name": "getTokenId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "owner",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "count",
+        "type": "uint256"
       }
     ],
     "name": "holderTokens",
@@ -646,24 +696,6 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "platformAddress_",
-        "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "categoryURI_",
-        "type": "string"
-      }
-    ],
-    "name": "initialize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -710,6 +742,19 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "isRevealed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -726,6 +771,29 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "tokenURI",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "channelEntry",
+        "type": "string"
+      }
+    ],
+    "name": "mint",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -782,54 +850,11 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
         "internalType": "address",
         "name": "receiptAddr",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "quoteToken",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "mintFee",
-        "type": "uint256"
       }
     ],
     "name": "mint",
     "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "tokenURI",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "channelEntry",
-        "type": "string"
-      },
-      {
-        "internalType": "address",
-        "name": "quoteToken",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "mintFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "mint",
-    "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -893,7 +918,7 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
             "type": "address"
           }
         ],
-        "internalType": "struct ChannelRegistry.Channel",
+        "internalType": "struct IChannelRegistryDataAndEvents.Channel",
         "name": "",
         "type": "tuple"
       }
@@ -926,6 +951,16 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
         "internalType": "address",
         "name": "ownerAddr",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "count",
+        "type": "uint256"
       }
     ],
     "name": "ownedChannelIds",
@@ -973,12 +1008,19 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
   },
   {
     "inputs": [],
-    "name": "platformAddress",
+    "name": "pause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paused",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "bool",
         "name": "",
-        "type": "address"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1007,6 +1049,13 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
   {
     "inputs": [],
     "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "reveal",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1089,19 +1138,6 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
       }
     ],
     "name": "setCategoryList",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "platformAddr",
-        "type": "address"
-      }
-    ],
-    "name": "setPlatformAddr",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1250,29 +1286,8 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "tokenURI",
-        "type": "string"
-      },
-      {
-        "internalType": "address",
-        "name": "receiptAddr",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "ownerAddr",
-        "type": "address"
-      }
-    ],
-    "name": "updateChannel",
+    "inputs": [],
+    "name": "unpause",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1287,6 +1302,11 @@ module.exports.CHANNEL_REG_CONTRACT_ABI = [
       {
         "internalType": "string",
         "name": "tokenURI",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "channelEntry",
         "type": "string"
       },
       {

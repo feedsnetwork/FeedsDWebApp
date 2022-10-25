@@ -78,7 +78,8 @@ NotistackProvider.propTypes = {
   children: PropTypes.node
 };
 
-export default function NotistackProvider({ children }) {
+export default function NotistackProvider(props) {
+  const { children } = props
   return (
     <>
       <SnackbarStyles />

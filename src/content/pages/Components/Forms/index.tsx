@@ -1,8 +1,7 @@
-import { Helmet } from 'react-helmet';
-import PageTitle from 'src/components/PageTitle';
+import PageTitle from 'components/PageTitle';
 import { useState } from 'react';
 
-import PageTitleWrapper from 'src/components/PageTitleWrapper';
+import PageTitleWrapper from 'components/PageTitleWrapper';
 import {
   Container,
   Grid,
@@ -11,7 +10,7 @@ import {
   CardContent,
   Divider
 } from '@mui/material';
-import Footer from 'src/components/Footer';
+import Footer from 'components/Footer';
 
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';

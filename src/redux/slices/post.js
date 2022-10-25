@@ -15,7 +15,7 @@ const slice = createSlice({
     updateMediaOfPosts(state, action) {
       const post = action.payload
       const currentGroup = [...state.publicPosts[post.channel_id]]
-      const postIndex = currentGroup.findIndex(el=>el.post_id==post.post_id)
+      const postIndex = currentGroup.findIndex(el=>el.post_id === post.post_id)
       if(postIndex>=0) {
         if(currentGroup[postIndex].mediaData)
           currentGroup[postIndex].mediaData.push({mediaSrc: post.mediaSrc})

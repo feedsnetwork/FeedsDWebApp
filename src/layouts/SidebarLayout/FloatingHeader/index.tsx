@@ -4,12 +4,12 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Stack, Box, Button, Hidden, ListItemText, Typography, styled, alpha, lighten } from '@mui/material';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { OverPageContext } from 'src/contexts/OverPageContext';
-import { HiveApi } from 'src/services/HiveApi'
-import { selectPublicChannels } from 'src/redux/slices/channel';
-import { selectPublicPosts } from 'src/redux/slices/post';
-import { SettingMenuArray, getAppPreference, reduceDIDstring, getMergedArray } from 'src/utils/common'
+import { SidebarContext } from 'contexts/SidebarContext';
+import { OverPageContext } from 'contexts/OverPageContext';
+import { selectActiveChannelId, selectPublicChannels } from 'redux/slices/channel';
+import { selectPublicPosts } from 'redux/slices/post';
+import { SettingMenuArray, reduceDIDstring } from 'utils/common'
+import { LocalDB, QueryStep } from 'utils/db';
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -48,19 +48,43 @@ const HeaderWrapper = styled(Box)(
 `
 );
 function FloatingHeader() {
-  const { pageType, setPageType, closeOverPage } = React.useContext(OverPageContext);
-  const { focusedChannelId, selfChannels, subscribedChannels, postsInSelf, postsInSubs, userInfo } = React.useContext(SidebarContext);
-  const location = useLocation()
+  const { pageType } = React.useContext(OverPageContext);
+  const { queryStep, focusedChannelId, userInfo } = React.useContext(SidebarContext);
   const { pathname } = useLocation()
-  const { channel_id } = (location.state || {}) as any
+  const activeChannelId = useSelector(selectActiveChannelId)
   const navigate = useNavigate();
   const params = useParams()
-  const hiveApi = new HiveApi()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const postsInHome = getMergedArray(postsInSubs)
   const publicChannels = useSelector(selectPublicChannels)
   const publicPosts = useSelector(selectPublicPosts)
+  const [focusedChannel, setFocusedChannel] = React.useState({})
+  const [postCountInFocus, setPostCountInFocus] = React.useState(0)
+  const [focusedPost, setFocusedPost] = React.useState({})
+  const selectedChannelId = activeChannelId || focusedChannelId
 
+  React.useEffect(()=>{
+    if(queryStep && selectedChannelId) {
+      LocalDB.get(selectedChannelId.toString())
+        .then(doc=>setFocusedChannel(doc))
+      if(queryStep >= QueryStep.post_data) {
+        LocalDB.find({
+          selector: {
+            channel_id: selectedChannelId,
+            table_type: 'post'
+          }
+        })
+          .then(res=>setPostCountInFocus(res.docs.length))
+      }
+    }
+  }, [queryStep, selectedChannelId])
+
+  React.useEffect(()=>{
+    if(params.post_id) {
+      LocalDB.get(params.post_id.toString())
+        .then(doc=>setFocusedPost(doc))
+    }
+  }, [params])
+  
   const handleBack = (e) => {
     if(pathname.startsWith('/setting')) {
       navigate('/home')
@@ -83,28 +107,22 @@ function FloatingHeader() {
     }
     else if(pathname.startsWith('/channel/add') || pageType==='AddChannel')
       primaryText = "Add Channel"
-    else if(pathname.startsWith('/channel') && focusedChannelId) {
-      const focusedChannel = selfChannels.find(item=>item.channel_id==focusedChannelId)
-      const postsInFocusedChannel = postsInSelf[focusedChannelId] || []
-      primaryText = focusedChannel.name
-      secondaryText = `${postsInFocusedChannel.length} posts`
+    else if(
+      (pathname.startsWith('/channel') && focusedChannelId) ||
+      (pathname.startsWith('/subscription/channel') && activeChannelId)
+    ) {
+      primaryText = focusedChannel['name']
+      secondaryText = `${postCountInFocus} posts`
     }
-    else if(pathname.startsWith('/subscription/channel') && channel_id) {
-      const activeChannel = (subscribedChannels.find(item=>item.channel_id==channel_id) || {}) as any
-      const postsInActiveChannel = postsInSubs[channel_id] || []
-      primaryText = activeChannel.name
-      secondaryText = `${postsInActiveChannel.length} posts`
-    }
-    else if(pathname.startsWith('/explore/channel') && channel_id) {
-      const activeChannel = (publicChannels[channel_id] || {}) as any
-      const postsInActiveChannel = publicPosts[channel_id] || []
+    else if(pathname.startsWith('/explore/channel') && activeChannelId) {
+      const activeChannel = (publicChannels[activeChannelId] || {}) as any
+      const postsInActiveChannel = publicPosts[activeChannelId] || []
       primaryText = activeChannel.name
       secondaryText = `${postsInActiveChannel.length} posts`
     }
     else if(pathname.startsWith('/post/')) {
-      const focusedPost = postsInHome.find(item=>item.post_id==params.post_id)
       primaryText = "Post"
-      secondaryText = `${focusedPost.commentData?focusedPost.commentData.length:0} comments`
+      secondaryText = `${focusedPost['commentData']?.length || 0} comments`
     }
     else if(pathname.startsWith('/profile')) {
       primaryText = userInfo['name'] || `@${reduceDIDstring(feedsDid)}`
@@ -119,7 +137,10 @@ function FloatingHeader() {
     return ""
   }
 
-  const backBtnText = React.useMemo(() => getActionText(), [pageType, pathname, focusedChannelId, postsInSelf, postsInSubs, selfChannels, subscribedChannels, channel_id])
+  const backBtnText = React.useMemo(() => {
+    return getActionText()
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageType, pathname, focusedChannel, postCountInFocus])
   return (
     <>
       <Hidden lgDown>

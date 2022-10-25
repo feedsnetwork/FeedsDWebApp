@@ -1,4 +1,4 @@
-import { FC, useState, createContext, Dispatch } from 'react';
+import { useState, createContext, Dispatch } from 'react';
 type OverPageContext = {
   pageType: string;
   openAddChannelView: () => void;
@@ -11,7 +11,7 @@ export const OverPageContext = createContext<OverPageContext>(
   {} as OverPageContext
 );
 
-export const OverPageProvider: FC = ({ children }) => {
+export const OverPageProvider = (props) => {
   const [pageType, setPageType] = useState('');
   const openAddChannelView = () => {
     setPageType('AddChannel');
@@ -24,7 +24,7 @@ export const OverPageProvider: FC = ({ children }) => {
     <OverPageContext.Provider
       value={{ pageType, openAddChannelView, closeOverPage, setPageType }}
     >
-      {children}
+      {props.children}
     </OverPageContext.Provider>
   );
 };

@@ -1,5 +1,5 @@
-import { Box, Typography, Stack, Card, Input, Divider, IconButton, Grid, styled } from '@mui/material';
-import generatedGitInfo from 'src/generatedGitInfo.json';
+import { Box, Typography, Stack, Card, Divider, Grid } from '@mui/material';
+import generatedGitInfo from 'generatedGitInfo.json';
 
 const aboutData = [
   {title: 'Website', value: 'https://feedsnetwork.io'},

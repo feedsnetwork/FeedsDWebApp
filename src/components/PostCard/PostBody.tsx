@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavLink as RouterLink, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade, Menu, MenuItem, Link } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
@@ -8,19 +8,19 @@ import parse from 'html-react-parser';
 import Odometer from "react-odometerjs";
 import "odometer/themes/odometer-theme-default.css";
 
-import StyledAvatar from 'src/components/StyledAvatar'
-import CommentDlg from 'src/components/Modal/Comment'
-import PostDlg from 'src/components/Modal/Post'
-import DeletePostDlg from 'src/components/Modal/DeletePost'
-import UnsubscribeDlg from 'src/components/Modal/Unsubscribe'
-import StyledButton from 'src/components/StyledButton'
-import IconInCircle from 'src/components/IconInCircle'
-import Heart from 'src/components/Heart'
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { CommonStatus } from 'src/models/common_content'
-import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard } from 'src/utils/common'
-import { HiveApi } from 'src/services/HiveApi'
-
+import StyledAvatar from 'components/StyledAvatar'
+import CommentDlg from 'components/Modal/Comment'
+import PostDlg from 'components/Modal/Post'
+import DeletePostDlg from 'components/Modal/DeletePost'
+import UnsubscribeDlg from 'components/Modal/Unsubscribe'
+import StyledButton from 'components/StyledButton'
+import IconInCircle from 'components/IconInCircle'
+import Heart from 'components/Heart'
+import { SidebarContext } from 'contexts/SidebarContext';
+import { CommonStatus } from 'models/common_content'
+import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard } from 'utils/common'
+import { HiveApi } from 'services/HiveApi'
+import { LocalDB, QueryStep } from 'utils/db';
 
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
   maxWidth: '350px',
@@ -69,13 +69,14 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
   },
 }));
 
-
-
 const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1, direction } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
-  const { selfChannels, subscribedChannels, subscriberInfo, setFocusChannelId } = React.useContext(SidebarContext);
+  const { subscriberInfo, queryStep, setFocusChannelId } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
+  const [currentChannel, setCurrentChannel] = React.useState({})
+  const [commentCount, setCommentCount] = React.useState(0)
+
   const [isOpenComment, setOpenComment] = React.useState(false)
   const [isOpenPost, setOpenPost] = React.useState(false)
   const [isOpenDelete, setOpenDelete] = React.useState(false)
@@ -83,18 +84,36 @@ const PostBody = (props) => {
   const [isSaving, setIsSaving] = React.useState(false)
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
-  const [isEnterPopover, setEnterPopover] = React.useState(false);
   const [isOpenPopup, setOpenPopup] = React.useState(null);
   const hiveApi = new HiveApi()
-  const isOwnedChannel = selfChannels.findIndex(item=>item.channel_id==post.channel_id)>=0
-  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id==post.channel_id) || {}
   const subscribersOfThis = currentChannel['subscribers'] || []
   const subscribedByWho = `Subscribed by ${subscribersOfThis.slice(0,3).map(subscriber=>subscriber.display_name).join(', ')}${subscribersOfThis.length>3?' and more!':'.'}`
   const PostOrComment = !post.comment_id?'Post':'Comment'
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const userDid = `did:elastos:${feedsDid}`
+  const myDID = `did:elastos:${feedsDid}`
   const navigate = useNavigate()
   const { enqueueSnackbar } = useSnackbar();
+
+  React.useEffect(()=>{
+    LocalDB.get(post.channel_id.toString())
+      .then(channelDoc => {
+        setCurrentChannel(channelDoc)
+      })
+  }, [post])
+
+  React.useEffect(()=>{
+    if(queryStep >= QueryStep.comment_data) {
+      LocalDB.find({
+        selector: {
+          table_type: 'comment',
+          post_id: post.post_id
+        }
+      })
+        .then(response => {
+          setCommentCount(response.docs.length)
+        })
+    }
+  }, [queryStep, post])
 
   React.useEffect(()=>{
     setIsLike(!!post.like_me)
@@ -111,19 +130,39 @@ const PostBody = (props) => {
     if(isSaving || post.status === CommonStatus.deleted)
       return
     setIsSaving(true)
-    try {
-      if(!isLike) {
-        const likeId = hash(`${post.post_id}${post.comment_id}${userDid}`)
-        await hiveApi.addLike(currentChannel.target_did, likeId, post.channel_id, post.post_id, post.comment_id || '0')
-      } else {
-        await hiveApi.removeLike(currentChannel.target_did, post.channel_id, post.post_id, post.comment_id || '0')
-      }
-      setIsLike(!isLike)
-      setIsSaving(false)
-    } catch(err) {
-      setIsSaving(false)
-      enqueueSnackbar('Like action error', { variant: 'error' });
+    let hiveAction = null
+    if(!isLike) {
+      const likeId = hash(`${post.post_id}${post.comment_id}${myDID}`)
+      hiveAction = hiveApi.addLike(post.target_did, likeId, post.channel_id, post.post_id, post.comment_id || '0')
+    } else {
+      hiveAction = hiveApi.removeLike(post.target_did, post.channel_id, post.post_id, post.comment_id || '0')
     }
+    Promise.resolve()
+      .then(_=>hiveAction)
+      .then(_=>LocalDB.get(post.post_id))
+      .then(doc=>{
+        const tempDoc = {...doc}
+        if(!isLike) {
+          tempDoc['likes'] += 1
+          tempDoc['like_me'] = true
+          tempDoc['like_creators'].push(myDID)
+        } else {
+          const myDIDindex = tempDoc['like_creators'].indexOf(myDID)
+          tempDoc['likes'] -= 1
+          tempDoc['like_me'] = false
+          if(myDIDindex>=0)
+            tempDoc['like_creators'].splice(myDIDindex, 1)
+        }
+        return LocalDB.put(tempDoc)
+      })
+      .then(_=>{
+        setIsLike(!isLike)
+        setIsSaving(false)
+      })
+      .catch(err=>{
+        setIsSaving(false)
+        enqueueSnackbar('Like action error', { variant: 'error' });
+      })
   }
 
   const filteredContentByLink = convertAutoLink(contentObj.content)
@@ -172,8 +211,7 @@ const PostBody = (props) => {
   };
   const handleLink2Channel = (e)=>{
     e.stopPropagation()
-    const isSelfChannel = selfChannels.findIndex(item=>item.channel_id==post.channel_id)>=0
-    if(isSelfChannel) {
+    if(currentChannel['is_self']) {
       setFocusChannelId(post.channel_id)
       navigate('/channel')
     } else {
@@ -182,7 +220,7 @@ const PostBody = (props) => {
   }
   const handleLink2Profile = (e)=>{
     e.stopPropagation()
-    const isSelf = post.target_did == feedsDid
+    const isSelf = post.target_did === feedsDid
     if(isSelf) {
       navigate('/profile')
     } else {
@@ -196,14 +234,14 @@ const PostBody = (props) => {
           <Box
             onMouseEnter={(e)=>{handlePopper(e, true)}}
             onMouseLeave={(e)=>{handlePopper(e, false)}}
-            onClick={level==1?handleLink2Channel:null}
+            onClick={level===1? handleLink2Channel: null}
           >
             <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
           </Box>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography component='div' variant="subtitle2" noWrap>
               {
-                level==1?
+                level===1?
                 <Link sx={{color:'inherit'}} onClick={handleLink2Channel}>
                   {contentObj.primaryName}
                 </Link>:
@@ -214,7 +252,7 @@ const PostBody = (props) => {
             </Typography>
             <Typography variant="body2" noWrap>
               {
-                level==1?
+                level===1?
                 <Link sx={{color:'inherit'}} onClick={handleLink2Profile}>
                   {contentObj.secondaryName}
                 </Link>:
@@ -240,7 +278,7 @@ const PostBody = (props) => {
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
               >
                 {
-                  isOwnedChannel?
+                  currentChannel['is_self']?
                   <div>
                     <MenuItem value='share' onClick={handleClosePopup}>
                       <IconInCircle name='clarity:share-line'/>&nbsp;
@@ -289,8 +327,8 @@ const PostBody = (props) => {
           <Box>
             {
               !!post.mediaData && post.mediaData.map((media, _i)=>(
-                media.kind == 'image'?
-                <Box component='img' src={media.mediaSrc} key={_i} sx={direction==='row'?{width: 150, borderRadius: 1}:{width: '100%'}}/>:
+                media.kind === 'image'?
+                <Box component='img' src={media.mediaSrc} key={_i} sx={direction==='row'? {width: 150, borderRadius: 1}: {width: '100%'}}/>:
                 <div key={_i}/>
                 // <Box component='video' src={media.mediaSrc}/>
               ))
@@ -343,7 +381,7 @@ const PostBody = (props) => {
           </Stack>
           <Stack direction="row" alignItems="center" spacing={1} onClick={handleCommentDlg}>
             <Icon icon="clarity:chat-bubble-line" width={18}/>
-            <Typography variant="body2" noWrap>{post.commentData?post.commentData.length:0}</Typography>
+            <Typography variant="body2" noWrap>{commentCount}</Typography>
           </Stack>
           <Box flexGrow={1} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right'}}>
             {
@@ -354,7 +392,7 @@ const PostBody = (props) => {
         </Stack>
       </Stack>
       {
-        level==1 &&
+        level===1 &&
         <StyledPopper
           anchorEl={anchorEl}
           open={isOpenPopover}
@@ -410,7 +448,7 @@ const PostBody = (props) => {
                         {contentObj.secondaryName}
                       </Link>
                     </Typography>
-                    <Typography component='div' variant="body2" color="secondary">{currentChannel.intro}</Typography>
+                    <Typography component='div' variant="body2" color="secondary">{currentChannel['intro']}</Typography>
                   </Box>
                   <Divider sx={{my: 1}}/>
                   <Typography variant="body2" component='div' sx={{display: 'flex'}}>
@@ -439,13 +477,13 @@ const PostBody = (props) => {
       }
       <CommentDlg setOpen={setOpenComment} isOpen={isOpenComment} post={post} postProps={{post, contentObj, isReply: true, level}}/>
       {
-        isOwnedChannel?
+        currentChannel['is_self']?
         <>
           <PostDlg setOpen={setOpenPost} isOpen={isOpenPost} activePost={post}/>
           <DeletePostDlg setOpen={setOpenDelete} isOpen={isOpenDelete} post_id={post.post_id} channel_id={post.channel_id}/>
         </>:
 
-        <UnsubscribeDlg setOpen={setOpenUnsubscribe} isOpen={isOpenUnsubscribe} target_did={currentChannel.target_did} channel_id={post.channel_id}/>
+        <UnsubscribeDlg setOpen={setOpenUnsubscribe} isOpen={isOpenUnsubscribe} target_did={post.target_did} channel_id={post.channel_id}/>
       }
     </>
   )

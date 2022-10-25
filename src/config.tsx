@@ -26,6 +26,6 @@ export const trustedProviders = [
 ]
 
 const ChannelRegContractMain = "0xc76E72deE2021cc51b094AfcD1e7010c74037bcB"
-const ChannelRegContractTest = "0xc76E72deE2021cc51b094AfcD1e7010c74037bcB"
+const ChannelRegContractTest = "0x38D3fE3C53698fa836Ba0c1e1DD8b1d8584127A7" // 0xc76E72deE2021cc51b094AfcD1e7010c74037bcB
 export const ChannelRegContractAddress = process.env.REACT_APP_ENV==="production"?ChannelRegContractMain:ChannelRegContractTest
 export const blankAddress = "0x0000000000000000000000000000000000000000";

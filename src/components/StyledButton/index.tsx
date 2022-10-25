@@ -2,7 +2,7 @@ import { Button, styled } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
 const GradientStyledButton = (styledBtnFunc, type)=>{
-  if(type=='contained') {
+  if(type === 'contained') {
     return styledBtnFunc(
       ({ theme }) => `
         background: linear-gradient(90deg, #7624FE 0%, #368BFF 100%);

@@ -1,64 +1,36 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import InfiniteScroll from "react-infinite-scroll-component";
-import { Box, Tabs, Tab, Stack, Container, InputAdornment } from '@mui/material';
-import { useTheme } from "@mui/material/styles";
-import useMediaQuery from "@mui/material/useMediaQuery";
+import { Box, Typography, Tabs, Tab, Stack, Container, InputAdornment, Grid } from '@mui/material';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
-import AutoResponsive from 'autoresponsive-react'
 
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config';
+import TabPanel from 'components/TabPanel'
 import ChannelCard from 'components/ChannelCard'
 import PostTextCard from 'components/PostCard/PostTextCard'
 import PostImgCard from 'components/PostCard/PostImgCard'
 import InputOutline from 'components/InputOutline'
+import { SidebarContext } from 'contexts/SidebarContext';
 import { HiveApi } from 'services/HiveApi';
-import { selectPublicChannels, setPublicChannels, setDispNameOfChannels } from 'redux/slices/channel';
+import { selectPublicChannels, selectDispNameOfChannels, setPublicChannels, setDispNameOfChannels } from 'redux/slices/channel';
 import { selectPublicPosts, setPublicPosts, updateMediaOfPosts } from 'redux/slices/post';
 import { getIpfsUrl, getWeb3Contract, isJson, getMergedArray, sortByDate } from 'utils/common'
 
 function Explore() {
+  const { selfChannels } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
-  const [containerWidth, setContainerWidth] = React.useState(0);
-  const [startChannelIndex, setStartChannelIndex] = React.useState(0);
-  const [isLastPage, setIsLastPage] = React.useState(false);
   const hiveApi = new HiveApi()
   const dispatch = useDispatch()
   const publicChannels = useSelector(selectPublicChannels)
   const publicPosts = useSelector(selectPublicPosts)
   const latestPublicPosts = sortByDate(getMergedArray(publicPosts)).slice(0, 10)
-  const containerRef = React.useRef(null)
-  const theme = useTheme();
-  const greaterThanMid = useMediaQuery(theme.breakpoints.up("md"));
-  const smallToMid = useMediaQuery(theme.breakpoints.between("sm", "md"));
-  const lessThanSmall = useMediaQuery(theme.breakpoints.down("sm"));
-  const cardWidthRate = (greaterThanMid && .25) || (smallToMid && .33) || (lessThanSmall && .5) || 1
-  const cardWidthUnit = Math.floor(containerWidth*cardWidthRate/10)*10
-  const pageLimit = 10
-
   React.useEffect(()=>{
-    // if(publicChannels.length>0)
-    //   return
-    appendMoreData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  React.useEffect(()=>{
-    handleResize()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicChannels])
-  
-  const appendMoreData = () => {
-    if(isLastPage)
+    if(publicChannels.length>0)
       return
     const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress, false)
-    channelRegContract.methods.channelIds(startChannelIndex, pageLimit).call()
+    channelRegContract.methods.channelIds().call()
       .then(res=>{
         if(Array.isArray(res)) {
-          if(res.length < pageLimit)
-            setIsLastPage(true)
-          if(res.length)
-            setStartChannelIndex(res[res.length-1])
           res.forEach(async(tokenId)=>{
             const channelInfo = await channelRegContract.methods.channelInfo(tokenId).call()
             const metaUri = getIpfsUrl(channelInfo['tokenURI'])
@@ -96,6 +68,7 @@ function Explore() {
                             })
                         })
                       })
+                      console.log(tempGroup, "---------pp")
                       dispatch(setPublicPosts(tempGroup))
                     }
                   })
@@ -117,12 +90,10 @@ function Explore() {
                   fetch(metaUri)
                     .then(response => response.json())
                     .then(data => {
-                      const channelData = {...data}
-                      channelData['channel_id'] = channelId
-                      channelData['target_did'] = targetDid
+                      const channelData = data
                       if(channelData.data) {
-                        channelData['avatarSrc'] = getIpfsUrl(channelData.data['avatar'])
-                        channelData['bannerSrc'] = getIpfsUrl(channelData.data['banner'])
+                        channelData.data['avatarSrc'] = getIpfsUrl(channelData.data['avatar'])
+                        channelData.data['bannerSrc'] = getIpfsUrl(channelData.data['banner'])
                       }
                       dispatch(
                         setPublicChannels({
@@ -135,69 +106,16 @@ function Explore() {
                 }
               }
             }
+            console.log(channelInfo, "----------oo")
           })
         }
       })
-  }
-  const handleResize = () => {
-    setContainerWidth(containerRef.current.clientWidth);
-  }
-  window.addEventListener("resize", handleResize);
+  }, [])
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-  const getAutoResponsiveProps = () => {
-    return {
-      itemMargin: 0,
-      containerWidth: containerWidth,
-      itemClassName: "item",
-      transitionDuration: .8,
-      transitionTimingFunction: "easeIn",
-      closeAnimation: false
-    }
-  }
-  const getGridContent = React.useCallback(() => {
-    let content = []
-    if("01".includes(tabValue.toString())) {
-      content = content.concat(
-        Object.values(publicChannels).map((channel, _i)=>(
-          <div className="item" key={_i} style={
-            {
-              width: cardWidthUnit,
-              height: 240,
-              paddingRight: 8,
-              paddingBottom: 8,
-            }
-          }>
-            <ChannelCard info={channel} key={_i}/>
-          </div>
-        ))
-      )
-    }
-    if("02".includes(tabValue.toString())) {
-      content = content.concat(
-        latestPublicPosts.map((post, _i)=>{
-          const isImageCard = !!post.content.mediaData && post.content.mediaData.length
-          return <div className="item" key={_i} style={
-            {
-              width: isImageCard? 2*cardWidthUnit: cardWidthUnit,
-              height: isImageCard? 400: 200,
-              paddingRight: 8,
-              paddingBottom: 8,
-            }
-          }>
-            {
-              isImageCard? <PostImgCard post={post}/>: <PostTextCard post={post}/>
-            }
-          </div>
-        })
-      )
-    }
-    return content
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tabValue, publicChannels, publicPosts])
-
+  console.log(publicPosts, "==========pp")
   return (
     <Container sx={{ mt: 3 }} maxWidth={false}>
       <Stack direction="row" spacing={4}>
@@ -231,30 +149,80 @@ function Explore() {
           style={{flexGrow: 1}}
         />
       </Stack>
-      <InfiniteScroll
-        dataLength={Object.keys(publicChannels).length}
-        next={appendMoreData}
-        hasMore={!isLastPage}
-        loader={<h4>Loading...</h4>}
-        scrollableTarget="scrollableBox"
-        style={{overflow: 'visible'}}
-      >
-        <Box ref={containerRef}>
-          <Box pt={2}>
-            <AutoResponsive {...getAutoResponsiveProps()}>
-              {getGridContent()}
-            </AutoResponsive>
-          </Box>
-          {/* <TabPanel value={tabValue} index={1}>
-          </TabPanel>
-          <TabPanel value={tabValue} index={2}>
-          </TabPanel>
-          <TabPanel value={tabValue} index={3}>
-          </TabPanel>
-          <TabPanel value={tabValue} index={4}>
-          </TabPanel> */}
-        </Box>
-      </InfiniteScroll>
+      <TabPanel value={tabValue} index={0} nopadding={true}>
+        <Grid container sx={{pt: 2}} spacing={2}>
+          {
+            Object.values(publicChannels).map((channel, _i)=>(
+              <Grid item sm={4} md={3} key={_i}>
+                <ChannelCard info={channel}/>
+              </Grid>
+            ))
+          }
+          {
+            latestPublicPosts.map((post, _i)=>{
+              if(!!post.content.mediaData && post.content.mediaData.length)
+                return (
+                  <Grid item xs={12} md={6} key={_i}>
+                    <PostImgCard post={post}/>
+                  </Grid>
+                )
+              return (
+                <Grid item sm={4} md={3} key={_i}>
+                  <PostTextCard post={post}/>
+                </Grid>
+              )
+            })
+          }
+        </Grid>
+        {/* <Grid container sx={{pt: 2}} spacing={2}>
+          <Grid item sm={4} md={3}>
+            <ChannelCard info={tempchannel}/>
+          </Grid>
+          <Grid item sm={4} md={3}>
+            <ChannelCard info={tempchannel}/>
+          </Grid>
+          <Grid item sm={4} md={3}>
+            <ChannelCard info={tempchannel}/>
+          </Grid>
+          <Grid item sm={4} md={3}>
+            <PostTextCard post={tempost} contentObj={tempostcontent}/>
+          </Grid>
+          <Grid item sm={12} md={6}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <PostImgCard post={tempost} contentObj={tempostcontent}/>
+              </Grid>
+              <Grid item sm={12} md={6}>
+                <ChannelCard info={tempchannel}/>
+              </Grid>
+              <Grid item sm={12} md={6}>
+                <ChannelCard info={tempchannel}/>
+              </Grid>
+            </Grid>
+          </Grid>
+          <Grid item sm={12} md={6}>
+            <Grid container spacing={2}>
+              <Grid item sm={12} md={6}>
+                <ChannelCard info={tempchannel}/>
+              </Grid>
+              <Grid item sm={12} md={6}>
+                <ChannelCard info={tempchannel}/>
+              </Grid>
+              <Grid item xs={12}>
+                <PostImgCard post={tempost} contentObj={tempostcontent}/>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid> */}
+      </TabPanel>
+      <TabPanel value={tabValue} index={1}>
+      </TabPanel>
+      <TabPanel value={tabValue} index={2}>
+      </TabPanel>
+      <TabPanel value={tabValue} index={3}>
+      </TabPanel>
+      <TabPanel value={tabValue} index={4}>
+      </TabPanel>
     </Container>
   );
 }

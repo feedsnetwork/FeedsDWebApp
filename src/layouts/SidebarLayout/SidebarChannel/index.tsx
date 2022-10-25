@@ -3,20 +3,17 @@ import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import parse from 'html-react-parser';
 import { Icon } from '@iconify/react';
 import AddIcon from '@mui/icons-material/Add';
-import ShareIcon from '@mui/icons-material/ShareOutlined';
-import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, Popper, ClickAwayListener, Tooltip, Fab, Typography, Paper, IconButton } from '@mui/material';
+import { Box, styled, Divider, useTheme, Stack, Popper, ClickAwayListener, Tooltip, Fab, Typography, Paper, IconButton } from '@mui/material';
 
-import Scrollbar from 'src/components/Scrollbar';
-import Logo from 'src/components/LogoSign';
-import ChannelAvatar from 'src/components/ChannelAvatar'
-import StyledButton from 'src/components/StyledButton'
-import PostDlg from 'src/components/Modal/Post';
-import SignoutDlg from 'src/components/Modal/Signout';
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { OverPageContext } from 'src/contexts/OverPageContext';
-import { CommonStatus } from 'src/models/common_content'
-import { reduceDIDstring, getAppPreference, sortByDate, getFilteredArrayByUnique, getInfoFromDID, isValidTime, getDateDistance, convertAutoLink, getPostByChannelId } from 'src/utils/common'
-import { HiveApi } from 'src/services/HiveApi'
+import Scrollbar from 'components/Scrollbar';
+import Logo from 'components/LogoSign';
+import ChannelAvatar from 'components/ChannelAvatar'
+import StyledButton from 'components/StyledButton'
+import PostDlg from 'components/Modal/Post';
+import SignoutDlg from 'components/Modal/Signout';
+import { SidebarContext } from 'contexts/SidebarContext';
+import { sortByDate, isValidTime, getDateDistance, convertAutoLink } from 'utils/common'
+import { LocalDB, QueryStep } from 'utils/db'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -58,11 +55,6 @@ const GradientOutlineFab = styled(Fab)(
       fill: white;
     }
     background: transparent;
-`
-);
-const GradientFab = styled(Fab)(
-  ({ theme }) => `
-    background: linear-gradient(90deg, #7624FE 0%, #368BFF 100%);
 `
 );
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
@@ -113,7 +105,8 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 }));
 
 function SidebarChannel() {
-  const { selfChannels, postsInSelf, sidebarToggle, focusedChannelId, subscriberInfo, setSelfChannels, setPostsInSelf, toggleSidebar, setFocusChannelId, setSubscriberInfo } = useContext(SidebarContext);
+  const { focusedChannelId, queryStep, setFocusChannelId } = useContext(SidebarContext);
+  const [selfChannels, setSelfChannels] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
   const [popoverChannel, setPopoverChannel] = useState({});
@@ -121,96 +114,120 @@ function SidebarChannel() {
   const [arrowRef, setArrowRef] = useState(null);
   const [isOpenPost, setOpenPost] = useState(false)
   const [isOpenSignout, setOpenSignout] = useState(false)
-  const closeSidebar = () => toggleSidebar();
+  // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
-  const hiveApi = new HiveApi()
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const userDid = `did:elastos:${feedsDid}`
   const navigate = useNavigate();
-  
-  useEffect(()=>{
-    hiveApi.querySelfChannels()
-      .then(res=>{
-        // console.log(res, '-----------self')
-        if(Array.isArray(res)){
-          const selfChannels = 
-            res
-              .filter(item=>item.status!=CommonStatus.deleted)
-              .map(item=>{
-                item.target_did = userDid
-                return item
-              })
-          setSelfChannels(selfChannels)
-          if(selfChannels.length)
-            setFocusChannelId(res[0].channel_id)
 
-          selfChannels.forEach(item=>{
-            hiveApi.querySubscriptionInfoByChannelId(userDid, item.channel_id)
-              .then(subscriptionRes=>{
-                if(subscriptionRes['find_message']) {
-                  const subscribersArr = subscriptionRes['find_message']['items']
-                  subscribersArr.forEach((subscriber, _i)=>{
-                    if(subscriberInfo[subscriber.user_did] === undefined) {
-                      setSubscriberInfo((prev)=>{
-                        const tempState = {...prev}
-                        tempState[subscriber.user_did] = {}
-                        return tempState
-                      })
-                      getInfoFromDID(subscriber.user_did).then(res=>{
-                        setSubscriberInfo((prev)=>{
-                          const tempState = {...prev}
-                          tempState[subscriber.user_did]['info'] = res
-                          return tempState
-                        })
-                      })
-                      hiveApi.getHiveUrl(subscriber.user_did)
-                        .then(async hiveUrl=>{
-                          try {
-                            const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
-                            if(response && response.length) {
-                              const base64Content = response.toString('base64')
-                              setSubscriberInfo((prev)=>{
-                                const tempState = {...prev}
-                                tempState[subscriber.user_did]['avatar'] = `data:image/png;base64,${base64Content}`
-                                return tempState
-                              })
-                            }
-                          } catch(err) {}
-                        })
-                    }
-                  })
-                  setSelfChannels(prevState=>{
-                    const tempState = [...prevState]
-                    const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)
-                    if(channelIndex>=0)
-                      tempState[channelIndex]['subscribers'] = subscribersArr
-                    return tempState
-                  })
-                }
-              })
-            getPostByChannelId(item, setPostsInSelf)
-            hiveApi.queryUserDisplayName(item.target_did, item.channel_id, userDid)
-              .then(dispnameRes=>{
-                if(dispnameRes['find_message'] && dispnameRes['find_message']['items'].length) {
-                  const dispName = dispnameRes['find_message']['items'][0].display_name
-                  setSelfChannels(prevState=>{
-                    const tempState = [...prevState]
-                    const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)
-                    if(channelIndex>=0)
-                      tempState[channelIndex]['owner_name'] = dispName
-                    return tempState
-                  })
-                }
-              })
-          })
-        }
-      })
-      .catch(err=>{
-        console.log(err)
-      })
+  // useEffect(()=>{
+  //   const worker = new Worker('worker.js');
+  //   worker.addEventListener('message', event => {
+  //     console.info(event.data)
+  //   });
+  //   worker.postMessage("hello")
+
+  // }, [])
+
+  useEffect(()=>{
+    // hiveApi.querySelfChannels()
+    //   .then(res=>{
+    //     // console.log(res, '-----------self')
+    //     if(Array.isArray(res)){
+    //       const selfChannels = 
+    //         res
+    //           .filter(item=>item.status!=CommonStatus.deleted)
+    //           .map(item=>{
+    //             item.target_did = userDid
+    //             return item
+    //           })
+    //       setSelfChannels(selfChannels)
+    //       if(selfChannels.length)
+    //         setFocusChannelId(res[0].channel_id)
+
+    //       selfChannels.forEach(item=>{
+    //         hiveApi.querySubscriptionInfoByChannelId(userDid, item.channel_id)
+    //           .then(subscriptionRes=>{
+    //             if(subscriptionRes['find_message']) {
+    //               const subscribersArr = subscriptionRes['find_message']['items']
+    //               subscribersArr.forEach((subscriber, _i)=>{
+    //                 if(subscriberInfo[subscriber.user_did] === undefined) {
+    //                   setSubscriberInfo((prev)=>{
+    //                     const tempState = {...prev}
+    //                     tempState[subscriber.user_did] = {}
+    //                     return tempState
+    //                   })
+    //                   getInfoFromDID(subscriber.user_did).then(res=>{
+    //                     setSubscriberInfo((prev)=>{
+    //                       const tempState = {...prev}
+    //                       tempState[subscriber.user_did]['info'] = res
+    //                       return tempState
+    //                     })
+    //                   })
+    //                   hiveApi.getHiveUrl(subscriber.user_did)
+    //                     .then(async hiveUrl=>{
+    //                       try {
+    //                         const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
+    //                         if(response && response.length) {
+    //                           const base64Content = response.toString('base64')
+    //                           setSubscriberInfo((prev)=>{
+    //                             const tempState = {...prev}
+    //                             tempState[subscriber.user_did]['avatar'] = `data:image/png;base64,${base64Content}`
+    //                             return tempState
+    //                           })
+    //                         }
+    //                       } catch(err) {}
+    //                     })
+    //                 }
+    //               })
+    //               setSelfChannels(prevState=>{
+    //                 const tempState = [...prevState]
+    //                 const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)
+    //                 if(channelIndex>=0)
+    //                   tempState[channelIndex]['subscribers'] = subscribersArr
+    //                 return tempState
+    //               })
+    //             }
+    //           })
+    //         getPostByChannelId(item, setPostsInSelf)
+    //         hiveApi.queryUserDisplayName(item.target_did, item.channel_id, userDid)
+    //           .then(dispnameRes=>{
+    //             if(dispnameRes['find_message'] && dispnameRes['find_message']['items'].length) {
+    //               const dispName = dispnameRes['find_message']['items'][0].display_name
+    //               setSelfChannels(prevState=>{
+    //                 const tempState = [...prevState]
+    //                 const channelIndex = tempState.findIndex(el=>el.channel_id==item.channel_id)
+    //                 if(channelIndex>=0)
+    //                   tempState[channelIndex]['owner_name'] = dispName
+    //                 return tempState
+    //               })
+    //             }
+    //           })
+    //       })
+    //     }
+    //   })
+    //   .catch(err=>{
+    //     console.log(err)
+    //   })
   }, [])
 
+  useEffect(()=>{
+    if(queryStep >= QueryStep.self_channel && !selfChannels.length) {
+      LocalDB.find({
+        selector: {
+          table_type: 'channel', 
+          is_self: true
+        },
+      })
+        .then(response=>{
+          if(!response.docs.length)
+            return
+          setSelfChannels(response.docs)
+          setFocusChannelId(response.docs[0]['channel_id'])
+        })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryStep])
+  
   const handleClickChannel = (item)=>{
     setFocusChannelId(item.channel_id); 
   }
@@ -222,24 +239,29 @@ function SidebarChannel() {
     setAnchorEl(event.currentTarget)
     setPopoverChannel(item)
     setOpenPopover(true);
-    const postsInChannel = postsInSelf[item.channel_id]
-    if(postsInChannel) {
-      setRecentPosts(
-        postsInChannel
-        .slice(0, 2)
-        .map(post=>{
-          const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
-          if(post.status == 1)
-            post.content_filtered = "(post deleted)"
-          else {
-            const contentObj = JSON.parse(post.content)
-            post.content_filtered = convertAutoLink(contentObj.content)
-          }
-          post.distanceTime = distanceTime
-          return post
-        })
-      )
-    }
+    LocalDB.find({
+      selector: {
+        table_type: 'post',
+        channel_id: item.channel_id
+      }
+    })
+      .then(response => {
+        const recentPosts = sortByDate(response.docs)
+          .slice(0, 2)
+          .map(post=>{
+            const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
+            if(post.status === 1)
+              post.content_filtered = "(post deleted)"
+            else {
+              const contentObj = JSON.parse(post.content)
+              post.content_filtered = convertAutoLink(contentObj.content)
+            }
+            post.distanceTime = distanceTime
+            return post
+          })
+        setRecentPosts(recentPosts)
+      })
+      .catch(err => {})
   };
   const handlePopoverClose = () => {
     setOpenPopover(false);
@@ -290,7 +312,6 @@ function SidebarChannel() {
                 selfChannels.map((item, _i)=>
                   <ChannelAvatar 
                     key={_i} 
-                    index={_i}
                     channel={item}
                     onClick={(e)=>{handleClickChannel(item)}} 
                     onRightClick={(e)=>{handleRightClickChannel(e, item)}} 
@@ -396,8 +417,6 @@ function SidebarChannel() {
               !recentPosts.length &&
               <Typography variant="body2" py={1}>No recent post found</Typography>
             }
-            {/* <Typography variant="body2" color='text.secondary'>Good weather today in Osaka! Hmm... where should I eat in Tennouji? Any recommendations? I’m thinking of eating raw sushi for the first time though... I hope it’s gonna be alright haha#osaka #japan #spring</Typography>
-            <Typography variant="body2" textAlign='right'>1d</Typography> */}
             <Box sx={{display: 'block'}} textAlign="center" p={2}>
               <StyledButton type="contained" fullWidth onClick={handleClickPost}>Post</StyledButton>
             </Box>

@@ -1,9 +1,8 @@
 import React from 'react'
-import { Box, Typography, Stack, Card, Input, Divider, IconButton, Grid, Switch, Link, styled } from '@mui/material';
-import { Icon } from '@iconify/react';
+import { Box, Typography, Stack, Card, Divider, Grid } from '@mui/material';
 
-import SwitchUI from 'src/components/SwitchUI'
-import { getAppPreference } from 'src/utils/common'
+import SwitchUI from 'components/SwitchUI'
+import { getAppPreference } from 'utils/common'
 
 const AppPreference = (props)=>{
   const initConf = getAppPreference()

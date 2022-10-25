@@ -1,18 +1,16 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, Divider, IconButton, Paper } from '@mui/material';
+import { Dialog, DialogContent, Typography, Stack } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux'
 import { useSnackbar } from 'notistack';
 import { create } from 'ipfs-http-client'
 
 import StyledButton from '../StyledButton';
-import StyledIcon from '../StyledIcon'
 import StyledAvatar from '../StyledAvatar';
-import { HiveApi } from 'src/services/HiveApi'
-import { ChannelContent } from 'src/models/channel_content';
-import { CHANNEL_REG_CONTRACT_ABI } from 'src/abi/ChannelRegistry';
-import { ipfsURL, ChannelRegContractAddress, blankAddress } from 'src/config'
-import { selectPublishModalState, selectCreatedChannel, handlePublishModal } from 'src/redux/slices/channel'
-import { getBufferFromUrl, getWeb3Contract, getWeb3Connect, decFromHex, hash } from 'src/utils/common'
+import { ChannelContent } from 'models/channel_content';
+import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
+import { ipfsURL, ChannelRegContractAddress, blankAddress } from 'config'
+import { selectPublishModalState, selectCreatedChannel, handlePublishModal } from 'redux/slices/channel'
+import { getWeb3Contract, getWeb3Connect, decFromHex, hash } from 'utils/common'
 
 const client = create({url: ipfsURL})
 function PublishChannel() {
@@ -73,7 +71,7 @@ function PublishChannel() {
           'value': 0
         };
         const mintMethod = channelRegContract.methods.mint(tokenID, tokenURI, channelEntry, blankAddress, 1).send(transactionParams)
-        const mintResult = await promiseReceipt(mintMethod)
+        await promiseReceipt(mintMethod)
         enqueueSnackbar('Publish channel success', { variant: 'success' });
         setOnProgress(false)
         handleClose()

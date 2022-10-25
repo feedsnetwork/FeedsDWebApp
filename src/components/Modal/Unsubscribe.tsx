@@ -1,10 +1,10 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack} from '@mui/material';
+import { Dialog, DialogContent, Typography, Stack} from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 import StyledButton from '../StyledButton';
 import StyledIcon from '../StyledIcon'
-import { HiveApi } from 'src/services/HiveApi'
+import { HiveApi } from 'services/HiveApi'
 
 function Unsubscribe(props) {
   const { setOpen, isOpen, target_did, channel_id } = props;

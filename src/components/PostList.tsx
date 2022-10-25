@@ -1,11 +1,11 @@
 import { Box, Container, Grid } from '@mui/material';
 
-import PostSkeleton from 'src/components/Skeleton/PostSkeleton'
-import PostCard from 'src/components/PostCard';
-import { EmptyView } from 'src/components/EmptyView'
+import PostSkeleton from 'components/Skeleton/PostSkeleton'
+import PostCard from 'components/PostCard';
+import { EmptyView } from 'components/EmptyView'
 
 const PostList = (props)=>{
-  const { isLoading, postsInActiveChannel, dispName } = props
+  const { isLoading, channel, postsInActiveChannel, dispName } = props
   const loadingSkeletons = Array(5).fill(null)
   return (
     <>
@@ -32,7 +32,7 @@ const PostList = (props)=>{
 
                 postsInActiveChannel.map((post, _i)=>(
                   <Grid item xs={12} key={_i}>
-                    <PostCard post={post} dispName={dispName}/>
+                    <PostCard post={post} channel={channel} dispName={dispName}/>
                   </Grid>
                 ))
               }

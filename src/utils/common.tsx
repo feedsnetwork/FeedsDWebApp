@@ -5,10 +5,11 @@ import { createHash } from 'crypto';
 import Autolinker from 'autolinker';
 import axios from 'axios'
 
-import { HiveApi } from 'src/services/HiveApi'
-import { CommonStatus } from 'src/models/common_content'
-import { essentialsConnector } from 'src/content/signin/EssentialConnectivity';
-import { ipfsURL, rpcURL } from 'src/config'
+import { HiveApi } from 'services/HiveApi'
+import { CommonStatus } from 'models/common_content'
+import { essentialsConnector } from 'content/signin/EssentialConnectivity';
+import { ipfsURL, rpcURL } from 'config'
+
 export const reduceDIDstring = (strDID) => {
   if(!strDID)
     return ''
@@ -111,7 +112,7 @@ function compareDateAsc( a, b ) {
 }
 
 export const sortByDate = (objs, direction = 'desc') => {
-  return objs.slice().sort( direction=="desc"? compareDateDesc: compareDateAsc );
+  return objs.slice().sort( direction==="desc"? compareDateDesc: compareDateAsc );
 }
 
 export const getBufferFromFile = (f) => (
@@ -146,7 +147,7 @@ export function getFilteredArrayByUnique(arr, field) {
       unique.push(o);
     }
     return unique;
-  },[]);
+  }, []);
   return result
 }
 
@@ -178,7 +179,7 @@ export function convertAutoLink(content) {
   let filteredContentByLink = autolinker.link(tempContent);
   let splitByHttp = filteredContentByLink.split('http')
   splitByHttp = splitByHttp.slice(0, splitByHttp.length-1)
-  const brokenLinkStrings = splitByHttp.filter(el=>el.charAt(el.length-1)!='"')
+  const brokenLinkStrings = splitByHttp.filter(el=>el.charAt(el.length-1)!=='"')
   if(brokenLinkStrings.length){
     brokenLinkStrings.forEach(str=>{
       const lastChar = str.charAt(str.length-1)
@@ -206,10 +207,11 @@ export function getPostByChannelId(channel, setter) {
           postRes['find_message']['items']:
           postRes['find_message']['items'].filter(postItem=>postItem.status!==CommonStatus.deleted)
         const splitTargetDid = channel.target_did.split(':')
-        postArr.map(post=>{
+        postArr = postArr.map(post=>{
           post.target_did = splitTargetDid[splitTargetDid.length-1]
-          if(typeof post.created == 'object')
+          if(typeof post.created === 'object')
             post.created = new Date(post.created['$date']).getTime()/1000
+          return post
         })
         postArr.forEach(post=>{
           if(post.status !== CommonStatus.deleted) {
@@ -223,7 +225,7 @@ export function getPostByChannelId(channel, setter) {
                     setter((prevState) => {
                       const tempState = {...prevState}
                       const currentGroup = tempState[channel.channel_id]
-                      const postIndex = currentGroup.findIndex(el=>el.post_id==post.post_id)
+                      const postIndex = currentGroup.findIndex(el=>el.post_id===post.post_id)
                       if(postIndex<0)
                         return tempState
                       if(currentGroup[postIndex].mediaData)
@@ -250,7 +252,7 @@ export function getPostByChannelId(channel, setter) {
                 setter((prevState) => {
                   const tempState = {...prevState}
                   const currentGroup = tempState[channel.channel_id]
-                  const postIndex = currentGroup.findIndex(el=>el.post_id==post.post_id)
+                  const postIndex = currentGroup.findIndex(el=>el.post_id===post.post_id)
                   if(postIndex<0)
                     return tempState
                   currentGroup[postIndex].likes = filteredLikeArr.length
@@ -269,11 +271,11 @@ export function getPostByChannelId(channel, setter) {
               const commentArr = commentRes['find_message']['items']
               const ascCommentArr = sortByDate(commentArr, 'asc')
               const linkedComments = ascCommentArr.reduce((res, item)=>{
-                if(item.refcomment_id == '0') {
+                if(item.refcomment_id === '0') {
                     res.push(item)
                     return res
                 }
-                const tempRefIndex = res.findIndex((c) => c.comment_id == item.refcomment_id)
+                const tempRefIndex = res.findIndex((c) => c.comment_id === item.refcomment_id)
                 if(tempRefIndex<0){
                     res.push(item)
                     return res
@@ -288,7 +290,7 @@ export function getPostByChannelId(channel, setter) {
                 setter((prevState) => {
                   const tempState = {...prevState}
                   const currentGroup = tempState[channel.channel_id]
-                  const postIndex = currentGroup.findIndex(el=>el.post_id==comment.post_id)
+                  const postIndex = currentGroup.findIndex(el=>el.post_id===comment.post_id)
                   if(postIndex<0)
                     return tempState
                   if(currentGroup[postIndex].commentData)
@@ -388,3 +390,23 @@ export function isJson(str) {
   }
   return true;
 }
+export const encodeBase64 = (data) => {
+  return Buffer.from(data).toString('base64');
+}
+export const decodeBase64 = (data) => {
+  return Buffer.from(data, 'base64').toString('ascii');
+}
+export function promiseSeries(arrayOfPromises) {
+  var results = [];
+  return arrayOfPromises.reduce(function(seriesPromise, promise) {
+    return seriesPromise
+      .then(() => promise())
+      .then((result) => {
+        results.push(result)
+        return Promise.resolve()
+      })
+  }, Promise.resolve())
+  .then(function() {
+    return results;
+  });
+};

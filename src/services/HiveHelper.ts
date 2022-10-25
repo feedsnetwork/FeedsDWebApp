@@ -1,12 +1,11 @@
-import { HiveService } from 'src/services/HiveService'
-import { QueryHasResultCondition, FindExecutable, AndCondition, NetworkException, InsertExecutable, UpdateExecutable, DeleteExecutable, UpdateResult, UpdateOptions, InsertResult, FileDownloadExecutable, HiveException, InsufficientStorageException } from "@elastosfoundation/hive-js-sdk"
-import { utils } from 'src/services/utils'
+import { HiveService } from 'services/HiveService'
+import { QueryHasResultCondition, FindExecutable, AndCondition, InsertExecutable, UpdateExecutable, DeleteExecutable, 
+    UpdateResult, UpdateOptions, InsertResult, FileDownloadExecutable } from "@elastosfoundation/hive-js-sdk"
+import { utils } from 'services/utils'
 import SparkMD5 from 'spark-md5'
-import { HiveData } from 'src/services/HiveData'
-
-import { ApplicationDID } from '../config'
-const TAG = 'HiveHelper'
-
+import { HiveData } from './HiveData'
+import { ApplicationDID } from 'config'
+// const TAG = 'HiveHelper'
 
 const feedsDid = sessionStorage.getItem('FEEDS_DID')
 const userDid_local = `did:elastos:${feedsDid}`
@@ -66,7 +65,6 @@ export class HiveHelper {
     public static readonly QUERY_PUBLIC_SOMETIME_POST = "query_public_sometime_post"
     public static readonly QUERY_PUBLIC_POST_BY_CHANNEL = "query_public_post_by_channel"
     private buyStorageSpaceDialog: any = null
-    constructor() { }
 
     // 注册所有使用到的脚本：通过注册脚本可以设置是否允许其他did访问
     public registeScripting(): Promise<string> {
@@ -137,7 +135,7 @@ export class HiveHelper {
                 "regist_scripting": registScripting,
             }
             try {
-                const insertResult = hiveService.insertDBData(HiveHelper.TABLE_FEEDS_SCRIPTING, doc)
+                hiveService.insertDBData(HiveHelper.TABLE_FEEDS_SCRIPTING, doc)
                 // // Logger.log(TAG, 'Insert feeds scripting db result', insertResult)
                 resolve(doc)
             } catch (error) {
@@ -149,7 +147,7 @@ export class HiveHelper {
 
     private async handleError(error: any) {
         let errorCode = error["code"]
-        let errorDes = "ErrorInfo.HIVE_ERROR_" + errorCode
+        // let errorDes = "ErrorInfo.HIVE_ERROR_" + errorCode
         if (errorCode === 507) {
             if (this.buyStorageSpaceDialog === null) {
                 // await this.showBuyStorageSpaceDialog(errorDes)
@@ -162,7 +160,7 @@ export class HiveHelper {
 
     private async handleLikeError(error: any) {
         let errorCode = error["code"]
-        let errorDes = "ErrorInfo.HIVE_ERROR_" + errorCode
+        // let errorDes = "ErrorInfo.HIVE_ERROR_" + errorCode
         if (errorCode === 507) {
             if (this.buyStorageSpaceDialog === null) {
                 // await this.showBuyStorageSpaceDialog(errorDes)
@@ -406,7 +404,7 @@ export class HiveHelper {
             let filter = { "channel_id": channelId }
             let update = { "$set": doc }
             try {
-                const result = await hiveService.updateOneDBData(HiveHelper.TABLE_CHANNELS, filter, update, option)
+                await hiveService.updateOneDBData(HiveHelper.TABLE_CHANNELS, filter, update, option)
                 // // Logger.log(TAG, 'Delete post result', result)
                 resolve({ updatedAt: updatedAt, status: 1 })
             } catch (error) {
@@ -569,7 +567,7 @@ export class HiveHelper {
             let filter = { "channel_id": channelId, "post_id": postId }
             let update = { "$set": doc }
             try {
-                const result = await hiveService.updateOneDBData(HiveHelper.TABLE_POSTS, filter, update, option)
+                await hiveService.updateOneDBData(HiveHelper.TABLE_POSTS, filter, update, option)
                 // // Logger.log(TAG, 'Delete post result', result)
                 resolve({ updatedAt: updatedAt, status: 1 })
             } catch (error) {
@@ -1228,7 +1226,7 @@ export class HiveHelper {
                 const signinDid = userDid_local
                 const commentId = utils.generateCommentId(signinDid, postId, refcommentId, content)
                 const createdAt = new Date().getTime()
-                const result = await this.callCreateComment(targetDid, commentId, channelId, postId, refcommentId, content, createdAt)
+                await this.callCreateComment(targetDid, commentId, channelId, postId, refcommentId, content, createdAt)
 
                 resolve({ commentId: commentId, createrDid: signinDid, createdAt: createdAt })
             } catch (error) {
@@ -1859,14 +1857,14 @@ export class HiveHelper {
     downloadScripting(targetDid: string, avatarHiveURL: string): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
-                if (!avatarHiveURL || avatarHiveURL == '') {
+                if (!avatarHiveURL || avatarHiveURL === '') {
                     const errorMsg = 'Input param null'
                     // Logger.warn(TAG, errorMsg)
                     reject(errorMsg)
                     return
                 }
                 const transaction_id = await this.downloadScriptingTransactionID(targetDid, avatarHiveURL)
-                if (!transaction_id || transaction_id == '') {
+                if (!transaction_id || transaction_id === '') {
                     const errorMsg = 'Download transactionId null'
                     // Logger.warn(TAG, errorMsg)
                     reject(errorMsg)
@@ -2070,7 +2068,7 @@ export class HiveHelper {
             }
 
             try {
-                const insertResult = hiveService.insertDBData(HiveHelper.TABLE_BACKUP_SUBSCRIBEDCHANNEL, doc)
+                hiveService.insertDBData(HiveHelper.TABLE_BACKUP_SUBSCRIBEDCHANNEL, doc)
                 // Logger.log(TAG, 'Insert bsc db result', insertResult)
                 resolve('FINISH')
             } catch (error) {
@@ -2094,7 +2092,7 @@ export class HiveHelper {
             }
 
             try {
-                const result = hiveService.deleateOneDBData(HiveHelper.TABLE_BACKUP_SUBSCRIBEDCHANNEL, doc)
+                hiveService.deleateOneDBData(HiveHelper.TABLE_BACKUP_SUBSCRIBEDCHANNEL, doc)
                 // Logger.log(TAG, 'Remove bsc db result', result)
                 resolve('FINISH')
             } catch (error) {

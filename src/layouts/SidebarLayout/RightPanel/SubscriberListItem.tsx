@@ -1,27 +1,41 @@
 import React from 'react'
+import { useSelector } from 'react-redux';
 import { useNavigate, NavLink as RouterLink } from 'react-router-dom';
-import { Stack, Box, Typography, Link, styled } from '@mui/material'
+import { Stack, Box, Typography, Link } from '@mui/material'
 
-import StyledAvatar from 'src/components/StyledAvatar'
-import StyledButton from 'src/components/StyledButton'
-import { HiveApi } from 'src/services/HiveApi'
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { getInfoFromDID } from 'src/utils/common'
+import StyledAvatar from 'components/StyledAvatar'
+import { SidebarContext } from 'contexts/SidebarContext';
+import { selectUserAvatar } from 'redux/slices/user';
+import { LocalDB, QueryStep } from 'utils/db'
+import { decodeBase64 } from 'utils/common';
 
 const SubscriberListItem = (props) => {
     const { subscriber } = props
-    const { subscriberInfo } = React.useContext(SidebarContext);
-    const info_data = subscriberInfo[subscriber.user_did] || {}
+    const { queryStep } = React.useContext(SidebarContext);
+    const [ userInfo, setSubscriberInfo] = React.useState({})
+    const userAvatarSrc = useSelector(selectUserAvatar)
     const navigate = useNavigate();
+
+    React.useEffect(()=>{
+        if(queryStep>=QueryStep.subscriber_info) {
+            LocalDB.get(subscriber.user_did)
+                .then(doc=>{
+                    setSubscriberInfo(doc)
+                })
+                .catch(err=>{})
+        }
+    }, [queryStep, subscriber])
 
     const handleLink2Profile = (user_did)=>{
         navigate('/profile/others', {state: {user_did}});
     }
 
+    const avatarContent = userAvatarSrc[subscriber.user_did] || ""
+    const avatarSrc = decodeBase64(avatarContent)
     return (
         <Stack direction="row" alignItems="center" spacing={1}>
             <Box onClick={(e)=>{handleLink2Profile(subscriber.user_did)}} sx={{cursor: 'pointer'}}>
-                <StyledAvatar alt={subscriber.display_name} src={info_data['avatar']} width={32}/>
+                <StyledAvatar alt={subscriber.display_name} src={avatarSrc} width={32}/>
             </Box>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
                 <Typography variant="subtitle2" noWrap>
@@ -30,8 +44,8 @@ const SubscriberListItem = (props) => {
                     </Link>
                 </Typography>
                 {
-                    info_data['info'] && info_data['info']['description'] &&
-                    <Typography variant="body2" color='text.secondary' noWrap>{info_data['info']['description']}</Typography>
+                    userInfo['description'] &&
+                    <Typography variant="body2" color='text.secondary' noWrap>{userInfo['description']}</Typography>
                 }
             </Box>
         </Stack>

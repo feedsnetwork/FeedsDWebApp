@@ -1,11 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack } from '@mui/material';
+import { Dialog, DialogContent, Typography, Stack } from '@mui/material';
 
 import StyledButton from '../StyledButton';
 import StyledIcon from '../StyledIcon'
-import { selectSuccessModalState, handleSuccessModal, handlePublishModal } from 'src/redux/slices/channel'
+import { selectSuccessModalState, handleSuccessModal, handlePublishModal } from 'redux/slices/channel'
 
 function ChannelCreated() {
   const isOpen = useSelector(selectSuccessModalState)

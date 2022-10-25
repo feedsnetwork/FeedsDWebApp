@@ -1,26 +1,23 @@
 import React from 'react';
-import { useSelector } from 'react-redux'
+// import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom';
-import { Box, Stack, Typography, Card, CardHeader, Divider, IconButton } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Icon } from '@iconify/react';
+import { Box, Stack, Typography, Card } from '@mui/material';
 import { useSnackbar } from 'notistack';
 
-import StyledAvatar from 'src/components/StyledAvatar'
-import StyledButton from 'src/components/StyledButton'
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import StyledTextFieldOutline from 'src/components/StyledTextFieldOutline'
+import StyledAvatar from 'components/StyledAvatar'
+import StyledButton from 'components/StyledButton'
+import { SidebarContext } from 'contexts/SidebarContext';
+import StyledTextFieldOutline from 'components/StyledTextFieldOutline'
 import PostBody from './PostBody'
-import { HiveApi } from 'src/services/HiveApi'
-import { selectPublicChannels } from 'src/redux/slices/channel';
-import { getDateDistance, isValidTime, reduceDIDstring, reduceHexAddress } from 'src/utils/common'
+import { HiveApi } from 'services/HiveApi'
+// import { selectPublicChannels } from 'redux/slices/channel';
+import { decodeBase64, reduceDIDstring } from 'utils/common'
 
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, dispName, level=1, replyingTo='', replyable=false, dispNames={}, dispAvatar={}, direction='column' } = props
-  const { selfChannels, subscribedChannels, myAvatar, userInfo, walletAddress, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
-  const publicChannels = useSelector(selectPublicChannels)
-  const currentChannel = [...selfChannels, ...subscribedChannels, ...Object.values(publicChannels)].find(item=>item.channel_id==post.channel_id) || {}
+  const { post, channel, dispName, level=1, replyingTo='', replyable=false, users=[], dispAvatar={}, direction='column' } = props
+  const { myAvatar, userInfo, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
+  // const publicChannels = useSelector(selectPublicChannels)
   
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
@@ -38,7 +35,7 @@ const PostCard = (props) => {
       return
     }
     setOnProgress(true)
-    hiveApi.createComment(currentChannel.target_did, currentChannel.channel_id, post.post_id, '0', commentext)
+    hiveApi.createComment(post.target_did, post.channel_id, post.post_id, '0', commentext)
       .then(res=>{
         // console.log(res, "===============2")
         enqueueSnackbar('Reply comment success', { variant: 'success' });
@@ -57,20 +54,20 @@ const PostCard = (props) => {
 
   let contentObj = {avatar: {}, primaryName: '', secondaryName: null, content: ''}
   let cardProps = {}
-  if(level == 1) {
+  if(level === 1) {
     contentObj = typeof post.content === 'object'? {...post.content}: JSON.parse(post.content)
-    contentObj.avatar = { name: currentChannel.name, src: currentChannel.avatarSrc }
-    contentObj.primaryName = currentChannel.name
+    contentObj.avatar = { name: channel['name'], src: channel['avatarSrc']? decodeBase64(channel['avatarSrc']): '' }
+    contentObj.primaryName = channel['name']
     contentObj.secondaryName = `@${dispName}`
     cardProps = {style: {cursor: 'pointer'}, onClick: naviage2detail}
   } 
-  else if(level == 2) {
-    contentObj.avatar = dispAvatar[post.comment_id] || {}
+  else if(level === 2) {
+    contentObj.avatar = dispAvatar || {}
     contentObj.content = post.content
     contentObj.primaryName = `@${dispName}`
     contentObj.secondaryName = <><b>Replying to</b> @{replyingTo}</>
   }
-  if(post.status == 1)
+  if(post.status === 1)
     contentObj.content = "(post deleted)"
 
   const BodyProps = { post, contentObj, level, direction }
@@ -79,7 +76,7 @@ const PostCard = (props) => {
       <Box p={3}>
         <PostBody {...BodyProps}/>
         {
-          level==1 && replyable &&
+          level===1 && replyable &&
           <Box pl={3} pt={2}>
             <Stack direction="row" spacing={1} alignItems="center" mb={2}>
               <StyledAvatar alt="" src={myAvatar}/>
@@ -113,15 +110,20 @@ const PostCard = (props) => {
           </Box>
         }
         {
-          level==2 && post.commentData && 
+          level===2 && post.commentData && 
           <Stack pl={3} pt={2} spacing={1}>
             {
               post.commentData.map((comment, _i)=>{
-                let subContentObj = {
-                  avatar: dispAvatar[comment.comment_id] || {}, 
-                  primaryName: comment.creater_did == currentChannel.target_did? `@${currentChannel.name}`: `@${dispNames[comment.comment_id] || reduceDIDstring(comment.creater_did)}`, 
+                const commentUser = users.find(user=>user['_id']===comment.creator_did) || {}
+                const subContentObj = {
+                  avatar: { name: commentUser['name'], src: commentUser['avatarSrc']},
+                  primaryName: `@${commentUser['name'] || reduceDIDstring(comment.creater_did)}`, 
                   secondaryName: <><b>Replying to</b> @{dispName}</>, 
                   content: comment.content
+                }
+                if(channel['target_did'] === comment.creater_did) {
+                  subContentObj['avatar'] = { name: channel['name'], src: channel['avatarSrc']}
+                  subContentObj['primaryName'] = `@${channel.name}`
                 }
                 const subBodyProps = { post: comment, contentObj: subContentObj, isReply: true, level }
                 return <PostBody {...subBodyProps} key={_i}/>

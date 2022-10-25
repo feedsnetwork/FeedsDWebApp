@@ -1,10 +1,11 @@
-import { FC, useRef, useEffect, useState, useContext } from 'react'
+import { FC, useRef } from 'react'
+import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types';
 import { Avatar, Box, styled } from '@mui/material';
 import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
 
-import { SidebarContext } from 'src/contexts/SidebarContext';
-import { HiveApi } from 'src/services/HiveApi'
+import { selectChannelAvatar } from 'redux/slices/channel';
+import { decodeBase64 } from 'utils/common'
 
 const ChannelWrapper = styled(Box)(
   ({ theme }) => `
@@ -80,7 +81,6 @@ const AvatarWrapper = styled(Box)(
 );
 
 interface ChannelAvatarProps {
-  index: number;
   channel: object;
   variant?: "circular" | "square" | "rounded";
   width?: number;
@@ -90,33 +90,10 @@ interface ChannelAvatarProps {
 }
 
 const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
-  const { channel, width=40, variant = 'circular', onClick=(e)=>{}, onRightClick=(e)=>{}, focused=false, index } = props
-  const { setSelfChannels } = useContext(SidebarContext);
-  const [avatarSrc, setAvatarSrc] = useState('')
-  const hiveApi = new HiveApi()
-
-  useEffect(()=>{
-    const parseAvatar = channel['avatar'].split('@')
-    hiveApi.downloadCustomeAvatar(parseAvatar[parseAvatar.length-1])
-      .then(res=>{
-        if(res && res.length) {
-          const base64Content = res.reduce((content, code)=>{
-            content=`${content}${String.fromCharCode(code)}`;
-            return content
-          }, '')
-          setSelfChannels(prev=>{
-            const prevState = [...prev]
-            prevState[index].avatarSrc = base64Content
-            return prevState
-          })
-          setAvatarSrc(base64Content)
-        }
-      })
-      .catch(err=>{
-        console.log(err)
-      })
-    
-  }, [])
+  const { channel, width=40, variant = 'circular', onClick=(e)=>{}, onRightClick=(e)=>{}, focused=false } = props
+  const channelAvatarSrc = useSelector(selectChannelAvatar)
+  const channelInfo = {...channel}
+  let avatarSrc = decodeBase64(channelAvatarSrc[channel['channel_id']] || "")
   const rippleRef = useRef(null);
   const onRippleStart = (e) => {
     rippleRef.current.start(e);
@@ -149,7 +126,7 @@ const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
             height: width,
             transition: 'border-radius .2s',
           }}
-          alt={channel['name']}
+          alt={channelInfo['name']}
           src={avatarSrc}
         />
         <TouchRipple ref={rippleRef} center={false} />

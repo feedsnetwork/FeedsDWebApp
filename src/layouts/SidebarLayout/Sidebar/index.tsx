@@ -1,15 +1,15 @@
 import React from 'react';
-import Scrollbar from 'src/components/Scrollbar';
-import { SidebarContext } from 'src/contexts/SidebarContext';
-
-import { Box, Drawer, alpha, styled, Divider, useTheme, Button, Stack, Avatar, Tooltip, Typography } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { Box, styled, Divider, useTheme, Stack, Typography } from '@mui/material';
 
 import SidebarMenu from './SidebarMenu';
-import Logo from 'src/components/LogoSign';
-import StyledAvatar from 'src/components/StyledAvatar'
-import { HiveApi } from 'src/services/HiveApi'
-import { reduceDIDstring, getInfoFromDID, reduceHexAddress, getAppPreference, getFilteredArrayByUnique, sortByDate, getPostByChannelId } from 'src/utils/common'
-import { CommonStatus } from 'src/models/common_content';
+import StyledAvatar from 'components/StyledAvatar'
+import Scrollbar from 'components/Scrollbar';
+import { HiveApi } from 'services/HiveApi'
+import { SidebarContext } from 'contexts/SidebarContext';
+import { reduceDIDstring, getInfoFromDID, reduceHexAddress } from 'utils/common'
+import { LocalDB } from 'utils/db';
+import { selectMyInfo, setMyInfo } from 'redux/slices/user';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -23,127 +23,148 @@ const SidebarWrapper = styled(Box)(
 );
 
 function Sidebar() {
-  const { sidebarToggle, walletAddress, myAvatar, userInfo, subscriberInfo, 
-    toggleSidebar, setSubscribedChannels, setMyAvatar, setUserInfo, setSubscriberInfo, setPostsInSubs } = React.useContext(SidebarContext);
-  const closeSidebar = () => toggleSidebar();
+  const { walletAddress } = React.useContext(SidebarContext);
+  // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const userDid = `did:elastos:${feedsDid}`
+  const myDID = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
+  const dispatch = useDispatch()
+  const myInfo = useSelector(selectMyInfo)
   
   React.useEffect(()=>{
     if(!feedsDid)
       return
-      
-    hiveApi.getHiveUrl(userDid)
-      .then(async hiveUrl=>{
-        const res =  await hiveApi.downloadFileByHiveUrl(userDid, hiveUrl)
-        if(res && res.length) {
-          const base64Content = res.toString('base64')
-          setMyAvatar(`data:image/png;base64,${base64Content}`)
+    LocalDB.get(myDID)
+      .then(doc=>{
+        dispatch(setMyInfo(doc))
+      })
+      .catch(err=>{})
+    hiveApi.getHiveUrl(myDID)
+      .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(myDID, hiveUrl))
+      .then(res=>{
+        const resBuf = res as Buffer
+        if(resBuf && resBuf.length) {
+          const base64Content = resBuf.toString('base64')
+          const avatarObj = { avatarSrc: `data:image/png;base64,${base64Content}` }
+          storeMyInfo(avatarObj)
         }
       })
+      .catch(err=>{})
 
-    hiveApi.queryBackupData()
-      .then(backupRes=>{
-        if(Array.isArray(backupRes)) {
-          backupRes.forEach(item=>{
-            hiveApi.queryChannelInfo(item.target_did, item.channel_id)
-              .then(res=>{
-                if(res['find_message'] && res['find_message']['items'].length) {
-                  const channelInfo = res['find_message']['items'][0]
-                  setSubscribedChannels(prev=>{
-                    return [...prev, {...channelInfo, target_did: item.target_did}]
-                  })
-                  hiveApi.queryUserDisplayName(item.target_did, item.channel_id, item.target_did)
-                    .then(dispNameRes=>{
-                      if(dispNameRes['find_message'] && dispNameRes['find_message']['items'].length) {
-                        const dispName = dispNameRes['find_message']['items'][0].display_name
-                        setSubscribedChannels(prev=>{
-                          const prevState = [...prev]
-                          const channelIndex = prevState.findIndex(channel=>channel.channel_id==item.channel_id)
-                          if(channelIndex<0)
-                            return prevState
-                          prevState[channelIndex].owner_name = dispName
-                          return prevState
-                        })
-                      }
-                    })
-                  hiveApi.querySubscriptionInfoByChannelId(item.target_did, item.channel_id)
-                    .then(subscriptionRes=>{
-                      if(subscriptionRes['find_message']) {
-                        const subscribersArr = subscriptionRes['find_message']['items']
-                        subscribersArr.forEach((subscriber, _i)=>{
-                          if(subscriberInfo[subscriber.user_did] === undefined) {
-                            setSubscriberInfo((prev)=>{
-                              const tempState = {...prev}
-                              tempState[subscriber.user_did] = {}
-                              return tempState
-                            })
-                            getInfoFromDID(subscriber.user_did).then(res=>{
-                              setSubscriberInfo((prev)=>{
-                                const tempState = {...prev}
-                                tempState[subscriber.user_did]['info'] = res
-                                return tempState
-                              })
-                            })
-                            hiveApi.getHiveUrl(subscriber.user_did)
-                              .then(async hiveUrl=>{
-                                try {
-                                  const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
-                                  if(response && response.length) {
-                                    const base64Content = response.toString('base64')
-                                    setSubscriberInfo((prev)=>{
-                                      const tempState = {...prev}
-                                      tempState[subscriber.user_did]['avatar'] = `data:image/png;base64,${base64Content}`
-                                      return tempState
-                                    })
-                                  }
-                                } catch(err) {}
-                              })
-                          }
-                        })
-                        setSubscribedChannels(prev=>{
-                          const prevState = [...prev]
-                          const channelIndex = prevState.findIndex(channel=>channel.channel_id==item.channel_id)
-                          if(channelIndex>=0)
-                            prevState[channelIndex]['subscribers'] = subscribersArr
-                          return prevState
-                        })
-                      }
+    // hiveApi.queryBackupData()
+    //   .then(backupRes=>{
+    //     if(Array.isArray(backupRes)) {
+    //       backupRes.forEach(item=>{
+    //         hiveApi.queryChannelInfo(item.target_did, item.channel_id)
+    //           .then(res=>{
+    //             if(res['find_message'] && res['find_message']['items'].length) {
+    //               const channelInfo = res['find_message']['items'][0]
+    //               setSubscribedChannels(prev=>{
+    //                 return [...prev, {...channelInfo, target_did: item.target_did}]
+    //               })
+    //               hiveApi.queryUserDisplayName(item.target_did, item.channel_id, item.target_did)
+    //                 .then(dispNameRes=>{
+    //                   if(dispNameRes['find_message'] && dispNameRes['find_message']['items'].length) {
+    //                     const dispName = dispNameRes['find_message']['items'][0].display_name
+    //                     setSubscribedChannels(prev=>{
+    //                       const prevState = [...prev]
+    //                       const channelIndex = prevState.findIndex(channel=>channel.channel_id==item.channel_id)
+    //                       if(channelIndex<0)
+    //                         return prevState
+    //                       prevState[channelIndex].owner_name = dispName
+    //                       return prevState
+    //                     })
+    //                   }
+    //                 })
+    //               hiveApi.querySubscriptionInfoByChannelId(item.target_did, item.channel_id)
+    //                 .then(subscriptionRes=>{
+    //                   if(subscriptionRes['find_message']) {
+    //                     const subscribersArr = subscriptionRes['find_message']['items']
+    //                     subscribersArr.forEach((subscriber, _i)=>{
+    //                       if(subscriberInfo[subscriber.user_did] === undefined) {
+    //                         setSubscriberInfo((prev)=>{
+    //                           const tempState = {...prev}
+    //                           tempState[subscriber.user_did] = {}
+    //                           return tempState
+    //                         })
+    //                         getInfoFromDID(subscriber.user_did).then(res=>{
+    //                           setSubscriberInfo((prev)=>{
+    //                             const tempState = {...prev}
+    //                             tempState[subscriber.user_did]['info'] = res
+    //                             return tempState
+    //                           })
+    //                         })
+    //                         hiveApi.getHiveUrl(subscriber.user_did)
+    //                           .then(async hiveUrl=>{
+    //                             try {
+    //                               const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
+    //                               if(response && response.length) {
+    //                                 const base64Content = response.toString('base64')
+    //                                 setSubscriberInfo((prev)=>{
+    //                                   const tempState = {...prev}
+    //                                   tempState[subscriber.user_did]['avatar'] = `data:image/png;base64,${base64Content}`
+    //                                   return tempState
+    //                                 })
+    //                               }
+    //                             } catch(err) {}
+    //                           })
+    //                       }
+    //                     })
+    //                     setSubscribedChannels(prev=>{
+    //                       const prevState = [...prev]
+    //                       const channelIndex = prevState.findIndex(channel=>channel.channel_id==item.channel_id)
+    //                       if(channelIndex>=0)
+    //                         prevState[channelIndex]['subscribers'] = subscribersArr
+    //                       return prevState
+    //                     })
+    //                   }
                         
-                    })
-                  hiveApi.downloadScripting(item.target_did, channelInfo.avatar)
-                    .then(downloadRes=>{
-                      setSubscribedChannels(prev=>{
-                        const prevState = [...prev]
-                        const channelIndex = prevState.findIndex(channel=>channel.channel_id==channelInfo.channel_id)
-                        if(channelIndex<0)
-                          return prevState
-                        prevState[channelIndex].avatarSrc = downloadRes
-                        return prevState
-                      })
-                    })
-                    .catch(err=>{
-                      console.log(err)
-                    })
-                }
-              })
-            getPostByChannelId(item, setPostsInSubs)
-          })
-        }
-      })
+    //                 })
+    //               hiveApi.downloadScripting(item.target_did, channelInfo.avatar)
+    //                 .then(downloadRes=>{
+    //                   setSubscribedChannels(prev=>{
+    //                     const prevState = [...prev]
+    //                     const channelIndex = prevState.findIndex(channel=>channel.channel_id==channelInfo.channel_id)
+    //                     if(channelIndex<0)
+    //                       return prevState
+    //                     prevState[channelIndex].avatarSrc = downloadRes
+    //                     return prevState
+    //                   })
+    //                 })
+    //                 .catch(err=>{
+    //                   console.log(err)
+    //                 })
+    //             }
+    //           })
+    //         getPostByChannelId(item, setPostsInSubs)
+    //       })
+    //     }
+    //   })
 
     // hiveApi.querySubscriptionInfoByUserDID(userDid, userDid)
     //   .then(res=>{
     //     console.log(res, "88888888888")
     //   })
 
-    getInfoFromDID(userDid).then(res=>{
-      setUserInfo(res)
+    getInfoFromDID(myDID).then(res=>{
+      storeMyInfo(res as object)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const storeMyInfo = (userInfo: object)=>{
+    dispatch(setMyInfo(userInfo))
+    LocalDB.get(myDID)
+      .then(doc=>{
+        const updateDoc = {...userInfo, ...doc}
+        LocalDB.put(updateDoc)
+      })
+      .catch(_=>{
+        const newDoc = {...userInfo, _id: myDID, table_type: 'user'}
+        LocalDB.put(newDoc)
+      })
+  }
   return (
     <>
       <SidebarWrapper
@@ -179,13 +200,13 @@ function Sidebar() {
         />
         <Box p={1}>
           <Stack direction="row" alignItems="center" spacing={1}>
-            <StyledAvatar alt="" src={myAvatar} width={36}/>
+            <StyledAvatar alt="" src={myInfo['avatarSrc']} width={36}/>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
               <Typography variant="subtitle2" noWrap>
-                {userInfo['name'] || reduceHexAddress(walletAddress)}
+                {myInfo['name'] || reduceHexAddress(walletAddress)}
               </Typography>
               <Typography variant="body2" noWrap>
-                {reduceDIDstring(userDid)}
+                {reduceDIDstring(myDID)}
               </Typography>
             </Box>
           </Stack>

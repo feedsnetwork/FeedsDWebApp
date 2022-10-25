@@ -1,15 +1,13 @@
-import { FC, useState, useCallback, useRef } from 'react';
+import { FC, useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
 import { useSnackbar } from 'notistack';
 import { Icon } from '@iconify/react';
 import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormControl, FormHelperText } from '@mui/material';
 
-import StyledButton from 'src/components/StyledButton';
-import { useGlobalState } from 'src/global/store'
-import { getBufferFromFile } from 'src/utils/common'
-import { handleSuccessModal, setCreatedChannel } from 'src/redux/slices/channel';
-import { HiveApi } from 'src/services/HiveApi'
+import StyledButton from 'components/StyledButton';
+import { getBufferFromFile } from 'utils/common'
+import { handleSuccessModal, setCreatedChannel } from 'redux/slices/channel';
+import { HiveApi } from 'services/HiveApi'
 
 const AvatarWrapper = styled(Box)(
   ({ theme }) => `
