@@ -211,25 +211,17 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             return group
           }, [])
           subscribers = getFilteredArrayByUnique(subscribers, 'user_did')
-          const subscriberInfoDoc = subscribers.map(async subscriber=>{
-            let infoDoc = null
-            try {
-              const userInfo = await getInfoFromDID(subscriber.user_did)
-              infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
-            } catch(err) {
-
-            }
-            // try {
-            //   const hiveUrl = await hiveApi.getHiveUrl(subscriber.user_did)
-            //   const response =  await hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl)
-            //   if(response && response.length) {
-            //     const base64Content = response.toString('base64')
-            //     infoDoc['avatarSrc'] = encodeBase64(`data:image/png;base64,${base64Content}`)
-            //   }
-            // } catch(err) {
-            // }
-            return infoDoc
-          })
+          const subscriberInfoDoc = 
+            subscribers
+              .filter(subscriber => subscriber.user_did !== myDID)
+              .map(async subscriber => {
+                let infoDoc = null
+                try {
+                  const userInfo = await getInfoFromDID(subscriber.user_did)
+                  infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
+                } catch(err) {}
+                return infoDoc
+              })
           Promise.all(subscriberInfoDoc)
             .then(userData => LocalDB.bulkDocs(userData.filter(item=>item!==null)))
             .then(async _=>{

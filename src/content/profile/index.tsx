@@ -9,19 +9,18 @@ import PostCard from 'components/PostCard';
 import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { HiveApi } from 'services/HiveApi'
 import { reduceHexAddress, reduceDIDstring } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
+import { useSelector } from 'react-redux';
+import { selectMyInfo } from 'redux/slices/user';
 
 function Profile() {
-  const { walletAddress, queryStep, userInfo } = React.useContext(SidebarContext);
+  const { walletAddress, queryStep } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
-  const [avatarSrc, setAvatarSrc] = React.useState('')
   const [channels, setChannels] = React.useState([])
   const [likedPosts, setLikedPosts] = React.useState([])
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const myDID = `did:elastos:${feedsDid}`
-  const hiveApi = new HiveApi()
+  const myInfo = useSelector(selectMyInfo)
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -51,23 +50,6 @@ function Profile() {
     }
   }, [queryStep])
 
-  React.useEffect(()=>{
-    if(!feedsDid)
-      return
-      
-    hiveApi.getHiveUrl(myDID)
-      .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(myDID, hiveUrl))
-      .then(res=>{
-        const resBuf = res as Buffer
-        if(resBuf && resBuf.length) {
-          const base64Content = resBuf.toString('base64')
-          setAvatarSrc(`data:image/png;base64,${base64Content}`)
-        }
-      })
-      .catch(err=>{})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   // const backgroundImg = "/temp-back.png"
   const selfChannels = channels.filter(channel=>channel['is_self'] === true)
   const subscribedChannels = channels.filter(channel=>channel['is_subscribed'] === true)
@@ -77,7 +59,7 @@ function Profile() {
         <Box sx={{position: 'relative'}}>
           {/* <Box sx={{ height: {xs: 120, md: 200}, background: `url(${backgroundImg}) no-repeat center`, backgroundSize: 'cover'}}/> */}
           <Box sx={{ height: {xs: 120, md: 200}, background: 'linear-gradient(180deg, #000000 0%, #A067FF 300.51%)', backgroundSize: 'cover'}}/>
-          <StyledAvatar alt={userInfo['name']} src={avatarSrc} width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
+          <StyledAvatar alt={myInfo['name']} src={myInfo['avatarSrc']} width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
         </Box>
         <Box px={2} py={1}>
           <Stack direction='row' spacing={1}>
@@ -87,9 +69,9 @@ function Profile() {
             <StyledButton type='outlined' size='small'>Edit Profile</StyledButton>
           </Stack>
           <Stack spacing={1} px={{sm: 0, md: 3}} mt={2}>
-            <Typography variant="h3">@{userInfo['name'] || reduceDIDstring(feedsDid)}</Typography>
+            <Typography variant="h3">@{myInfo['name'] || reduceDIDstring(feedsDid)}</Typography>
             <Typography variant="body1">{reduceHexAddress(walletAddress)}</Typography>
-            <Typography variant="body1">{userInfo['description']}</Typography>
+            <Typography variant="body1">{myInfo['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
               <Typography variant="body1"><strong>{subscribedChannels.length}</strong> Subscriptions</Typography>
