@@ -13,7 +13,7 @@ import StyledButton from 'components/StyledButton'
 import InputOutline from 'components/InputOutline'
 import SubscriberListItem from './SubscriberListItem';
 import { SidebarContext } from 'contexts/SidebarContext';
-import { selectPublicChannels, selectDispNameOfChannels, selectActiveChannelId } from 'redux/slices/channel';
+import { selectPublicChannels, selectDispNameOfChannels, selectActiveChannelId, selectSubscribers } from 'redux/slices/channel';
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
 import { LocalDB } from 'utils/db'
 
@@ -37,7 +37,6 @@ const ListWrapper = styled(List)(
 );
 const ChannelAbout = (props) => {
   const { this_channel } = props
-  const subscribers = (this_channel && this_channel['subscribers']) || []
   const editable = this_channel['is_self']
   return <>
     <Card>
@@ -61,7 +60,7 @@ const ChannelAbout = (props) => {
         </Stack>
         <Stack alignItems='center'>
           <Stack direction='row' spacing={1}>
-            <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{subscribers.length} Subscribers</Typography>
+            <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{this_channel['subscribers'].length} Subscribers</Typography>
             <StyledButton size='small'>Subscribed</StyledButton>
           </Stack>
         </Stack>
@@ -79,7 +78,7 @@ const ChannelAbout = (props) => {
       <CardContent sx={{pt: 0}}>
         <Grid container spacing={2}>
           {
-            subscribers.map((item, index)=>(
+            this_channel['subscribers'].map((item, index)=>(
               <Grid item xs={12} key={index}>
                 <SubscriberListItem subscriber={item}/>
               </Grid>
@@ -97,14 +96,15 @@ const ChannelAbout = (props) => {
 }
 function RightPanel() {
   const { focusedChannelId, queryStep } = useContext(SidebarContext);
-  const activeChannelId = useSelector(selectActiveChannelId)
   const [focusedChannel, setFocusChannel] = React.useState(null)
   // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
   const location = useLocation();
+  const activeChannelId = useSelector(selectActiveChannelId)
   const publicChannels = useSelector(selectPublicChannels)
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
+  const subscribersOfChannel = useSelector(selectSubscribers)
   let content = null
   const selectedChannelId = activeChannelId || focusedChannelId
 
@@ -144,15 +144,15 @@ function RightPanel() {
   } else if(pathname.startsWith('/explore/channel')) {
     const { channel_id } = (location.state || {}) as any
     const channelOwnerName = dispNameOfChannels[channel_id]
-    const activeChannel = {...publicChannels[channel_id], owner_name: channelOwnerName} || {}
-    if(activeChannel) {
-      content = <ChannelAbout this_channel={activeChannel}/>
-    }
+    const channelSubscribers = subscribersOfChannel[selectedChannelId] || []
+    const activeChannel = {...publicChannels[channel_id], owner_name: channelOwnerName, subscribers: channelSubscribers}
+    content = <ChannelAbout this_channel={activeChannel}/>
   }
-   else {
+  else {
     if(focusedChannel) {
       const channelOwnerName = dispNameOfChannels[selectedChannelId]
-      const activeChannel = {...focusedChannel, owner_name: channelOwnerName} || {}
+      const channelSubscribers = subscribersOfChannel[selectedChannelId] || []
+      const activeChannel = {...focusedChannel, owner_name: channelOwnerName, subscribers: channelSubscribers}
       content = <ChannelAbout this_channel={activeChannel}/>
     }
     else 

@@ -1,12 +1,12 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Card, Box, Typography, Stack, Hidden, IconButton, Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useSnackbar } from 'notistack';
 
 import IconInCircle from 'components/IconInCircle'
 import StyledAvatar from 'components/StyledAvatar'
-import { handlePublishModal, setCreatedChannel } from 'redux/slices/channel';
+import { handlePublishModal, selectSubscribers, setCreatedChannel } from 'redux/slices/channel';
 import { getChannelShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
 
 const ChannelListItem = (props) => {
@@ -16,7 +16,7 @@ const ChannelListItem = (props) => {
   const [isOpenPopup, setOpenPopup] = React.useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const dispatch = useDispatch()
-
+  const subscribersOfChannel = useSelector(selectSubscribers)
   const openPopupMenu = (event) => {
     setOpenPopup(event.currentTarget);
   };
@@ -48,6 +48,7 @@ const ChannelListItem = (props) => {
     setOpenPopup(null);
   };
 
+  const subscriberCount = subscribersOfChannel[channel.channel_id]?.length || 0
   return <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
     <Stack direction="row" spacing={2} alignItems="center">
       <StyledAvatar alt={name} src={avatarImg}/>
@@ -56,7 +57,7 @@ const ChannelListItem = (props) => {
           <Typography variant="subtitle2">{name}</Typography>
           <Typography variant="body2">{intro}</Typography>
           <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
-            <Typography variant="body2" pr={3}><strong>{channel['subscribers']?.length || 0}</strong> Subscribers</Typography>
+            <Typography variant="body2" pr={3}><strong>{subscriberCount}</strong> Subscribers</Typography>
           </Stack>
         </Hidden>
       </Box>
@@ -98,7 +99,7 @@ const ChannelListItem = (props) => {
         <Typography variant="subtitle2">{channel.name}</Typography>
         <Typography variant="body2">{channel.intro}</Typography>
         <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
-          <Typography variant="body2" pr={3}><strong>{channel['subscribers'].length}</strong> Subscribers</Typography>
+          <Typography variant="body2" pr={3}><strong>{subscriberCount}</strong> Subscribers</Typography>
         </Stack>
       </Box>
     </Hidden>
