@@ -17,7 +17,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { setChannelAvatarSrc, setDispNameOfChannels } from 'redux/slices/channel'
+import { setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
 import { setUserAvatarSrc } from 'redux/slices/user'
 import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate, getMinValueFromArray, LimitPostCount } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
@@ -28,7 +28,7 @@ interface SidebarLayoutProps {
 }
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
-  const {focusedChannelId, queryStep, setWalletAddress, setQueryStep} = useContext(SidebarContext);
+  const {focusedChannelId, setWalletAddress, setQueryStep} = useContext(SidebarContext);
   const hiveApi = new HiveApi()
   const sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -70,6 +70,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               .then(_=>{ 
                 queryDispNameStep()
                 queryChannelAvatarStep()
+                querySubscriptionInfoStep()
                 setQueryStep(QueryStep.self_channel) 
                 resolve({success: true})
               })
@@ -135,6 +136,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               .then(_=>{ 
                 queryDispNameStep()
                 queryChannelAvatarStep()
+                querySubscriptionInfoStep()
                 setQueryStep(QueryStep.subscribed_channel) 
                 resolve({success: true})
               })
@@ -144,81 +146,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           }
           else
             resolve({success: true})
-        })
-        .catch(err=>{
-          reject(err)
-        })
-    })
-  )
-
-  const queryDispNameStep = () => (
-    LocalDB.find({
-      selector: {
-        table_type: 'channel'
-      },
-    })
-      .then(response=>{
-        const channelWithOwnerName = response.docs.filter(doc=>!!doc['owner_name'])
-        const channelDocNoOwnerName = response.docs.filter(doc=>!doc['owner_name'])
-        const dispNameObjs = channelWithOwnerName.reduce((objs, channel) => {
-          const c_id = channel['_id']
-          objs[c_id] = channel['owner_name']
-          return objs
-        }, {})
-        dispatch(setDispNameOfChannels(dispNameObjs))
-
-        channelDocNoOwnerName.forEach(channel=>{
-          let infoDoc = {...channel}
-          const { _id } = infoDoc
-          const dispNameObj = {}
-          Promise.resolve()
-            .then(_=>hiveApi.queryUserDisplayName(channel['target_did'], channel['channel_id'], channel['target_did']))
-            .then(res=>{
-              if(res['find_message'] && res['find_message']['items'].length) {
-                const dispName = res['find_message']['items'][0].display_name
-                infoDoc['owner_name'] = dispName
-                dispNameObj[_id] = dispName
-                return LocalDB.put(infoDoc)
-              }
-            })
-            .then(res=>{
-              dispatch(setDispNameOfChannels(dispNameObj))
-            })
-            .catch(err=>{})
-        })
-      })
-  )
-
-  const querySubscriptionInfoStep = () => (
-    new Promise((resolve, reject) => {
-      LocalDB.find({
-        selector: {
-          table_type: 'channel'
-        },
-      })
-        .then(response=>{
-          const channelDocWithSubcriptionInfo = response.docs.map(async channel=>{
-            const subscriptionRes = await hiveApi.querySubscriptionInfoByChannelId(channel['target_did'], channel['channel_id'])
-            const channelDoc = {...channel}
-            if(subscriptionRes['find_message']) {
-              const subscribersArr = subscriptionRes['find_message']['items']
-              channelDoc['subscribers'] = subscribersArr
-            }
-            return channelDoc
-          })
-          Promise.all(channelDocWithSubcriptionInfo)
-            .then(channelData => LocalDB.bulkDocs(channelData))
-            .then(async _=>{
-              const stepDoc = await LocalDB.get('query-step')
-              return LocalDB.put({_id: 'query-step', step: QueryStep.subscription_info, _rev: stepDoc._rev})
-            })
-            .then(_=>{ 
-              setQueryStep(QueryStep.subscription_info) 
-              resolve({success: true})
-            })
-            .catch(err=>{
-              resolve({success: false, error: err})
-            })
         })
         .catch(err=>{
           reject(err)
@@ -543,6 +470,45 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     })
   )
 
+  // async steps
+  const queryDispNameStep = () => (
+    LocalDB.find({
+      selector: {
+        table_type: 'channel'
+      },
+    })
+      .then(response=>{
+        const channelWithOwnerName = response.docs.filter(doc=>!!doc['owner_name'])
+        const channelDocNoOwnerName = response.docs.filter(doc=>!doc['owner_name'])
+        const dispNameObjs = channelWithOwnerName.reduce((objs, channel) => {
+          const c_id = channel['_id']
+          objs[c_id] = channel['owner_name']
+          return objs
+        }, {})
+        dispatch(setDispNameOfChannels(dispNameObjs))
+
+        channelDocNoOwnerName.forEach(channel=>{
+          let infoDoc = {...channel}
+          const { _id } = infoDoc
+          const dispNameObj = {}
+          Promise.resolve()
+            .then(_=>hiveApi.queryUserDisplayName(channel['target_did'], channel['channel_id'], channel['target_did']))
+            .then(res=>{
+              if(res['find_message'] && res['find_message']['items'].length) {
+                const dispName = res['find_message']['items'][0].display_name
+                infoDoc['owner_name'] = dispName
+                dispNameObj[_id] = dispName
+                return LocalDB.put(infoDoc)
+              }
+            })
+            .then(res=>{
+              dispatch(setDispNameOfChannels(dispNameObj))
+            })
+            .catch(err=>{})
+        })
+      })
+  )
+
   const queryChannelAvatarStep = () => {
     LocalDB.find({
       selector: {
@@ -597,6 +563,44 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
       .catch(err=>{})
   }
 
+  const querySubscriptionInfoStep = () => {
+    LocalDB.find({
+      selector: {
+        table_type: 'channel'
+      },
+    })
+      .then(response=>{
+        const channelWithSubscribers = response.docs.filter(doc=>!!doc['subscribers'])
+        const channelDocNoSubscribers = response.docs.filter(doc=>!doc['subscribers'])
+        const subscribersObj = channelWithSubscribers.reduce((obj, channel) => {
+          const c_id = channel['_id']
+          obj[c_id] = channel['subscribers']
+          return obj
+        }, {})
+        dispatch(setDispNameOfChannels(subscribersObj))
+
+        channelDocNoSubscribers.forEach(channel=>{
+          let infoDoc = {...channel}
+          const { _id } = infoDoc
+          const subscribersObj = {}
+          Promise.resolve()
+            .then(_=>hiveApi.querySubscriptionInfoByChannelId(channel['target_did'], channel['channel_id']))
+            .then(res=>{
+              if(res['find_message']) {
+                const subscribersArr = res['find_message']['items']
+                infoDoc['subscribers'] = subscribersArr
+                subscribersObj[_id] = subscribersArr
+                return LocalDB.put(infoDoc)
+              }
+            })
+            .then(res=>{
+              dispatch(setSubscribers(subscribersObj))
+            })
+            .catch(err=>{})
+        })
+      })
+  }
+
   const queryUserAvatarStep = () => {
     LocalDB.find({
       selector: {
@@ -641,7 +645,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const querySteps = [
     querySelfChannelStep, 
     querySubscribedChannelStep, 
-    querySubscriptionInfoStep, 
     querySubscriberInfoStep, 
     queryPostStep,
     queryLikeInfoStep,
@@ -667,6 +670,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           if(currentStep['step'] >= QueryStep.subscribed_channel) {
             queryChannelAvatarStep()
             queryDispNameStep()
+            querySubscriptionInfoStep()
           }
           if(currentStep['step'] > QueryStep.post_data)
             queryUserAvatarStep()

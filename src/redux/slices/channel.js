@@ -8,6 +8,7 @@ const initialState = {
   activeChannelId: 0,
   createdChannel: {},
   dispNameOfChannels: {},
+  subscribers: {},
   publicChannels: {}
 };
 
@@ -44,6 +45,9 @@ const slice = createSlice({
     setChannelAvatarSrc(state, action) {
       state.avatarSrc = {...state.avatarSrc, ...action.payload}
     },
+    setSubscribers(state, action) {
+      state.subscribers = {...state.subscribers, ...action.payload}
+    },
   }
 });
 
@@ -51,7 +55,7 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setCreatedChannel, setPublicChannels, setDispNameOfChannels, setActiveChannelId, setChannelAvatarSrc } = slice.actions;
+export const { setCreatedChannel, setPublicChannels, setDispNameOfChannels, setActiveChannelId, setChannelAvatarSrc, setSubscribers } = slice.actions;
 
 // ----------------------------------------------------------------------
 
@@ -92,5 +96,8 @@ export function selectActiveChannelId(state) {
   return state.channel.activeChannelId
 }
 export function selectChannelAvatar(state) {
+  return state.channel.avatarSrc
+}
+export function selectSubscribers(state) {
   return state.channel.avatarSrc
 }
