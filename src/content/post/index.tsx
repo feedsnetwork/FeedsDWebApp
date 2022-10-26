@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Grid, Container } from '@mui/material';
 
@@ -6,6 +7,7 @@ import PostCard from 'components/PostCard';
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import { reduceDIDstring } from 'utils/common'
 import { SidebarContext } from 'contexts/SidebarContext';
+import { selectDispNameOfChannels } from 'redux/slices/channel';
 import { LocalDB, QueryStep } from 'utils/db';
 
 const Post = () => {
@@ -14,9 +16,20 @@ const Post = () => {
   const [postInfo, setPostInfo] = React.useState(null)
   const [channelInfo, setChannelInfo] = React.useState({})
   const [users, setUsers] = React.useState([])
+  const [dispNameOfPost, setDispNameOfPost] = React.useState('')
   const [comments, setComments] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(false)
+  const channelDispName = useSelector(selectDispNameOfChannels)
   
+  React.useEffect(()=>{
+    const channelId = channelInfo['channel_id']
+    if(channelId) {
+      setDispNameOfPost(
+        channelDispName[channelId] || reduceDIDstring(channelInfo['target_did'])
+      )
+    }
+  }, [channelInfo, channelDispName])
+
   React.useEffect(()=>{
     if(queryStep < QueryStep.post_data)
       setIsLoading(true)
@@ -28,6 +41,7 @@ const Post = () => {
           return LocalDB.get(doc['channel_id'].toString())
         })
         .then(doc=>setChannelInfo(doc))
+
       LocalDB.find({
         selector: {
           table_type: 'comment',
@@ -50,7 +64,6 @@ const Post = () => {
   }, [queryStep])
 
   const loadingSkeletons = Array(5).fill(null)
-  const dispNameOfPost = channelInfo['owner_name'] || reduceDIDstring(channelInfo['target_did'])
   return (
     <Container sx={{ my: 3 }} maxWidth="lg">
       <Grid

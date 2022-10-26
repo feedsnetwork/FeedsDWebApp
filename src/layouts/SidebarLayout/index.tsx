@@ -28,7 +28,7 @@ interface SidebarLayoutProps {
 }
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
-  const {setWalletAddress, focusedChannelId, setQueryStep} = useContext(SidebarContext);
+  const {focusedChannelId, queryStep, setWalletAddress, setQueryStep} = useContext(SidebarContext);
   const hiveApi = new HiveApi()
   const sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -68,6 +68,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               .then(_=>LocalDB.bulkDocs(selfChannelDoc))
               .then(_=>LocalDB.put({_id: 'query-step', step: QueryStep.self_channel}))
               .then(_=>{ 
+                queryDispNameStep()
                 queryChannelAvatarStep()
                 setQueryStep(QueryStep.self_channel) 
                 resolve({success: true})
@@ -132,6 +133,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                 return LocalDB.put({_id: 'query-step', step: QueryStep.subscribed_channel, _rev: stepDoc._rev})
               })
               .then(_=>{ 
+                queryDispNameStep()
                 queryChannelAvatarStep()
                 setQueryStep(QueryStep.subscribed_channel) 
                 resolve({success: true})

@@ -151,7 +151,9 @@ function RightPanel() {
   }
    else {
     if(focusedChannel) {
-      content = <ChannelAbout this_channel={focusedChannel}/>
+      const channelOwnerName = dispNameOfChannels[selectedChannelId]
+      const activeChannel = {...focusedChannel, owner_name: channelOwnerName} || {}
+      content = <ChannelAbout this_channel={activeChannel}/>
     }
     else 
       content = 

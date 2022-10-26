@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Card, Container, Box, Typography, Stack, IconButton, Tabs, Tab } from '@mui/material';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
 
@@ -11,8 +12,8 @@ import ChannelListItem from './ChannelListItem'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceHexAddress, reduceDIDstring } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
-import { useSelector } from 'react-redux';
 import { selectMyInfo } from 'redux/slices/user';
+import { selectDispNameOfChannels } from 'redux/slices/channel';
 
 function Profile() {
   const { walletAddress, queryStep } = React.useContext(SidebarContext);
@@ -21,6 +22,7 @@ function Profile() {
   const [likedPosts, setLikedPosts] = React.useState([])
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myInfo = useSelector(selectMyInfo)
+  const dispNameOfChannels = useSelector(selectDispNameOfChannels)
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -123,7 +125,7 @@ function Profile() {
               {
                 likedPosts.map((post, _i)=>{
                   const channelOfPost = channels.find(item=>item.channel_id === post.channel_id) || {}
-                  let dispName = channelOfPost['owner_name'] || reduceDIDstring(channelOfPost.target_did)
+                  let dispName = dispNameOfChannels[post.channel_id] || reduceDIDstring(channelOfPost.target_did)
                   return <PostCard post={post} channel={channelOfPost} dispName={dispName} key={_i} direction='row'/>
                 })
               }
