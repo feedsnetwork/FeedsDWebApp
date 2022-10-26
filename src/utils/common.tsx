@@ -417,3 +417,4 @@ export function promiseSeries(arrayOfPromises) {
 export function getMinValueFromArray(arrayOfObject, field) {
   return Math.min(...arrayOfObject.map(obj=>(obj[field] || Infinity)))
 }
+export const LimitPostCount = 30

@@ -56,7 +56,7 @@ const ChannelListItem = (props) => {
           <Typography variant="subtitle2">{name}</Typography>
           <Typography variant="body2">{intro}</Typography>
           <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
-            <Typography variant="body2" pr={3}><strong>{channel['subscribers'].length}</strong> Subscribers</Typography>
+            <Typography variant="body2" pr={3}><strong>{channel['subscribers']?.length || 0}</strong> Subscribers</Typography>
           </Stack>
         </Hidden>
       </Box>

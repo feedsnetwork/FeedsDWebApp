@@ -19,7 +19,7 @@ import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
 import { setChannelAvatarSrc } from 'redux/slices/channel'
 import { setUserAvatarSrc } from 'redux/slices/user'
-import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate, getMinValueFromArray } from 'utils/common'
+import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate, getMinValueFromArray, LimitPostCount } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
 
 interface SidebarLayoutProps {
@@ -39,7 +39,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const querySelfChannelStep = () => (
     new Promise((resolve, reject) => {
       hiveApi.querySelfChannels()
-        .then(res=>{
+        .then(async res=>{
           // console.log(res, '-----------self')
           if(Array.isArray(res)){
             const selfChannels = 
@@ -48,9 +48,22 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                   item.target_did = myDID
                   return item
                 })
-            const selfChannelDoc = selfChannels.map(channel=>(
-              {...channel, _id: channel.channel_id.toString(), is_self: true, is_subscribed: false, is_public: false, table_type: 'channel'}
-            ))
+            const selfChannelsInDB = await LocalDB.find({
+              selector: {
+                table_type: 'channel',
+                is_self: true
+              }
+            })
+            const selfChannelRevs = selfChannelsInDB.docs.reduce((revObj, doc)=>{
+              revObj[doc._id] = doc._rev
+              return revObj
+            }, {})
+            const selfChannelDoc = selfChannels.map(channel=>{
+              const channelDoc = {...channel, _id: channel.channel_id.toString(), is_self: true, is_subscribed: false, is_public: false, time_range: [], table_type: 'channel'}
+              if(selfChannelRevs[channel.channel_id])
+                channelDoc['_rev'] = selfChannelRevs[channel.channel_id]
+              return channelDoc
+            })
             Promise.resolve()
               .then(_=>LocalDB.bulkDocs(selfChannelDoc))
               .then(_=>LocalDB.put({_id: 'query-step', step: QueryStep.self_channel}))
@@ -75,13 +88,26 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const querySubscribedChannelStep = () => (
     new Promise((resolve, reject) => {
       hiveApi.queryBackupData()
-        .then(backupRes=>{
+        .then(async backupRes=>{
           if(Array.isArray(backupRes)) {
+            const subscribedChannelsInDB = await LocalDB.find({
+              selector: {
+                table_type: 'channel',
+                is_subscribed: true
+              }
+            })
+            const subscribedChannelRevs = subscribedChannelsInDB.docs.reduce((revObj, doc)=>{
+              revObj[doc._id] = doc._rev
+              return revObj
+            }, {})
             const backupChannelDocs = backupRes.map(async channel=>{
               const channelInfoRes = await hiveApi.queryChannelInfo(channel.target_did, channel.channel_id)
               if(channelInfoRes['find_message'] && channelInfoRes['find_message']['items'].length) {
                 const channelInfo = channelInfoRes['find_message']['items'][0]
-                return {...channelInfo, _id: channel.channel_id.toString(), target_did: channel.target_did, is_self: false, is_subscribed: true, is_public: false, table_type: 'channel'}
+                const channelDoc = {...channelInfo, _id: channel.channel_id.toString(), target_did: channel.target_did, is_self: false, is_subscribed: true, is_public: false, time_range: [], table_type: 'channel'}
+                if(subscribedChannelRevs[channel.channel_id])
+                  channelDoc['_rev'] = subscribedChannelRevs[channel.channel_id]
+                return channelDoc
               }
             })
             Promise.all(backupChannelDocs)
@@ -259,7 +285,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               if(postRes['find_message'] && postRes['find_message']['items']) {
                 let postArr = postRes['find_message']['items']
                 const timeRangeObj = {start: 0, end: currentime}
-                if(postArr.length>=30) {
+                if(postArr.length >= LimitPostCount) {
                   const earliestime = getMinValueFromArray(postArr, 'updated_at')
                   timeRangeObj.start = earliestime
                 }
