@@ -17,7 +17,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { setChannelAvatarSrc } from 'redux/slices/channel'
+import { setChannelAvatarSrc, setDispNameOfChannels } from 'redux/slices/channel'
 import { setUserAvatarSrc } from 'redux/slices/user'
 import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate, getMinValueFromArray, LimitPostCount } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
@@ -150,40 +150,41 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   )
 
   const queryDispNameStep = () => (
-    new Promise((resolve, reject) => {
-      LocalDB.find({
-        selector: {
-          table_type: 'channel'
-        },
-      })
-        .then(response=>{
-          const channelDocWithDispName = response.docs.map(async channel=>{
-            const dispNameRes = await hiveApi.queryUserDisplayName(channel['target_did'], channel['channel_id'], channel['target_did'])
-            const channelDoc = {...channel}
-            if(dispNameRes['find_message'] && dispNameRes['find_message']['items'].length) {
-              const dispName = dispNameRes['find_message']['items'][0].display_name
-              channelDoc['owner_name'] = dispName
-            }
-            return channelDoc
-          })
-          Promise.all(channelDocWithDispName)
-            .then(channelData => LocalDB.bulkDocs(channelData))
-            .then(async _=>{
-              const stepDoc = await LocalDB.get('query-step')
-              return LocalDB.put({_id: 'query-step', step: QueryStep.channel_dispname, _rev: stepDoc._rev})
-            })
-            .then(_=>{ 
-              setQueryStep(QueryStep.channel_dispname) 
-              resolve({success: true})
-            })
-            .catch(err=>{
-              resolve({success: false, error: err})
-            })
-        })
-        .catch(err=>{
-          reject(err)
-        })
+    LocalDB.find({
+      selector: {
+        table_type: 'channel'
+      },
     })
+      .then(response=>{
+        const channelWithOwnerName = response.docs.filter(doc=>!!doc['owner_name'])
+        const channelDocNoOwnerName = response.docs.filter(doc=>!doc['owner_name'])
+        const dispNameObjs = channelWithOwnerName.reduce((objs, channel) => {
+          const c_id = channel['_id']
+          objs[c_id] = channel['owner_name']
+          return objs
+        }, {})
+        dispatch(setDispNameOfChannels(dispNameObjs))
+
+        channelDocNoOwnerName.forEach(channel=>{
+          let infoDoc = {...channel}
+          const { _id } = infoDoc
+          const dispNameObj = {}
+          Promise.resolve()
+            .then(_=>hiveApi.queryUserDisplayName(channel['target_did'], channel['channel_id'], channel['target_did']))
+            .then(res=>{
+              if(res['find_message'] && res['find_message']['items'].length) {
+                const dispName = res['find_message']['items'][0].display_name
+                infoDoc['owner_name'] = dispName
+                dispNameObj[_id] = dispName
+                return LocalDB.put(infoDoc)
+              }
+            })
+            .then(res=>{
+              dispatch(setDispNameOfChannels(dispNameObj))
+            })
+            .catch(err=>{})
+        })
+      })
   )
 
   const querySubscriptionInfoStep = () => (
@@ -638,7 +639,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const querySteps = [
     querySelfChannelStep, 
     querySubscribedChannelStep, 
-    queryDispNameStep, 
     querySubscriptionInfoStep, 
     querySubscriberInfoStep, 
     queryPostStep,
@@ -662,8 +662,10 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             .then(res=>{
               console.log(res, "---result")
             })
-          if(currentStep['step'] >= QueryStep.subscribed_channel)
+          if(currentStep['step'] >= QueryStep.subscribed_channel) {
             queryChannelAvatarStep()
+            queryDispNameStep()
+          }
           if(currentStep['step'] > QueryStep.post_data)
             queryUserAvatarStep()
         })

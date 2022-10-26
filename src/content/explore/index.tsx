@@ -104,13 +104,11 @@ function Explore() {
                 
                 hiveApi.queryUserDisplayName(targetDid, channelId, targetDid)
                   .then(res=>{
-                    if(res['find_message'] && res['find_message']['items'].length)
-                      dispatch(
-                        setDispNameOfChannels({
-                          channel_id: channelId,
-                          data: res['find_message']['items'][0].display_name
-                        })
-                      )
+                    if(res['find_message'] && res['find_message']['items'].length) {
+                      const dispNameObj = {}
+                      dispNameObj[channelId] = res['find_message']['items'][0].display_name
+                      dispatch(setDispNameOfChannels(dispNameObj))
+                    }
                   })
 
                 if(metaUri) {

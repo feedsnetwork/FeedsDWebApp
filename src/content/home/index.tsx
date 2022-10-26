@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSelector } from 'react-redux';
 import { Grid, Container } from '@mui/material';
 import InfiniteScroll from "react-infinite-scroll-component";
 
@@ -7,6 +8,7 @@ import { EmptyView } from 'components/EmptyView'
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceDIDstring } from 'utils/common'
+import { selectDispNameOfChannels } from 'redux/slices/channel';
 import { LocalDB, QueryStep } from 'utils/db';
 
 const Home = () => {
@@ -16,6 +18,7 @@ const Home = () => {
   const [totalCount, setTotalCount] = React.useState(0)
   const [pageEndTime, setPageEndTime] = React.useState(0)
   const [isLoading, setIsLoading] = React.useState(false)
+  const channelDispName = useSelector(selectDispNameOfChannels)
 
   React.useEffect(()=>{
     if(queryStep < QueryStep.post_data) {
@@ -105,7 +108,7 @@ const Home = () => {
                   const channelOfPost = channels.find(item=>item.channel_id === post.channel_id) || {}
                   return (
                     <Grid item xs={12} key={_i}>
-                      <PostCard post={post} channel={channelOfPost} dispName={channelOfPost['owner_name'] || reduceDIDstring(post.target_did)}/>
+                      <PostCard post={post} channel={channelOfPost} dispName={channelDispName[post.channel_id] || reduceDIDstring(post.target_did)}/>
                     </Grid>
                   )
                 })

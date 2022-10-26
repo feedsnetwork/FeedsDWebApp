@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSelector } from 'react-redux';
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Grid, Container, Box } from '@mui/material';
 
@@ -8,10 +9,12 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import PostBox from './post'
 import { reduceDIDstring } from 'utils/common'
+import { selectDispNameOfChannels } from 'redux/slices/channel';
 import { LocalDB, QueryStep } from 'utils/db';
 
 function Channel() {
   const { queryStep, focusedChannelId, publishPostNumber } = React.useContext(SidebarContext);
+  const channelDispName = useSelector(selectDispNameOfChannels)
   const [posts, setPosts] = React.useState([]);
   const [channelInfo, setChannelInfo] = React.useState({});
   const [selfChannelCount, setSelfChannelCount] = React.useState(0);
@@ -36,7 +39,7 @@ function Channel() {
           setTotalCount(response.docs.length)
         })
     }
-    if(queryStep >= QueryStep.channel_dispname && focusedChannelId) {
+    if(queryStep >= QueryStep.subscribed_channel && focusedChannelId) {
       LocalDB.get(focusedChannelId.toString())
         .then(doc=>{
           setChannelInfo(doc)
@@ -119,7 +122,7 @@ function Channel() {
 
                       posts.map((post, _i)=>(
                         <Grid item xs={12} key={_i}>
-                          <PostCard post={post} channel={channelInfo} dispName={channelInfo['owner_name'] || reduceDIDstring(feedsDid)}/>
+                          <PostCard post={post} channel={channelInfo} dispName={channelDispName[focusedChannelId] || reduceDIDstring(feedsDid)}/>
                         </Grid>
                       ))
                     }

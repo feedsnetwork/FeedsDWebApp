@@ -36,9 +36,7 @@ const slice = createSlice({
       state.publicChannels = tempState
     },
     setDispNameOfChannels(state, action) {
-      const tempState = {...state.dispNameOfChannels}
-      tempState[action.payload.channel_id] = action.payload.data
-      state.dispNameOfChannels = tempState
+      state.dispNameOfChannels = {...state.dispNameOfChannels, ...action.payload}
     },
     setActiveChannelId(state, action) {
       state.activeChannelId = action.payload
