@@ -577,7 +577,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           obj[c_id] = channel['subscribers']
           return obj
         }, {})
-        dispatch(setDispNameOfChannels(subscribersObj))
+        dispatch(setSubscribers(subscribersObj))
 
         channelDocNoSubscribers.forEach(channel=>{
           let infoDoc = {...channel}

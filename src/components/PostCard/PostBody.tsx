@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom'
 import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade, Menu, MenuItem, Link } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -21,6 +22,7 @@ import { CommonStatus } from 'models/common_content'
 import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard } from 'utils/common'
 import { HiveApi } from 'services/HiveApi'
 import { LocalDB, QueryStep } from 'utils/db';
+import { selectSubscribers } from 'redux/slices/channel';
 
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
   maxWidth: '350px',
@@ -72,6 +74,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1, direction } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
+  const subscribersOfChannel = useSelector(selectSubscribers)
   const { subscriberInfo, queryStep, setFocusChannelId } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [currentChannel, setCurrentChannel] = React.useState({})
@@ -86,7 +89,7 @@ const PostBody = (props) => {
   const [isOpenPopover, setOpenPopover] = React.useState(false);
   const [isOpenPopup, setOpenPopup] = React.useState(null);
   const hiveApi = new HiveApi()
-  const subscribersOfThis = currentChannel['subscribers'] || []
+  const subscribersOfThis = subscribersOfChannel[post.channel_id] || []
   const subscribedByWho = `Subscribed by ${subscribersOfThis.slice(0,3).map(subscriber=>subscriber.display_name).join(', ')}${subscribersOfThis.length>3?' and more!':'.'}`
   const PostOrComment = !post.comment_id?'Post':'Comment'
   const feedsDid = sessionStorage.getItem('FEEDS_DID')

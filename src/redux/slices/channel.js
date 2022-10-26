@@ -99,5 +99,5 @@ export function selectChannelAvatar(state) {
   return state.channel.avatarSrc
 }
 export function selectSubscribers(state) {
-  return state.channel.avatarSrc
+  return state.channel.subscribers
 }
