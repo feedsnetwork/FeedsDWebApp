@@ -4,27 +4,15 @@ import { useNavigate, NavLink as RouterLink } from 'react-router-dom';
 import { Stack, Box, Typography, Link } from '@mui/material'
 
 import StyledAvatar from 'components/StyledAvatar'
-import { SidebarContext } from 'contexts/SidebarContext';
-import { selectUserAvatar } from 'redux/slices/user';
-import { LocalDB, QueryStep } from 'utils/db'
+import { selectUserAvatar, selectUsers } from 'redux/slices/user';
 import { decodeBase64 } from 'utils/common';
 
 const SubscriberListItem = (props) => {
     const { subscriber } = props
-    const { queryStep } = React.useContext(SidebarContext);
-    const [ userInfo, setSubscriberInfo] = React.useState({})
     const userAvatarSrc = useSelector(selectUserAvatar)
+    const users = useSelector(selectUsers)
+    const userInfo = users[subscriber.user_did] || {}
     const navigate = useNavigate();
-
-    React.useEffect(()=>{
-        if(queryStep) {
-            LocalDB.get(subscriber.user_did)
-                .then(doc=>{
-                    setSubscriberInfo(doc)
-                })
-                .catch(err=>{})
-        }
-    }, [queryStep, subscriber])
 
     const handleLink2Profile = (user_did)=>{
         navigate('/profile/others', {state: {user_did}});

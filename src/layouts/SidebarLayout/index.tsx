@@ -725,6 +725,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
       })
       console.info(subscribers, subscribersOfChannel)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscribersOfChannel, queriedDIDs])
 
   const initializeWalletConnection = () => {

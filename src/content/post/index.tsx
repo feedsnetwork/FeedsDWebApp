@@ -8,6 +8,7 @@ import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import { reduceDIDstring } from 'utils/common'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectDispNameOfChannels } from 'redux/slices/channel';
+import { selectUsers } from 'redux/slices/user';
 import { LocalDB, QueryStep } from 'utils/db';
 
 const Post = () => {
@@ -15,12 +16,12 @@ const Post = () => {
   const params = useParams()
   const [postInfo, setPostInfo] = React.useState(null)
   const [channelInfo, setChannelInfo] = React.useState({})
-  const [users, setUsers] = React.useState([])
   const [dispNameOfPost, setDispNameOfPost] = React.useState('')
   const [comments, setComments] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(false)
   const channelDispName = useSelector(selectDispNameOfChannels)
-  
+  const users = useSelector(selectUsers)
+
   React.useEffect(()=>{
     const channelId = channelInfo['channel_id']
     if(channelId) {
@@ -52,14 +53,6 @@ const Post = () => {
           setComments(response.docs)
         })
     }
-    if(queryStep) {
-      LocalDB.find({
-        selector: {
-          table_type: 'user'
-        }
-      })
-        .then(response=>setUsers(response.docs))
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep])
 
@@ -90,14 +83,13 @@ const Post = () => {
             }
             {
               comments.map((comment, _i)=>{
-                const commentUser = users.find(user=>user['_id']===comment.creator_did) || {}
+                const commentUser = users[comment.creator_did] || {}
                 const commentProps = {
                   post: comment,
                   channel: channelInfo,
                   dispName: commentUser['name'] || reduceDIDstring(comment.creater_did),
                   dispAvatar: { name: commentUser['name'], src: commentUser['avatarSrc']},
                   replyingTo: dispNameOfPost,
-                  users,
                   level: 2
                 }
                 if(channelInfo['target_did'] === comment.creater_did) {

@@ -1,5 +1,5 @@
 import React from 'react';
-// import { useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom';
 import { Box, Stack, Typography, Card } from '@mui/material';
 import { useSnackbar } from 'notistack';
@@ -11,13 +11,15 @@ import StyledTextFieldOutline from 'components/StyledTextFieldOutline'
 import PostBody from './PostBody'
 import { HiveApi } from 'services/HiveApi'
 // import { selectPublicChannels } from 'redux/slices/channel';
+import { selectUsers } from 'redux/slices/user';
 import { decodeBase64, reduceDIDstring } from 'utils/common'
 
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, channel, dispName, level=1, replyingTo='', replyable=false, users=[], dispAvatar={}, direction='column' } = props
+  const { post, channel, dispName, level=1, replyingTo='', replyable=false, dispAvatar={}, direction='column' } = props
   const { myAvatar, userInfo, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   // const publicChannels = useSelector(selectPublicChannels)
+  const users = useSelector(selectUsers)
   
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
@@ -114,7 +116,7 @@ const PostCard = (props) => {
           <Stack pl={3} pt={2} spacing={1}>
             {
               post.commentData.map((comment, _i)=>{
-                const commentUser = users.find(user=>user['_id']===comment.creator_did) || {}
+                const commentUser = users[comment.creator_did] || {}
                 const subContentObj = {
                   avatar: { name: commentUser['name'], src: commentUser['avatarSrc']},
                   primaryName: `@${commentUser['name'] || reduceDIDstring(comment.creater_did)}`, 
