@@ -39,6 +39,23 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const subscribersOfChannel = useSelector(selectSubscribers)
   // LocalDB.destroy()
 
+  const updateStepFlag = (step)=>(
+    new Promise((resolve, reject) => {
+      LocalDB.get('query-step')
+        .then(stepDoc => {
+          if(stepDoc['step'] < step)
+            LocalDB.put({_id: 'query-step', step, _rev: stepDoc._rev})
+              .then(resolve)
+          else
+            resolve({})
+        })
+        .catch(err => {
+          LocalDB.put({_id: 'query-step', step})
+            .then(resolve)
+        })
+    })
+  )
+
   const querySelfChannelStep = () => (
     new Promise((resolve, reject) => {
       hiveApi.querySelfChannels()
@@ -69,7 +86,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             })
             Promise.resolve()
               .then(_=>LocalDB.bulkDocs(selfChannelDoc))
-              .then(_=>LocalDB.put({_id: 'query-step', step: QueryStep.self_channel}))
+              .then(_=>updateStepFlag(QueryStep.self_channel))
               .then(_=>{ 
                 queryDispNameStep()
                 queryChannelAvatarStep()
@@ -132,10 +149,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                 ))
                 return Promise.all([insertOtherChannelAction, ...updateSelfChannelAction])
               })
-              .then(async _=>{
-                const stepDoc = await LocalDB.get('query-step')
-                return LocalDB.put({_id: 'query-step', step: QueryStep.subscribed_channel, _rev: stepDoc._rev})
-              })
+              .then(_=>updateStepFlag(QueryStep.subscribed_channel))
               .then(_=>{ 
                 queryDispNameStep()
                 queryChannelAvatarStep()
@@ -177,7 +191,10 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                   timeRangeObj.start = earliestime
                 }
                 LocalDB.get(channel._id)
-                  .then(doc=>LocalDB.put({...doc, time_range: [timeRangeObj]}))
+                  .then(doc=>{
+                    const prevTimeRange = doc['time_range'] || []
+                    LocalDB.put({...doc, time_range: [timeRangeObj, ...prevTimeRange]})
+                  })
                 if(prefConf.DP)
                   postArr = postArr.filter(postItem=>postItem.status!==CommonStatus.deleted)
 
@@ -203,10 +220,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           Promise.all(postsByChannel)
             .then(postGroup=> Promise.resolve(getMergedArray(postGroup)))
             .then(postData => LocalDB.bulkDocs(postData))
-            .then(async _=>{
-              const stepDoc = await LocalDB.get('query-step')
-              return LocalDB.put({_id: 'query-step', step: QueryStep.post_data, _rev: stepDoc._rev})
-            })
+            .then(_=>updateStepFlag(QueryStep.post_data))
             .then(_=>{ 
               setQueryStep(QueryStep.post_data) 
               resolve({success: true})
@@ -246,10 +260,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           })
           Promise.all(postDocWithLikeInfo)
             .then(postData => LocalDB.bulkDocs(postData))
-            .then(async _=>{
-              const stepDoc = await LocalDB.get('query-step')
-              return LocalDB.put({_id: 'query-step', step: QueryStep.post_like, _rev: stepDoc._rev})
-            })
+            .then(_=>updateStepFlag(QueryStep.post_like))
             .then(_=>{ 
               setQueryStep(QueryStep.post_like) 
               resolve({success: true})
@@ -296,10 +307,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           })
           Promise.all(postDocWithImg)
             .then(postData => LocalDB.bulkDocs(postData))
-            .then(async _=>{
-              const stepDoc = await LocalDB.get('query-step')
-              return LocalDB.put({_id: 'query-step', step: QueryStep.post_image, _rev: stepDoc._rev})
-            })
+            .then(_=>updateStepFlag(QueryStep.post_image))
             .then(_=>{ 
               setQueryStep(QueryStep.post_image) 
               resolve({success: true})
@@ -366,10 +374,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           Promise.all(commentsByPost)
             .then(commentGroup=> Promise.resolve(getMergedArray(commentGroup)))
             .then(commentData => LocalDB.bulkDocs(commentData))
-            .then(async _=>{
-              const stepDoc = await LocalDB.get('query-step')
-              return LocalDB.put({_id: 'query-step', step: QueryStep.comment_data, _rev: stepDoc._rev})
-            })
+            .then(_=>updateStepFlag(QueryStep.comment_data))
             .then(_=>{ 
               setQueryStep(QueryStep.comment_data) 
               resolve({success: true})
@@ -410,10 +415,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           })
           Promise.all(commentDocWithLikeInfo)
             .then(commentData => LocalDB.bulkDocs(commentData))
-            .then(async _=>{
-              const stepDoc = await LocalDB.get('query-step')
-              return LocalDB.put({_id: 'query-step', step: QueryStep.comment_like, _rev: stepDoc._rev})
-            })
+            .then(_=>updateStepFlag(QueryStep.comment_like))
             .then(_=>{ 
               setQueryStep(QueryStep.comment_like) 
               resolve({success: true})
