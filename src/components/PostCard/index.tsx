@@ -12,6 +12,7 @@ import PostBody from './PostBody'
 import { HiveApi } from 'services/HiveApi'
 // import { selectPublicChannels } from 'redux/slices/channel';
 import { selectUsers } from 'redux/slices/user';
+import { selectChannelAvatar } from 'redux/slices/channel';
 import { decodeBase64, reduceDIDstring } from 'utils/common'
 
 const PostCard = (props) => {
@@ -19,6 +20,7 @@ const PostCard = (props) => {
   const { post, channel, dispName, level=1, replyingTo='', replyable=false, dispAvatar={}, direction='column' } = props
   const { myAvatar, userInfo, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   // const publicChannels = useSelector(selectPublicChannels)
+  const channelAvatars = useSelector(selectChannelAvatar)
   const users = useSelector(selectUsers)
   
   const [isOnValidation, setOnValidation] = React.useState(false);
@@ -58,7 +60,7 @@ const PostCard = (props) => {
   let cardProps = {}
   if(level === 1) {
     contentObj = typeof post.content === 'object'? {...post.content}: JSON.parse(post.content)
-    contentObj.avatar = { name: channel['name'], src: channel['avatarSrc']? decodeBase64(channel['avatarSrc']): '' }
+    contentObj.avatar = { name: channel['name'], src: channelAvatars[channel.channel_id]? decodeBase64(channelAvatars[channel.channel_id]): '' }
     contentObj.primaryName = channel['name']
     contentObj.secondaryName = `@${dispName}`
     cardProps = {style: {cursor: 'pointer'}, onClick: naviage2detail}
