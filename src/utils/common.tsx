@@ -1,7 +1,7 @@
 import Web3 from 'web3';
 import { DID, DIDBackend, DefaultDIDAdapter } from '@elastosfoundation/did-js-sdk';
 import { formatDistance } from 'date-fns';
-import { createHash } from 'crypto';
+import createHash from 'hash.js'
 import Autolinker from 'autolinker';
 import axios from 'axios'
 
@@ -135,7 +135,7 @@ export const getBufferFromUrl = async (url) => {
 }
 
 export function hash(string) {
-  return createHash('sha256').update(string).digest('hex');
+  return createHash.sha256().update(string).digest('hex');
 }
 export function decFromHex(hex) {
   return BigInt(parseInt(hex, 16)).toString(10);

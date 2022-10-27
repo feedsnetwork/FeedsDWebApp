@@ -24,6 +24,7 @@
     "autoresponsive-react": "^1.2.3",
     "date-fns": "^2.28.0",
     "emoji-picker-react": "^4.0.3",
+    "hash.js": "^1.1.7",
     "html-react-parser": "^3.0.4",
     "ipfs-http-client": "55.0.0",
     "jsonwebtoken": "^8.5.1",

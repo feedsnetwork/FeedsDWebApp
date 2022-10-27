@@ -135,7 +135,7 @@ const PostBody = (props) => {
     setIsSaving(true)
     let hiveAction = null
     if(!isLike) {
-      const likeId = hash(`${post.post_id}${post.comment_id}${myDID}`)
+      const likeId = hash(`${post.post_id}${post.comment_id || 0}${myDID}`)
       hiveAction = hiveApi.addLike(post.target_did, likeId, post.channel_id, post.post_id, post.comment_id || '0')
     } else {
       hiveAction = hiveApi.removeLike(post.target_did, post.channel_id, post.post_id, post.comment_id || '0')

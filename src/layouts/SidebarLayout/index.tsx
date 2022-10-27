@@ -666,7 +666,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               .catch(err=>{})
           })
       })
-      console.info(subscribers, subscribersOfChannel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscribersOfChannel, queriedDIDs])
