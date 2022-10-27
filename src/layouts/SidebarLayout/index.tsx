@@ -155,54 +155,9 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         })
     })
   )
-  
-  // const querySubscriberInfoStep = () => (
-  //   new Promise((resolve, reject) => {
-  //     LocalDB.find({
-  //       selector: {
-  //         table_type: 'channel'
-  //       },
-  //     })
-  //       .then(response=>{
-  //         let subscribers = response.docs.reduce((group, channel)=>{
-  //           if(channel['subscribers'])
-  //             group = [...group, ...channel['subscribers']]
-  //           return group
-  //         }, [])
-  //         subscribers = getFilteredArrayByUnique(subscribers, 'user_did')
-  //         const subscriberInfoDoc = 
-  //           subscribers
-  //             .filter(subscriber => subscriber.user_did !== myDID)
-  //             .map(async subscriber => {
-  //               let infoDoc = null
-  //               try {
-  //                 const userInfo = await getInfoFromDID(subscriber.user_did)
-  //                 infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
-  //               } catch(err) {}
-  //               return infoDoc
-  //             })
-  //         Promise.all(subscriberInfoDoc)
-  //           .then(userData => LocalDB.bulkDocs(userData.filter(item=>item!==null)))
-  //           .then(async _=>{
-  //             const stepDoc = await LocalDB.get('query-step')
-  //             return LocalDB.put({_id: 'query-step', step: QueryStep.subscriber_info, _rev: stepDoc._rev})
-  //           })
-  //           .then(_=>{ 
-  //             setQueryStep(QueryStep.subscriber_info) 
-  //             resolve({success: true})
-  //           })
-  //           .catch(err=>{
-  //             resolve({success: false, error: err})
-  //           })
-  //       })
-  //       .catch(err=>{
-  //         reject(err)
-  //       })
-  //   })
-  // )
 
   const queryPostStep = () => {
-    queryUserAvatarStep()
+    // queryUserAvatarStep()
     return new Promise((resolve, reject) => {
       const prefConf = getAppPreference()
       LocalDB.find({
@@ -604,51 +559,50 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
       })
   }
 
-  const queryUserAvatarStep = () => {
-    LocalDB.find({
-      selector: {
-        table_type: 'user'
-      },
-    })
-      .then(response=>{
-        const subscriberWithAvatar = response.docs.filter(doc=>!!doc['avatarSrc'])
-        const subscriberDocNoAvatar = response.docs.filter(doc=>!doc['avatarSrc'])
-        const avatarObjs = subscriberWithAvatar.reduce((objs, subscriber) => {
-          const s_did = subscriber['_id']
-          objs[s_did] = subscriber['avatarSrc']
-          return objs
-        }, {})
-        dispatch(setUserAvatarSrc(avatarObjs))
+  // const queryUserAvatarStep = () => {
+  //   LocalDB.find({
+  //     selector: {
+  //       table_type: 'user'
+  //     },
+  //   })
+  //     .then(response=>{
+  //       const subscriberWithAvatar = response.docs.filter(doc=>!!doc['avatarSrc'])
+  //       const subscriberDocNoAvatar = response.docs.filter(doc=>!doc['avatarSrc'])
+  //       const avatarObjs = subscriberWithAvatar.reduce((objs, subscriber) => {
+  //         const s_did = subscriber['_id']
+  //         objs[s_did] = subscriber['avatarSrc']
+  //         return objs
+  //       }, {})
+  //       dispatch(setUserAvatarSrc(avatarObjs))
 
-        subscriberDocNoAvatar.forEach(subscriber=>{
-          let infoDoc = {...subscriber}
-          const { _id } = infoDoc
-          const avatarObj = {}
-          Promise.resolve()
-            .then(_=>hiveApi.getHiveUrl(infoDoc['_id']))
-            .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(infoDoc['_id'], hiveUrl))
-            .then(res=>{
-              const resBuf = res as Buffer
-              if(resBuf && resBuf.length) {
-                const base64Content = resBuf.toString('base64')
-                infoDoc['avatarSrc'] = encodeBase64(`data:image/png;base64,${base64Content}`)
-                avatarObj[_id] = infoDoc['avatarSrc']
-                return LocalDB.put(infoDoc)
-              }
-            })
-            .then(res=>{
-              dispatch(setUserAvatarSrc(avatarObj))
-            })
-            .catch(err=>{})
-        })
-      })
-      .catch(err=>{})
-  }
+  //       subscriberDocNoAvatar.forEach(subscriber=>{
+  //         let infoDoc = {...subscriber}
+  //         const { _id } = infoDoc
+  //         const avatarObj = {}
+  //         Promise.resolve()
+  //           .then(_=>hiveApi.getHiveUrl(infoDoc['_id']))
+  //           .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(infoDoc['_id'], hiveUrl))
+  //           .then(res=>{
+  //             const resBuf = res as Buffer
+  //             if(resBuf && resBuf.length) {
+  //               const base64Content = resBuf.toString('base64')
+  //               infoDoc['avatarSrc'] = encodeBase64(`data:image/png;base64,${base64Content}`)
+  //               avatarObj[_id] = infoDoc['avatarSrc']
+  //               return LocalDB.put(infoDoc)
+  //             }
+  //           })
+  //           .then(res=>{
+  //             dispatch(setUserAvatarSrc(avatarObj))
+  //           })
+  //           .catch(err=>{})
+  //       })
+  //     })
+  //     .catch(err=>{})
+  // }
 
   const querySteps = [
     querySelfChannelStep, 
     querySubscribedChannelStep, 
-    // querySubscriberInfoStep, 
     queryPostStep,
     queryLikeInfoStep,
     queryPostImgStep,
@@ -675,8 +629,8 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             queryDispNameStep()
             querySubscriptionInfoStep()
           }
-          if(currentStep['step'] > QueryStep.post_data)
-            queryUserAvatarStep()
+          // if(currentStep['step'] > QueryStep.post_data)
+          //   queryUserAvatarStep()
           LocalDB.find({
             selector: {
               table_type: 'user'
@@ -719,8 +673,26 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             userObj[subscriber.user_did] = infoDoc
             return LocalDB.put(infoDoc)
           })
-          .then(_=>{
+          .then(response=>{
             dispatch(setUserInfo(userObj))
+            const avatarObj = {}
+            Promise.resolve()
+              .then(_=>hiveApi.getHiveUrl(subscriber.user_did))
+              .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl))
+              .then(res=>{
+                const resBuf = res as Buffer
+                if(resBuf && resBuf.length) {
+                  const base64Content = resBuf.toString('base64')
+                  const infoDoc = {...userObj[subscriber.user_did], _rev: response.rev}
+                  infoDoc['avatarSrc'] = encodeBase64(`data:image/png;base64,${base64Content}`)
+                  avatarObj[subscriber.user_did] = infoDoc['avatarSrc']
+                  return LocalDB.put(infoDoc)
+                }
+              })
+              .then(res=>{
+                dispatch(setUserAvatarSrc(avatarObj))
+              })
+              .catch(err=>{})
           })
       })
       console.info(subscribers, subscribersOfChannel)
