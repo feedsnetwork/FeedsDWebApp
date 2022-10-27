@@ -7,9 +7,9 @@ import StyledAvatar from 'components/StyledAvatar'
 import Scrollbar from 'components/Scrollbar';
 import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { reduceDIDstring, getInfoFromDID, reduceHexAddress } from 'utils/common'
-import { LocalDB } from 'utils/db';
 import { selectMyInfo, setMyInfo } from 'redux/slices/user';
+import { LocalDB } from 'utils/db';
+import { reduceDIDstring, getInfoFromDID, reduceHexAddress, encodeBase64, decodeBase64 } from 'utils/common'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -46,7 +46,7 @@ function Sidebar() {
         const resBuf = res as Buffer
         if(resBuf && resBuf.length) {
           const base64Content = resBuf.toString('base64')
-          const avatarObj = { avatarSrc: `data:image/png;base64,${base64Content}` }
+          const avatarObj = { avatarSrc: encodeBase64(`data:image/png;base64,${base64Content}`) }
           storeMyInfo(avatarObj)
         }
       })
@@ -62,7 +62,7 @@ function Sidebar() {
     dispatch(setMyInfo(userInfo))
     LocalDB.get(myDID)
       .then(doc=>{
-        const updateDoc = {...userInfo, ...doc}
+        const updateDoc = {...doc, ...userInfo}
         LocalDB.put(updateDoc)
       })
       .catch(_=>{
@@ -105,7 +105,7 @@ function Sidebar() {
         />
         <Box p={1}>
           <Stack direction="row" alignItems="center" spacing={1}>
-            <StyledAvatar alt="" src={myInfo['avatarSrc']} width={36}/>
+            <StyledAvatar alt="" src={decodeBase64(myInfo['avatarSrc'])} width={36}/>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
               <Typography variant="subtitle2" noWrap>
                 {myInfo['name'] || reduceHexAddress(walletAddress)}

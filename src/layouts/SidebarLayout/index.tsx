@@ -157,7 +157,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   )
 
   const queryPostStep = () => {
-    // queryUserAvatarStep()
     return new Promise((resolve, reject) => {
       const prefConf = getAppPreference()
       LocalDB.find({
@@ -592,20 +591,24 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             queryDispNameStep()
             querySubscriptionInfoStep()
           }
-          // if(currentStep['step'] > QueryStep.post_data)
-          //   queryUserAvatarStep()
           LocalDB.find({
             selector: {
               table_type: 'user'
             }
           })
             .then(res=>{
+              const avatarSrcObj = res.docs.filter(doc=>!!doc['avatarSrc'])
+                .reduce((avatarObj, doc)=>{
+                  avatarObj[doc._id] = doc['avatarSrc']
+                  return avatarObj
+                }, {})
               const usersObj = res.docs.reduce((userObj, doc)=>{
                 userObj[doc._id] = doc
                 return userObj
               }, {})
               setQueriedDIDs([myDID, ...Object.keys(usersObj)])
               dispatch(setUserInfo(usersObj))
+              dispatch(setUserAvatarSrc(avatarSrcObj))
             })
         })
         .catch(err=>{
