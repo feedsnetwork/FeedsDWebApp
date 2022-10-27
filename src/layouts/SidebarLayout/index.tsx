@@ -1,5 +1,5 @@
-import { FC, ReactNode, useEffect, useContext } from 'react';
-import { useDispatch } from 'react-redux';
+import { FC, ReactNode, useEffect, useContext, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, useLocation } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
 import { Box, alpha, lighten, useTheme, Hidden, Container, Stack } from '@mui/material';
@@ -17,9 +17,9 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
-import { setUserAvatarSrc } from 'redux/slices/user'
-import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate, getMinValueFromArray, LimitPostCount } from 'utils/common'
+import { selectSubscribers, setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
+import { setUserAvatarSrc, setUserInfo } from 'redux/slices/user'
+import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate, getMinValueFromArray, LimitPostCount, filterAlreadyQueried } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
 
 interface SidebarLayoutProps {
@@ -29,11 +29,14 @@ interface SidebarLayoutProps {
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
   const {focusedChannelId, setWalletAddress, setQueryStep} = useContext(SidebarContext);
+  const [queriedDIDs, setQueriedDIDs] = useState(null)
+  const [queryingDIDs, setQueryingDIDs] = useState([])
   const hiveApi = new HiveApi()
   const sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
   const dispatch = useDispatch()
+  const subscribersOfChannel = useSelector(selectSubscribers)
   // LocalDB.destroy()
 
   const querySelfChannelStep = () => (
@@ -153,50 +156,50 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     })
   )
   
-  const querySubscriberInfoStep = () => (
-    new Promise((resolve, reject) => {
-      LocalDB.find({
-        selector: {
-          table_type: 'channel'
-        },
-      })
-        .then(response=>{
-          let subscribers = response.docs.reduce((group, channel)=>{
-            if(channel['subscribers'])
-              group = [...group, ...channel['subscribers']]
-            return group
-          }, [])
-          subscribers = getFilteredArrayByUnique(subscribers, 'user_did')
-          const subscriberInfoDoc = 
-            subscribers
-              .filter(subscriber => subscriber.user_did !== myDID)
-              .map(async subscriber => {
-                let infoDoc = null
-                try {
-                  const userInfo = await getInfoFromDID(subscriber.user_did)
-                  infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
-                } catch(err) {}
-                return infoDoc
-              })
-          Promise.all(subscriberInfoDoc)
-            .then(userData => LocalDB.bulkDocs(userData.filter(item=>item!==null)))
-            .then(async _=>{
-              const stepDoc = await LocalDB.get('query-step')
-              return LocalDB.put({_id: 'query-step', step: QueryStep.subscriber_info, _rev: stepDoc._rev})
-            })
-            .then(_=>{ 
-              setQueryStep(QueryStep.subscriber_info) 
-              resolve({success: true})
-            })
-            .catch(err=>{
-              resolve({success: false, error: err})
-            })
-        })
-        .catch(err=>{
-          reject(err)
-        })
-    })
-  )
+  // const querySubscriberInfoStep = () => (
+  //   new Promise((resolve, reject) => {
+  //     LocalDB.find({
+  //       selector: {
+  //         table_type: 'channel'
+  //       },
+  //     })
+  //       .then(response=>{
+  //         let subscribers = response.docs.reduce((group, channel)=>{
+  //           if(channel['subscribers'])
+  //             group = [...group, ...channel['subscribers']]
+  //           return group
+  //         }, [])
+  //         subscribers = getFilteredArrayByUnique(subscribers, 'user_did')
+  //         const subscriberInfoDoc = 
+  //           subscribers
+  //             .filter(subscriber => subscriber.user_did !== myDID)
+  //             .map(async subscriber => {
+  //               let infoDoc = null
+  //               try {
+  //                 const userInfo = await getInfoFromDID(subscriber.user_did)
+  //                 infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
+  //               } catch(err) {}
+  //               return infoDoc
+  //             })
+  //         Promise.all(subscriberInfoDoc)
+  //           .then(userData => LocalDB.bulkDocs(userData.filter(item=>item!==null)))
+  //           .then(async _=>{
+  //             const stepDoc = await LocalDB.get('query-step')
+  //             return LocalDB.put({_id: 'query-step', step: QueryStep.subscriber_info, _rev: stepDoc._rev})
+  //           })
+  //           .then(_=>{ 
+  //             setQueryStep(QueryStep.subscriber_info) 
+  //             resolve({success: true})
+  //           })
+  //           .catch(err=>{
+  //             resolve({success: false, error: err})
+  //           })
+  //       })
+  //       .catch(err=>{
+  //         reject(err)
+  //       })
+  //   })
+  // )
 
   const queryPostStep = () => {
     queryUserAvatarStep()
@@ -645,7 +648,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const querySteps = [
     querySelfChannelStep, 
     querySubscribedChannelStep, 
-    querySubscriberInfoStep, 
+    // querySubscriberInfoStep, 
     queryPostStep,
     queryLikeInfoStep,
     queryPostImgStep,
@@ -674,8 +677,22 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           }
           if(currentStep['step'] > QueryStep.post_data)
             queryUserAvatarStep()
+          LocalDB.find({
+            selector: {
+              table_type: 'user'
+            }
+          })
+            .then(res=>{
+              const usersObj = res.docs.reduce((userObj, doc)=>{
+                userObj[doc._id] = doc
+                return userObj
+              }, {})
+              setQueriedDIDs([myDID, ...Object.keys(usersObj)])
+              dispatch(setUserInfo(usersObj))
+            })
         })
         .catch(err=>{
+          setQueriedDIDs([myDID])
           promiseSeries(querySteps)
             .then(res=>{
               console.log(res)
@@ -684,6 +701,31 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(()=>{
+    if(queriedDIDs) {
+      let subscribers = getMergedArray(subscribersOfChannel)
+      subscribers = getFilteredArrayByUnique(subscribers, 'user_did')
+      subscribers = filterAlreadyQueried(subscribers, [...queriedDIDs, ...queryingDIDs], 'user_did')
+      setQueryingDIDs(prev=>{
+        const tempState = [...prev, ...subscribers.map(subscriber=>subscriber.user_did)]
+        return tempState
+      })
+      subscribers.forEach(subscriber=>{
+        const userObj = {}
+        getInfoFromDID(subscriber.user_did)
+          .then(userInfo=>{
+            const infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
+            userObj[subscriber.user_did] = infoDoc
+            return LocalDB.put(infoDoc)
+          })
+          .then(_=>{
+            dispatch(setUserInfo(userObj))
+          })
+      })
+      console.info(subscribers, subscribersOfChannel)
+    }
+  }, [subscribersOfChannel, queriedDIDs])
 
   const initializeWalletConnection = () => {
     if (sessionLinkFlag === '1') {

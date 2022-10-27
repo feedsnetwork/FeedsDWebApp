@@ -150,7 +150,10 @@ export function getFilteredArrayByUnique(arr, field) {
   }, []);
   return result
 }
-
+export function filterAlreadyQueried(origin, needle, field) {
+  const result = origin.filter(item => !needle.includes(item[field]));
+  return result
+}
 export function convertAutoLink(content) {
   var autolinker = new Autolinker( {
     urls : {

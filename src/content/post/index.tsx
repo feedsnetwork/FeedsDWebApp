@@ -52,7 +52,7 @@ const Post = () => {
           setComments(response.docs)
         })
     }
-    if(queryStep >= QueryStep.subscriber_info) {
+    if(queryStep) {
       LocalDB.find({
         selector: {
           table_type: 'user'

@@ -17,7 +17,7 @@ const SubscriberListItem = (props) => {
     const navigate = useNavigate();
 
     React.useEffect(()=>{
-        if(queryStep>=QueryStep.subscriber_info) {
+        if(queryStep) {
             LocalDB.get(subscriber.user_did)
                 .then(doc=>{
                     setSubscriberInfo(doc)
