@@ -8,8 +8,9 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { OverPageContext } from 'contexts/OverPageContext';
 import { selectActiveChannelId, selectPublicChannels } from 'redux/slices/channel';
 import { selectPublicPosts } from 'redux/slices/post';
-import { SettingMenuArray, reduceDIDstring } from 'utils/common'
+import { selectMyInfo } from 'redux/slices/user';
 import { LocalDB, QueryStep } from 'utils/db';
+import { SettingMenuArray, reduceDIDstring } from 'utils/common'
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -49,14 +50,15 @@ const HeaderWrapper = styled(Box)(
 );
 function FloatingHeader() {
   const { pageType } = React.useContext(OverPageContext);
-  const { queryStep, focusedChannelId, userInfo } = React.useContext(SidebarContext);
+  const { queryStep, focusedChannelId } = React.useContext(SidebarContext);
   const { pathname } = useLocation()
-  const activeChannelId = useSelector(selectActiveChannelId)
   const navigate = useNavigate();
   const params = useParams()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const activeChannelId = useSelector(selectActiveChannelId)
   const publicChannels = useSelector(selectPublicChannels)
   const publicPosts = useSelector(selectPublicPosts)
+  const myInfo = useSelector(selectMyInfo)
   const [focusedChannel, setFocusedChannel] = React.useState({})
   const [postCountInFocus, setPostCountInFocus] = React.useState(0)
   const [focusedPost, setFocusedPost] = React.useState({})
@@ -125,7 +127,7 @@ function FloatingHeader() {
       secondaryText = `${focusedPost['commentData']?.length || 0} comments`
     }
     else if(pathname.startsWith('/profile')) {
-      primaryText = userInfo['name'] || `@${reduceDIDstring(feedsDid)}`
+      primaryText = myInfo['name'] || `@${reduceDIDstring(feedsDid)}`
       // secondaryText = "0 post"
     }
     if(primaryText) {

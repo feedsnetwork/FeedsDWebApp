@@ -10,7 +10,7 @@ import PostCard from 'components/PostCard';
 import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { reduceHexAddress, reduceDIDstring } from 'utils/common'
+import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
 import { selectMyInfo } from 'redux/slices/user';
 import { selectDispNameOfChannels } from 'redux/slices/channel';
@@ -61,7 +61,7 @@ function Profile() {
         <Box sx={{position: 'relative'}}>
           {/* <Box sx={{ height: {xs: 120, md: 200}, background: `url(${backgroundImg}) no-repeat center`, backgroundSize: 'cover'}}/> */}
           <Box sx={{ height: {xs: 120, md: 200}, background: 'linear-gradient(180deg, #000000 0%, #A067FF 300.51%)', backgroundSize: 'cover'}}/>
-          <StyledAvatar alt={myInfo['name']} src={myInfo['avatarSrc']} width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
+          <StyledAvatar alt={myInfo['name']} src={decodeBase64(myInfo['avatarSrc'])} width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
         </Box>
         <Box px={2} py={1}>
           <Stack direction='row' spacing={1}>

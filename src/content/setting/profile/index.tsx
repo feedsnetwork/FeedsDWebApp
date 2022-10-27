@@ -5,6 +5,7 @@ import { Box, Typography, Stack, Card, Divider, Grid } from '@mui/material';
 import StyledAvatar from 'components/StyledAvatar';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectMyInfo } from 'redux/slices/user';
+import { decodeBase64 } from 'utils/common';
 
 interface AccountInfoProps {
   // type?: string;
@@ -19,7 +20,7 @@ const AccountInfo: React.FC<AccountInfoProps> = (props)=>{
     <Box p={4}>
       <Card sx={{ p: 3 }}>
         <Stack spacing={6} alignItems='center'>
-          <StyledAvatar alt={myInfo['name']} src={myInfo['avatarSrc']} width={70}/>
+          <StyledAvatar alt={myInfo['name']} src={decodeBase64(myInfo['avatarSrc'])} width={70}/>
           <Grid container direction="column">
             <Grid item>
               <Typography variant='subtitle1'>Name</Typography>

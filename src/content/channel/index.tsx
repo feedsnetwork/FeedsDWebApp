@@ -24,26 +24,27 @@ function Channel() {
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
 
   React.useEffect(()=>{
-    if(queryStep < QueryStep.post_data)
-      setIsLoading(true)
-    else if(queryStep >= QueryStep.post_data && focusedChannelId) {
-      setIsLoading(false)
-      appendMoreData()
-      LocalDB.find({
-        selector: {
-          table_type: 'post',
-          channel_id: focusedChannelId
-        }
-      })
-        .then(response=>{
-          setTotalCount(response.docs.length)
+    if(focusedChannelId) {
+      if(queryStep >= QueryStep.self_channel)
+        setIsLoading(true)
+      if(queryStep >= QueryStep.post_data) {
+        appendMoreData()
+        LocalDB.find({
+          selector: {
+            table_type: 'post',
+            channel_id: focusedChannelId
+          }
         })
-    }
-    if(queryStep >= QueryStep.subscribed_channel && focusedChannelId) {
-      LocalDB.get(focusedChannelId.toString())
-        .then(doc=>{
-          setChannelInfo(doc)
-        })
+          .then(response=>{
+            setTotalCount(response.docs.length)
+          })
+      }
+      if(queryStep >= QueryStep.subscribed_channel) {
+        LocalDB.get(focusedChannelId.toString())
+          .then(doc=>{
+            setChannelInfo(doc)
+          })
+      }
     }
     if(queryStep && !selfChannelCount) {
       LocalDB.find({
@@ -77,11 +78,13 @@ function Channel() {
         })
       ))
       .then(response => {
+        setIsLoading(false)
         setPosts([...posts, ...response.docs])
         const pageEndPost = response.docs[response.docs.length-1]
         if(pageEndPost)
           setPageEndTime(pageEndPost['created_at'])
       })
+      .catch(err=>setIsLoading(false))
   }
   const loadingSkeletons = Array(5).fill(null)
   return (
