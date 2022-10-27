@@ -45,13 +45,19 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         .then(stepDoc => {
           if(stepDoc['step'] < step)
             LocalDB.put({_id: 'query-step', step, _rev: stepDoc._rev})
-              .then(resolve)
+              .then(res=>{
+                setQueryStep(step)
+                resolve(res)
+              })
           else
             resolve({})
         })
         .catch(err => {
           LocalDB.put({_id: 'query-step', step})
-            .then(resolve)
+            .then(res=>{
+              setQueryStep(step)
+              resolve(res)
+            })
         })
     })
   )
@@ -90,8 +96,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
               .then(_=>{ 
                 queryDispNameStep()
                 queryChannelAvatarStep()
-                querySubscriptionInfoStep()
-                setQueryStep(QueryStep.self_channel) 
+                querySubscriptionInfoStep() 
                 resolve({success: true})
               })
               .catch(err=>{
@@ -154,7 +159,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
                 queryDispNameStep()
                 queryChannelAvatarStep()
                 querySubscriptionInfoStep()
-                setQueryStep(QueryStep.subscribed_channel) 
                 resolve({success: true})
               })
               .catch(err=>{
@@ -222,7 +226,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             .then(postData => LocalDB.bulkDocs(postData))
             .then(_=>updateStepFlag(QueryStep.post_data))
             .then(_=>{ 
-              setQueryStep(QueryStep.post_data) 
               resolve({success: true})
             })
             .catch(err=>{
@@ -262,7 +265,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             .then(postData => LocalDB.bulkDocs(postData))
             .then(_=>updateStepFlag(QueryStep.post_like))
             .then(_=>{ 
-              setQueryStep(QueryStep.post_like) 
               resolve({success: true})
             })
             .catch(err=>{
@@ -309,7 +311,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             .then(postData => LocalDB.bulkDocs(postData))
             .then(_=>updateStepFlag(QueryStep.post_image))
             .then(_=>{ 
-              setQueryStep(QueryStep.post_image) 
               resolve({success: true})
             })
             .catch(err=>{
@@ -376,7 +377,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             .then(commentData => LocalDB.bulkDocs(commentData))
             .then(_=>updateStepFlag(QueryStep.comment_data))
             .then(_=>{ 
-              setQueryStep(QueryStep.comment_data) 
               resolve({success: true})
             })
             .catch(err=>{
@@ -417,7 +417,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             .then(commentData => LocalDB.bulkDocs(commentData))
             .then(_=>updateStepFlag(QueryStep.comment_like))
             .then(_=>{ 
-              setQueryStep(QueryStep.comment_like) 
               resolve({success: true})
             })
             .catch(err=>{
@@ -588,6 +587,10 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             .then(res=>{
               console.log(res, "---result")
             })
+          // promiseSeries(querySteps)
+          //   .then(res=>{
+          //     console.log(res, "---result")
+          //   })
           if(currentStep['step'] >= QueryStep.subscribed_channel) {
             queryChannelAvatarStep()
             queryDispNameStep()
