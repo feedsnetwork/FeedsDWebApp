@@ -16,19 +16,21 @@ import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
 import { HiveApi } from 'services/HiveApi'
 import { CommonStatus } from 'models/common_content'
 import { getBufferFromFile } from 'utils/common'
+import { LocalDB, QueryStep } from 'utils/db';
 
 function PostDlg(props) {
   const { setOpen, isOpen, activeChannelId=null, activePost=null } = props;
-  const { focusedChannelId, selfChannels, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
+  const { queryStep, focusedChannelId, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
   const [postext, setPostext] = React.useState('');
   const [imageAttach, setImageAttach] = React.useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
+  const [focusedChannel, setFocusedChannel] = React.useState({})
   
   const currentChannelId = activeChannelId || (activePost?activePost.channel_id:null) || focusedChannelId
-  const focusedChannel = selfChannels.find(item=>item.channel_id === currentChannelId) || {}
+  // const focusedChannel = selfChannels.find(item=>item.channel_id === currentChannelId) || {}
   const isComment = activePost && !!activePost.comment_id
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
@@ -41,6 +43,13 @@ function PostDlg(props) {
       setOnProgress(false)
     }
   }, [isOpen])
+
+  React.useEffect(()=>{
+    if(queryStep >= QueryStep.self_channel && currentChannelId) {
+      LocalDB.get(currentChannelId)
+        .then(doc=>setFocusedChannel(doc))
+    }
+  }, [queryStep, currentChannelId])
 
   React.useEffect(()=>{
     if(activePost && isOpen) {
@@ -96,7 +105,7 @@ function PostDlg(props) {
       if(!isComment)
         await hiveApi.updatePost(activePost.post_id, currentChannelId.toString(), activePost.type, activePost.tag, JSON.stringify(postContent), CommonStatus.edited, Math.round(new Date().getTime()/1000), activePost.memo, activePost.proof)
       else
-        await hiveApi.updateComment(focusedChannel.target_did, currentChannelId.toString(), activePost.post_id, activePost.comment_id, postContent.content)
+        await hiveApi.updateComment(focusedChannel['target_did'], currentChannelId.toString(), activePost.post_id, activePost.comment_id, postContent.content)
       
       // console.log(res, "===============2")
       enqueueSnackbar('Update post success', { variant: 'success' });
@@ -178,8 +187,8 @@ function PostDlg(props) {
       </DialogTitle>
       <DialogContent sx={{minWidth: {sm: 'unset', md: 500}}}>
         <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-          <StyledAvatar alt={focusedChannel.name} src={focusedChannel.avatarSrc}/>
-          <Typography variant="subtitle1">{focusedChannel.name}</Typography>
+          <StyledAvatar alt={focusedChannel['name']} src={focusedChannel['avatarSrc']}/>
+          <Typography variant="subtitle1">{focusedChannel['name']}</Typography>
         </Stack>
         <Stack spacing={2}>
           <StyledTextFieldOutline

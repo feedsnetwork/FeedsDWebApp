@@ -19,10 +19,11 @@ import IconInCircle from 'components/IconInCircle'
 import Heart from 'components/Heart'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
-import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard } from 'utils/common'
+import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
 import { HiveApi } from 'services/HiveApi'
 import { LocalDB, QueryStep } from 'utils/db';
 import { selectSubscribers } from 'redux/slices/channel';
+import { selectUserAvatar } from 'redux/slices/user';
 
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
   maxWidth: '350px',
@@ -75,7 +76,8 @@ const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1, direction } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   const subscribersOfChannel = useSelector(selectSubscribers)
-  const { subscriberInfo, queryStep, setFocusChannelId } = React.useContext(SidebarContext);
+  const userAvatars = useSelector(selectUserAvatar)
+  const { queryStep, setFocusChannelId } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [currentChannel, setCurrentChannel] = React.useState({})
   const [commentCount, setCommentCount] = React.useState(0)
@@ -464,8 +466,8 @@ const PostBody = (props) => {
                       <AvatarGroup spacing={10}>
                         {
                           subscribersOfThis.slice(0, 3).map((subscriber, _i)=>{
-                            const info_data = subscriberInfo[subscriber.user_did] || {}
-                            return <StyledAvatar key={_i} alt={subscriber.display_name} src={info_data['avatar']} width={18}/>
+                            const avatarSrc = decodeBase64(userAvatars[subscriber.user_did] || "")
+                            return <StyledAvatar key={_i} alt={subscriber.display_name} src={avatarSrc} width={18}/>
                           })
                         }
                       </AvatarGroup>
