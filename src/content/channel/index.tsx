@@ -9,11 +9,12 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import PostBox from './post'
 import { reduceDIDstring } from 'utils/common'
-import { selectDispNameOfChannels } from 'redux/slices/channel';
+import { selectDispNameOfChannels, selectFocusedChannelId } from 'redux/slices/channel';
 import { LocalDB, QueryStep } from 'utils/db';
 
 function Channel() {
-  const { queryStep, focusedChannelId, publishPostNumber } = React.useContext(SidebarContext);
+  const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
+  const focusedChannelId = useSelector(selectFocusedChannelId)
   const channelDispName = useSelector(selectDispNameOfChannels)
   const [posts, setPosts] = React.useState([]);
   const [channelInfo, setChannelInfo] = React.useState({});

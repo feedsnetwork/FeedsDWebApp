@@ -77,7 +77,7 @@ const PostBody = (props) => {
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   const subscribersOfChannel = useSelector(selectSubscribers)
   const userAvatars = useSelector(selectUserAvatar)
-  const { queryStep, setFocusChannelId } = React.useContext(SidebarContext);
+  const { queryStep } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [currentChannel, setCurrentChannel] = React.useState({})
   const [commentCount, setCommentCount] = React.useState(0)
@@ -219,7 +219,6 @@ const PostBody = (props) => {
   const handleLink2Channel = (e)=>{
     e.stopPropagation()
     if(currentChannel['is_self']) {
-      setFocusChannelId(post.channel_id)
       dispatch(setFocusedChannelId(post.channel_id))
       navigate('/channel')
     } else {

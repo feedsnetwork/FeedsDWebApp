@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -11,10 +12,12 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import PostBody from '../PostCard/PostBody'
 import { HiveApi } from 'services/HiveApi'
 import { reduceDIDstring } from 'utils/common'
+import { selectFocusedChannelId } from 'redux/slices/channel';
 
 function CommentDlg(props) {
   const { post, postProps, setOpen, isOpen } = props;
-  const { focusedChannelId, selfChannels, subscribedChannels, publishPostNumber, userInfo, setPublishPostNumber } = React.useContext(SidebarContext);
+  const { selfChannels, subscribedChannels, publishPostNumber, userInfo, setPublishPostNumber } = React.useContext(SidebarContext);
+  const focusedChannelId = useSelector(selectFocusedChannelId)
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
   const [commentext, setCommentext] = React.useState('');

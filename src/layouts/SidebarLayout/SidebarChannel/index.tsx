@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import parse from 'html-react-parser';
 import { Icon } from '@iconify/react';
 import AddIcon from '@mui/icons-material/Add';
@@ -14,7 +14,7 @@ import SignoutDlg from 'components/Modal/Signout';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { sortByDate, isValidTime, getDateDistance, convertAutoLink } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
-import { setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
+import { selectFocusedChannelId, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
 import { handlePostModal, setActivePost } from 'redux/slices/post';
 
 const SidebarWrapper = styled(Box)(
@@ -107,7 +107,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 }));
 
 function SidebarChannel() {
-  const { focusedChannelId, queryStep, setFocusChannelId } = useContext(SidebarContext);
+  const { queryStep } = useContext(SidebarContext);
   const [selfChannels, setSelfChannels] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
@@ -120,6 +120,7 @@ function SidebarChannel() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const focusedChannelId = useSelector(selectFocusedChannelId)
 
   // useEffect(()=>{
   //   const worker = new Worker('worker.js');
@@ -142,7 +143,6 @@ function SidebarChannel() {
           if(!response.docs.length)
             return
           setSelfChannels(response.docs)
-          setFocusChannelId(response.docs[0]['channel_id'])
           dispatch(setFocusedChannelId(response.docs[0]['channel_id']))
         })
     }
@@ -150,7 +150,6 @@ function SidebarChannel() {
   }, [queryStep])
   
   const handleClickChannel = (item)=>{
-    setFocusChannelId(item.channel_id); 
     dispatch(setFocusedChannelId(item.channel_id))
   }
   const handleRightClickChannel = (e, item)=>{

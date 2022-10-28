@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSelector } from 'react-redux';
 import { isString } from 'lodash';
 import { Icon } from '@iconify/react';
 import { Box, Typography, Stack, styled, IconButton, Paper } from '@mui/material';
@@ -11,6 +12,7 @@ import StyledButton from 'components/StyledButton';
 import StyledIconButton from 'components/StyledIconButton';
 import StyledTextFieldOutline from 'components/StyledTextFieldOutline'
 import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
+import { selectFocusedChannelId } from 'redux/slices/channel';
 import { getBufferFromFile } from 'utils/common'
 import { HiveApi } from 'services/HiveApi'
 
@@ -25,7 +27,8 @@ const PostBoxStyle = styled(Box)(({ theme }) => ({
 }));
 
 function PostBox() {
-  const { focusedChannelId, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
+  const { publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
+  const focusedChannelId = useSelector(selectFocusedChannelId)
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
   const [postext, setPostext] = React.useState('');

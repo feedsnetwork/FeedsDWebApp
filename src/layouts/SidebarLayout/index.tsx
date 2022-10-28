@@ -18,7 +18,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { selectSubscribers, setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
+import { selectSubscribers, selectFocusedChannelId, setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
 import { setUserAvatarSrc, setUserInfo } from 'redux/slices/user'
 import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getAppPreference, getMergedArray, sortByDate, getMinValueFromArray, LimitPostCount, filterAlreadyQueried } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
@@ -29,7 +29,7 @@ interface SidebarLayoutProps {
 }
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
-  const {focusedChannelId, setWalletAddress, setQueryStep} = useContext(SidebarContext);
+  const {setWalletAddress, setQueryStep} = useContext(SidebarContext);
   const [queriedDIDs, setQueriedDIDs] = useState(null)
   const [queryingDIDs, setQueryingDIDs] = useState([])
   const hiveApi = new HiveApi()
@@ -38,6 +38,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const myDID = `did:elastos:${feedsDid}`
   const dispatch = useDispatch()
   const subscribersOfChannel = useSelector(selectSubscribers)
+  const focusedChannelId = useSelector(selectFocusedChannelId)
   // LocalDB.destroy()
 
   const updateStepFlag = (step)=>(

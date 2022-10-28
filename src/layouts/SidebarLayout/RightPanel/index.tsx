@@ -13,7 +13,7 @@ import StyledButton from 'components/StyledButton'
 import InputOutline from 'components/InputOutline'
 import SubscriberListItem from './SubscriberListItem';
 import { SidebarContext } from 'contexts/SidebarContext';
-import { selectPublicChannels, selectDispNameOfChannels, selectVisitedChannelId, selectSubscribers, selectChannelAvatar } from 'redux/slices/channel';
+import { selectPublicChannels, selectDispNameOfChannels, selectFocusedChannelId, selectVisitedChannelId, selectSubscribers, selectChannelAvatar } from 'redux/slices/channel';
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
 import { LocalDB } from 'utils/db'
 
@@ -95,7 +95,7 @@ const ChannelAbout = (props) => {
   </>
 }
 function RightPanel() {
-  const { focusedChannelId, queryStep } = useContext(SidebarContext);
+  const { queryStep } = useContext(SidebarContext);
   const [focusedChannel, setFocusChannel] = React.useState(null)
   // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
@@ -106,6 +106,7 @@ function RightPanel() {
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
   const subscribersOfChannel = useSelector(selectSubscribers)
   const channelAvatars = useSelector(selectChannelAvatar)
+  const focusedChannelId = useSelector(selectFocusedChannelId)
   let content = null
   const selectedChannelId = visitedChannelId || focusedChannelId
 

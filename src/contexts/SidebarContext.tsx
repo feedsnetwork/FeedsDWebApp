@@ -3,7 +3,6 @@ type SidebarContext = {
   sidebarToggle: any;
   selfChannels: any;
   subscribedChannels: any;
-  focusedChannelId: number;
   selectedChannel: any;
   walletAddress: any;
   publishPostNumber: number;
@@ -17,7 +16,6 @@ type SidebarContext = {
   closeSidebar: () => void;
   setSelfChannels: Dispatch<any>;
   setSubscribedChannels: Dispatch<any>;
-  setFocusChannelId: Dispatch<any>;
   setSelectChannel: Dispatch<any>;
   setWalletAddress: Dispatch<any>;
   setPublishPostNumber: Dispatch<any>;
@@ -39,7 +37,6 @@ export const SidebarProvider = (props) => {
   const [sidebarToggle, setSidebarToggle] = useState(false);
   const [selfChannels, setSelfChannels] = useState([]);
   const [subscribedChannels, setSubscribedChannels] = useState([]);
-  const [focusedChannelId, setFocusChannelId] = useState(null);
   const [selectedChannel, setSelectChannel] = useState(null);
   const [walletAddress, setWalletAddress] = useState(null);
   const [publishPostNumber, setPublishPostNumber] = useState(0);
@@ -63,7 +60,6 @@ export const SidebarProvider = (props) => {
         sidebarToggle, 
         selfChannels, 
         subscribedChannels, 
-        focusedChannelId, 
         selectedChannel,
         walletAddress,
         publishPostNumber,
@@ -77,7 +73,6 @@ export const SidebarProvider = (props) => {
         closeSidebar, 
         setSelfChannels, 
         setSubscribedChannels, 
-        setFocusChannelId, 
         setSelectChannel,
         setWalletAddress,
         setPublishPostNumber,

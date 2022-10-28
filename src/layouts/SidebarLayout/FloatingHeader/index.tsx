@@ -6,7 +6,7 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 
 import { SidebarContext } from 'contexts/SidebarContext';
 import { OverPageContext } from 'contexts/OverPageContext';
-import { selectVisitedChannelId, selectPublicChannels } from 'redux/slices/channel';
+import { selectVisitedChannelId, selectPublicChannels, selectFocusedChannelId } from 'redux/slices/channel';
 import { selectPublicPosts } from 'redux/slices/post';
 import { selectMyInfo } from 'redux/slices/user';
 import { LocalDB, QueryStep } from 'utils/db';
@@ -50,7 +50,7 @@ const HeaderWrapper = styled(Box)(
 );
 function FloatingHeader() {
   const { pageType } = React.useContext(OverPageContext);
-  const { queryStep, focusedChannelId } = React.useContext(SidebarContext);
+  const { queryStep } = React.useContext(SidebarContext);
   const { pathname } = useLocation()
   const navigate = useNavigate();
   const params = useParams()
@@ -59,6 +59,7 @@ function FloatingHeader() {
   const publicChannels = useSelector(selectPublicChannels)
   const publicPosts = useSelector(selectPublicPosts)
   const myInfo = useSelector(selectMyInfo)
+  const focusedChannelId = useSelector(selectFocusedChannelId)
   const [focusedChannel, setFocusedChannel] = React.useState({})
   const [postCountInFocus, setPostCountInFocus] = React.useState(0)
   const [focusedPost, setFocusedPost] = React.useState({})
