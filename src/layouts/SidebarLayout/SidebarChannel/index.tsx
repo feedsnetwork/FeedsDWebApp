@@ -1,5 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux';
 import parse from 'html-react-parser';
 import { Icon } from '@iconify/react';
 import AddIcon from '@mui/icons-material/Add';
@@ -9,11 +10,12 @@ import Scrollbar from 'components/Scrollbar';
 import Logo from 'components/LogoSign';
 import ChannelAvatar from 'components/ChannelAvatar'
 import StyledButton from 'components/StyledButton'
-import PostDlg from 'components/Modal/Post';
 import SignoutDlg from 'components/Modal/Signout';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { sortByDate, isValidTime, getDateDistance, convertAutoLink } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
+import { setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
+import { handlePostModal, setActivePost } from 'redux/slices/post';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -112,12 +114,12 @@ function SidebarChannel() {
   const [popoverChannel, setPopoverChannel] = useState({});
   const [recentPosts, setRecentPosts] = useState([]);
   const [arrowRef, setArrowRef] = useState(null);
-  const [isOpenPost, setOpenPost] = useState(false)
   const [isOpenSignout, setOpenSignout] = useState(false)
   // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // useEffect(()=>{
   //   const worker = new Worker('worker.js');
@@ -141,6 +143,7 @@ function SidebarChannel() {
             return
           setSelfChannels(response.docs)
           setFocusChannelId(response.docs[0]['channel_id'])
+          dispatch(setFocusedChannelId(response.docs[0]['channel_id']))
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -148,6 +151,7 @@ function SidebarChannel() {
   
   const handleClickChannel = (item)=>{
     setFocusChannelId(item.channel_id); 
+    dispatch(setFocusedChannelId(item.channel_id))
   }
   const handleRightClickChannel = (e, item)=>{
     e.preventDefault()
@@ -186,7 +190,9 @@ function SidebarChannel() {
   };
   const handleClickPost = (e) => {
     setOpenPopover(false);
-    setOpenPost(true)
+    dispatch(setActiveChannelId(popoverChannel['channel_id']))
+    dispatch(setActivePost(null))
+    handlePostModal(true)(dispatch)
   }
   const styles = {
     arrow: {
@@ -341,7 +347,6 @@ function SidebarChannel() {
           </Paper>
         </StyledPopper>
       </ClickAwayListener>
-      <PostDlg setOpen={setOpenPost} isOpen={isOpenPost} activeChannelId={popoverChannel['channel_id']}/>
       <SignoutDlg setOpen={setOpenSignout} isOpen={isOpenSignout}/>
       {/* <Drawer
         sx={{

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom'
 import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade, Menu, MenuItem, Link } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -11,7 +11,6 @@ import "odometer/themes/odometer-theme-default.css";
 
 import StyledAvatar from 'components/StyledAvatar'
 import CommentDlg from 'components/Modal/Comment'
-import PostDlg from 'components/Modal/Post'
 import DeletePostDlg from 'components/Modal/DeletePost'
 import UnsubscribeDlg from 'components/Modal/Unsubscribe'
 import StyledButton from 'components/StyledButton'
@@ -22,8 +21,9 @@ import { CommonStatus } from 'models/common_content'
 import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
 import { HiveApi } from 'services/HiveApi'
 import { LocalDB, QueryStep } from 'utils/db';
-import { selectSubscribers } from 'redux/slices/channel';
+import { selectSubscribers, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
 import { selectUserAvatar } from 'redux/slices/user';
+import { handlePostModal, setActivePost } from 'redux/slices/post';
 
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
   maxWidth: '350px',
@@ -83,7 +83,6 @@ const PostBody = (props) => {
   const [commentCount, setCommentCount] = React.useState(0)
 
   const [isOpenComment, setOpenComment] = React.useState(false)
-  const [isOpenPost, setOpenPost] = React.useState(false)
   const [isOpenDelete, setOpenDelete] = React.useState(false)
   const [isOpenUnsubscribe, setOpenUnsubscribe] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
@@ -97,6 +96,7 @@ const PostBody = (props) => {
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(()=>{
@@ -201,7 +201,9 @@ const PostBody = (props) => {
           })
         break;
       case 'edit':
-        setOpenPost(true)
+        dispatch(setActivePost(post))
+        dispatch(setActiveChannelId(0))
+        handlePostModal(true)(dispatch)
         break;
       case 'delete':
         setOpenDelete(true)
@@ -218,6 +220,7 @@ const PostBody = (props) => {
     e.stopPropagation()
     if(currentChannel['is_self']) {
       setFocusChannelId(post.channel_id)
+      dispatch(setFocusedChannelId(post.channel_id))
       navigate('/channel')
     } else {
       navigate('/subscription/channel', {state: {channel_id: post.channel_id}});
@@ -484,7 +487,6 @@ const PostBody = (props) => {
       {
         currentChannel['is_self']?
         <>
-          <PostDlg setOpen={setOpenPost} isOpen={isOpenPost} activePost={post}/>
           <DeletePostDlg setOpen={setOpenDelete} isOpen={isOpenDelete} post_id={post.post_id} channel_id={post.channel_id}/>
         </>:
 

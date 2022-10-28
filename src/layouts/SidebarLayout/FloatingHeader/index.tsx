@@ -6,7 +6,7 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 
 import { SidebarContext } from 'contexts/SidebarContext';
 import { OverPageContext } from 'contexts/OverPageContext';
-import { selectActiveChannelId, selectPublicChannels } from 'redux/slices/channel';
+import { selectVisitedChannelId, selectPublicChannels } from 'redux/slices/channel';
 import { selectPublicPosts } from 'redux/slices/post';
 import { selectMyInfo } from 'redux/slices/user';
 import { LocalDB, QueryStep } from 'utils/db';
@@ -55,14 +55,14 @@ function FloatingHeader() {
   const navigate = useNavigate();
   const params = useParams()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const activeChannelId = useSelector(selectActiveChannelId)
+  const visitedChannelId = useSelector(selectVisitedChannelId)
   const publicChannels = useSelector(selectPublicChannels)
   const publicPosts = useSelector(selectPublicPosts)
   const myInfo = useSelector(selectMyInfo)
   const [focusedChannel, setFocusedChannel] = React.useState({})
   const [postCountInFocus, setPostCountInFocus] = React.useState(0)
   const [focusedPost, setFocusedPost] = React.useState({})
-  const selectedChannelId = activeChannelId || focusedChannelId
+  const selectedChannelId = visitedChannelId || focusedChannelId
 
   React.useEffect(()=>{
     if(queryStep && selectedChannelId) {
@@ -111,14 +111,14 @@ function FloatingHeader() {
       primaryText = "Add Channel"
     else if(
       (pathname.startsWith('/channel') && focusedChannelId) ||
-      (pathname.startsWith('/subscription/channel') && activeChannelId)
+      (pathname.startsWith('/subscription/channel') && visitedChannelId)
     ) {
       primaryText = focusedChannel['name']
       secondaryText = `${postCountInFocus} posts`
     }
-    else if(pathname.startsWith('/explore/channel') && activeChannelId) {
-      const activeChannel = (publicChannels[activeChannelId] || {}) as any
-      const postsInActiveChannel = publicPosts[activeChannelId] || []
+    else if(pathname.startsWith('/explore/channel') && visitedChannelId) {
+      const activeChannel = (publicChannels[visitedChannelId] || {}) as any
+      const postsInActiveChannel = publicPosts[visitedChannelId] || []
       primaryText = activeChannel.name
       secondaryText = `${postsInActiveChannel.length} posts`
     }

@@ -5,7 +5,9 @@ const initialState = {
   avatarSrc: {},
   isChannelCreated: false,
   isOpened2Publish: false,
-  activeChannelId: 0,
+  activeChannelId: 0, // active self channel id for detail
+  focusedChannelId: 0, // focused self channel id
+  visitedChannelId: 0, // selected subscribed channel id
   createdChannel: {},
   dispNameOfChannels: {},
   subscribers: {},
@@ -42,6 +44,12 @@ const slice = createSlice({
     setActiveChannelId(state, action) {
       state.activeChannelId = action.payload
     },
+    setFocusedChannelId(state, action) {
+      state.focusedChannelId = action.payload
+    },
+    setVisitedChannelId(state, action) {
+      state.visitedChannelId = action.payload
+    },
     setChannelAvatarSrc(state, action) {
       state.avatarSrc = {...state.avatarSrc, ...action.payload}
     },
@@ -55,7 +63,16 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setCreatedChannel, setPublicChannels, setDispNameOfChannels, setActiveChannelId, setChannelAvatarSrc, setSubscribers } = slice.actions;
+export const { 
+  setCreatedChannel, 
+  setPublicChannels, 
+  setDispNameOfChannels, 
+  setFocusedChannelId, 
+  setActiveChannelId, 
+  setVisitedChannelId, 
+  setChannelAvatarSrc, 
+  setSubscribers 
+} = slice.actions;
 
 // ----------------------------------------------------------------------
 
@@ -94,6 +111,12 @@ export function selectDispNameOfChannels(state) {
 }
 export function selectActiveChannelId(state) {
   return state.channel.activeChannelId
+}
+export function selectFocusedChannelId(state) {
+  return state.channel.focusedChannelId
+}
+export function selectVisitedChannelId(state) {
+  return state.channel.visitedChannelId
 }
 export function selectChannelAvatar(state) {
   return state.channel.avatarSrc

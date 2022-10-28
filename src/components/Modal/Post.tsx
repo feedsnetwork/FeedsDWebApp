@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { isString } from 'lodash';
 import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, IconButton, Paper } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -17,10 +18,11 @@ import { HiveApi } from 'services/HiveApi'
 import { CommonStatus } from 'models/common_content'
 import { getBufferFromFile } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
+import { handlePostModal, selectPostModalState, selectActivePost } from 'redux/slices/post';
+import { selectActiveChannelId, selectFocusedChannelId } from 'redux/slices/channel';
 
-function PostDlg(props) {
-  const { setOpen, isOpen, activeChannelId=null, activePost=null } = props;
-  const { queryStep, focusedChannelId, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
+function PostDlg() {
+  const { queryStep, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
   const [postext, setPostext] = React.useState('');
@@ -28,8 +30,14 @@ function PostDlg(props) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
   const [focusedChannel, setFocusedChannel] = React.useState({})
+
+  const dispatch = useDispatch()
+  const isOpen = useSelector(selectPostModalState)
+  const activeChannelId = useSelector(selectActiveChannelId)
+  const focusedChannelId = useSelector(selectFocusedChannelId)
+  const activePost = useSelector(selectActivePost)
   
-  const currentChannelId = activeChannelId || (activePost?activePost.channel_id:null) || focusedChannelId
+  const currentChannelId = activeChannelId || activePost?.channel_id || focusedChannelId
   // const focusedChannel = selfChannels.find(item=>item.channel_id === currentChannelId) || {}
   const isComment = activePost && !!activePost.comment_id
   const { enqueueSnackbar } = useSnackbar();
@@ -111,7 +119,7 @@ function PostDlg(props) {
       enqueueSnackbar('Update post success', { variant: 'success' });
       setPublishPostNumber(publishPostNumber+1)
       setOnProgress(false)
-      setOpen(false);
+      handleClose()
     }
     else
       hiveApi.publishPost(currentChannelId.toString(), "", JSON.stringify(postContent))
@@ -120,7 +128,7 @@ function PostDlg(props) {
           enqueueSnackbar('Publish post success', { variant: 'success' });
           setPublishPostNumber(publishPostNumber+1)
           setOnProgress(false)
-          setOpen(false);
+          handleClose()
         })
   }
   const handleUploadClick = (e) => {
@@ -144,12 +152,6 @@ function PostDlg(props) {
     //   });
     // }.bind(this);
     // console.log(url); // Would see a path?
-
-    // this.setState({
-    //   mainState: "uploaded",
-    //   selectedFile: e.target.files[0],
-    //   imageUploaded: 1
-    // });
   };
   
   const handlePopper = (e)=>{
@@ -165,9 +167,8 @@ function PostDlg(props) {
   const onEmojiClick = (emojiObject, _) => {
     setPostext((prev)=>`${prev}${emojiObject.emoji}`);
   };
-  const handleClose = (e) => {
-    e.stopPropagation()
-    setOpen(false);
+  const handleClose = () => {
+    handlePostModal(false)(dispatch)
   };
   return (
     <Dialog open={isOpen} onClose={handleClose} onClick={(e)=>{e.stopPropagation()}}>

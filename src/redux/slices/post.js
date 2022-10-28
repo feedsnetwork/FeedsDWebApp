@@ -2,13 +2,24 @@ import { createSlice } from '@reduxjs/toolkit';
 // ----------------------------------------------------------------------
 
 const initialState = {
-  publicPosts: {}
+  publicPosts: {},
+  isOpened2Post: false,
+  activePost: null
 };
 
 const slice = createSlice({
   name: 'post',
   initialState,
   reducers: {
+    openPostModal(state) {
+      state.isOpened2Post = true;
+    },
+    closePostModal(state) {
+      state.isOpened2Post = false;
+    },
+    setActivePost(state, action) {
+      state.activePost = action.payload;
+    },
     setPublicPosts(state, action) {
       state.publicPosts = {...state.publicPosts, ...action.payload}
     },
@@ -31,10 +42,25 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setPublicPosts, updateMediaOfPosts } = slice.actions;
+export const { setPublicPosts, setActivePost, updateMediaOfPosts } = slice.actions;
 
 // ----------------------------------------------------------------------
 
 export function selectPublicPosts(state) {
   return state.post.publicPosts
+}
+export function selectPostModalState(state) {
+  return state.post.isOpened2Post
+}
+export function handlePostModal(isOpened) {
+  return (dispatch) => {
+    dispatch(
+      isOpened?
+      slice.actions.openPostModal():
+      slice.actions.closePostModal()
+    );
+  };
+}
+export function selectActivePost(state) {
+  return state.post.activePost
 }

@@ -12,11 +12,11 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { SidebarContext } from 'contexts/SidebarContext';
 import InputOutline from 'components/InputOutline'
 import StyledButton from 'components/StyledButton';
-import PostDlg from 'components/Modal/Post';
 import SubscriptionAvatar from './subscriptionAvatar'
 import { SettingMenuArray } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
-import { setActiveChannelId } from 'redux/slices/channel';
+import { setActiveChannelId, setVisitedChannelId } from 'redux/slices/channel';
+import { handlePostModal, setActivePost } from 'redux/slices/post';
 
 const MenuWrapper = styled(Box)(
   ({ theme }) => `
@@ -204,7 +204,6 @@ function SidebarMenu(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isVisibleChannels, setVisibleChannels] = useState(false)
-  const [isOpenPost, setOpenPost] = useState(false)
   const isSettingPage = pathname.startsWith('/setting')
   
   useEffect(()=>{
@@ -230,8 +229,14 @@ function SidebarMenu(props) {
 
   const link2detail = (e) => {
     const channel_id = e.currentTarget.value
-    dispatch(setActiveChannelId(channel_id))
+    dispatch(setVisitedChannelId(channel_id))
     navigate('/subscription/channel');
+  }
+
+  const handlePostDlg = (e) => {
+    dispatch(setActiveChannelId(0))
+    dispatch(setActivePost(null))
+    handlePostModal(true)(dispatch)
   }
   return (
     <>
@@ -310,7 +315,7 @@ function SidebarMenu(props) {
                 </Reveal>
               }
               <Box py={3} px={1} textAlign="center">
-                <StyledButton variant="contained" fullWidth onClick={()=>{setOpenPost(true)}}>Post</StyledButton>
+                <StyledButton variant="contained" fullWidth onClick={handlePostDlg}>Post</StyledButton>
               </Box>
             </List>:
 
@@ -335,7 +340,6 @@ function SidebarMenu(props) {
           }
         </SubMenuWrapper>
       </MenuWrapper>
-      <PostDlg setOpen={setOpenPost} isOpen={isOpenPost}/>
     </>
   );
 }

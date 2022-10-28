@@ -13,7 +13,7 @@ import StyledButton from 'components/StyledButton'
 import InputOutline from 'components/InputOutline'
 import SubscriberListItem from './SubscriberListItem';
 import { SidebarContext } from 'contexts/SidebarContext';
-import { selectPublicChannels, selectDispNameOfChannels, selectActiveChannelId, selectSubscribers, selectChannelAvatar } from 'redux/slices/channel';
+import { selectPublicChannels, selectDispNameOfChannels, selectVisitedChannelId, selectSubscribers, selectChannelAvatar } from 'redux/slices/channel';
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
 import { LocalDB } from 'utils/db'
 
@@ -101,13 +101,13 @@ function RightPanel() {
   const theme = useTheme();
   const { pathname } = useLocation();
   const location = useLocation();
-  const activeChannelId = useSelector(selectActiveChannelId)
+  const visitedChannelId = useSelector(selectVisitedChannelId)
   const publicChannels = useSelector(selectPublicChannels)
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
   const subscribersOfChannel = useSelector(selectSubscribers)
   const channelAvatars = useSelector(selectChannelAvatar)
   let content = null
-  const selectedChannelId = activeChannelId || focusedChannelId
+  const selectedChannelId = visitedChannelId || focusedChannelId
 
   React.useEffect(()=>{
     if(queryStep && selectedChannelId) {

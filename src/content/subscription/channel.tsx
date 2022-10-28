@@ -5,10 +5,10 @@ import PostList from 'components/PostList';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceDIDstring, sortByDate } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
-import { selectActiveChannelId, selectDispNameOfChannels } from 'redux/slices/channel'
+import { selectVisitedChannelId, selectDispNameOfChannels } from 'redux/slices/channel'
 
 function Channel() {
-  const channel_id = useSelector(selectActiveChannelId)
+  const channel_id = useSelector(selectVisitedChannelId)
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
   const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
   const [isLoading, setIsLoading] = React.useState(false)
