@@ -63,9 +63,12 @@ function FloatingHeader() {
   const [focusedChannel, setFocusedChannel] = React.useState({})
   const [postCountInFocus, setPostCountInFocus] = React.useState(0)
   const [focusedPost, setFocusedPost] = React.useState({})
-  const selectedChannelId = visitedChannelId || focusedChannelId
 
   React.useEffect(()=>{
+    let selectedChannelId = focusedChannelId
+    if(pathname.startsWith('/subscription/channel'))
+      selectedChannelId = visitedChannelId
+
     if(queryStep && selectedChannelId) {
       LocalDB.get(selectedChannelId.toString())
         .then(doc=>setFocusedChannel(doc))
@@ -79,7 +82,7 @@ function FloatingHeader() {
           .then(res=>setPostCountInFocus(res.docs.length))
       }
     }
-  }, [queryStep, selectedChannelId])
+  }, [queryStep, focusedChannelId, visitedChannelId, pathname])
 
   React.useEffect(()=>{
     if(params.post_id) {

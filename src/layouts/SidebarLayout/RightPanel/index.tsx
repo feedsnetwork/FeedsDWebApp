@@ -108,16 +108,19 @@ function RightPanel() {
   const channelAvatars = useSelector(selectChannelAvatar)
   const focusedChannelId = useSelector(selectFocusedChannelId)
   let content = null
-  const selectedChannelId = visitedChannelId || focusedChannelId
 
   React.useEffect(()=>{
+    let selectedChannelId = focusedChannelId
+    if(pathname.startsWith('/subscription/channel'))
+      selectedChannelId = visitedChannelId
+
     if(queryStep && selectedChannelId) {
       LocalDB.get(selectedChannelId.toString())
         .then(doc=>{
           setFocusChannel(doc)
         })
     }
-  }, [queryStep, selectedChannelId])
+  }, [queryStep, visitedChannelId, focusedChannelId, pathname])
 
   if(pathname.startsWith('/setting')) {
     if(pathname.endsWith('/credentials'))
@@ -149,9 +152,9 @@ function RightPanel() {
   }
   else {
     if(focusedChannel) {
-      const channelOwnerName = dispNameOfChannels[selectedChannelId]
-      const channelSubscribers = subscribersOfChannel[selectedChannelId] || []
-      const channelAvatarSrc = decodeBase64(channelAvatars[selectedChannelId] || "")
+      const channelOwnerName = dispNameOfChannels[focusedChannel.channel_id]
+      const channelSubscribers = subscribersOfChannel[focusedChannel.channel_id] || []
+      const channelAvatarSrc = decodeBase64(channelAvatars[focusedChannel.channel_id] || "")
       const activeChannel = {...focusedChannel, owner_name: channelOwnerName, subscribers: channelSubscribers, avatarSrc: channelAvatarSrc}
       content = <ChannelAbout this_channel={activeChannel}/>
     }
