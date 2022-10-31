@@ -26,10 +26,10 @@ function Channel() {
 
   React.useEffect(()=>{
     if(focusedChannelId) {
-      if(queryStep >= QueryStep.self_channel)
+      if(queryStep >= QueryStep.self_channel && !posts.length)
         setIsLoading(true)
       if(queryStep >= QueryStep.post_data) {
-        appendMoreData()
+        appendMoreData('first')
         LocalDB.find({
           selector: {
             table_type: 'post',
@@ -61,7 +61,14 @@ function Channel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusedChannelId, publishPostNumber, queryStep])
 
-  const appendMoreData = () => {
+  const appendMoreData = (type) => {
+    let limit = 10
+    let createdAt: object = pageEndTime? {$lt: pageEndTime}: {$gt: true}
+    if(type === "first") {
+      limit = pageEndTime? undefined: 10
+      createdAt = pageEndTime? {$gte: pageEndTime}: {$gt: true}
+    }
+
     LocalDB.createIndex({
       index: {
         fields: ['created_at'],
@@ -72,15 +79,18 @@ function Channel() {
           selector: {
             table_type: 'post',
             channel_id: focusedChannelId,
-            created_at: pageEndTime? {$lt: pageEndTime}: {$gt: true}
+            created_at: createdAt
           },
           sort: [{'created_at': 'desc'}],
-          limit: 10
+          limit
         })
       ))
       .then(response => {
         setIsLoading(false)
-        setPosts([...posts, ...response.docs])
+        if(type === 'first')
+          setPosts(response.docs)
+        else
+          setPosts([...posts, ...response.docs])
         const pageEndPost = response.docs[response.docs.length-1]
         if(pageEndPost)
           setPageEndTime(pageEndPost['created_at'])
@@ -103,7 +113,7 @@ function Channel() {
               <Container sx={{ mt: 3, flexGrow: 1 }} maxWidth="lg">
                 <InfiniteScroll
                   dataLength={posts.length}
-                  next={appendMoreData}
+                  next={()=>{appendMoreData('next')}}
                   hasMore={posts.length<totalCount}
                   loader={<h4>Loading...</h4>}
                   scrollableTarget="scrollableBox"

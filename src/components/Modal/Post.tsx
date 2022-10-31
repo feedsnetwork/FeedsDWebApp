@@ -49,6 +49,7 @@ function PostDlg() {
       setOnValidation(false)
       setPostext('')
       setOnProgress(false)
+      setImageAttach(null)
     }
   }, [isOpen])
 
@@ -85,6 +86,7 @@ function PostDlg() {
     setOnProgress(true)
     const postContent = new PostContentV3()
     postContent.content = postext
+    let mediaDataArr = []
     if(imageAttach) {
       if(isString(imageAttach)) {
         const contentObj = JSON.parse(activePost.content)
@@ -93,7 +95,8 @@ function PostDlg() {
       } else {
         const imageBuffer = await getBufferFromFile(imageAttach) as Buffer
         const base64content = imageBuffer.toString('base64')
-        const imageHivePath = await hiveApi.uploadMediaDataWithString(`data:${imageAttach.type};base64,${base64content}`)
+        const attachSrc = `data:${imageAttach.type};base64,${base64content}`
+        const imageHivePath = await hiveApi.uploadMediaDataWithString(attachSrc)
         const tempMediaData: mediaDataV3 = {
           kind: 'image',
           originMediaPath: imageHivePath,
@@ -105,6 +108,7 @@ function PostDlg() {
           additionalInfo: null,
           memo: null
         }
+        mediaDataArr.push({...tempMediaData, mediaSrc: attachSrc})
         postContent.mediaData.push(tempMediaData)
         postContent.mediaType = MediaType.containsImg
       }
@@ -124,9 +128,31 @@ function PostDlg() {
     else
       hiveApi.publishPost(currentChannelId.toString(), "", JSON.stringify(postContent))
         .then(res=>{
-          // console.log(res, "===============2")
-          enqueueSnackbar('Publish post success', { variant: 'success' });
+          const newPostObj = {
+            channel_id: currentChannelId.toString(),
+            content: JSON.stringify(postContent),
+            created: Math.floor(res.createdAt/1000),
+            created_at: res.createdAt,
+            is_in_favour: true,
+            like_creators: [],
+            like_me: false,
+            likes: 0,
+            mediaData: mediaDataArr,
+            memo: "",
+            pin_status: 0,
+            post_id: res.postId,
+            proof: "",
+            status: 0,
+            table_type: 'post',
+            tag: "",
+            target_did: res.targetDid,
+            type: "public",
+            updated_at: res.updatedAt,
+            _id: res.postId
+          }
+          LocalDB.put(newPostObj)
           setPublishPostNumber(publishPostNumber+1)
+          enqueueSnackbar('Publish post success', { variant: 'success' });
           setOnProgress(false)
           handleClose()
         })
