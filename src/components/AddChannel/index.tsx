@@ -1,13 +1,16 @@
-import { FC, useState, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { FC, useState, useRef, useContext } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 import { Icon } from '@iconify/react';
 import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormControl, FormHelperText } from '@mui/material';
 
 import StyledButton from 'components/StyledButton';
-import { getBufferFromFile } from 'utils/common'
-import { handleSuccessModal, setCreatedChannel } from 'redux/slices/channel';
+import { handleSuccessModal, setChannelAvatarSrc, setCreatedChannel, setDispNameOfChannels } from 'redux/slices/channel';
+import { selectMyInfo } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi'
+import { encodeBase64, getBufferFromFile } from 'utils/common'
+import { LocalDB } from 'utils/db';
+import { SidebarContext } from 'contexts/SidebarContext';
 
 const AvatarWrapper = styled(Box)(
   ({ theme }) => `
@@ -48,6 +51,7 @@ interface AddChannelProps {
   // type?: string;
 }
 const AddChannel: FC<AddChannelProps> = (props)=>{
+  const { updateChannelNumber, setUpdateChannelNumber } = useContext(SidebarContext)
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -57,8 +61,11 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const nameRef = useRef(null)
   const descriptionRef = useRef(null)
   const tippingRef = useRef(null)
+  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const myDID = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
   const dispatch = useDispatch();
+  const myInfo = useSelector(selectMyInfo)
   const { enqueueSnackbar } = useSnackbar();
   
   const handleFileChange = event => {
@@ -89,7 +96,8 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
     setOnProgress(true)
     const imageBuffer = await getBufferFromFile(avatarUrl) as Buffer
     const base64content = imageBuffer.toString('base64')
-    const imageHivePath = await hiveApi.uploadMediaDataWithString(`data:${avatarUrl.type};base64,${base64content}`)
+    const avatarContent = `data:${avatarUrl.type};base64,${base64content}`
+    const imageHivePath = await hiveApi.uploadMediaDataWithString(avatarContent)
     const createdChannel = {
       name: name,
       intro: description,
@@ -104,9 +112,39 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
         setOnProgress(false)
         handleSuccessModal(true)(dispatch)
         dispatch(setCreatedChannel(createdChannel))
+        hiveApi.queryChannelInfo(myDID, result.channelId)
+          .then(res=>{
+            if(res['find_message'] && res['find_message']['items'].length) {
+              const channelInfo = res['find_message']['items'][0]
+              const newChannelDoc = {
+                ...channelInfo,
+                target_did: myDID,
+                _id: channelInfo['channel_id'], 
+                is_self: true, 
+                is_subscribed: false, 
+                is_public: false, 
+                time_range: [], 
+                table_type: 'channel',
+                avatarSrc: encodeBase64(avatarContent),
+                owner_name: myInfo['name'] || "",
+                subscribers: [],
+              }
+              return LocalDB.put(newChannelDoc)
+            }
+          })
+          .then(res=>{
+            const avatarObj = {}
+            avatarObj[result.channelId] = encodeBase64(avatarContent)
+            dispatch(setChannelAvatarSrc(avatarObj))
+            const dispNameObj = {}
+            dispNameObj[result.channelId] = myInfo['name']
+            dispatch(setDispNameOfChannels(dispNameObj))
+            setUpdateChannelNumber(updateChannelNumber+1)
+            window.history.back()
+          })
       })
+      
       .catch(error=>{
-        console.log(error)
         enqueueSnackbar('Add channel error', { variant: 'error' });
         setOnProgress(false)
       })

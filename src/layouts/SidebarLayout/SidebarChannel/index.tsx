@@ -16,6 +16,8 @@ import { sortByDate, isValidTime, getDateDistance, convertAutoLink } from 'utils
 import { LocalDB, QueryStep } from 'utils/db'
 import { selectFocusedChannelId, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
 import { handlePostModal, setActivePost } from 'redux/slices/post';
+import { HiveApi } from 'services/HiveApi';
+import { isConstructorDeclaration } from 'typescript';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -107,7 +109,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 }));
 
 function SidebarChannel() {
-  const { queryStep } = useContext(SidebarContext);
+  const { queryStep, updateChannelNumber } = useContext(SidebarContext);
   const [selfChannels, setSelfChannels] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
@@ -140,6 +142,7 @@ function SidebarChannel() {
         },
       })
         .then(response=>{
+          // console.info(response.docs)
           if(!response.docs.length)
             return
           setSelfChannels(response.docs)
@@ -148,7 +151,24 @@ function SidebarChannel() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep])
-  
+
+  useEffect(()=>{
+    if(updateChannelNumber)
+      LocalDB.find({
+        selector: {
+          table_type: 'channel', 
+          is_self: true
+        },
+      })
+        .then(response=>{
+          if(!response.docs.length)
+            return
+          setSelfChannels(response.docs)
+          dispatch(setFocusedChannelId(response.docs[0]['channel_id']))
+        })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updateChannelNumber])
+
   const handleClickChannel = (item)=>{
     dispatch(setFocusedChannelId(item.channel_id))
   }
