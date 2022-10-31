@@ -16,8 +16,6 @@ import { sortByDate, isValidTime, getDateDistance, convertAutoLink } from 'utils
 import { LocalDB, QueryStep } from 'utils/db'
 import { selectFocusedChannelId, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
 import { handlePostModal, setActivePost } from 'redux/slices/post';
-import { HiveApi } from 'services/HiveApi';
-import { isConstructorDeclaration } from 'typescript';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `

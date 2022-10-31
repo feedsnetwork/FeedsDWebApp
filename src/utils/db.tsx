@@ -3,7 +3,7 @@ import PouchdbFind from 'pouchdb-find'
 
 PouchDB.plugin(PouchdbFind);
 
-export const LocalDB = new PouchDB('local')
+export const LocalDB = new PouchDB(`feeds-${sessionStorage.getItem('FEEDS_DID')}`)
 export const enum QueryStep {
   self_channel = 1,
   subscribed_channel = 2,
