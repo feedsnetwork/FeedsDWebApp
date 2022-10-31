@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import { NavLink as RouterLink, useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Reveal from "react-awesome-reveal";
 import { keyframes } from "@emotion/react";
 import { Icon } from '@iconify/react';
@@ -15,7 +15,7 @@ import StyledButton from 'components/StyledButton';
 import SubscriptionAvatar from './subscriptionAvatar'
 import { SettingMenuArray } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
-import { setActiveChannelId, setVisitedChannelId } from 'redux/slices/channel';
+import { setActiveChannelId, setVisitedChannelId, selectFocusedChannelId } from 'redux/slices/channel';
 import { handlePostModal, setActivePost } from 'redux/slices/post';
 
 const MenuWrapper = styled(Box)(
@@ -205,6 +205,7 @@ function SidebarMenu(props) {
   const navigate = useNavigate();
   const [isVisibleChannels, setVisibleChannels] = useState(false)
   const isSettingPage = pathname.startsWith('/setting')
+  const focusedChannelId = useSelector(selectFocusedChannelId)
   
   useEffect(()=>{
     if(queryStep >= QueryStep.subscribed_channel && !subscribedChannels.length) {
@@ -314,9 +315,12 @@ function SidebarMenu(props) {
                   <Divider sx={{mx: -1}}/>
                 </Reveal>
               }
-              <Box py={3} px={1} textAlign="center">
-                <StyledButton variant="contained" fullWidth onClick={handlePostDlg}>Post</StyledButton>
-              </Box>
+              {
+                !!focusedChannelId &&
+                <Box py={3} px={1} textAlign="center">
+                  <StyledButton variant="contained" fullWidth onClick={handlePostDlg}>Post</StyledButton>
+                </Box>
+              }
             </List>:
 
             <Reveal keyframes={customAnimation}>
