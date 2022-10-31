@@ -42,6 +42,7 @@ function Channel() {
           setChannelInfo(doc)
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep, channel_id])
 
   const appendMoreData = () => {

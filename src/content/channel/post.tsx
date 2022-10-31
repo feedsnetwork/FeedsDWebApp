@@ -13,8 +13,9 @@ import StyledIconButton from 'components/StyledIconButton';
 import StyledTextFieldOutline from 'components/StyledTextFieldOutline'
 import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
 import { selectFocusedChannelId } from 'redux/slices/channel';
-import { getBufferFromFile } from 'utils/common'
 import { HiveApi } from 'services/HiveApi'
+import { getBufferFromFile } from 'utils/common'
+import { LocalDB } from 'utils/db';
 
 const PostBoxStyle = styled(Box)(({ theme }) => ({
   position: 'sticky',
@@ -49,10 +50,12 @@ function PostBox() {
     setOnProgress(true)
     const postContent = new PostContentV3()
     postContent.content = postext
+    let mediaDataArr = []
     if(imageAttach) {
       const imageBuffer = await getBufferFromFile(imageAttach) as Buffer
       const base64content = imageBuffer.toString('base64')
-      const imageHivePath = await hiveApi.uploadMediaDataWithString(`data:${imageAttach.type};base64,${base64content}`)
+      const attachSrc = `data:${imageAttach.type};base64,${base64content}`
+      const imageHivePath = await hiveApi.uploadMediaDataWithString(attachSrc)
       const tempMediaData: mediaDataV3 = {
         kind: 'image',
         originMediaPath: imageHivePath,
@@ -64,12 +67,36 @@ function PostBox() {
         additionalInfo: null,
         memo: null
       }
+      mediaDataArr.push({...tempMediaData, mediaSrc: attachSrc})
       postContent.mediaData.push(tempMediaData)
       postContent.mediaType = MediaType.containsImg
     }
     hiveApi.publishPost(focusedChannelId.toString(), "", JSON.stringify(postContent))
       .then(res=>{
         // console.log(res, "===============2")
+        const newPostObj = {
+          channel_id: focusedChannelId.toString(),
+          content: JSON.stringify(postContent),
+          created: Math.floor(res.createdAt/1000),
+          created_at: res.createdAt,
+          is_in_favour: true,
+          like_creators: [],
+          like_me: false,
+          likes: 0,
+          mediaData: mediaDataArr,
+          memo: "",
+          pin_status: 0,
+          post_id: res.postId,
+          proof: "",
+          status: 0,
+          table_type: 'post',
+          tag: "",
+          target_did: res.targetDid,
+          type: "public",
+          updated_at: res.updatedAt,
+          _id: res.postId
+        }
+        LocalDB.put(newPostObj)
         enqueueSnackbar('Publish post success', { variant: 'success' });
         setPublishPostNumber(publishPostNumber+1)
         setOnProgress(false)
