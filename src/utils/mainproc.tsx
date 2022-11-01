@@ -157,19 +157,17 @@ export const mainproc = (props) => {
         })
     )
 
-    const queryPostStep = () => (
+    const queryPostStep = (isPublic=false) => (
         new Promise((resolve, reject) => {
             const prefConf = getAppPreference()
-            LocalDB.find({
-                selector: {
-                    table_type: 'channel'
-                },
-            })
+            const table_type = getTableType('channel', isPublic)
+            LocalDB.find({ selector: { table_type } })
                 .then(response=>{
                     const postsByChannel = response.docs.map(async channel=>{
                         try {
                             const currentime = new Date().getTime()
-                            const postRes = await hiveApi.queryPostByRangeOfTime(channel['target_did'], channel['channel_id'], 0, currentime)
+                            const queryApi = isPublic? hiveApi.queryPublicPostRangeOfTime: hiveApi.queryPostByRangeOfTime
+                            const postRes = await queryApi(channel['target_did'], channel['channel_id'], 0, currentime)
                             if(postRes['find_message'] && postRes['find_message']['items']) {
                                 let postArr = postRes['find_message']['items']
                                 const timeRangeObj = {start: 0, end: currentime}
@@ -177,7 +175,8 @@ export const mainproc = (props) => {
                                     const earliestime = getMinValueFromArray(postArr, 'updated_at')
                                     timeRangeObj.start = earliestime
                                 }
-                                LocalDB.get(channel._id)
+                                const docId = getDocId(channel._id, isPublic)
+                                LocalDB.get(docId)
                                     .then(doc=>{
                                         const prevTimeRange = doc['time_range'] || []
                                         LocalDB.put({...doc, time_range: [timeRangeObj, ...prevTimeRange]})
@@ -189,8 +188,7 @@ export const mainproc = (props) => {
                                     const tempost = {...post}
                                     tempost._id = post.post_id
                                     tempost.target_did = channel['target_did']
-                                    tempost.table_type = 'post'
-                                    tempost.is_in_favour = true
+                                    tempost.table_type = getTableType('post', isPublic) 
                                     tempost.likes = 0
                                     tempost.like_me = false
                                     tempost.like_creators = []
@@ -207,7 +205,7 @@ export const mainproc = (props) => {
                     Promise.all(postsByChannel)
                         .then(postGroup=> Promise.resolve(getMergedArray(postGroup)))
                         .then(postData => LocalDB.bulkDocs(postData))
-                        .then(_=>updateStepFlag(QueryStep.post_data))
+                        .then(_=>updateStepFlag(QueryStep.post_data, isPublic))
                         .then(_=>{ 
                             resolve({success: true})
                         })
