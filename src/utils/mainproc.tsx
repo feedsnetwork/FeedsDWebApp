@@ -186,7 +186,7 @@ export const mainproc = (props) => {
 
                                 const postDocArr = postArr.map(post=>{
                                     const tempost = {...post}
-                                    tempost._id = post.post_id
+                                    tempost._id = getDocId(post.post_id, isPublic)
                                     tempost.target_did = channel['target_did']
                                     tempost.table_type = getTableType('post', isPublic) 
                                     tempost.likes = 0
@@ -219,13 +219,10 @@ export const mainproc = (props) => {
         })
     )
     
-    const queryLikeInfoStep = () => (
+    const queryLikeInfoStep = (isPublic=false) => (
         new Promise((resolve, reject) => {
-            LocalDB.find({
-                selector: {
-                    table_type: 'post'
-                },
-            })
+            const table_type = getTableType('post', isPublic)
+            LocalDB.find({ selector: { table_type } })
                 .then(response=>{
                     const postDocWithLikeInfo = response.docs.map(async post=>{
                         const postDoc = {...post}
@@ -244,7 +241,7 @@ export const mainproc = (props) => {
                     })
                     Promise.all(postDocWithLikeInfo)
                         .then(postData => LocalDB.bulkDocs(postData))
-                        .then(_=>updateStepFlag(QueryStep.post_like))
+                        .then(_=>updateStepFlag(QueryStep.post_like, isPublic))
                         .then(_=>{ 
                             resolve({success: true})
                         })
@@ -258,13 +255,10 @@ export const mainproc = (props) => {
             })
     )
 
-    const queryPostImgStep = () => (
+    const queryPostImgStep = (isPublic=false) => (
         new Promise((resolve, reject) => {
-            LocalDB.find({
-                selector: {
-                    table_type: 'post'
-                },
-            })
+            const table_type = getTableType('post', isPublic)
+            LocalDB.find({ selector: { table_type } })
                 .then(response=>{
                     const postDocWithImg = response.docs.map(async post=>{
                         const postDoc = {...post}
@@ -290,7 +284,7 @@ export const mainproc = (props) => {
                     })
                     Promise.all(postDocWithImg)
                         .then(postData => LocalDB.bulkDocs(postData))
-                        .then(_=>updateStepFlag(QueryStep.post_image))
+                        .then(_=>updateStepFlag(QueryStep.post_image, true))
                         .then(_=>{ 
                             resolve({success: true})
                         })
@@ -304,13 +298,10 @@ export const mainproc = (props) => {
         })
     )
 
-    const queryCommentStep = () => (
+    const queryCommentStep = (isPublic=false) => (
         new Promise((resolve, reject) => {
-            LocalDB.find({
-                selector: {
-                    table_type: 'post'
-                },
-            })
+            const table_type = getTableType('post', isPublic)
+            LocalDB.find({ selector: { table_type } })
                 .then(response=>{
                     var postGroup = response.docs.reduce((group, p) => {
                         const {target_did=null, channel_id=null, post_id=null} = {...p}
@@ -333,9 +324,9 @@ export const mainproc = (props) => {
                                 if(item.refcomment_id === '0' || !res.some((c) => c.comment_id === item.refcomment_id)) {
                                     const commentDoc = {
                                         ...item, 
-                                        _id: item.comment_id, 
+                                        _id: getDocId(item.comment_id, isPublic), 
                                         target_did, 
-                                        table_type: 'comment',
+                                        table_type: getTableType('comment', isPublic),
                                         likes: 0,
                                         like_me: false,
                                         like_creators: []
@@ -356,7 +347,7 @@ export const mainproc = (props) => {
                     Promise.all(commentsByPost)
                         .then(commentGroup=>Promise.resolve(getMergedArray(commentGroup)))
                         .then(commentData =>LocalDB.bulkDocs(commentData))
-                        .then(_=>updateStepFlag(QueryStep.comment_data))
+                        .then(_=>updateStepFlag(QueryStep.comment_data, isPublic))
                         .then(_=>{ 
                             resolve({success: true})
                         })
@@ -370,13 +361,10 @@ export const mainproc = (props) => {
         })
     )
 
-    const queryCommentLikeStep = () => (
+    const queryCommentLikeStep = (isPublic=false) => (
         new Promise((resolve, reject) => {
-            LocalDB.find({
-                selector: {
-                    table_type: 'comment'
-                },
-            })
+            const table_type = getTableType('comment', isPublic)
+            LocalDB.find({ selector: { table_type } })
                 .then(response=>{
                     const commentDocWithLikeInfo = response.docs.map(async comment=>{
                         const commentDoc = {...comment}
@@ -396,7 +384,7 @@ export const mainproc = (props) => {
                     })
                     Promise.all(commentDocWithLikeInfo)
                         .then(commentData =>LocalDB.bulkDocs(commentData))
-                        .then(_=>updateStepFlag(QueryStep.comment_like))
+                        .then(_=>updateStepFlag(QueryStep.comment_like, isPublic))
                         .then(_=>{ 
                             resolve({success: true})
                         })
@@ -433,7 +421,7 @@ export const mainproc = (props) => {
                         const metaRes = await fetch(metaUri)
                         const metaContent = await metaRes.json()
                         const channelDoc = {
-                            _id: `p-${channelId}`, 
+                            _id: getDocId(channelId, true), 
                             type: metaContent.type,
                             name: metaContent.name,
                             intro: metaContent.description,
@@ -442,7 +430,7 @@ export const mainproc = (props) => {
                             time_range: [], 
                             avatarSrc: getIpfsUrl(metaContent?.data?.avatar),
                             bannerSrc: getIpfsUrl(metaContent?.data?.banner),
-                            table_type: 'public-channel'
+                            table_type: getTableType('channel', true)
                         }
                         return channelDoc
                     })
