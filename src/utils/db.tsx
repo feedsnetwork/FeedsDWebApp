@@ -7,6 +7,7 @@ export const LocalDB = new PouchDB(`feeds-${sessionStorage.getItem('FEEDS_DID')}
 export const enum QueryStep {
   self_channel = 1,
   subscribed_channel = 2,
+  public_channel = 2,
   post_data = 3,
   post_like = 4,
   post_image = 5,

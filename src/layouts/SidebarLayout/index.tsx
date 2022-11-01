@@ -29,7 +29,7 @@ interface SidebarLayoutProps {
 }
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
-  const {setWalletAddress, setQueryStep} = useContext(SidebarContext);
+  const {setWalletAddress, setQueryStep, setQueryPublicStep} = useContext(SidebarContext);
   const [queriedDIDs, setQueriedDIDs] = useState(null)
   const [queryingDIDs, setQueryingDIDs] = useState([])
   const hiveApi = new HiveApi()
@@ -41,7 +41,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const focusedChannelId = useSelector(selectFocusedChannelId)
   // LocalDB.destroy()
 
-  const propsInProc = { dispatch, setQueryStep }
+  const propsInProc = { dispatch, setQueryStep, setQueryPublicStep }
   const procSteps = mainproc(propsInProc)
   const querySteps = procSteps.querySteps
   const { queryDispNameStep, queryChannelAvatarStep, querySubscriptionInfoStep } = procSteps.asyncSteps

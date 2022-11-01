@@ -1,25 +1,32 @@
 import { LocalDB, QueryStep } from "./db"
 import { CommonStatus } from "models/common_content"
 import { HiveApi } from "services/HiveApi"
+import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
+import { ChannelRegContractAddress } from 'config';
 import { setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
-    sortByDate, encodeBase64 } from "./common"
+    sortByDate, encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
+
+const getTableType = (type, isPublic=false) => (isPublic? `public-${type}`: type)
+const getDocId = (itemId, isPublic=false) => (isPublic? `p-${itemId}`: itemId)
 
 export const mainproc = (props) => {
-    const { dispatch, setQueryStep } = props
+    const { dispatch, setQueryStep, setPublicQueryStep } = props
     const feedsDid = sessionStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
     const hiveApi = new HiveApi()
 
     // main process steps
-    const updateStepFlag = (step)=>(
+    const updateStepFlag = (step, isPublic=false)=>(
         new Promise((resolve, reject) => {
-            LocalDB.get('query-step')
+            const flagId = `query-${isPublic? 'public-': ''}step`
+            const queryStepSetter = isPublic? setPublicQueryStep: setQueryStep
+            LocalDB.get(flagId)
                 .then(stepDoc => {
                     if(stepDoc['step'] < step)
-                        LocalDB.put({_id: 'query-step', step, _rev: stepDoc._rev})
+                        LocalDB.put({_id: flagId, step, _rev: stepDoc._rev})
                             .then(res=>{
-                                setQueryStep(step)
+                                queryStepSetter(step)
                                 resolve(res)
                             })
                     else
@@ -27,9 +34,9 @@ export const mainproc = (props) => {
                     }
                 )
                 .catch(err => {
-                    LocalDB.put({_id: 'query-step', step})
+                    LocalDB.put({_id: flagId, step})
                         .then(res=>{
-                            setQueryStep(step)
+                            queryStepSetter(step)
                             resolve(res)
                         })
                     }
@@ -44,11 +51,11 @@ export const mainproc = (props) => {
                     // console.log(res, '-----------self')
                     if(Array.isArray(res)){
                         const selfChannels = 
-                        res.filter(item=>item.status !== CommonStatus.deleted)
-                            .map(item=>{
-                                item.target_did = myDID
-                                return item
-                            })
+                            res.filter(item=>item.status !== CommonStatus.deleted)
+                                .map(item=>{
+                                    item.target_did = myDID
+                                    return item
+                                })
                         const selfChannelsInDB = await LocalDB.find({
                             selector: {
                                 table_type: 'channel',
@@ -80,8 +87,7 @@ export const mainproc = (props) => {
                     }
                     else
                         resolve({success: true})
-                    }
-                )
+                })
                 .catch(err=>{
                     reject(err)
                 })
@@ -406,13 +412,72 @@ export const mainproc = (props) => {
         })
     )
 
-    // async steps
-    const queryDispNameStep = () => (
-        LocalDB.find({
-            selector: {
-                table_type: 'channel'
-            },
+    // public process steps
+    const queryPublicChannelStep = () => (
+        new Promise((resolve, reject) => {
+            const startChannelIndex = 0, pageLimit = 0
+            const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress, false)
+            channelRegContract.methods.channelIds(startChannelIndex, pageLimit).call()
+                .then(res=>{
+                    if(!Array.isArray(res))
+                        return
+                    const publicChannelObjs = res.map(async tokenId=>{
+                        const channelInfo = await channelRegContract.methods.channelInfo(tokenId).call()
+                        const metaUri = getIpfsUrl(channelInfo['tokenURI'])
+                        if(!channelInfo['channelEntry'] || !metaUri)
+                            return null
+                        const splitEntry = channelInfo['channelEntry'].split('/')
+                        if(splitEntry.length<2)
+                            return null
+
+                        const targetDid = splitEntry[splitEntry.length - 2]
+                        const channelId = splitEntry[splitEntry.length - 1]
+                        const metaRes = await fetch(metaUri)
+                        const metaContent = await metaRes.json()
+                        const channelDoc = {
+                            _id: `p-${channelId}`, 
+                            type: metaContent.type,
+                            name: metaContent.name,
+                            intro: metaContent.description,
+                            channel_id: channelId,
+                            target_did: targetDid, 
+                            time_range: [], 
+                            avatarSrc: getIpfsUrl(metaContent?.data?.avatar),
+                            bannerSrc: getIpfsUrl(metaContent?.data?.banner),
+                            table_type: 'public-channel'
+                        }
+                        return channelDoc
+                    })
+                    Promise.all(publicChannelObjs)
+                        .then(publicChannels=>{
+                            const publicChannelDocs = publicChannels.filter(channel=>!!channel)
+                            const putPublicChannelAction = publicChannelDocs.map(channelDoc=>(
+                                new Promise((resolveSub, rejectSub)=>{
+                                    const docId = getDocId(channelDoc.channel_id, true)
+                                    LocalDB.get(docId)
+                                        .then(doc => resolveSub(LocalDB.put({ ...channelDoc, _rev: doc._rev })))
+                                        .catch(err => resolveSub(LocalDB.put(channelDoc)))
+                                })
+                            ))
+                            return Promise.all(putPublicChannelAction)
+                        })
+                        .then(_=>updateStepFlag(QueryStep.public_channel, true))
+                        .then(_=>{ 
+                            queryDispNameStep(true)
+                            querySubscriptionInfoStep(true)
+                            resolve({success: true})
+                        })
+                        .catch(err=>{
+                            resolve({success: false, error: err})
+                        })
+                })
         })
+    )
+
+    // async steps
+    const queryDispNameStep = (isPublic=false) => {
+        const table_type = getTableType('channel', isPublic)
+        LocalDB.find({ selector: { table_type } })
             .then(response=>{
                 const channelWithOwnerName = response.docs.filter(doc=>!!doc['owner_name'])
                 const channelDocNoOwnerName = response.docs.filter(doc=>!doc['owner_name'])
@@ -431,7 +496,8 @@ export const mainproc = (props) => {
                             if(res['find_message'] && res['find_message']['items'].length) {
                                 const dispName = res['find_message']['items'][0].display_name
                                 dispNameObj[channel._id] = dispName
-                                return LocalDB.get(channel._id)
+                                const docId = getDocId(channel._id, isPublic)
+                                return LocalDB.get(docId)
                             }
                         })
                         .then(doc=>{
@@ -444,7 +510,7 @@ export const mainproc = (props) => {
                         .catch(err=>{})
                 })
             })
-    )
+    }
 
     const queryChannelAvatarStep = () => {
         LocalDB.find({
@@ -503,12 +569,9 @@ export const mainproc = (props) => {
             .catch(err=>{})
     }
 
-    const querySubscriptionInfoStep = () => {
-        LocalDB.find({
-            selector: {
-                table_type: 'channel'
-            },
-        })
+    const querySubscriptionInfoStep = (isPublic=false) => {
+        const table_type = getTableType('channel', isPublic)
+        LocalDB.find({ selector: { table_type } })
             .then(response=>{
                 const channelWithSubscribers = response.docs.filter(doc=>!!doc['subscribers'])
                 const channelDocNoSubscribers = response.docs.filter(doc=>!doc['subscribers'])
@@ -527,11 +590,12 @@ export const mainproc = (props) => {
                             if(res['find_message']) {
                                 const subscribersArr = res['find_message']['items']
                                 subscribersObj[channel._id] = subscribersArr
-                                return LocalDB.get(channel._id)
+                                const docId = getDocId(channel._id, isPublic)
+                                return LocalDB.get(docId)
                             }
                         })
                         .then(doc=>{
-                            const infoDoc = {...doc, subscribers:subscribersObj[channel._id]}
+                            const infoDoc = {...doc, subscribers: subscribersObj[channel._id]}
                             LocalDB.put(infoDoc)
                             dispatch(setSubscribers(subscribersObj))
                         })
