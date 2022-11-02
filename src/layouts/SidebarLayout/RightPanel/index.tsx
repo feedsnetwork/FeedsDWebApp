@@ -104,24 +104,22 @@ function RightPanel() {
   // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
-  const location = useLocation();
   const visitedChannelId = useSelector(selectVisitedChannelId)
-  // const publicChannels = useSelector(selectPublicChannels)
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
   const subscribersOfChannel = useSelector(selectSubscribers)
   const channelAvatars = useSelector(selectChannelAvatar)
   const focusedChannelId = useSelector(selectFocusedChannelId)
-  const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
-  const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
   let content = null
 
   React.useEffect(()=>{
     let selectedChannelId = focusedChannelId
+    const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
+    const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
     if(isSubscribedChannel || isPublicChannel)
       selectedChannelId = visitedChannelId
 
     if(selectedChannelId && ((queryStep && !isPublicChannel) || (queryPublicStep && isPublicChannel))) {
-      LocalDB.get(getDocId(selectedChannelId, true))
+      LocalDB.get(getDocId(selectedChannelId, isPublicChannel))
         .then(doc=>{
           setFocusChannel(doc)
         })
@@ -173,7 +171,7 @@ function RightPanel() {
       const channelSubscribers = subscribersOfChannel[focusedChannel.channel_id] || []
       const channelAvatarSrc = decodeBase64(channelAvatars[focusedChannel.channel_id] || "")
       const activeChannel = {...focusedChannel, owner_name: channelOwnerName, subscribers: channelSubscribers}
-      if(!isPublicChannel)
+      if(!pathname.startsWith('/explore/channel'))
         activeChannel['avatarSrc'] = channelAvatarSrc
       content = <ChannelAbout this_channel={activeChannel}/>
     }

@@ -10,6 +10,7 @@ import { selectVisitedChannelId, selectPublicChannels, selectFocusedChannelId } 
 import { selectPublicPosts } from 'redux/slices/post';
 import { selectMyInfo } from 'redux/slices/user';
 import { LocalDB, QueryStep } from 'utils/db';
+import { getDocId } from 'utils/mainproc';
 import { SettingMenuArray, reduceDIDstring } from 'utils/common'
 
 const HeaderWrapper = styled(Box)(
@@ -50,7 +51,7 @@ const HeaderWrapper = styled(Box)(
 );
 function FloatingHeader() {
   const { pageType } = React.useContext(OverPageContext);
-  const { queryStep } = React.useContext(SidebarContext);
+  const { queryStep, queryPublicStep } = React.useContext(SidebarContext);
   const { pathname } = useLocation()
   const navigate = useNavigate();
   const params = useParams()
@@ -66,8 +67,17 @@ function FloatingHeader() {
 
   React.useEffect(()=>{
     let selectedChannelId = focusedChannelId
-    if(pathname.startsWith('/subscription/channel'))
+    const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
+    const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
+    if(isSubscribedChannel || isPublicChannel)
       selectedChannelId = visitedChannelId
+
+    if(selectedChannelId && ((queryStep && !isPublicChannel) || (queryPublicStep && isPublicChannel))) {
+      LocalDB.get(getDocId(selectedChannelId, isPublicChannel))
+        .then(doc=>{
+          setFocusedChannel(doc)
+        })
+    }
 
     if(queryStep && selectedChannelId) {
       LocalDB.get(selectedChannelId.toString())
@@ -82,7 +92,7 @@ function FloatingHeader() {
           .then(res=>setPostCountInFocus(res.docs.length))
       }
     }
-  }, [queryStep, focusedChannelId, visitedChannelId, pathname])
+  }, [queryStep, queryPublicStep, focusedChannelId, visitedChannelId, pathname])
 
   React.useEffect(()=>{
     if(params.post_id) {
@@ -115,17 +125,17 @@ function FloatingHeader() {
       primaryText = "Add Channel"
     else if(
       (pathname.startsWith('/channel') && focusedChannelId) ||
-      (pathname.startsWith('/subscription/channel') && visitedChannelId)
+      ((pathname.startsWith('/subscription/channel') || pathname.startsWith('/explore/channel')) && visitedChannelId)
     ) {
       primaryText = focusedChannel['name']
       secondaryText = `${postCountInFocus} posts`
     }
-    else if(pathname.startsWith('/explore/channel') && visitedChannelId) {
-      const activeChannel = (publicChannels[visitedChannelId] || {}) as any
-      const postsInActiveChannel = publicPosts[visitedChannelId] || []
-      primaryText = activeChannel.name
-      secondaryText = `${postsInActiveChannel.length} posts`
-    }
+    // else if(pathname.startsWith('/explore/channel') && visitedChannelId) {
+    //   const activeChannel = (publicChannels[visitedChannelId] || {}) as any
+    //   const postsInActiveChannel = publicPosts[visitedChannelId] || []
+    //   primaryText = activeChannel.name
+    //   secondaryText = `${postsInActiveChannel.length} posts`
+    // }
     else if(pathname.startsWith('/post/')) {
       primaryText = "Post"
       secondaryText = `${focusedPost['commentData']?.length || 0} comments`
