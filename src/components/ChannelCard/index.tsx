@@ -1,9 +1,11 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import { Box, Typography, Stack } from '@mui/material';
 
 import PaperRecord from 'components/PaperRecord'
+import { setVisitedChannelId } from 'redux/slices/channel';
 // ----------------------------------------------------------------------
 
 const TypographyStyle = styled(Typography)(({ theme }) => ({
@@ -73,8 +75,10 @@ const ChannelCardPaper = (props) => {
 export default function ChannelCard(props) {
   const { info } = props
   const navigate = useNavigate();
+  const dispatch = useDispatch()
   const route2Detail = () => {
-    navigate('/explore/channel', {state: {channel_id: info.channel_id}});
+    dispatch(setVisitedChannelId(info.channel_id))
+    navigate('/explore/channel');
   }
 
   return (

@@ -12,11 +12,12 @@ import StyledButton from 'components/StyledButton'
 import InputOutline from 'components/InputOutline'
 import PublicChannelSkeleton from 'components/Skeleton/PublicChannelSkeleton';
 import SubscriberListItem from './SubscriberListItem';
+import PublicChannelItem from './PublicChannelItem';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectDispNameOfChannels, selectFocusedChannelId, selectVisitedChannelId, selectSubscribers, selectChannelAvatar } from 'redux/slices/channel';
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db'
-import PublicChannelItem from './PublicChannelItem';
+import { getDocId } from 'utils/mainproc';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -110,20 +111,22 @@ function RightPanel() {
   const subscribersOfChannel = useSelector(selectSubscribers)
   const channelAvatars = useSelector(selectChannelAvatar)
   const focusedChannelId = useSelector(selectFocusedChannelId)
+  const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
+  const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
   let content = null
 
   React.useEffect(()=>{
     let selectedChannelId = focusedChannelId
-    if(pathname.startsWith('/subscription/channel'))
+    if(isSubscribedChannel || isPublicChannel)
       selectedChannelId = visitedChannelId
 
-    if(queryStep && selectedChannelId) {
-      LocalDB.get(selectedChannelId.toString())
+    if(selectedChannelId && ((queryStep && !isPublicChannel) || (queryPublicStep && isPublicChannel))) {
+      LocalDB.get(getDocId(selectedChannelId, true))
         .then(doc=>{
           setFocusChannel(doc)
         })
     }
-  }, [queryStep, visitedChannelId, focusedChannelId, pathname])
+  }, [queryStep, queryPublicStep, visitedChannelId, focusedChannelId, pathname])
 
   React.useEffect(()=>{
     if(queryPublicStep < QueryStep.public_channel && !publicChannels.length)
@@ -162,12 +165,6 @@ function RightPanel() {
             </Stack>
           </CardContent>
         </Card>
-  } else if(pathname.startsWith('/explore/channel')) {
-    const { channel_id } = (location.state || {}) as any
-    const channelOwnerName = dispNameOfChannels[channel_id]
-    const channelSubscribers = subscribersOfChannel[channel_id] || []
-    const activeChannel = {...publicChannels[channel_id], owner_name: channelOwnerName, subscribers: channelSubscribers}
-    content = <ChannelAbout this_channel={activeChannel}/>
   }
   else {
     const loadingChannelSkeletons = Array(5).fill(null)
@@ -175,7 +172,9 @@ function RightPanel() {
       const channelOwnerName = dispNameOfChannels[focusedChannel.channel_id]
       const channelSubscribers = subscribersOfChannel[focusedChannel.channel_id] || []
       const channelAvatarSrc = decodeBase64(channelAvatars[focusedChannel.channel_id] || "")
-      const activeChannel = {...focusedChannel, owner_name: channelOwnerName, subscribers: channelSubscribers, avatarSrc: channelAvatarSrc}
+      const activeChannel = {...focusedChannel, owner_name: channelOwnerName, subscribers: channelSubscribers}
+      if(!isPublicChannel)
+        activeChannel['avatarSrc'] = channelAvatarSrc
       content = <ChannelAbout this_channel={activeChannel}/>
     }
     else 
