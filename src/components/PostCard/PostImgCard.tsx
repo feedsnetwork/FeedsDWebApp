@@ -1,5 +1,4 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { Box, Stack, Typography } from '@mui/material';
@@ -8,12 +7,20 @@ import "odometer/themes/odometer-theme-default.css";
 
 import StyledAvatar from 'components/StyledAvatar'
 import PaperRecord from 'components/PaperRecord'
-import { selectPublicChannels } from 'redux/slices/channel';
-import { convertAutoLink } from 'utils/common'
+import { convertAutoLink, isJson } from 'utils/common'
+import { LocalDB } from 'utils/db';
+import { getDocId } from 'utils/mainproc';
 
 const PostImgCard = (props) => {
   const { post } = props
-  // const { selfChannels, subscribedChannels, subscriberInfo } = React.useContext(SidebarContext);
+  const [thisChannel, setThisChannel] = React.useState({})
+
+  React.useEffect(()=>{
+    LocalDB.get(getDocId(post.channel_id, true))
+      .then(doc=>setThisChannel(doc))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // const [anchorEl, setAnchorEl] = React.useState(null);
   // const [isOpenPopover, setOpenPopover] = React.useState(false);
   // const [isEnterPopover, setEnterPopover] = React.useState(false);
@@ -21,9 +28,10 @@ const PostImgCard = (props) => {
   // const subscribersOfThis = currentChannel['subscribers'] || []
   // const subscribedByWho = `Subscribed by ${subscribersOfThis.slice(0,3).map(subscriber=>subscriber.display_name).join(', ')}${subscribersOfThis.length>3?' and more!':'.'}`
 
-  const publicChannels = useSelector(selectPublicChannels)
-  const channelOfPost = publicChannels[post.channel_id] || {}
-  const filteredContentByLink = convertAutoLink(typeof post.content==='object'? post.content.content: post.content)
+  let postContent = post.content
+  if(isJson(postContent))
+    postContent = JSON.parse(postContent)
+  const filteredContentByLink = convertAutoLink(typeof postContent==='object'? postContent.content: postContent)
   // const background = 'url(/temp-img.png) no-repeat center'
   const background = post.mediaData? `url(${post.mediaData[0]['mediaSrc']}) no-repeat center`: null
 
@@ -47,7 +55,7 @@ const PostImgCard = (props) => {
           // onMouseEnter={(e)=>{handlePopper(e, true)}}
           // onMouseLeave={(e)=>{handlePopper(e, false)}}
         >
-          <StyledAvatar alt={channelOfPost.name} src={channelOfPost.avatarSrc} width={47}/>
+          <StyledAvatar alt={thisChannel['name']} src={thisChannel['avatarSrc']} width={47}/>
         </Box>
         <Box sx={{ minWidth: 0, flexGrow: 1 }}>
           <Typography 

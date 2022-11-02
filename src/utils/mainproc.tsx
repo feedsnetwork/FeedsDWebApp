@@ -567,26 +567,26 @@ export const mainproc = (props) => {
                 const channelWithSubscribers = response.docs.filter(doc=>!!doc['subscribers'])
                 const channelDocNoSubscribers = response.docs.filter(doc=>!doc['subscribers'])
                 const subscribersObj = channelWithSubscribers.reduce((obj, channel) => {
-                    const c_id = channel['_id']
+                    const c_id = channel['channel_id']
                     obj[c_id] = channel['subscribers']
                     return obj
                 }, {})
                 dispatch(setSubscribers(subscribersObj))
 
                 channelDocNoSubscribers.forEach(channel=>{
+                    const c_id = channel['channel_id']
                     const subscribersObj = {}
                     Promise.resolve()
                         .then(_=>hiveApi.querySubscriptionInfoByChannelId(channel['target_did'], channel['channel_id']))
                         .then(res=>{
                             if(res['find_message']) {
                                 const subscribersArr = res['find_message']['items']
-                                subscribersObj[channel._id] = subscribersArr
-                                const docId = getDocId(channel._id, isPublic)
-                                return LocalDB.get(docId)
+                                subscribersObj[c_id] = subscribersArr
+                                return LocalDB.get(channel._id)
                             }
                         })
                         .then(doc=>{
-                            const infoDoc = {...doc, subscribers: subscribersObj[channel._id]}
+                            const infoDoc = {...doc, subscribers: subscribersObj[c_id]}
                             LocalDB.put(infoDoc)
                             dispatch(setSubscribers(subscribersObj))
                         })
