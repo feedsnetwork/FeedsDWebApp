@@ -473,26 +473,26 @@ export const mainproc = (props) => {
                 const channelWithOwnerName = response.docs.filter(doc=>!!doc['owner_name'])
                 const channelDocNoOwnerName = response.docs.filter(doc=>!doc['owner_name'])
                 const dispNameObjs = channelWithOwnerName.reduce((objs, channel) => {
-                    const c_id = channel['_id']
+                    const c_id = channel['channel_id']
                     objs[c_id] = channel['owner_name']
                     return objs
                 }, {})
                 dispatch(setDispNameOfChannels(dispNameObjs))
 
                 channelDocNoOwnerName.forEach(channel=>{
+                    const c_id = channel['channel_id']
                     const dispNameObj = {}
                     Promise.resolve()
                         .then(_=>hiveApi.queryUserDisplayName(channel['target_did'], channel['channel_id'], channel['target_did']))
                         .then(res=>{
                             if(res['find_message'] && res['find_message']['items'].length) {
                                 const dispName = res['find_message']['items'][0].display_name
-                                dispNameObj[channel._id] = dispName
-                                const docId = getDocId(channel._id, isPublic)
-                                return LocalDB.get(docId)
+                                dispNameObj[c_id] = dispName
+                                return LocalDB.get(channel._id)
                             }
                         })
                         .then(doc=>{
-                            const infoDoc = {...doc, owner_name: dispNameObj[channel._id]}
+                            const infoDoc = {...doc, owner_name: dispNameObj[c_id]}
                             return LocalDB.put(infoDoc)
                         })
                         .then(res=>{

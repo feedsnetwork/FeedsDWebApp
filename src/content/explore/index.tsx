@@ -64,7 +64,8 @@ function Explore() {
   }, [publicChannels])
   
   const handleResize = () => {
-    setContainerWidth(containerRef.current.clientWidth);
+    if(containerRef.current)
+      setContainerWidth(containerRef.current.clientWidth);
   }
   window.addEventListener("resize", handleResize);
 
