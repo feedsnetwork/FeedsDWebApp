@@ -8,10 +8,10 @@ import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray,
     sortByDate, encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
 
 const getTableType = (type, isPublic=false) => (isPublic? `public-${type}`: type)
-const getDocId = (itemId, isPublic=false) => (isPublic? `p-${itemId}`: itemId)
+export const getDocId = (itemId, isPublic=false) => (isPublic? `p-${itemId}`: itemId)
 
 export const mainproc = (props) => {
-    const { dispatch, setQueryStep, setPublicQueryStep } = props
+    const { dispatch, setQueryStep, setQueryPublicStep } = props
     const feedsDid = sessionStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
     const hiveApi = new HiveApi()
@@ -20,7 +20,7 @@ export const mainproc = (props) => {
     const updateStepFlag = (step, isPublic=false)=>(
         new Promise((resolve, reject) => {
             const flagId = `query-${isPublic? 'public-': ''}step`
-            const queryStepSetter = isPublic? setPublicQueryStep: setQueryStep
+            const queryStepSetter = isPublic? setQueryPublicStep: setQueryStep
             LocalDB.get(flagId)
                 .then(stepDoc => {
                     if(stepDoc['step'] < step)
@@ -459,7 +459,12 @@ export const mainproc = (props) => {
                 })
         })
     )
-
+    const queryPublicPostStep = () => queryPostStep(true)
+    const queryPublicLikeInfoStep = () => queryLikeInfoStep(true)
+    const queryPublicPostImgStep = () => queryPostImgStep(true)
+    const queryPublicCommentStep = () => queryCommentStep(true)
+    const queryPublicCommentLikeStep = () => queryCommentLikeStep(true)
+    
     // async steps
     const queryDispNameStep = (isPublic=false) => {
         const table_type = getTableType('channel', isPublic)
@@ -599,10 +604,18 @@ export const mainproc = (props) => {
         queryCommentStep,
         queryCommentLikeStep
     ]
+    const queryPublicSteps = [
+        queryPublicChannelStep,
+        queryPublicPostStep,
+        queryPublicLikeInfoStep,
+        queryPublicPostImgStep,
+        queryPublicCommentStep,
+        queryPublicCommentLikeStep
+    ]
     const asyncSteps = {
         queryDispNameStep, 
         queryChannelAvatarStep, 
         querySubscriptionInfoStep
     }
-    return { querySteps, asyncSteps }
+    return { querySteps, queryPublicSteps, asyncSteps }
 }

@@ -29,7 +29,7 @@ interface SidebarLayoutProps {
 }
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
-  const {setWalletAddress, setQueryStep, setQueryPublicStep} = useContext(SidebarContext);
+  const { setWalletAddress, setQueryStep, setQueryPublicStep } = useContext(SidebarContext);
   const [queriedDIDs, setQueriedDIDs] = useState(null)
   const [queryingDIDs, setQueryingDIDs] = useState([])
   const hiveApi = new HiveApi()
@@ -44,6 +44,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const propsInProc = { dispatch, setQueryStep, setQueryPublicStep }
   const procSteps = mainproc(propsInProc)
   const querySteps = procSteps.querySteps
+  const queryPublicSteps = procSteps.queryPublicSteps
   const { queryDispNameStep, queryChannelAvatarStep, querySubscriptionInfoStep } = procSteps.asyncSteps
   
   useEffect(()=>{
@@ -92,9 +93,28 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         .catch(err=>{
           setQueriedDIDs([myDID])
           promiseSeries(querySteps)
+        })
+
+      LocalDB.get('query-public-step')
+        .then(currentPublicStep=>{
+          setQueryPublicStep(currentPublicStep['step'])
+          // const remainedSteps = queryPublicSteps.slice(currentPublicStep['step']).map(func=>func())
+          // Promise.all(remainedSteps)
+          //   .then(res=>{
+          //     console.log(res, "---result")
+          //   })
+          promiseSeries(queryPublicSteps)
             .then(res=>{
-              console.log(res)
+              console.log(res, "---result")
             })
+          if(currentPublicStep['step'] >= QueryStep.public_channel) {
+            queryDispNameStep(true)
+            querySubscriptionInfoStep(true)
+          }
+        })
+        .catch(err=>{
+          promiseSeries(queryPublicSteps)
+            .then(res=>console.info(res, '--------end'))
         })
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
