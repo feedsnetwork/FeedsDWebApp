@@ -7,7 +7,7 @@ import { setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redu
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
     sortByDate, encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
 
-const getTableType = (type, isPublic=false) => (isPublic? `public-${type}`: type)
+export const getTableType = (type, isPublic=false) => (isPublic? `public-${type}`: type)
 export const getDocId = (itemId, isPublic=false) => (isPublic? `p-${itemId}`: itemId)
 
 export const mainproc = (props) => {

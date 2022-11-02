@@ -6,11 +6,10 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 
 import { SidebarContext } from 'contexts/SidebarContext';
 import { OverPageContext } from 'contexts/OverPageContext';
-import { selectVisitedChannelId, selectPublicChannels, selectFocusedChannelId } from 'redux/slices/channel';
-import { selectPublicPosts } from 'redux/slices/post';
+import { selectVisitedChannelId, selectFocusedChannelId } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { LocalDB, QueryStep } from 'utils/db';
-import { getDocId } from 'utils/mainproc';
+import { getDocId, getTableType } from 'utils/mainproc';
 import { SettingMenuArray, reduceDIDstring } from 'utils/common'
 
 const HeaderWrapper = styled(Box)(
@@ -57,8 +56,6 @@ function FloatingHeader() {
   const params = useParams()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const visitedChannelId = useSelector(selectVisitedChannelId)
-  const publicChannels = useSelector(selectPublicChannels)
-  const publicPosts = useSelector(selectPublicPosts)
   const myInfo = useSelector(selectMyInfo)
   const focusedChannelId = useSelector(selectFocusedChannelId)
   const [focusedChannel, setFocusedChannel] = React.useState({})
@@ -72,25 +69,20 @@ function FloatingHeader() {
     if(isSubscribedChannel || isPublicChannel)
       selectedChannelId = visitedChannelId
 
-    if(selectedChannelId && ((queryStep && !isPublicChannel) || (queryPublicStep && isPublicChannel))) {
-      LocalDB.get(getDocId(selectedChannelId, isPublicChannel))
-        .then(doc=>{
-          setFocusedChannel(doc)
-        })
-    }
-
-    if(queryStep && selectedChannelId) {
-      LocalDB.get(selectedChannelId.toString())
-        .then(doc=>setFocusedChannel(doc))
-      if(queryStep >= QueryStep.post_data) {
+    if(selectedChannelId) {
+      if((queryStep && !isPublicChannel) || (queryPublicStep && isPublicChannel))
+        LocalDB.get(getDocId(selectedChannelId, isPublicChannel))
+          .then(doc=>{
+            setFocusedChannel(doc)
+          })
+      if((queryStep>=QueryStep.post_data && !isPublicChannel) || (queryPublicStep>=QueryStep.post_data && isPublicChannel))
         LocalDB.find({
           selector: {
             channel_id: selectedChannelId,
-            table_type: 'post'
+            table_type: getTableType('post', isPublicChannel)
           }
         })
           .then(res=>setPostCountInFocus(res.docs.length))
-      }
     }
   }, [queryStep, queryPublicStep, focusedChannelId, visitedChannelId, pathname])
 
@@ -130,12 +122,6 @@ function FloatingHeader() {
       primaryText = focusedChannel['name']
       secondaryText = `${postCountInFocus} posts`
     }
-    // else if(pathname.startsWith('/explore/channel') && visitedChannelId) {
-    //   const activeChannel = (publicChannels[visitedChannelId] || {}) as any
-    //   const postsInActiveChannel = publicPosts[visitedChannelId] || []
-    //   primaryText = activeChannel.name
-    //   secondaryText = `${postsInActiveChannel.length} posts`
-    // }
     else if(pathname.startsWith('/post/')) {
       primaryText = "Post"
       secondaryText = `${focusedPost['commentData']?.length || 0} comments`
