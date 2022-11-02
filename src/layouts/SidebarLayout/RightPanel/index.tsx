@@ -4,18 +4,19 @@ import { useLocation } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
-import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, List, ListItem, ListItemText, 
-  InputAdornment, Typography, Grid, IconButton } from '@mui/material';
+import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, InputAdornment, Typography, Grid, IconButton } from '@mui/material';
 
 import Scrollbar from 'components/Scrollbar';
 import StyledAvatar from 'components/StyledAvatar'
 import StyledButton from 'components/StyledButton'
 import InputOutline from 'components/InputOutline'
+import PublicChannelSkeleton from 'components/Skeleton/PublicChannelSkeleton';
 import SubscriberListItem from './SubscriberListItem';
 import { SidebarContext } from 'contexts/SidebarContext';
-import { selectPublicChannels, selectDispNameOfChannels, selectFocusedChannelId, selectVisitedChannelId, selectSubscribers, selectChannelAvatar } from 'redux/slices/channel';
+import { selectDispNameOfChannels, selectFocusedChannelId, selectVisitedChannelId, selectSubscribers, selectChannelAvatar } from 'redux/slices/channel';
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
-import { LocalDB } from 'utils/db'
+import { LocalDB, QueryStep } from 'utils/db'
+import PublicChannelItem from './PublicChannelItem';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -27,14 +28,14 @@ const SidebarWrapper = styled(Box)(
         height: 100%;
 `
 );
-const ListWrapper = styled(List)(
-  () => `
-      .MuiListItem-root {
-        border-radius: 0;
-        margin: 0;
-      }
-`
-);
+// const ListWrapper = styled(List)(
+//   () => `
+//       .MuiListItem-root {
+//         border-radius: 0;
+//         margin: 0;
+//       }
+// `
+// );
 const ChannelAbout = (props) => {
   const { this_channel } = props
   const editable = this_channel['is_self']
@@ -95,14 +96,16 @@ const ChannelAbout = (props) => {
   </>
 }
 function RightPanel() {
-  const { queryStep } = useContext(SidebarContext);
+  const { queryStep, queryPublicStep } = useContext(SidebarContext);
   const [focusedChannel, setFocusChannel] = React.useState(null)
+  const [isLoadingPublicChannel, setIsLoadingPublicChannels] = React.useState(false)
+  const [publicChannels, setPublicChannels] = React.useState([])
   // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
   const location = useLocation();
   const visitedChannelId = useSelector(selectVisitedChannelId)
-  const publicChannels = useSelector(selectPublicChannels)
+  // const publicChannels = useSelector(selectPublicChannels)
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
   const subscribersOfChannel = useSelector(selectSubscribers)
   const channelAvatars = useSelector(selectChannelAvatar)
@@ -121,6 +124,22 @@ function RightPanel() {
         })
     }
   }, [queryStep, visitedChannelId, focusedChannelId, pathname])
+
+  React.useEffect(()=>{
+    if(queryPublicStep < QueryStep.public_channel && !publicChannels.length)
+      setIsLoadingPublicChannels(true)
+    if(queryPublicStep >= QueryStep.public_channel)
+      LocalDB.find({
+        selector: {
+          table_type: 'public-channel'
+        },
+      })
+        .then(response=>{
+          setPublicChannels(response.docs)
+          setIsLoadingPublicChannels(false)
+        })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryPublicStep])
 
   if(pathname.startsWith('/setting')) {
     if(pathname.endsWith('/credentials'))
@@ -151,6 +170,7 @@ function RightPanel() {
     content = <ChannelAbout this_channel={activeChannel}/>
   }
   else {
+    const loadingChannelSkeletons = Array(5).fill(null)
     if(focusedChannel) {
       const channelOwnerName = dispNameOfChannels[focusedChannel.channel_id]
       const channelSubscribers = subscribersOfChannel[focusedChannel.channel_id] || []
@@ -161,7 +181,7 @@ function RightPanel() {
     else 
       content = 
         <>
-          <Card>
+          {/* <Card>
             <CardHeader 
               title={
                 <Typography variant='h5'>Trends</Typography>
@@ -191,11 +211,11 @@ function RightPanel() {
                 </ListItem>
               </ListWrapper>
             </CardContent>
-          </Card>
+          </Card> */}
           <Card>
             <CardHeader 
               title={
-                <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Collection Channels&nbsp;<Icon icon="eva:info-outline"/></Typography>
+                <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Public Channels&nbsp;<Icon icon="eva:info-outline"/></Typography>
               } 
               subheader={
                 <Typography variant='body2' color='text.secondary'>Powered by Pasar Protocol</Typography>
@@ -204,22 +224,15 @@ function RightPanel() {
             <CardContent sx={{pt: 0}}>
               <Grid container spacing={2}>
                 {
-                  Array(5).fill(null).map((_, index)=>(
-                    <Grid item xs={12} key={index}>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <StyledAvatar alt='Elastos' src='/static/images/avatars/2.jpg' width={32}/>
-                        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                          <Typography component='div' variant="subtitle2" noWrap>
-                            Phantz Club
-                          </Typography>
-                          <Typography variant="body2" color='text.secondary' noWrap>
-                            100 Subscribers
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <StyledButton type="outlined" size='small'>Subscribe</StyledButton>
-                        </Box>
-                      </Stack>
+                  isLoadingPublicChannel?
+                  loadingChannelSkeletons.map((_, _i)=>(
+                    <Grid item xs={12} key={_i}>
+                      <PublicChannelSkeleton/>
+                    </Grid>
+                  )):
+                  publicChannels.map((channel, _i)=>(
+                    <Grid item xs={12} key={_i}>
+                      <PublicChannelItem channel={channel}/>
                     </Grid>
                   ))
                 }
