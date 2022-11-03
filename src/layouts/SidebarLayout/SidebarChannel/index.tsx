@@ -161,7 +161,7 @@ function SidebarChannel() {
           if(!response.docs.length)
             return
           setSelfChannels(response.docs)
-          dispatch(setFocusedChannelId(response.docs[0]['channel_id']))
+          // dispatch(setFocusedChannelId(response.docs[0]['channel_id']))
         })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateChannelNumber])

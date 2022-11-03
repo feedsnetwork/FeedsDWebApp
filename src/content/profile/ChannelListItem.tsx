@@ -92,7 +92,6 @@ const ChannelListItem = (props) => {
           </Menu>
         </Box>
       }
-      {/* <StyledButton type="outlined" size="small" sx={{height: 'fit-content'}}>Edit Channel</StyledButton> */}
     </Stack>
     <Hidden mdUp>
       <Box mt={1}>

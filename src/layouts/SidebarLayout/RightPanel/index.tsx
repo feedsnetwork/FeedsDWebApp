@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useSelector } from 'react-redux'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
@@ -40,6 +40,10 @@ const SidebarWrapper = styled(Box)(
 const ChannelAbout = (props) => {
   const { this_channel } = props
   const editable = this_channel['is_self']
+  const navigate = useNavigate()
+  const link2Edit = ()=>{
+    navigate(`/channel/edit/${this_channel['channel_id']}`);
+  }
   return <>
     <Card>
       <CardContent>
@@ -50,7 +54,7 @@ const ChannelAbout = (props) => {
             </Box>
             {
               editable &&
-              <StyledButton type='outlined' size='small'>Edit channel</StyledButton>
+              <StyledButton type='outlined' size='small' onClick={link2Edit}>Edit channel</StyledButton>
             }
           </Stack>
         </Stack>
@@ -97,7 +101,7 @@ const ChannelAbout = (props) => {
   </>
 }
 function RightPanel() {
-  const { queryStep, queryPublicStep } = useContext(SidebarContext);
+  const { queryStep, queryPublicStep, updateChannelNumber } = useContext(SidebarContext);
   const [focusedChannel, setFocusChannel] = React.useState(null)
   const [isLoadingPublicChannel, setIsLoadingPublicChannels] = React.useState(false)
   const [publicChannels, setPublicChannels] = React.useState([])
@@ -125,6 +129,21 @@ function RightPanel() {
         })
     }
   }, [queryStep, queryPublicStep, visitedChannelId, focusedChannelId, pathname])
+
+  React.useEffect(()=>{
+    let selectedChannelId = focusedChannelId
+    const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
+    const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
+    if(isSubscribedChannel)
+      selectedChannelId = visitedChannelId
+
+    if(selectedChannelId && !isPublicChannel && updateChannelNumber) {
+      LocalDB.get(selectedChannelId)
+        .then(doc=>{
+          setFocusChannel(doc)
+        })
+    }
+  }, [updateChannelNumber])
 
   React.useEffect(()=>{
     if(queryPublicStep < QueryStep.public_channel && !publicChannels.length)

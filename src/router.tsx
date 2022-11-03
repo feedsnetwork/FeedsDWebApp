@@ -171,6 +171,10 @@ const routes: RouteObject[] = [
       {
         path: 'add',
         element: <AddChannel />
+      },
+      {
+        path: 'edit/:channelId',
+        element: <AddChannel action="edit" />
       }
     ]
   },
