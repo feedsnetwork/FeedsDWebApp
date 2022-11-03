@@ -122,7 +122,6 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                 _id: channelInfo['channel_id'], 
                 is_self: true, 
                 is_subscribed: false, 
-                is_public: false, 
                 time_range: [], 
                 table_type: 'channel',
                 avatarSrc: encodeBase64(avatarContent),

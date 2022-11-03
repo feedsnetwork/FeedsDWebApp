@@ -50,7 +50,6 @@ export const mainproc = (props) => {
         new Promise((resolve, reject) => {
             hiveApi.querySelfChannels()
                 .then(async res=>{
-                    // console.log(res, '-----------self')
                     if(Array.isArray(res)){
                         const selfChannels = 
                             res.filter(item=>item.status !== CommonStatus.deleted)
@@ -64,20 +63,41 @@ export const mainproc = (props) => {
                                 is_self: true
                             }
                         })
-                        const selfChannelRevs = selfChannelsInDB.docs.reduce((revObj, doc)=>{
-                            revObj[doc._id] = doc._rev
-                            return revObj
-                        }, {})
-                        const selfChannelDoc = selfChannels.map(channel=>{
-                            const channelDoc = {...channel, _id: channel.channel_id.toString(), is_self: true, is_subscribed: false, is_public: false, time_range: [], table_type: 'channel'}
-                            if(selfChannelRevs[channel.channel_id])
-                                channelDoc['_rev'] = selfChannelRevs[channel.channel_id]
-                            return channelDoc
+                        let selfChannelDoc = []
+                        const originSelfChannels = [...selfChannelsInDB.docs]
+                        selfChannels.forEach(channel=>{
+                            let channelDoc = {}
+                            const channelIndex = originSelfChannels.findIndex(doc=>doc['channel_id'] === channel.channel_id)
+                            if(channelIndex>=0) {
+                                const originChannel = originSelfChannels[channelIndex]
+                                if(originChannel['modified'] === channel['modified'])
+                                    channelDoc = originChannel
+                                else {
+                                    channelDoc = {...originChannel, ...channel, _id: originChannel._id}
+                                    if(originChannel['avatar'] !== channel['avatar'])
+                                        channelDoc['avatarSrc'] = ''
+                                }
+                                originSelfChannels.splice(channelIndex, 1)
+                                // delete channelDoc['_rev']
+                            }
+                            else {
+                                channelDoc = {
+                                    ...channel, 
+                                    _id: channel.channel_id.toString(),
+                                    is_self: true, 
+                                    is_subscribed: false, 
+                                    time_range: [], 
+                                    table_type: 'channel'
+                                }
+                            }
+                            selfChannelDoc.push(channelDoc)
                         })
+                        const deleteDocs = originSelfChannels.map(item=>({...item, _deleted: true}))
                         Promise.resolve()
+                            .then(_=>LocalDB.bulkDocs(deleteDocs))
                             .then(_=>LocalDB.bulkDocs(selfChannelDoc))
                             .then(_=>updateStepFlag(QueryStep.self_channel))
-                            .then(_=>{ 
+                            .then(_=>{
                                 queryDispNameStep()
                                 queryChannelAvatarStep()
                                 querySubscriptionInfoStep() 
@@ -115,7 +135,7 @@ export const mainproc = (props) => {
                             const channelInfoRes = await hiveApi.queryChannelInfo(channel.target_did, channel.channel_id)
                             if(channelInfoRes['find_message'] && channelInfoRes['find_message']['items'].length) {
                                 const channelInfo = channelInfoRes['find_message']['items'][0]
-                                const channelDoc = {...channelInfo, _id: channel.channel_id.toString(), target_did: channel.target_did, is_self: false, is_subscribed: true, is_public: false, time_range: [], table_type: 'channel'}
+                                const channelDoc = {...channelInfo, _id: channel.channel_id.toString(), target_did: channel.target_did, is_self: false, is_subscribed: true, time_range: [], table_type: 'channel'}
                                 if(subscribedChannelRevs[channel.channel_id])
                                     channelDoc['_rev'] = subscribedChannelRevs[channel.channel_id]
                                 return channelDoc
@@ -141,7 +161,7 @@ export const mainproc = (props) => {
                             .then(_=>updateStepFlag(QueryStep.subscribed_channel))
                             .then(_=>{ 
                                 queryDispNameStep()
-                                queryChannelAvatarStep()
+                                // queryChannelAvatarStep()
                                 querySubscriptionInfoStep()
                                 resolve({success: true})
                             })
@@ -582,7 +602,7 @@ export const mainproc = (props) => {
         LocalDB.find({ selector: { table_type } })
             .then(response=>{
                 const channelWithSubscribers = response.docs.filter(doc=>!!doc['subscribers'])
-                const channelDocNoSubscribers = response.docs.filter(doc=>!doc['subscribers'])
+                // const channelDocNoSubscribers = response.docs.filter(doc=>!doc['subscribers'])
                 const subscribersObj = channelWithSubscribers.reduce((obj, channel) => {
                     const c_id = channel['channel_id']
                     obj[c_id] = channel['subscribers']
@@ -590,7 +610,7 @@ export const mainproc = (props) => {
                 }, {})
                 dispatch(setSubscribers(subscribersObj))
 
-                channelDocNoSubscribers.forEach(channel=>{
+                response.docs.forEach(channel=>{
                     const c_id = channel['channel_id']
                     const subscribersObj = {}
                     Promise.resolve()

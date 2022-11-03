@@ -107,7 +107,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 }));
 
 function SidebarChannel() {
-  const { queryStep, updateChannelNumber } = useContext(SidebarContext);
+  const { queryStep, queryFlag, updateChannelNumber } = useContext(SidebarContext);
   const [selfChannels, setSelfChannels] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
@@ -132,7 +132,7 @@ function SidebarChannel() {
   // }, [])
 
   useEffect(()=>{
-    if(queryStep >= QueryStep.self_channel && !selfChannels.length) {
+    if((queryStep >= QueryStep.self_channel && !selfChannels.length) || queryFlag === QueryStep.self_channel) {
       LocalDB.find({
         selector: {
           table_type: 'channel', 
@@ -140,7 +140,6 @@ function SidebarChannel() {
         },
       })
         .then(response=>{
-          // console.info(response.docs)
           if(!response.docs.length)
             return
           setSelfChannels(response.docs)
@@ -148,7 +147,7 @@ function SidebarChannel() {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep])
+  }, [queryStep, queryFlag])
 
   useEffect(()=>{
     if(updateChannelNumber)
