@@ -11,7 +11,7 @@ export const getTableType = (type, isPublic=false) => (isPublic? `public-${type}
 export const getDocId = (itemId, isPublic=false) => (isPublic? `p-${itemId}`: itemId)
 
 export const mainproc = (props) => {
-    const { dispatch, setQueryStep, setQueryPublicStep } = props
+    const { dispatch, setQueryStep, setQueryPublicStep, setQueryFlag, setQueryPublicFlag } = props
     const feedsDid = sessionStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
     const hiveApi = new HiveApi()
@@ -21,6 +21,7 @@ export const mainproc = (props) => {
         new Promise((resolve, reject) => {
             const flagId = `query-${isPublic? 'public-': ''}step`
             const queryStepSetter = isPublic? setQueryPublicStep: setQueryStep
+            const queryUpdateSetter = isPublic? setQueryPublicFlag: setQueryFlag
             LocalDB.get(flagId)
                 .then(stepDoc => {
                     if(stepDoc['step'] < step)
@@ -30,6 +31,7 @@ export const mainproc = (props) => {
                                 resolve(res)
                             })
                     else
+                        queryUpdateSetter(step)
                         resolve({})
                     }
                 )
@@ -175,8 +177,7 @@ export const mainproc = (props) => {
                                     const earliestime = getMinValueFromArray(postArr, 'updated_at')
                                     timeRangeObj.start = earliestime
                                 }
-                                const docId = getDocId(channel._id, isPublic)
-                                LocalDB.get(docId)
+                                LocalDB.get(channel._id)
                                     .then(doc=>{
                                         const prevTimeRange = doc['time_range'] || []
                                         LocalDB.put({...doc, time_range: [timeRangeObj, ...prevTimeRange]})
@@ -437,18 +438,34 @@ export const mainproc = (props) => {
                     Promise.all(publicChannelObjs)
                         .then(publicChannels=>{
                             const publicChannelDocs = publicChannels.filter(channel=>!!channel)
-                            const putPublicChannelAction = publicChannelDocs.map(channelDoc=>(
-                                new Promise((resolveSub, rejectSub)=>{
-                                    const docId = getDocId(channelDoc.channel_id, true)
-                                    LocalDB.get(docId)
-                                        .then(doc => resolveSub(LocalDB.put({ ...channelDoc, _rev: doc._rev })))
-                                        .catch(err => resolveSub(LocalDB.put(channelDoc)))
-                                })
-                            ))
-                            return Promise.all(putPublicChannelAction)
+                            const storePublicChannels = new Promise((resolveSub, rejectSub)=>{
+                                LocalDB.find({ selector: { table_type: getTableType('channel', true) } })
+                                    .then(res=>{
+                                        const deleteDocs = res.docs.map(item=>({...item, _deleted: true}))
+                                        publicChannelDocs.forEach(channel=>{
+                                            const channelIndex = deleteDocs.findIndex(doc=>doc['channel_id'] === channel.channel_id)
+                                            if(channelIndex>=0)
+                                                deleteDocs.splice(channelIndex, 1)
+                                        })
+                                        return LocalDB.bulkDocs(deleteDocs)
+                                    })
+                                    .then(res=>{
+                                        const putPublicChannelAction = publicChannelDocs.map(channelDoc=>(
+                                            new Promise((resolveSub, rejectSub)=>{
+                                                LocalDB.get(channelDoc._id)
+                                                    .then(resolveSub)
+                                                    .catch(err => resolveSub(LocalDB.put(channelDoc)))
+                                            })
+                                        ))
+                                        return Promise.all(putPublicChannelAction)
+                                    })
+                                    .then(resolveSub)
+                                    .catch(resolveSub)
+                            })
+                            return storePublicChannels
                         })
                         .then(_=>updateStepFlag(QueryStep.public_channel, true))
-                        .then(_=>{ 
+                        .then(_=>{
                             queryDispNameStep(true)
                             querySubscriptionInfoStep(true)
                             resolve({success: true})

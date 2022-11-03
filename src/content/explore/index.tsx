@@ -17,7 +17,7 @@ import { getMergedArray, sortByDate } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
 
 function Explore() {
-  const { queryPublicStep } = React.useContext(SidebarContext);
+  const { queryPublicStep, queryPublicFlag } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [containerWidth, setContainerWidth] = React.useState(0);
   const [publicChannels, setPublicChannels] = React.useState([])
@@ -34,7 +34,7 @@ function Explore() {
   const cardWidthUnit = Math.floor(containerWidth*cardWidthRate/10)*10
 
   React.useEffect(()=>{
-    if(queryPublicStep >= QueryStep.public_channel && !publicChannels.length) {
+    if((queryPublicStep >= QueryStep.public_channel && !publicChannels.length) || queryPublicFlag >= QueryStep.public_channel) {
       LocalDB.find({
         selector: {
           table_type: 'public-channel'
@@ -45,7 +45,7 @@ function Explore() {
           setPublicChannels(response.docs)
         })
     }
-    if(queryPublicStep >= QueryStep.post_data && !publicChannels.length) {
+    if((queryPublicStep >= QueryStep.post_data && !publicChannels.length) || queryPublicFlag >= QueryStep.post_data) {
       LocalDB.find({
         selector: {
           table_type: 'public-post'
@@ -56,7 +56,7 @@ function Explore() {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPublicStep])
+  }, [queryPublicStep, queryPublicFlag])
 
   React.useEffect(()=>{
     handleResize()
@@ -87,7 +87,7 @@ function Explore() {
     if("01".includes(tabValue.toString())) {
       content = content.concat(
         Object.values(publicChannels).map((channel, _i)=>(
-          <div className="item" key={_i} style={
+          <div className="item" key={channel.channel_id} style={
             {
               width: cardWidthUnit,
               height: 240,
@@ -104,7 +104,7 @@ function Explore() {
       content = content.concat(
         latestPublicPosts.map((post, _i)=>{
           const isImageCard = post.mediaData && post.mediaData.length
-          return <div className="item" key={_i} style={
+          return <div className="item" key={post.post_id} style={
             {
               width: isImageCard? 2*cardWidthUnit: cardWidthUnit,
               height: isImageCard? 400: 200,

@@ -14,6 +14,8 @@ type SidebarContext = {
   userInfo: any;
   queryStep: any;
   queryPublicStep: any;
+  queryFlag: any;
+  queryPublicFlag: any;
   toggleSidebar: () => void;
   closeSidebar: () => void;
   setSelfChannels: Dispatch<any>;
@@ -29,6 +31,8 @@ type SidebarContext = {
   setUserInfo: Dispatch<any>;
   setQueryStep: Dispatch<any>;
   setQueryPublicStep: Dispatch<any>;
+  setQueryFlag: Dispatch<any>;
+  setQueryPublicFlag: Dispatch<any>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -52,6 +56,8 @@ export const SidebarProvider = (props) => {
   const [userInfo, setUserInfo] = useState('');
   const [queryStep, setQueryStep] = useState(0);
   const [queryPublicStep, setQueryPublicStep] = useState(0);
+  const [queryFlag, setQueryFlag] = useState(0);
+  const [queryPublicFlag, setQueryPublicFlag] = useState(0);
 
   const toggleSidebar = () => {
     setSidebarToggle(!sidebarToggle);
@@ -77,6 +83,8 @@ export const SidebarProvider = (props) => {
         userInfo,
         queryStep,
         queryPublicStep,
+        queryFlag,
+        queryPublicFlag,
         toggleSidebar, 
         closeSidebar, 
         setSelfChannels, 
@@ -91,7 +99,9 @@ export const SidebarProvider = (props) => {
         setMyAvatar,
         setUserInfo,
         setQueryStep,
-        setQueryPublicStep
+        setQueryPublicStep,
+        setQueryFlag,
+        setQueryPublicFlag
       }}
     >
       {props.children}
