@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { Card, Box, Typography, Stack, Hidden, IconButton, Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -16,6 +17,7 @@ const ChannelListItem = (props) => {
   const [isOpenPopup, setOpenPopup] = React.useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const subscribersOfChannel = useSelector(selectSubscribers)
   const openPopupMenu = (event) => {
     setOpenPopup(event.currentTarget);
@@ -34,7 +36,7 @@ const ChannelListItem = (props) => {
           })
         break;
       case 'edit':
-        // setOpenPost(true)
+        navigate(`/channel/edit/${channel['channel_id']}`);
         break;
       case 'publish':
         const splitAvatarContent = channel.avatarSrc.split(';base64,')
