@@ -4,6 +4,7 @@ import { formatDistance } from 'date-fns';
 import createHash from 'hash.js'
 import Autolinker from 'autolinker';
 import axios from 'axios'
+import copy from 'copy-to-clipboard';
 
 import { HiveApi } from 'services/HiveApi'
 import { CommonStatus } from 'models/common_content'
@@ -355,11 +356,12 @@ export function getChannelShortUrl(channel) {
   return getShortUrl(channel, 'channel')
 }
 export async function copy2clipboard(text) {
-  if ("clipboard" in navigator) {
-    await navigator.clipboard.writeText(text);
-  } else {
-    document.execCommand("copy", true, text);
-  }
+  copy(text)
+  // if ("clipboard" in navigator) {
+  //   await navigator.clipboard.writeText(text);
+  // } else {
+  //   document.execCommand("copy", true, text);
+  // }
 }
 
 export const getIpfsUrl = (uri) => {
