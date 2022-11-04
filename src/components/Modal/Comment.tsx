@@ -1,6 +1,5 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
 import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSnackbar } from 'notistack';
@@ -8,26 +7,31 @@ import { useSnackbar } from 'notistack';
 import StyledAvatar from '../StyledAvatar';
 import StyledButton from '../StyledButton';
 import StyledTextFieldOutline from '../StyledTextFieldOutline'
-import { SidebarContext } from 'contexts/SidebarContext';
 import PostBody from '../PostCard/PostBody'
 import { HiveApi } from 'services/HiveApi'
-import { reduceDIDstring } from 'utils/common'
-import { selectFocusedChannelId } from 'redux/slices/channel';
+import { SidebarContext } from 'contexts/SidebarContext';
+import { handleCommentModal, selectActivePost, selectActivePostProps, selectCommentModalState } from 'redux/slices/post';
+import { selectMyInfo } from 'redux/slices/user';
+import { reduceDIDstring, decodeBase64 } from 'utils/common'
+import { LocalDB } from 'utils/db';
 
-function CommentDlg(props) {
-  const { post, postProps, setOpen, isOpen } = props;
-  const { selfChannels, subscribedChannels, publishPostNumber, userInfo, setPublishPostNumber } = React.useContext(SidebarContext);
-  const focusedChannelId = useSelector(selectFocusedChannelId)
+function CommentDlg() {
+  const { queryStep, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
   const [commentext, setCommentext] = React.useState('');
+  const [currentChannel, setCurrentChannel] = React.useState({})
   
-  const focusedChannel = selfChannels.find(item=>item.channel_id === focusedChannelId) || {}
+  const dispatch = useDispatch()
+  const isOpen = useSelector(selectCommentModalState)
+  const activePost = useSelector(selectActivePost)
+  const activePostProps = useSelector(selectActivePostProps)
+  const myInfo = useSelector(selectMyInfo)
+
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
   const commentRef = React.useRef(null)
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const currentChannel = [...selfChannels, ...subscribedChannels].find(item=>item.channel_id === post.channel_id) || {}
   
   React.useEffect(()=>{
     if(!isOpen) {
@@ -37,6 +41,13 @@ function CommentDlg(props) {
     }
   }, [isOpen])
 
+  React.useEffect(()=>{
+    if(queryStep && activePost?.channel_id) {
+      LocalDB.get(activePost['channel_id'])
+        .then(doc=>setCurrentChannel(doc))
+    }
+  }, [queryStep, activePost])
+
   const handlePost = async (e) => {
     setOnValidation(true)
     if(!commentext){
@@ -44,21 +55,21 @@ function CommentDlg(props) {
       return
     }
     setOnProgress(true)
-    hiveApi.createComment(currentChannel.target_did, currentChannel.channel_id, post.post_id, '0', commentext)
+    hiveApi.createComment(currentChannel['target_did'], currentChannel['channel_id'], activePost['post_id'], '0', commentext)
       .then(res=>{
         // console.log(res, "===============2")
         enqueueSnackbar('Reply comment success', { variant: 'success' });
         setPublishPostNumber(publishPostNumber+1)
         setOnProgress(false)
-        setOpen(false);
+        handleClose()
       })
   }
   const handleChangecommentext = (e) => {
     setCommentext(e.target.value)
   }
-  const handleClose = (e) => {
-    e.stopPropagation()
-    setOpen(false);
+  
+  const handleClose = () => {
+    handleCommentModal(false)(dispatch)
   };
 
   return (
@@ -78,15 +89,15 @@ function CommentDlg(props) {
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{minWidth: {sm: 'unset', md: 500}}}>
-        <PostBody {...postProps}/>
+        <PostBody post={activePost} {...activePostProps}/>
         <Stack direction="row" spacing={1} alignItems="center" mb={2} mt={2}>
-          <StyledAvatar alt={focusedChannel.name} src={focusedChannel.avatarSrc} width={40}/>
+          <StyledAvatar alt={myInfo.name} src={decodeBase64(myInfo['avatarSrc'])} width={40}/>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography variant="subtitle2" noWrap>
-              {userInfo['name'] || reduceDIDstring(feedsDid)}
+              {myInfo['name'] || reduceDIDstring(feedsDid)}
             </Typography>
             <Typography variant="body2" noWrap>
-              <b>Replying to</b> {postProps.level === 1? postProps.contentObj.secondaryName: postProps.contentObj.primaryName}
+              <b>Replying to</b> {activePostProps.level === 1? activePostProps?.contentObj?.secondaryName: activePostProps?.contentObj?.primaryName}
             </Typography>
           </Box>
         </Stack>
@@ -111,12 +122,5 @@ function CommentDlg(props) {
     </Dialog>
   );
 }
-
-CommentDlg.propTypes = {
-  setOpen: PropTypes.func.isRequired,
-  isOpen: PropTypes.bool.isRequired,
-  post: PropTypes.object.isRequired,
-  postProps: PropTypes.object.isRequired,
-};
 
 export default CommentDlg

@@ -13,6 +13,7 @@ import { essentialsConnector, initConnectivitySDK } from 'content/signin/Essenti
 import AddChannel from 'components/AddChannel';
 import ChannelCreatedDlg from 'components/Modal/ChannelCreated'
 import PublishChannelDlg from 'components/Modal/PublishChannel'
+import CommentDlg from 'components/Modal/Comment'
 import PostDlg from 'components/Modal/Post'
 import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
@@ -269,6 +270,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
       <ChannelCreatedDlg/>
       <PublishChannelDlg/>
       <PostDlg/>
+      <CommentDlg/>
     </Box>
   );
 };

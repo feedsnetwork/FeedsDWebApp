@@ -10,7 +10,6 @@ import Odometer from "react-odometerjs";
 import "odometer/themes/odometer-theme-default.css";
 
 import StyledAvatar from 'components/StyledAvatar'
-import CommentDlg from 'components/Modal/Comment'
 import DeletePostDlg from 'components/Modal/DeletePost'
 import UnsubscribeDlg from 'components/Modal/Unsubscribe'
 import StyledButton from 'components/StyledButton'
@@ -23,7 +22,7 @@ import { HiveApi } from 'services/HiveApi'
 import { LocalDB, QueryStep } from 'utils/db';
 import { selectSubscribers, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
 import { selectUserAvatar } from 'redux/slices/user';
-import { handlePostModal, setActivePost } from 'redux/slices/post';
+import { handleCommentModal, handlePostModal, setActivePost, setActivePostProps } from 'redux/slices/post';
 
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
   maxWidth: '350px',
@@ -73,7 +72,7 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 }));
 
 const PostBody = (props) => {
-  const { post, contentObj, isReply=false, level=1, direction } = props
+  const { post, contentObj, isReply=false, level=1, direction='column' } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   const subscribersOfChannel = useSelector(selectSubscribers)
   const userAvatars = useSelector(selectUserAvatar)
@@ -82,7 +81,6 @@ const PostBody = (props) => {
   const [currentChannel, setCurrentChannel] = React.useState({})
   const [commentCount, setCommentCount] = React.useState(0)
 
-  const [isOpenComment, setOpenComment] = React.useState(false)
   const [isOpenDelete, setOpenDelete] = React.useState(false)
   const [isOpenUnsubscribe, setOpenUnsubscribe] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
@@ -126,8 +124,11 @@ const PostBody = (props) => {
 
   const handleCommentDlg = (e) => {
     e.stopPropagation()
-    if(post.status !== CommonStatus.deleted)
-      setOpenComment(true)
+    if(post.status !== CommonStatus.deleted) {
+      dispatch(setActivePost(post))
+      dispatch(setActivePostProps({contentObj, isReply: true, level}))
+      handleCommentModal(true)(dispatch)
+    }
   }
 
   const handleLike = async (e) => {
@@ -482,7 +483,6 @@ const PostBody = (props) => {
           }
         </StyledPopper>
       }
-      <CommentDlg setOpen={setOpenComment} isOpen={isOpenComment} post={post} postProps={{post, contentObj, isReply: true, level}}/>
       {
         currentChannel['is_self']?
         <>
@@ -494,5 +494,4 @@ const PostBody = (props) => {
     </>
   )
 }
-
 export default PostBody;

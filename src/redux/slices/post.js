@@ -4,7 +4,9 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   publicPosts: {},
   isOpened2Post: false,
-  activePost: null
+  isOpened2Comment: false,
+  activePost: null,
+  activePostProps: {}
 };
 
 const slice = createSlice({
@@ -17,8 +19,17 @@ const slice = createSlice({
     closePostModal(state) {
       state.isOpened2Post = false;
     },
+    openCommentModal(state) {
+      state.isOpened2Comment = true;
+    },
+    closeCommentModal(state) {
+      state.isOpened2Comment = false;
+    },
     setActivePost(state, action) {
       state.activePost = action.payload;
+    },
+    setActivePostProps(state, action) {
+      state.activePostProps = action.payload;
     },
     setPublicPosts(state, action) {
       state.publicPosts = {...state.publicPosts, ...action.payload}
@@ -42,7 +53,7 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setPublicPosts, setActivePost, updateMediaOfPosts } = slice.actions;
+export const { setPublicPosts, setActivePost, setActivePostProps, updateMediaOfPosts } = slice.actions;
 
 // ----------------------------------------------------------------------
 
@@ -51,6 +62,9 @@ export function selectPublicPosts(state) {
 }
 export function selectPostModalState(state) {
   return state.post.isOpened2Post
+}
+export function selectCommentModalState(state) {
+  return state.post.isOpened2Comment
 }
 export function handlePostModal(isOpened) {
   return (dispatch) => {
@@ -61,6 +75,18 @@ export function handlePostModal(isOpened) {
     );
   };
 }
+export function handleCommentModal(isOpened) {
+  return (dispatch) => {
+    dispatch(
+      isOpened?
+      slice.actions.openCommentModal():
+      slice.actions.closeCommentModal()
+    );
+  };
+}
 export function selectActivePost(state) {
   return state.post.activePost
+}
+export function selectActivePostProps(state) {
+  return state.post.activePostProps
 }
