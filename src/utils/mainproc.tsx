@@ -187,21 +187,24 @@ export const mainproc = (props) => {
                 .then(response=>{
                     const postsByChannel = response.docs.map(async channel=>{
                         try {
+                            let prevTimeRange = [...channel['time_range']]
+                            const lastime = prevTimeRange.length? prevTimeRange[0].end: 0
                             const currentime = new Date().getTime()
                             const queryApi = isPublic? hiveApi.queryPublicPostRangeOfTime: hiveApi.queryPostByRangeOfTime
-                            const postRes = await queryApi(channel['target_did'], channel['channel_id'], 0, currentime)
+                            const postRes = await queryApi(channel['target_did'], channel['channel_id'], lastime, currentime)
                             if(postRes['find_message'] && postRes['find_message']['items']) {
                                 let postArr = postRes['find_message']['items']
-                                const timeRangeObj = {start: 0, end: currentime}
+                                const timeRangeObj = {start: lastime, end: currentime}
                                 if(postArr.length >= LimitPostCount) {
                                     const earliestime = getMinValueFromArray(postArr, 'updated_at')
                                     timeRangeObj.start = earliestime
                                 }
+                                if(timeRangeObj.start === lastime && prevTimeRange.length)
+                                    prevTimeRange[0].end = currentime
+                                else
+                                    prevTimeRange = [timeRangeObj, ...prevTimeRange]
                                 LocalDB.get(channel._id)
-                                    .then(doc=>{
-                                        const prevTimeRange = doc['time_range'] || []
-                                        LocalDB.put({...doc, time_range: [timeRangeObj, ...prevTimeRange]})
-                                    })
+                                    .then(doc=>LocalDB.put({...doc, time_range: prevTimeRange}))
                                 if(prefConf.DP)
                                     postArr = postArr.filter(postItem=>postItem.status!==CommonStatus.deleted)
 
