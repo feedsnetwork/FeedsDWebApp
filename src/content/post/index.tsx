@@ -38,41 +38,37 @@ const Post = () => {
       setIsLoading(true)
     else if(queryStep >= QueryStep.post_data) {
       setIsLoading(false)
+      getComments()
       LocalDB.get(params.post_id.toString())
         .then(doc=>{
           setPostInfo(doc)
           return LocalDB.get(doc['channel_id'].toString())
         })
         .then(doc=>setChannelInfo(doc))
-
-      LocalDB.find({
-        selector: {
-          table_type: 'comment',
-          post_id: params.post_id
-        }
-      })
-        .then(response=>{
-          setComments(response.docs)
-        })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep])
 
   React.useEffect(()=>{
     if(publishPostNumber && activePost['post_id']===params.post_id) {
-      LocalDB.find({
-        selector: {
-          table_type: 'comment',
-          post_id: params.post_id
-        }
-      })
-        .then(response=>{
-          setComments(response.docs)
-        })
+      getComments()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publishPostNumber])
 
+  const getComments = ()=>{
+    LocalDB.find({
+      selector: {
+        table_type: 'comment',
+        post_id: params.post_id,
+        created_at: {$exists: true}
+      },
+      sort: [{'created_at': 'desc'}],
+    })
+      .then(response=>{
+        setComments(response.docs)
+      })
+  }
   const loadingSkeletons = Array(5).fill(null)
   return (
     <Container sx={{ my: 3 }} maxWidth="lg">

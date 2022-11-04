@@ -53,6 +53,7 @@ export const CommentForm = (props)=>{
                 enqueueSnackbar('Reply comment success', { variant: 'success' });
                 setPublishPostNumber(publishPostNumber+1)
                 setOnProgress(false)
+                setCommentext('')
             })
             .catch(err=>{
                 enqueueSnackbar('Reply comment error', { variant: 'error' });
