@@ -62,7 +62,8 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const [isOnValidation, setOnValidation] = useState(false);
   const [onProgress, setOnProgress] = useState(false);
   const [originChannel, setOriginChannel] = useState({});
-  const [selfChannelCount, setSelfChannelCount] = useState(0);
+  const [selfChannels, setSelfChannels] = useState([]);
+  const selfChannelNames = selfChannels.map(c=>c['name'])
   const nameRef = useRef(null)
   const descriptionRef = useRef(null)
   const tippingRef = useRef(null)
@@ -81,10 +82,10 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       }
     })
       .then(res=>{
-        setSelfChannelCount(res.docs.length)
+        setSelfChannels(res.docs)
       })
   }, [updateChannelNumber])
-  
+
   useEffect(()=>{
     if(action === 'edit') {
       LocalDB.get(params.channelId)
@@ -117,6 +118,10 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
     if(!avatarUrl)
       return
     if(!name) {
+      nameRef.current.focus()
+      return
+    }
+    if(selfChannelNames.includes(name)) {
       nameRef.current.focus()
       return
     }
@@ -224,11 +229,10 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       avatarSrc = avatarUrl.preview
     else avatarSrc = avatarUrl
   }
-  
   return (
     <Box p={4}>
       {
-        selfChannelCount>=5 && action==="add"?
+        selfChannels.length>=5 && action==="add"?
         <Stack alignItems='center'>
           <Box component='img' src='/post-chat.svg' width={{xs: 50, md: 65, lg: 80}} pt={{xs: 1, sm: 2}} pb={{xs: 1, sm: 2}}/>
           <Typography variant='h4' align='center'>
@@ -269,7 +273,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
             <Grid container direction="column">
               <Grid item>
                 <Typography variant='subtitle1'>Name</Typography>
-                <FormControl error={isOnValidation&&!name.length} variant="standard" sx={{width: '100%'}}>
+                <FormControl error={isOnValidation&&(!name.length||selfChannelNames.includes(name))} variant="standard" sx={{width: '100%'}}>
                   <Input 
                     placeholder="Add channel name" 
                     fullWidth 
@@ -278,6 +282,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                     onChange={(e)=>{setName(e.target.value)}}
                   />
                   <FormHelperText id="name-error-text" hidden={!isOnValidation||(isOnValidation&&name.length>0)}>Name is required</FormHelperText>
+                  <FormHelperText id="name-error-text" hidden={!isOnValidation||(isOnValidation&&!selfChannelNames.includes(name))}>Name is duplicated</FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item py={2}>
