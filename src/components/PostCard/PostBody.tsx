@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom'
 import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade, Menu, MenuItem, Link } from '@mui/material';
@@ -17,12 +17,12 @@ import IconInCircle from 'components/IconInCircle'
 import Heart from 'components/Heart'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
-import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
 import { HiveApi } from 'services/HiveApi'
-import { LocalDB, QueryStep } from 'utils/db';
 import { selectSubscribers, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
+import { handleCommentModal, handlePostModal, selectActivePost, setActivePost, setActivePostProps } from 'redux/slices/post';
 import { selectUserAvatar } from 'redux/slices/user';
-import { handleCommentModal, handlePostModal, setActivePost, setActivePostProps } from 'redux/slices/post';
+import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
+import { LocalDB, QueryStep } from 'utils/db';
 
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
   maxWidth: '350px',
@@ -76,7 +76,8 @@ const PostBody = (props) => {
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   const subscribersOfChannel = useSelector(selectSubscribers)
   const userAvatars = useSelector(selectUserAvatar)
-  const { queryStep } = React.useContext(SidebarContext);
+  const activePost = useSelector(selectActivePost)
+  const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [currentChannel, setCurrentChannel] = React.useState({})
   const [commentCount, setCommentCount] = React.useState(0)
@@ -105,23 +106,30 @@ const PostBody = (props) => {
   }, [post])
 
   React.useEffect(()=>{
-    if(queryStep >= QueryStep.comment_data) {
-      LocalDB.find({
-        selector: {
-          table_type: 'comment',
-          post_id: post.post_id
-        }
-      })
-        .then(response => {
-          setCommentCount(response.docs.length)
-        })
-    }
+    if(queryStep >= QueryStep.comment_data)
+      getCommentCount()
   }, [queryStep, post])
+
+  React.useEffect(()=>{
+    if(publishPostNumber && activePost['post_id'] === post.post_id)
+    getCommentCount()
+  }, [publishPostNumber])
 
   React.useEffect(()=>{
     setIsLike(!!post.like_me)
   }, [post.like_me])
 
+  const getCommentCount = ()=>{
+    LocalDB.find({
+      selector: {
+        table_type: 'comment',
+        post_id: post.post_id
+      }
+    })
+      .then(response => {
+        setCommentCount(response.docs.length)
+      })
+  }
   const handleCommentDlg = (e) => {
     e.stopPropagation()
     if(post.status !== CommonStatus.deleted) {

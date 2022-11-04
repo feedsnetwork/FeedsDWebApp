@@ -5,14 +5,15 @@ import { Grid, Container } from '@mui/material';
 
 import PostCard from 'components/PostCard';
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
-import { reduceDIDstring } from 'utils/common'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { selectDispNameOfChannels } from 'redux/slices/channel';
 import { selectUsers } from 'redux/slices/user';
+import { selectDispNameOfChannels } from 'redux/slices/channel';
+import { selectActivePost } from 'redux/slices/post';
+import { reduceDIDstring } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
 
 const Post = () => {
-  const { queryStep } = React.useContext(SidebarContext);
+  const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
   const params = useParams()
   const [postInfo, setPostInfo] = React.useState(null)
   const [channelInfo, setChannelInfo] = React.useState({})
@@ -21,6 +22,7 @@ const Post = () => {
   const [isLoading, setIsLoading] = React.useState(false)
   const channelDispName = useSelector(selectDispNameOfChannels)
   const users = useSelector(selectUsers)
+  const activePost = useSelector(selectActivePost)
 
   React.useEffect(()=>{
     const channelId = channelInfo['channel_id']
@@ -55,6 +57,21 @@ const Post = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep])
+
+  React.useEffect(()=>{
+    if(publishPostNumber && activePost['post_id']===params.post_id) {
+      LocalDB.find({
+        selector: {
+          table_type: 'comment',
+          post_id: params.post_id
+        }
+      })
+        .then(response=>{
+          setComments(response.docs)
+        })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publishPostNumber])
 
   const loadingSkeletons = Array(5).fill(null)
   return (

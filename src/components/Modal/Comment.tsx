@@ -56,12 +56,31 @@ function CommentDlg() {
     }
     setOnProgress(true)
     hiveApi.createComment(currentChannel['target_did'], currentChannel['channel_id'], activePost['post_id'], '0', commentext)
+      .then(res=>hiveApi.queryCommentByID(currentChannel['target_did'], currentChannel['channel_id'], activePost['post_id'], res.commentId))
       .then(res=>{
-        // console.log(res, "===============2")
+        if(res['find_message'] && res['find_message']['items'].length) {
+          const createdComment = res['find_message']['items'][0]
+          const newCommentObj = {
+            ...createdComment,
+            _id: createdComment.comment_id, 
+            target_did: currentChannel['target_did'], 
+            table_type: 'comment',
+            likes: 0,
+            like_me: false,
+            like_creators: []
+          }
+          return LocalDB.put(newCommentObj)
+        }
+      })
+      .then(_=>{
         enqueueSnackbar('Reply comment success', { variant: 'success' });
         setPublishPostNumber(publishPostNumber+1)
         setOnProgress(false)
         handleClose()
+      })
+      .catch(err=>{
+        enqueueSnackbar('Reply comment error', { variant: 'error' });
+        setOnProgress(false)
       })
   }
   const handleChangecommentext = (e) => {
