@@ -143,6 +143,7 @@ function RightPanel() {
           setFocusChannel(doc)
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateChannelNumber])
 
   React.useEffect(()=>{

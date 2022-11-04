@@ -83,7 +83,13 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           setAvatarUrl(decodeBase64(doc['avatarSrc'] || ''))
         })
     }
-  }, [])
+    else {
+      setName('')
+      setDescription('')
+      setTipping('')
+      setAvatarUrl(null)
+    }
+  }, [params.channelId, action])
 
   const handleFileChange = event => {
     const fileObj = event.target.files && event.target.files[0];

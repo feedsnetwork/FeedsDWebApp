@@ -6,6 +6,7 @@ import { ChannelRegContractAddress } from 'config';
 import { setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
     sortByDate, encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
+import { DefaultAvatarMap } from "./avatar_map";
 
 export const getTableType = (type, isPublic=false) => (isPublic? `public-${type}`: type)
 export const getDocId = (itemId, isPublic=false) => (isPublic? `p-${itemId}`: itemId)
@@ -78,7 +79,6 @@ export const mainproc = (props) => {
                                         channelDoc['avatarSrc'] = ''
                                 }
                                 originSelfChannels.splice(channelIndex, 1)
-                                // delete channelDoc['_rev']
                             }
                             else {
                                 channelDoc = {
@@ -568,7 +568,14 @@ export const mainproc = (props) => {
                                         content=`${content}${String.fromCharCode(code)}`;
                                         return content
                                     }, '')
-                                    avatarObj[channel._id] = encodeBase64(avatarSrc)
+                                    if(avatarSrc.startsWith('assets/images')) {
+                                        const avatarSrcSplit = avatarSrc.split("/")
+                                        const avatarFile = avatarSrcSplit[avatarSrcSplit.length-1]
+                                        const avatarContent = DefaultAvatarMap[avatarFile] || ""
+                                        avatarObj[channel._id] = encodeBase64(avatarContent)
+                                    }
+                                    else
+                                        avatarObj[channel._id] = encodeBase64(avatarSrc)
                                     return LocalDB.get(channel._id)
                                 }
                             })
