@@ -258,17 +258,20 @@ function SidebarChannel() {
                     focused={focusedChannelId&&focusedChannelId===item.channel_id}/>
                 )
               }
-              <Tooltip title="Add new channel" arrow disableInteractive enterTouchDelay={0}>
-                <GradientOutlineFab aria-label="add" size='medium' onClick={()=>{navigate('/channel/add')}}>
-                  <svg width={0} height={0}>
-                    <linearGradient id="linearColors" x1={0} y1={1} x2={1} y2={1}>
-                      <stop offset={0} stopColor="#7624FE" />
-                      <stop offset={1} stopColor="#368BFF" />
-                    </linearGradient>
-                  </svg>
-                  <AddIcon sx={{ fill: "url(#linearColors)", fontSize: 24 }}/>
-                </GradientOutlineFab>
-              </Tooltip>
+              {
+                selfChannels.length < 5 &&
+                <Tooltip title="Add new channel" arrow disableInteractive enterTouchDelay={0}>
+                  <GradientOutlineFab aria-label="add" size='medium' onClick={()=>{navigate('/channel/add')}}>
+                    <svg width={0} height={0}>
+                      <linearGradient id="linearColors" x1={0} y1={1} x2={1} y2={1}>
+                        <stop offset={0} stopColor="#7624FE" />
+                        <stop offset={1} stopColor="#368BFF" />
+                      </linearGradient>
+                    </svg>
+                    <AddIcon sx={{ fill: "url(#linearColors)", fontSize: 24 }}/>
+                  </GradientOutlineFab>
+                </Tooltip>
+              }
             </Stack>
           </Scrollbar>
         </Box>

@@ -62,6 +62,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const [isOnValidation, setOnValidation] = useState(false);
   const [onProgress, setOnProgress] = useState(false);
   const [originChannel, setOriginChannel] = useState({});
+  const [selfChannelCount, setSelfChannelCount] = useState(0);
   const nameRef = useRef(null)
   const descriptionRef = useRef(null)
   const tippingRef = useRef(null)
@@ -71,6 +72,18 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const dispatch = useDispatch();
   const myInfo = useSelector(selectMyInfo)
   const { enqueueSnackbar } = useSnackbar();
+  
+  useEffect(()=>{
+    LocalDB.find({
+      selector: {
+        table_type: 'channel',
+        is_self: true
+      }
+    })
+      .then(res=>{
+        setSelfChannelCount(res.docs.length)
+      })
+  }, [updateChannelNumber])
   
   useEffect(()=>{
     if(action === 'edit') {
@@ -214,77 +227,92 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   
   return (
     <Box p={4}>
-      <Card sx={{ p: 3 }}>
-        <Stack spacing={6} alignItems='center'>
-          <AvatarWrapper>
-            <Box component='img' src={avatarSrc} draggable={false} sx={{ width: 90, height: 90, borderRadius: '50%'}}/>
-            <ButtonUploadWrapper>
-              <AvatarInput
-                accept="image/*"
-                id="icon-button-file"
-                name="icon-button-file"
-                type="file"
-                onChange={handleFileChange}
-              />
-              <label htmlFor="icon-button-file">
-                <IconButton component="span" color="primary">
-                  <Icon icon="akar-icons:edit" />
-                </IconButton>
-              </label>
-            </ButtonUploadWrapper>
-          </AvatarWrapper>
-          {
-            isOnValidation && !avatarUrl &&
-            <FormControl error={true} variant="standard" sx={{width: '100%', mt: '0px !important', alignItems: 'center'}}>
-              <FormHelperText id="avatar-error-text">Avatar file is required</FormHelperText>
-            </FormControl>
-          }
-          <Grid container direction="column">
-            <Grid item>
-              <Typography variant='subtitle1'>Name</Typography>
-              <FormControl error={isOnValidation&&!name.length} variant="standard" sx={{width: '100%'}}>
-                <Input 
-                  placeholder="Add channel name" 
-                  fullWidth 
-                  inputRef={nameRef}
-                  value={name}
-                  onChange={(e)=>{setName(e.target.value)}}
+      {
+        selfChannelCount>=5 && action==="add"?
+        <Stack alignItems='center'>
+          <Box component='img' src='/post-chat.svg' width={{xs: 50, md: 65, lg: 80}} pt={{xs: 1, sm: 2}} pb={{xs: 1, sm: 2}}/>
+          <Typography variant='h4' align='center'>
+            Creating channel is restricted
+          </Typography>
+          <Stack spacing={4}>
+            <Typography variant='body2' component="pre" sx={{opacity: .8}} align='center'>
+              Users are allowed to create channels up to 5.
+            </Typography>
+          </Stack>
+        </Stack>:
+
+        <Card sx={{ p: 3 }}>
+          <Stack spacing={6} alignItems='center'>
+            <AvatarWrapper>
+              <Box component='img' src={avatarSrc} draggable={false} sx={{ width: 90, height: 90, borderRadius: '50%'}}/>
+              <ButtonUploadWrapper>
+                <AvatarInput
+                  accept="image/*"
+                  id="icon-button-file"
+                  name="icon-button-file"
+                  type="file"
+                  onChange={handleFileChange}
                 />
-                <FormHelperText id="name-error-text" hidden={!isOnValidation||(isOnValidation&&name.length>0)}>Name is required</FormHelperText>
+                <label htmlFor="icon-button-file">
+                  <IconButton component="span" color="primary">
+                    <Icon icon="akar-icons:edit" />
+                  </IconButton>
+                </label>
+              </ButtonUploadWrapper>
+            </AvatarWrapper>
+            {
+              isOnValidation && !avatarUrl &&
+              <FormControl error={true} variant="standard" sx={{width: '100%', mt: '0px !important', alignItems: 'center'}}>
+                <FormHelperText id="avatar-error-text">Avatar file is required</FormHelperText>
               </FormControl>
+            }
+            <Grid container direction="column">
+              <Grid item>
+                <Typography variant='subtitle1'>Name</Typography>
+                <FormControl error={isOnValidation&&!name.length} variant="standard" sx={{width: '100%'}}>
+                  <Input 
+                    placeholder="Add channel name" 
+                    fullWidth 
+                    inputRef={nameRef}
+                    value={name}
+                    onChange={(e)=>{setName(e.target.value)}}
+                  />
+                  <FormHelperText id="name-error-text" hidden={!isOnValidation||(isOnValidation&&name.length>0)}>Name is required</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item py={2}>
+                <Typography variant='subtitle1'>Description</Typography>
+                <FormControl error={isOnValidation&&!description.length} variant="standard" sx={{width: '100%'}}>
+                  <Input 
+                    placeholder="Add channel description" 
+                    fullWidth 
+                    inputRef={descriptionRef}
+                    value={description}
+                    onChange={(e)=>{setDescription(e.target.value)}}
+                  />
+                  <FormHelperText id="description-error-text" hidden={!isOnValidation||(isOnValidation&&description.length>0)}>Description is required</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item>
+                <Typography variant='subtitle1'>Tipping Address</Typography>
+                <FormControl error={isOnValidation&&!tipping.length} variant="standard" sx={{width: '100%'}}>
+                  <Input 
+                    placeholder="Enter tipping address" 
+                    fullWidth 
+                    inputRef={tippingRef}
+                    value={tipping}
+                    onChange={(e)=>{setTipping(e.target.value)}}
+                  />
+                  <FormHelperText id="description-error-text" hidden={!isOnValidation||(isOnValidation&&tipping.length>0)}>Tipping Address is required</FormHelperText>
+                </FormControl>
+              </Grid>
             </Grid>
-            <Grid item py={2}>
-              <Typography variant='subtitle1'>Description</Typography>
-              <FormControl error={isOnValidation&&!description.length} variant="standard" sx={{width: '100%'}}>
-                <Input 
-                  placeholder="Add channel description" 
-                  fullWidth 
-                  inputRef={descriptionRef}
-                  value={description}
-                  onChange={(e)=>{setDescription(e.target.value)}}
-                />
-                <FormHelperText id="description-error-text" hidden={!isOnValidation||(isOnValidation&&description.length>0)}>Description is required</FormHelperText>
-              </FormControl>
-            </Grid>
-            <Grid item>
-              <Typography variant='subtitle1'>Tipping Address</Typography>
-              <FormControl error={isOnValidation&&!tipping.length} variant="standard" sx={{width: '100%'}}>
-                <Input 
-                  placeholder="Enter tipping address" 
-                  fullWidth 
-                  inputRef={tippingRef}
-                  value={tipping}
-                  onChange={(e)=>{setTipping(e.target.value)}}
-                />
-                <FormHelperText id="description-error-text" hidden={!isOnValidation||(isOnValidation&&tipping.length>0)}>Tipping Address is required</FormHelperText>
-              </FormControl>
-            </Grid>
-          </Grid>
-          <Box width={200}>
-            <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={saveAction}>{action!=='edit'? 'Create': 'Save'}</StyledButton>
-          </Box>
-        </Stack>
-      </Card>
+            <Box width={200}>
+              <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={saveAction}>{action!=='edit'? 'Create': 'Save'}</StyledButton>
+            </Box>
+          </Stack>
+        </Card>
+      }
     </Box>
   );
 }
