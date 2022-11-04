@@ -1,16 +1,9 @@
-import React from 'react';
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom';
-import { Box, Stack, Typography, Card } from '@mui/material';
-import { useSnackbar } from 'notistack';
+import { Box, Stack, Card } from '@mui/material';
 
-import StyledAvatar from 'components/StyledAvatar'
-import StyledButton from 'components/StyledButton'
-import { SidebarContext } from 'contexts/SidebarContext';
-import StyledTextFieldOutline from 'components/StyledTextFieldOutline'
 import PostBody from './PostBody'
-import { HiveApi } from 'services/HiveApi'
-// import { selectPublicChannels } from 'redux/slices/channel';
+import { CommentForm } from './CommentForm';
 import { selectUsers } from 'redux/slices/user';
 import { selectChannelAvatar } from 'redux/slices/channel';
 import { decodeBase64, reduceDIDstring } from 'utils/common'
@@ -18,40 +11,9 @@ import { decodeBase64, reduceDIDstring } from 'utils/common'
 const PostCard = (props) => {
   const navigate = useNavigate();
   const { post, channel, dispName, level=1, replyingTo='', replyable=false, dispAvatar={}, direction='column' } = props
-  const { myAvatar, userInfo, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
-  // const publicChannels = useSelector(selectPublicChannels)
   const channelAvatars = useSelector(selectChannelAvatar)
   const users = useSelector(selectUsers)
-  
-  const [isOnValidation, setOnValidation] = React.useState(false);
-  const [onProgress, setOnProgress] = React.useState(false);
-  const [commentext, setCommentext] = React.useState('');
-  const commentRef = React.useRef(null)
-  const hiveApi = new HiveApi()
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
 
-  const { enqueueSnackbar } = useSnackbar();
-
-  const handleComment = async (e) => {
-    setOnValidation(true)
-    if(!commentext){
-      commentRef.current.focus()
-      return
-    }
-    setOnProgress(true)
-    hiveApi.createComment(post.target_did, post.channel_id, post.post_id, '0', commentext)
-      .then(res=>{
-        // console.log(res, "===============2")
-        enqueueSnackbar('Reply comment success', { variant: 'success' });
-        setPublishPostNumber(publishPostNumber+1)
-        setOnProgress(false)
-      })
-  }
-  
-  const handleChangeCommentext = (e) => {
-    setCommentext(e.target.value)
-  }
-  
   const naviage2detail = (e) => {
     navigate(`/post/${post.post_id}`);
   }
@@ -81,37 +43,7 @@ const PostCard = (props) => {
         <PostBody {...BodyProps}/>
         {
           level===1 && replyable &&
-          <Box pl={3} pt={2}>
-            <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-              <StyledAvatar alt="" src={myAvatar}/>
-              <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                <Typography variant="subtitle2" noWrap>
-                  {userInfo['name'] || reduceDIDstring(feedsDid)}
-                </Typography>
-                <Typography variant="body2" noWrap>
-                  <b>Replying to</b> @{dispName}
-                </Typography>
-              </Box>
-            </Stack>
-            <Stack spacing={2}>
-              <StyledTextFieldOutline
-                inputRef={commentRef}
-                value={commentext}
-                multiline
-                rows={3}
-                placeholder="What are you thoughts?"
-                onChange={handleChangeCommentext}
-                error={isOnValidation&&!commentext}
-                helperText={isOnValidation&&!commentext?'Message is required':''}
-              />
-              
-              <Stack direction='row' sx={{justifyContent: 'end'}}>
-                <Box width={150}>
-                  <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={handleComment}>Reply</StyledButton>
-                </Box>
-              </Stack>
-            </Stack>
-          </Box>
+          <CommentForm post={post} dispName={dispName}/>
         }
         {
           level===2 && post.commentData && 
