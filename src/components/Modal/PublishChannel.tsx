@@ -10,7 +10,9 @@ import { ChannelContent } from 'models/channel_content';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ipfsURL, ChannelRegContractAddress, blankAddress } from 'config'
 import { selectPublishModalState, selectCreatedChannel, handlePublishModal } from 'redux/slices/channel'
-import { getWeb3Contract, getWeb3Connect, decFromHex, hash } from 'utils/common'
+import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl } from 'utils/common'
+import { getDocId, getTableType } from 'utils/mainproc';
+import { LocalDB } from 'utils/db';
 
 const client = create({url: ipfsURL})
 function PublishChannel() {
@@ -71,6 +73,21 @@ function PublishChannel() {
         };
         const mintMethod = channelRegContract.methods.mint(tokenID, tokenURI, channelEntry).send(transactionParams)
         await promiseReceipt(mintMethod)
+        const channelDoc = {
+          _id: getDocId(channelID, true), 
+          type: metaObj.type,
+          name: metaObj.name,
+          intro: metaObj.description,
+          channel_id: channelID,
+          target_did: metaObj.creator['did'], 
+          time_range: [], 
+          avatarSrc: getIpfsUrl(metaObj?.data?.avatar),
+          bannerSrc: getIpfsUrl(metaObj?.data?.banner),
+          table_type: getTableType('channel', true)
+        }
+        LocalDB.get(getDocId(channelID, true))
+          .then(doc=>LocalDB.put({...doc, ...channelDoc}))
+          .catch(err=>LocalDB.put(channelDoc))
         enqueueSnackbar('Publish channel success', { variant: 'success' });
         setOnProgress(false)
         handleClose()
