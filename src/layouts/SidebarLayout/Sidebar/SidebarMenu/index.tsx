@@ -212,7 +212,8 @@ function SidebarMenu(props) {
       LocalDB.find({
         selector: {
           table_type: 'channel', 
-          is_subscribed: true
+          is_subscribed: true,
+          is_self: false
         },
       })
         .then(response=>{
