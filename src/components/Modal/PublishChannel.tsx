@@ -8,9 +8,9 @@ import StyledButton from '../StyledButton';
 import StyledAvatar from '../StyledAvatar';
 import { ChannelContent } from 'models/channel_content';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
-import { ipfsURL, ChannelRegContractAddress, blankAddress } from 'config'
+import { ipfsURL, ChannelRegContractAddress } from 'config'
 import { selectPublishModalState, selectCreatedChannel, handlePublishModal } from 'redux/slices/channel'
-import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl } from 'utils/common'
+import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec } from 'utils/common'
 import { getDocId, getTableType } from 'utils/mainproc';
 import { LocalDB } from 'utils/db';
 
@@ -72,7 +72,8 @@ function PublishChannel() {
           'value': 0
         };
         const mintMethod = channelRegContract.methods.mint(tokenID, tokenURI, channelEntry).send(transactionParams)
-        await promiseReceipt(mintMethod)
+        const mintRes = await promiseReceipt(mintMethod)
+        const tokenId = `0x${hexFromDec(mintRes['events']?.ChannelRegistered?.returnValues.tokenId || '0')}`
         const channelDoc = {
           _id: getDocId(channelID, true), 
           type: metaObj.type,
@@ -83,7 +84,8 @@ function PublishChannel() {
           time_range: [], 
           avatarSrc: getIpfsUrl(metaObj?.data?.avatar),
           bannerSrc: getIpfsUrl(metaObj?.data?.banner),
-          table_type: getTableType('channel', true)
+          table_type: getTableType('channel', true),
+          tokenId
         }
         LocalDB.get(getDocId(channelID, true))
           .then(doc=>LocalDB.put({...doc, ...channelDoc}))

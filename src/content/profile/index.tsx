@@ -16,13 +16,18 @@ import { selectMyInfo } from 'redux/slices/user';
 import { selectDispNameOfChannels } from 'redux/slices/channel';
 
 function Profile() {
-  const { walletAddress, queryStep } = React.useContext(SidebarContext);
+  const { walletAddress, queryStep, queryPublicStep } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [channels, setChannels] = React.useState([])
+  const [publicChannels, setPublicChannels] = React.useState([])
   const [likedPosts, setLikedPosts] = React.useState([])
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myInfo = useSelector(selectMyInfo)
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
+  const channelTokens = publicChannels.reduce((tokens, channel)=>{
+    tokens[channel.channel_id] = channel.tokenId
+    return tokens
+  }, {})
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -52,9 +57,23 @@ function Profile() {
     }
   }, [queryStep])
 
+  React.useEffect(()=>{
+    if(queryPublicStep) {
+      LocalDB.find({
+        selector: {
+          table_type: 'public-channel'
+        }
+      })
+        .then(response => {
+          setPublicChannels(response.docs)
+        })
+    }
+  }, [queryPublicStep])
+
   // const backgroundImg = "/temp-back.png"
   const selfChannels = channels.filter(channel=>channel['is_self'] === true)
   const subscribedChannels = channels.filter(channel=>channel['is_subscribed'] === true)
+  console.info(channelTokens, publicChannels)
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
       <Card>
@@ -106,9 +125,10 @@ function Profile() {
 
             <Stack spacing={1}>
               {
-                selfChannels.map((channel, _i)=>(
-                  <ChannelListItem channel={channel} key={_i}/>
-                ))
+                selfChannels.map((channel, _i)=>{
+                  console.info(channelTokens[channel.channel_id], channel)
+                  return <ChannelListItem channel={channel} publishTokenId={channelTokens[channel.channel_id]} key={channel.channel_id}/>
+                })
               }
             </Stack>
           }

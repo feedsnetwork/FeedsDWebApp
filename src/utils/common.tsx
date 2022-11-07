@@ -141,6 +141,9 @@ export function hash(string) {
 export function decFromHex(hex) {
   return BigInt(parseInt(hex, 16)).toString(10);
 }
+export function hexFromDec(dec) {
+  return BigInt(parseInt(dec, 10)).toString(16);
+}
 
 export function getFilteredArrayByUnique(arr, field) {
   var result = arr.reduce((unique, o) => {

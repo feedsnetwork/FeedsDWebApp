@@ -468,7 +468,8 @@ export const mainproc = (props) => {
                             time_range: [], 
                             avatarSrc: getIpfsUrl(metaContent?.data?.avatar),
                             bannerSrc: getIpfsUrl(metaContent?.data?.banner),
-                            table_type: getTableType('channel', true)
+                            table_type: getTableType('channel', true),
+                            tokenId
                         }
                         return channelDoc
                     })

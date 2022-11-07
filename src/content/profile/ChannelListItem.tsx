@@ -7,11 +7,11 @@ import { useSnackbar } from 'notistack';
 
 import IconInCircle from 'components/IconInCircle'
 import StyledAvatar from 'components/StyledAvatar'
-import { handlePublishModal, selectSubscribers, setCreatedChannel } from 'redux/slices/channel';
+import { handlePublishModal, handleUnpublishModal, selectSubscribers, setCreatedChannel, setChannelTokenId } from 'redux/slices/channel';
 import { getChannelShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
 
 const ChannelListItem = (props) => {
-  const {channel} = props
+  const {channel, publishTokenId} = props
   const {name, avatarSrc, intro} = channel
   const avatarImg = decodeBase64(avatarSrc)
   const [isOpenPopup, setOpenPopup] = React.useState(null);
@@ -43,6 +43,10 @@ const ChannelListItem = (props) => {
         const channelObj = {...channel, avatarContent: splitAvatarContent[splitAvatarContent.length-1], avatarPreview: avatarSrc}
         handlePublishModal(true)(dispatch)
         dispatch(setCreatedChannel(channelObj))
+        break;
+      case 'unpublish':
+        handleUnpublishModal(true)(dispatch)
+        dispatch(setChannelTokenId(publishTokenId))
         break;
       default:
         break;
@@ -87,10 +91,18 @@ const ChannelListItem = (props) => {
               <IconInCircle name='clarity:note-edit-line'/>&nbsp;
               <Typography variant="subtitle2">Edit Channel</Typography>
             </MenuItem>
-            <MenuItem value='publish' onClick={handleClosePopup}>
-              <IconInCircle name='fa6-solid:earth-americas'/>&nbsp;
-              <Typography variant="subtitle2" color="#FF453A">Publish Channel</Typography>
-            </MenuItem>
+            {
+              !publishTokenId?
+              <MenuItem value='publish' onClick={handleClosePopup}>
+                <IconInCircle name='fa6-solid:earth-americas'/>&nbsp;
+                <Typography variant="subtitle2" color="#FF453A">Publish Channel</Typography>
+              </MenuItem>:
+
+              <MenuItem value='unpublish' onClick={handleClosePopup}>
+                <IconInCircle name='fa6-solid:earth-americas'/>&nbsp;
+                <Typography variant="subtitle2" color="#FF453A">Unpublish Channel</Typography>
+              </MenuItem>
+            }
           </Menu>
         </Box>
       }

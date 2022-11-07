@@ -11,8 +11,6 @@ import PostTextCard from 'components/PostCard/PostTextCard'
 import PostImgCard from 'components/PostCard/PostImgCard'
 import InputOutline from 'components/InputOutline'
 import { SidebarContext } from 'contexts/SidebarContext';
-// import { selectPublicChannels, setPublicChannels, setDispNameOfChannels } from 'redux/slices/channel';
-// import { selectPublicPosts, setPublicPosts, updateMediaOfPosts } from 'redux/slices/post';
 import { getMergedArray, sortByDate } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
 
@@ -22,8 +20,6 @@ function Explore() {
   const [containerWidth, setContainerWidth] = React.useState(0);
   const [publicChannels, setPublicChannels] = React.useState([])
   const [publicPosts, setPublicPosts] = React.useState([])
-  // const publicChannels = useSelector(selectPublicChannels)
-  // const publicPosts = useSelector(selectPublicPosts)
   const latestPublicPosts = sortByDate(getMergedArray(publicPosts)).slice(0, 10)
   const containerRef = React.useRef(null)
   const theme = useTheme();

@@ -5,10 +5,12 @@ const initialState = {
   avatarSrc: {},
   isChannelCreated: false,
   isOpened2Publish: false,
+  isOpened2Unpublish: false,
   activeChannelId: 0, // active self channel id for detail
   focusedChannelId: 0, // focused self channel id
   visitedChannelId: 0, // selected subscribed channel id
   createdChannel: {},
+  channelTokenId: '',
   dispNameOfChannels: {},
   subscribers: {},
   publicChannels: {}
@@ -30,8 +32,17 @@ const slice = createSlice({
     closePublishModal(state) {
       state.isOpened2Publish = false;
     },
+    openUnpublishModal(state) {
+      state.isOpened2Unpublish = true;
+    },
+    closeUnpublishModal(state) {
+      state.isOpened2Unpublish = false;
+    },
     setCreatedChannel(state, action) {
       state.createdChannel = action.payload
+    },
+    setChannelTokenId(state, action) {
+      state.channelTokenId = action.payload
     },
     setPublicChannels(state, action) {
       const tempState = {...state.publicChannels}
@@ -65,6 +76,7 @@ export default slice.reducer;
 // Actions
 export const { 
   setCreatedChannel, 
+  setChannelTokenId,
   setPublicChannels, 
   setDispNameOfChannels, 
   setFocusedChannelId, 
@@ -91,6 +103,15 @@ export function handlePublishModal(isOpened) {
       isOpened?
       slice.actions.openPublishModal():
       slice.actions.closePublishModal()
+    );
+  };
+}
+export function handleUnpublishModal(isOpened) {
+  return (dispatch) => {
+    dispatch(
+      isOpened?
+      slice.actions.openUnpublishModal():
+      slice.actions.closeUnpublishModal()
     );
   };
 }

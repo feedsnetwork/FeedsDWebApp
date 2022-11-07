@@ -28,14 +28,21 @@ function Channel() {
       if(queryStep >= QueryStep.self_channel && !posts.length)
         setIsLoading(true)
       if(queryStep >= QueryStep.post_data) {
-        LocalDB.find({
-          selector: {
-            table_type: 'post',
-            channel_id: focusedChannelId,
-            created_at: {$exists: true}
-          },
-          sort: [{'created_at': 'desc'}],
+        LocalDB.createIndex({
+          index: {
+            fields: ['created_at'],
+          }
         })
+          .then(_=>(
+            LocalDB.find({
+              selector: {
+                table_type: 'post',
+                channel_id: focusedChannelId,
+                created_at: {$exists: true}
+              },
+              sort: [{'created_at': 'desc'}],
+            })
+          ))
           .then(response => {
             setIsLoading(false)
             setPosts(response.docs)
