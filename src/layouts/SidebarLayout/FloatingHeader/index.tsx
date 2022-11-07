@@ -60,7 +60,7 @@ function FloatingHeader() {
   const focusedChannelId = useSelector(selectFocusedChannelId)
   const [focusedChannel, setFocusedChannel] = React.useState({})
   const [postCountInFocus, setPostCountInFocus] = React.useState(0)
-  const [focusedPost, setFocusedPost] = React.useState({})
+  const [activeCommentCount, setActiveCommentCount] = React.useState(0)
 
   React.useEffect(()=>{
     let selectedChannelId = focusedChannelId
@@ -88,8 +88,13 @@ function FloatingHeader() {
 
   React.useEffect(()=>{
     if(params.post_id) {
-      LocalDB.get(params.post_id.toString())
-        .then(doc=>setFocusedPost(doc))
+      LocalDB.find({
+        selector: {
+          table_type: 'comment',
+          post_id: params.post_id
+        }
+      })
+        .then(res=>setActiveCommentCount(res.docs.length))
     }
   }, [params])
   
@@ -124,7 +129,7 @@ function FloatingHeader() {
     }
     else if(pathname.startsWith('/post/')) {
       primaryText = "Post"
-      secondaryText = `${focusedPost['commentData']?.length || 0} comments`
+      secondaryText = `${activeCommentCount} comments`
     }
     else if(pathname.startsWith('/profile')) {
       primaryText = myInfo['name'] || `@${reduceDIDstring(feedsDid)}`

@@ -9,7 +9,7 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { selectUsers } from 'redux/slices/user';
 import { selectDispNameOfChannels } from 'redux/slices/channel';
 import { selectActivePost } from 'redux/slices/post';
-import { reduceDIDstring } from 'utils/common'
+import { decodeBase64, reduceDIDstring } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
 
 const Post = () => {
@@ -96,12 +96,12 @@ const Post = () => {
             }
             {
               comments.map((comment, _i)=>{
-                const commentUser = users[comment.creator_did] || {}
+                const commentUser = users[comment.creater_did] || {}
                 const commentProps = {
                   post: comment,
                   channel: channelInfo,
                   dispName: commentUser['name'] || reduceDIDstring(comment.creater_did),
-                  dispAvatar: { name: commentUser['name'], src: commentUser['avatarSrc']},
+                  dispAvatar: { name: commentUser['name'], src: decodeBase64(commentUser['avatarSrc'])},
                   replyingTo: dispNameOfPost,
                   level: 2
                 }

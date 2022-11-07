@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom'
 import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade, Menu, MenuItem, Link } from '@mui/material';
@@ -108,11 +108,13 @@ const PostBody = (props) => {
   React.useEffect(()=>{
     if(queryStep >= QueryStep.comment_data)
       getCommentCount()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep, post])
 
   React.useEffect(()=>{
     if(publishPostNumber && activePost['post_id'] === post.post_id)
-    getCommentCount()
+      getCommentCount()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publishPostNumber])
 
   React.useEffect(()=>{
