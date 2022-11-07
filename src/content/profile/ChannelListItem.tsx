@@ -40,7 +40,7 @@ const ChannelListItem = (props) => {
         break;
       case 'publish':
         const splitAvatarContent = avatarSrc.split(';base64,')
-        const channelObj = {...channel, avatarContent: splitAvatarContent[splitAvatarContent.length-1], avatarPreview: avatarSrc}
+        const channelObj = {...channel, avatarContent: splitAvatarContent[splitAvatarContent.length-1], avatarPreview: avatarImg}
         handlePublishModal(true)(dispatch)
         dispatch(setCreatedChannel(channelObj))
         break;

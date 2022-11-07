@@ -16,7 +16,7 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
 import { HiveApi } from 'services/HiveApi'
 import { CommonStatus } from 'models/common_content'
-import { getBufferFromFile } from 'utils/common'
+import { decodeBase64, getBufferFromFile } from 'utils/common'
 import { LocalDB, QueryStep } from 'utils/db';
 import { handlePostModal, selectPostModalState, selectActivePost } from 'redux/slices/post';
 import { selectActiveChannelId, selectFocusedChannelId } from 'redux/slices/channel';
@@ -214,7 +214,7 @@ function PostDlg() {
       </DialogTitle>
       <DialogContent sx={{minWidth: {sm: 'unset', md: 500}}}>
         <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-          <StyledAvatar alt={focusedChannel['name']} src={focusedChannel['avatarSrc']}/>
+          <StyledAvatar alt={focusedChannel['name']} src={decodeBase64(focusedChannel['avatarSrc'])}/>
           <Typography variant="subtitle1">{focusedChannel['name']}</Typography>
         </Stack>
         <Stack spacing={2}>
