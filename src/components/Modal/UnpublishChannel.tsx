@@ -2,23 +2,21 @@ import React from 'react';
 import { Dialog, DialogContent, Typography, Stack } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux'
 import { useSnackbar } from 'notistack';
-import { create } from 'ipfs-http-client'
 
 import StyledButton from '../StyledButton';
 import StyledAvatar from '../StyledAvatar';
-import { ChannelContent } from 'models/channel_content';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
-import { ipfsURL, ChannelRegContractAddress } from 'config'
-import { selectPublishModalState, selectCreatedChannel, handlePublishModal } from 'redux/slices/channel'
-import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec } from 'utils/common'
+import { ChannelRegContractAddress } from 'config'
+import { selectCreatedChannel, selectUnpublishModalState, handleUnpublishModal } from 'redux/slices/channel'
+import { getWeb3Contract, getWeb3Connect } from 'utils/common'
 import { getDocId, getTableType } from 'utils/mainproc';
 import { LocalDB } from 'utils/db';
 
-const client = create({url: ipfsURL})
-function PublishChannel() {
+function UnpublishChannel() {
   const dispatch = useDispatch()
-  const isOpen = useSelector(selectPublishModalState)
+  const isOpen = useSelector(selectUnpublishModalState)
   const channel = useSelector(selectCreatedChannel)
+  const channelTokenId = channel?.tokenId
   const [onProgress, setOnProgress] = React.useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -46,20 +44,6 @@ function PublishChannel() {
     if(e.currentTarget.value === 'ok') {
       setOnProgress(true)
       try {
-        const avatarBuffer = Buffer.from(channel.avatarContent, 'base64');
-        const avatarAdded = await client.add(avatarBuffer)
-        const metaObj = new ChannelContent()
-        metaObj.name = channel.name
-        metaObj.description = channel.intro
-        metaObj.creator['did'] = userDid
-        metaObj.data.cname = channel.name
-        metaObj.data.avatar = `feeds:image:${avatarAdded.path}`
-        metaObj.data.ownerDid = userDid
-        const metaAdded = await client.add(JSON.stringify(metaObj))
-        const channelID = hash(`${userDid}${channel.name}`)
-        const channelEntry = `feeds://v3/${userDid}/${channelID}`
-        const tokenID = decFromHex(channelID)
-        const tokenURI = `feeds:json:${metaAdded.path}`
         const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress)
         const web3Connect = getWeb3Connect()
         const accounts = await web3Connect.eth.getAccounts()
@@ -71,31 +55,25 @@ function PublishChannel() {
           'gas': _gasLimit,
           'value': 0
         };
-        const mintMethod = channelRegContract.methods.mint(tokenID, tokenURI, channelEntry).send(transactionParams)
-        const mintRes = await promiseReceipt(mintMethod)
-        const tokenId = `0x${hexFromDec(mintRes['events']?.ChannelRegistered?.returnValues.tokenId || '0')}`
-        const channelDoc = {
-          _id: getDocId(channelID, true), 
-          type: metaObj.type,
-          name: metaObj.name,
-          intro: metaObj.description,
-          channel_id: channelID,
-          target_did: metaObj.creator['did'], 
-          time_range: [], 
-          avatarSrc: getIpfsUrl(metaObj?.data?.avatar),
-          bannerSrc: getIpfsUrl(metaObj?.data?.banner),
-          table_type: getTableType('channel', true),
-          tokenId
-        }
-        LocalDB.get(getDocId(channelID, true))
-          .then(doc=>LocalDB.put({...doc, ...channelDoc}))
-          .catch(err=>LocalDB.put(channelDoc))
-        enqueueSnackbar('Publish channel success', { variant: 'success' });
+        const burnMethod = channelRegContract.methods.burn(channelTokenId).send(transactionParams)
+        await promiseReceipt(burnMethod)
+        
+        LocalDB.find({
+          selector: {
+            table_type: 'public-channel',
+            tokenId: channelTokenId
+          }
+        })
+          .then(res=>{
+            if(res.docs.length)
+              LocalDB.put({...res.docs[0], _deleted: true})
+          })
+        enqueueSnackbar('Unpublish channel success', { variant: 'success' });
         setOnProgress(false)
         handleClose()
       } catch(err) {
         setOnProgress(false)
-        enqueueSnackbar('Publish channel error', { variant: 'error' });
+        enqueueSnackbar('Unpublish channel error', { variant: 'error' });
       }
       
     } else {
@@ -104,26 +82,21 @@ function PublishChannel() {
   }
 
   const handleClose = () => {
-    handlePublishModal(false)(dispatch)
+    handleUnpublishModal(false)(dispatch)
   };
 
   return (
     <Dialog open={isOpen} onClose={handleClose} onClick={(e)=>{e.stopPropagation()}}>
       <DialogContent sx={{minWidth: {sm: 'unset', md: 400}}}>
         <Stack spacing={2} sx={{textAlign: 'center'}}>
-          <Typography variant="h5">Publish Channel</Typography>
+          <Typography variant="h5">Unpublish Channel</Typography>
           <Stack spacing={1} alignItems="center">
             <StyledAvatar alt={channel.name} src={channel.avatarPreview} width={64}/>
             <Typography variant="subtitle2">{channel.name}</Typography>
           </Stack>
-          {
-            !onProgress &&
-            <Typography variant="body2">
-              This action requires an interaction with the smart contract. 
-              A small transaction fee is required for registering the channel onto the Elastos Smart Chain.
-              Do you still want to continue?
-            </Typography>
-          }
+          <Typography variant="body2">
+            You are about to unpublish channel
+          </Typography>
           {
             !onProgress?
             <Stack direction="row" spacing={3}>
@@ -146,4 +119,4 @@ function PublishChannel() {
   );
 }
 
-export default PublishChannel
+export default UnpublishChannel

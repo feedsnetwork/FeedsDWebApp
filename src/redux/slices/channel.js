@@ -10,7 +10,6 @@ const initialState = {
   focusedChannelId: 0, // focused self channel id
   visitedChannelId: 0, // selected subscribed channel id
   createdChannel: {},
-  channelTokenId: '',
   dispNameOfChannels: {},
   subscribers: {},
   publicChannels: {}
@@ -40,9 +39,6 @@ const slice = createSlice({
     },
     setCreatedChannel(state, action) {
       state.createdChannel = action.payload
-    },
-    setChannelTokenId(state, action) {
-      state.channelTokenId = action.payload
     },
     setPublicChannels(state, action) {
       const tempState = {...state.publicChannels}
@@ -76,7 +72,6 @@ export default slice.reducer;
 // Actions
 export const { 
   setCreatedChannel, 
-  setChannelTokenId,
   setPublicChannels, 
   setDispNameOfChannels, 
   setFocusedChannelId, 
@@ -120,6 +115,9 @@ export function selectSuccessModalState(state) {
 }
 export function selectPublishModalState(state) {
   return state.channel.isOpened2Publish
+}
+export function selectUnpublishModalState(state) {
+  return state.channel.isOpened2Unpublish
 }
 export function selectCreatedChannel(state) {
   return state.channel.createdChannel

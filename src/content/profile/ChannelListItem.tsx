@@ -7,7 +7,7 @@ import { useSnackbar } from 'notistack';
 
 import IconInCircle from 'components/IconInCircle'
 import StyledAvatar from 'components/StyledAvatar'
-import { handlePublishModal, handleUnpublishModal, selectSubscribers, setCreatedChannel, setChannelTokenId } from 'redux/slices/channel';
+import { handlePublishModal, handleUnpublishModal, selectSubscribers, setCreatedChannel } from 'redux/slices/channel';
 import { getChannelShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
 
 const ChannelListItem = (props) => {
@@ -38,16 +38,19 @@ const ChannelListItem = (props) => {
       case 'edit':
         navigate(`/channel/edit/${channel['channel_id']}`);
         break;
-      case 'publish':
+      case 'publish': {
         const splitAvatarContent = avatarSrc.split(';base64,')
         const channelObj = {...channel, avatarContent: splitAvatarContent[splitAvatarContent.length-1], avatarPreview: avatarImg}
         handlePublishModal(true)(dispatch)
         dispatch(setCreatedChannel(channelObj))
         break;
-      case 'unpublish':
+      }
+      case 'unpublish': {
+        const channelObj = {...channel, tokenId: publishTokenId, avatarPreview: avatarImg}
         handleUnpublishModal(true)(dispatch)
-        dispatch(setChannelTokenId(publishTokenId))
+        dispatch(setCreatedChannel(channelObj))
         break;
+      }
       default:
         break;
     }
