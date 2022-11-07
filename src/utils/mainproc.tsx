@@ -656,6 +656,63 @@ export const mainproc = (props) => {
             })
     }
 
+    const queryPostNextStep = (channelId, isPublic=false) => (
+        new Promise((resolve, reject) => {
+            const prefConf = getAppPreference()
+            LocalDB.get(getDocId(channelId, isPublic))
+                .then(async doc=>{
+                    let nextPostDocs = []
+                    let prevTimeRange = [...doc['time_range']]
+                    try {
+                        const lastStart = prevTimeRange[0]?.start || 0
+                        const nextEnd = prevTimeRange[1]?.end || 0
+                        const queryApi = isPublic? hiveApi.queryPublicPostRangeOfTime: hiveApi.queryPostByRangeOfTime
+                        const postRes = await queryApi(doc['target_did'], doc['channel_id'], nextEnd, lastStart)
+                        if(postRes['find_message'] && postRes['find_message']['items']) {
+                            let postArr = postRes['find_message']['items']
+                            if(postArr.length >= LimitPostCount) {
+                                const earliestime = getMinValueFromArray(postArr, 'updated_at')
+                                prevTimeRange[0].start = earliestime
+                            }
+                            else {
+                                prevTimeRange[0].start = prevTimeRange[1]?.start || 0
+                                prevTimeRange.splice(1, 1)
+                            }
+                            LocalDB.put({...doc, time_range: prevTimeRange})
+                            if(prefConf.DP)
+                                postArr = postArr.filter(postItem=>postItem.status!==CommonStatus.deleted)
+
+                            nextPostDocs = postArr.map(post=>{
+                                const tempost = {...post}
+                                tempost._id = getDocId(post.post_id, isPublic)
+                                tempost.target_did = doc['target_did']
+                                tempost.table_type = getTableType('post', isPublic) 
+                                tempost.likes = 0
+                                tempost.like_me = false
+                                tempost.like_creators = []
+                                tempost.mediaData = []
+                                if(typeof post.created === 'object')
+                                    tempost.created = new Date(post.created['$date']).getTime()/1000
+                                return tempost
+                            })
+                        }
+                    } catch(err) {}
+                    Promise.resolve()
+                        .then(_=>LocalDB.bulkDocs(nextPostDocs))
+                        .then(_=>updateStepFlag(QueryStep.post_data, isPublic))
+                        .then(_=>{ 
+                            resolve({success: true, timeRange: prevTimeRange})
+                        })
+                        .catch(err=>{
+                            resolve({success: false, error: err})
+                        })
+                })
+                .catch(err=>{
+                    reject(err)
+                })
+        })
+    )
+
     const querySteps = [
         querySelfChannelStep, 
         querySubscribedChannelStep, 
@@ -676,7 +733,8 @@ export const mainproc = (props) => {
     const asyncSteps = {
         queryDispNameStep, 
         queryChannelAvatarStep, 
-        querySubscriptionInfoStep
+        querySubscriptionInfoStep,
+        queryPostNextStep
     }
     return { querySteps, queryPublicSteps, asyncSteps }
 }
