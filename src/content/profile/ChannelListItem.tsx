@@ -39,8 +39,8 @@ const ChannelListItem = (props) => {
         navigate(`/channel/edit/${channel['channel_id']}`);
         break;
       case 'publish':
-        const splitAvatarContent = channel.avatarSrc.split(';base64,')
-        const channelObj = {...channel, avatarContent: splitAvatarContent[splitAvatarContent.length-1], avatarPreview: channel.avatarSrc}
+        const splitAvatarContent = avatarSrc.split(';base64,')
+        const channelObj = {...channel, avatarContent: splitAvatarContent[splitAvatarContent.length-1], avatarPreview: avatarSrc}
         handlePublishModal(true)(dispatch)
         dispatch(setCreatedChannel(channelObj))
         break;

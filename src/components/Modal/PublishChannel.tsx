@@ -45,7 +45,6 @@ function PublishChannel() {
       setOnProgress(true)
       try {
         const avatarBuffer = Buffer.from(channel.avatarContent, 'base64');
-        console.log(avatarBuffer, "test------")
         const avatarAdded = await client.add(avatarBuffer)
         const metaObj = new ChannelContent()
         metaObj.name = channel.name
@@ -70,7 +69,7 @@ function PublishChannel() {
           'gas': _gasLimit,
           'value': 0
         };
-        const mintMethod = channelRegContract.methods.mint(tokenID, tokenURI, channelEntry, blankAddress, 1).send(transactionParams)
+        const mintMethod = channelRegContract.methods.mint(tokenID, tokenURI, channelEntry).send(transactionParams)
         await promiseReceipt(mintMethod)
         enqueueSnackbar('Publish channel success', { variant: 'success' });
         setOnProgress(false)
