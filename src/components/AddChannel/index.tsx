@@ -63,7 +63,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const [onProgress, setOnProgress] = useState(false);
   const [originChannel, setOriginChannel] = useState({});
   const [selfChannels, setSelfChannels] = useState([]);
-  const selfChannelNames = selfChannels.map(c=>c['name'])
+  const selfChannelNames = selfChannels.filter(c=>c.channel_id!==params.channelId).map(c=>c['name'])
   const nameRef = useRef(null)
   const descriptionRef = useRef(null)
   const tippingRef = useRef(null)
