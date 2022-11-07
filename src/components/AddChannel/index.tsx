@@ -1,5 +1,5 @@
 import { FC, useState, useRef, useContext, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 import { Icon } from '@iconify/react';
@@ -70,7 +70,8 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const myInfo = useSelector(selectMyInfo)
   const { enqueueSnackbar } = useSnackbar();
   
@@ -214,7 +215,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
               dispNameObj[result.channelId] = myInfo['name']
               dispatch(setDispNameOfChannels(dispNameObj))
               setUpdateChannelNumber(updateChannelNumber+1)
-              window.history.back()
+              navigate('/channel')
             })
         })
         .catch(error=>{
