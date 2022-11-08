@@ -11,7 +11,7 @@ import { selectMyInfo } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { decodeBase64, encodeBase64, getBufferFromFile } from 'utils/common'
-import { LocalDB } from 'utils/db';
+import { getLocalDB } from 'utils/db';
 
 const AvatarWrapper = styled(Box)(
   ({ theme }) => `
@@ -70,6 +70,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
+  const LocalDB = getLocalDB()
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const myInfo = useSelector(selectMyInfo)
@@ -85,6 +86,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       .then(res=>{
         setSelfChannels(res.docs)
       })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateChannelNumber])
 
   useEffect(()=>{
@@ -104,6 +106,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       setTipping('')
       setAvatarUrl(null)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.channelId, action])
 
   const handleFileChange = event => {

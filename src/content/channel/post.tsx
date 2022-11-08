@@ -15,7 +15,7 @@ import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
 import { selectFocusedChannelId } from 'redux/slices/channel';
 import { HiveApi } from 'services/HiveApi'
 import { getBufferFromFile } from 'utils/common'
-import { LocalDB } from 'utils/db';
+import { getLocalDB } from 'utils/db';
 
 const PostBoxStyle = styled(Box)(({ theme }) => ({
   position: 'sticky',
@@ -36,10 +36,11 @@ function PostBox() {
   const [imageAttach, setImageAttach] = React.useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
+  const postRef = React.useRef(null)
 
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
-  const postRef = React.useRef(null)
+  const LocalDB = getLocalDB()
 
   const handlePost = async (e) => {
     setOnValidation(true)

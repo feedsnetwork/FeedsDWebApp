@@ -9,7 +9,7 @@ import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceDIDstring } from 'utils/common'
 import { selectDispNameOfChannels } from 'redux/slices/channel';
-import { LocalDB, QueryStep } from 'utils/db';
+import { getLocalDB, QueryStep } from 'utils/db';
 
 const Home = () => {
   const { queryStep } = React.useContext(SidebarContext);
@@ -19,12 +19,12 @@ const Home = () => {
   const [pageEndTime, setPageEndTime] = React.useState(0)
   const [isLoading, setIsLoading] = React.useState(false)
   const channelDispName = useSelector(selectDispNameOfChannels)
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
-    if(queryStep < QueryStep.post_data) {
+    if(queryStep >= QueryStep.self_channel && !posts.length)
       setIsLoading(true)
-    }
-    else {
+    if(queryStep >= QueryStep.post_data) {
       setIsLoading(false)
       appendMoreData()
       LocalDB.find({

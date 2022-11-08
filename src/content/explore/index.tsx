@@ -12,7 +12,7 @@ import PostImgCard from 'components/PostCard/PostImgCard'
 import InputOutline from 'components/InputOutline'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { getMergedArray, sortByDate } from 'utils/common'
-import { LocalDB, QueryStep } from 'utils/db';
+import { getLocalDB, QueryStep } from 'utils/db';
 
 function Explore() {
   const { queryPublicStep, queryPublicFlag } = React.useContext(SidebarContext);
@@ -28,6 +28,7 @@ function Explore() {
   const lessThanSmall = useMediaQuery(theme.breakpoints.down("sm"));
   const cardWidthRate = (greaterThanMid && .25) || (smallToMid && .33) || (lessThanSmall && .5) || 1
   const cardWidthUnit = Math.floor(containerWidth*cardWidthRate/10)*10
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     if((queryPublicStep >= QueryStep.public_channel && !publicChannels.length) || queryPublicFlag >= QueryStep.public_channel) {

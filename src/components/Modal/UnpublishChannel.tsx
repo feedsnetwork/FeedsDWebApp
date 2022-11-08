@@ -9,7 +9,7 @@ import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config'
 import { selectCreatedChannel, selectUnpublishModalState, handleUnpublishModal } from 'redux/slices/channel'
 import { getWeb3Contract, getWeb3Connect } from 'utils/common'
-import { LocalDB } from 'utils/db';
+import { getLocalDB } from 'utils/db';
 
 function UnpublishChannel() {
   const dispatch = useDispatch()
@@ -18,6 +18,7 @@ function UnpublishChannel() {
   const channelTokenId = channel?.tokenId
   const [onProgress, setOnProgress] = React.useState(false);
   const { enqueueSnackbar } = useSnackbar();
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     if(!isOpen) {

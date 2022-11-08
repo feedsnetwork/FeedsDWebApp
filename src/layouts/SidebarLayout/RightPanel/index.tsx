@@ -16,7 +16,7 @@ import PublicChannelItem from './PublicChannelItem';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectDispNameOfChannels, selectFocusedChannelId, selectVisitedChannelId, selectSubscribers, selectChannelAvatar } from 'redux/slices/channel';
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
-import { LocalDB, QueryStep } from 'utils/db'
+import { getLocalDB, QueryStep } from 'utils/db'
 import { getDocId } from 'utils/mainproc';
 
 const SidebarWrapper = styled(Box)(
@@ -113,6 +113,7 @@ function RightPanel() {
   const subscribersOfChannel = useSelector(selectSubscribers)
   const channelAvatars = useSelector(selectChannelAvatar)
   const focusedChannelId = useSelector(selectFocusedChannelId)
+  const LocalDB = getLocalDB()
   let content = null
 
   React.useEffect(()=>{
@@ -128,6 +129,7 @@ function RightPanel() {
           setFocusChannel(doc)
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep, queryPublicStep, visitedChannelId, focusedChannelId, pathname])
 
   React.useEffect(()=>{

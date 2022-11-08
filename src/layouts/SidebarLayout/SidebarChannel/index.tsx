@@ -13,7 +13,7 @@ import StyledButton from 'components/StyledButton'
 import SignoutDlg from 'components/Modal/Signout';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { sortByDate, isValidTime, getDateDistance, convertAutoLink } from 'utils/common'
-import { LocalDB, QueryStep } from 'utils/db'
+import { getLocalDB, QueryStep } from 'utils/db'
 import { selectFocusedChannelId, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
 import { handlePostModal, setActivePost } from 'redux/slices/post';
 
@@ -121,6 +121,7 @@ function SidebarChannel() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const focusedChannelId = useSelector(selectFocusedChannelId)
+  const LocalDB = getLocalDB()
 
   // useEffect(()=>{
   //   const worker = new Worker('worker.js');

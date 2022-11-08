@@ -10,7 +10,7 @@ import { selectUsers } from 'redux/slices/user';
 import { selectDispNameOfChannels } from 'redux/slices/channel';
 import { selectActivePost } from 'redux/slices/post';
 import { decodeBase64, reduceDIDstring } from 'utils/common'
-import { LocalDB, QueryStep } from 'utils/db';
+import { getLocalDB, QueryStep } from 'utils/db';
 
 const Post = () => {
   const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
@@ -23,6 +23,7 @@ const Post = () => {
   const channelDispName = useSelector(selectDispNameOfChannels)
   const users = useSelector(selectUsers)
   const activePost = useSelector(selectActivePost)
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     const channelId = channelInfo['channel_id']

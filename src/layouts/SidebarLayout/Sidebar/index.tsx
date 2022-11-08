@@ -8,7 +8,7 @@ import Scrollbar from 'components/Scrollbar';
 import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectMyInfo, setMyInfo, setUserAvatarSrc } from 'redux/slices/user';
-import { LocalDB } from 'utils/db';
+import { getLocalDB } from 'utils/db';
 import { reduceDIDstring, getInfoFromDID, reduceHexAddress, encodeBase64, decodeBase64 } from 'utils/common'
 
 const SidebarWrapper = styled(Box)(
@@ -25,12 +25,13 @@ const SidebarWrapper = styled(Box)(
 function Sidebar() {
   const { walletAddress } = React.useContext(SidebarContext);
   // const closeSidebar = () => toggleSidebar();
+  const dispatch = useDispatch()
+  const myInfo = useSelector(selectMyInfo)
   const theme = useTheme();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
-  const dispatch = useDispatch()
-  const myInfo = useSelector(selectMyInfo)
+  const LocalDB = getLocalDB()
   
   React.useEffect(()=>{
     if(!feedsDid)

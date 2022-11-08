@@ -8,7 +8,7 @@ import PostCard from 'components/PostCard';
 import { EmptyView } from 'components/EmptyView'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceDIDstring } from 'utils/common'
-import { LocalDB, QueryStep } from 'utils/db'
+import { getLocalDB, QueryStep } from 'utils/db'
 import { selectVisitedChannelId, selectDispNameOfChannels } from 'redux/slices/channel'
 
 function Channel() {
@@ -20,6 +20,7 @@ function Channel() {
   const [pageEndTime, setPageEndTime] = React.useState(0)
   const [channelInfo, setChannelInfo] = React.useState({});
   const [posts, setPosts] = React.useState([]);
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     if(queryStep >= QueryStep.subscribed_channel)

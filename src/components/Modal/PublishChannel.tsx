@@ -12,7 +12,7 @@ import { ipfsURL, ChannelRegContractAddress } from 'config'
 import { selectPublishModalState, selectCreatedChannel, handlePublishModal } from 'redux/slices/channel'
 import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec } from 'utils/common'
 import { getDocId, getTableType } from 'utils/mainproc';
-import { LocalDB } from 'utils/db';
+import { getLocalDB } from 'utils/db';
 
 const client = create({url: ipfsURL})
 function PublishChannel() {
@@ -23,6 +23,7 @@ function PublishChannel() {
   const { enqueueSnackbar } = useSnackbar();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     if(!isOpen) {

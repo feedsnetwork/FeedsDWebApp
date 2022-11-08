@@ -11,7 +11,7 @@ import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
-import { LocalDB, QueryStep } from 'utils/db';
+import { getLocalDB, QueryStep } from 'utils/db';
 import { selectMyInfo } from 'redux/slices/user';
 import { selectDispNameOfChannels } from 'redux/slices/channel';
 
@@ -24,6 +24,7 @@ function Profile() {
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myInfo = useSelector(selectMyInfo)
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
+  const LocalDB = getLocalDB()
   const channelTokens = publicChannels.reduce((tokens, channel)=>{
     tokens[channel.channel_id] = channel.tokenId
     return tokens
@@ -55,6 +56,7 @@ function Profile() {
           setLikedPosts(response.docs)
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep])
 
   React.useEffect(()=>{
@@ -68,6 +70,7 @@ function Profile() {
           setPublicChannels(response.docs)
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryPublicStep])
 
   // const backgroundImg = "/temp-back.png"

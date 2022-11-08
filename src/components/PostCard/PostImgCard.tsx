@@ -8,12 +8,13 @@ import "odometer/themes/odometer-theme-default.css";
 import StyledAvatar from 'components/StyledAvatar'
 import PaperRecord from 'components/PaperRecord'
 import { convertAutoLink, isJson } from 'utils/common'
-import { LocalDB } from 'utils/db';
+import { getLocalDB } from 'utils/db';
 import { getDocId } from 'utils/mainproc';
 
 const PostImgCard = (props) => {
   const { post } = props
   const [thisChannel, setThisChannel] = React.useState({})
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     LocalDB.get(getDocId(post.channel_id, true))

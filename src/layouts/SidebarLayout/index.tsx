@@ -22,7 +22,7 @@ import { HiveApi } from 'services/HiveApi'
 import { selectSubscribers, selectFocusedChannelId } from 'redux/slices/channel'
 import { setUserAvatarSrc, setUserInfo } from 'redux/slices/user'
 import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getMergedArray, filterAlreadyQueried } from 'utils/common'
-import { LocalDB, QueryStep } from 'utils/db'
+import { getLocalDB, QueryStep } from 'utils/db'
 import { mainproc } from 'utils/mainproc';
 
 interface SidebarLayoutProps {
@@ -41,6 +41,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const dispatch = useDispatch()
   const subscribersOfChannel = useSelector(selectSubscribers)
   const focusedChannelId = useSelector(selectFocusedChannelId)
+  const LocalDB = getLocalDB()
   // LocalDB.destroy()
 
   const propsInProc = { dispatch, setQueryStep, setQueryPublicStep, setQueryFlag, setQueryPublicFlag }

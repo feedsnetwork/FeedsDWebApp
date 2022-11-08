@@ -13,7 +13,7 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { handleCommentModal, selectActivePost, selectActivePostProps, selectCommentModalState } from 'redux/slices/post';
 import { selectMyInfo } from 'redux/slices/user';
 import { reduceDIDstring, decodeBase64 } from 'utils/common'
-import { LocalDB } from 'utils/db';
+import { getLocalDB } from 'utils/db';
 
 function CommentDlg() {
   const { queryStep, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
@@ -21,6 +21,7 @@ function CommentDlg() {
   const [onProgress, setOnProgress] = React.useState(false);
   const [commentext, setCommentext] = React.useState('');
   const [currentChannel, setCurrentChannel] = React.useState({})
+  const commentRef = React.useRef(null)
   
   const dispatch = useDispatch()
   const isOpen = useSelector(selectCommentModalState)
@@ -30,7 +31,7 @@ function CommentDlg() {
 
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
-  const commentRef = React.useRef(null)
+  const LocalDB = getLocalDB()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   
   React.useEffect(()=>{
@@ -46,6 +47,7 @@ function CommentDlg() {
       LocalDB.get(activePost['channel_id'])
         .then(doc=>setCurrentChannel(doc))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep, activePost])
 
   const handlePost = async (e) => {

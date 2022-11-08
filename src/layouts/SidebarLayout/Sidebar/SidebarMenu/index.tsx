@@ -14,7 +14,7 @@ import InputOutline from 'components/InputOutline'
 import StyledButton from 'components/StyledButton';
 import SubscriptionAvatar from './subscriptionAvatar'
 import { SettingMenuArray } from 'utils/common'
-import { LocalDB, QueryStep } from 'utils/db'
+import { getLocalDB, QueryStep } from 'utils/db'
 import { setActiveChannelId, setVisitedChannelId, selectFocusedChannelId } from 'redux/slices/channel';
 import { handlePostModal, setActivePost } from 'redux/slices/post';
 
@@ -206,6 +206,7 @@ function SidebarMenu(props) {
   const [isVisibleChannels, setVisibleChannels] = useState(false)
   const isSettingPage = pathname.startsWith('/setting')
   const focusedChannelId = useSelector(selectFocusedChannelId)
+  const LocalDB = getLocalDB()
   
   useEffect(()=>{
     if(queryStep >= QueryStep.subscribed_channel && !subscribedChannels.length) {

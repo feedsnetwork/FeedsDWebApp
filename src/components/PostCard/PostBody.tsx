@@ -22,7 +22,7 @@ import { selectSubscribers, setActiveChannelId, setFocusedChannelId } from 'redu
 import { handleCommentModal, handlePostModal, selectActivePost, setActivePost, setActivePostProps } from 'redux/slices/post';
 import { selectUserAvatar } from 'redux/slices/user';
 import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
-import { LocalDB, QueryStep } from 'utils/db';
+import { getLocalDB, QueryStep } from 'utils/db';
 
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
   maxWidth: '350px',
@@ -96,6 +96,7 @@ const PostBody = (props) => {
   const myDID = `did:elastos:${feedsDid}`
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const LocalDB = getLocalDB()
   const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(()=>{
@@ -103,6 +104,7 @@ const PostBody = (props) => {
       .then(channelDoc => {
         setCurrentChannel(channelDoc)
       })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post])
 
   React.useEffect(()=>{

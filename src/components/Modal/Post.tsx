@@ -17,7 +17,7 @@ import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
 import { HiveApi } from 'services/HiveApi'
 import { CommonStatus } from 'models/common_content'
 import { decodeBase64, getBufferFromFile } from 'utils/common'
-import { LocalDB, QueryStep } from 'utils/db';
+import { getLocalDB, QueryStep } from 'utils/db';
 import { handlePostModal, selectPostModalState, selectActivePost } from 'redux/slices/post';
 import { selectActiveChannelId, selectFocusedChannelId } from 'redux/slices/channel';
 
@@ -30,6 +30,7 @@ function PostDlg() {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
   const [focusedChannel, setFocusedChannel] = React.useState({})
+  const postRef = React.useRef(null)
 
   const dispatch = useDispatch()
   const isOpen = useSelector(selectPostModalState)
@@ -42,7 +43,7 @@ function PostDlg() {
   const isComment = activePost && !!activePost.comment_id
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
-  const postRef = React.useRef(null)
+  const LocalDB = getLocalDB()
   
   React.useEffect(()=>{
     if(!isOpen) {
@@ -58,6 +59,7 @@ function PostDlg() {
       LocalDB.get(currentChannelId)
         .then(doc=>setFocusedChannel(doc))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep, currentChannelId])
 
   React.useEffect(()=>{

@@ -10,7 +10,7 @@ import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import PostBox from './post'
 import { reduceDIDstring } from 'utils/common'
 import { selectDispNameOfChannels, selectFocusedChannelId } from 'redux/slices/channel';
-import { LocalDB, QueryStep } from 'utils/db';
+import { getLocalDB, QueryStep } from 'utils/db';
 
 function Channel() {
   const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
@@ -22,6 +22,7 @@ function Channel() {
   const [isLoading, setIsLoading] = React.useState(false)
   const [hasMore, setHasMore] = React.useState(false)
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     if(focusedChannelId) {

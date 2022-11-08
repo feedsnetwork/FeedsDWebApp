@@ -8,7 +8,7 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { OverPageContext } from 'contexts/OverPageContext';
 import { selectVisitedChannelId, selectFocusedChannelId } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
-import { LocalDB, QueryStep } from 'utils/db';
+import { getLocalDB, QueryStep } from 'utils/db';
 import { getDocId, getTableType } from 'utils/mainproc';
 import { SettingMenuArray, reduceDIDstring } from 'utils/common'
 
@@ -61,6 +61,7 @@ function FloatingHeader() {
   const [focusedChannel, setFocusedChannel] = React.useState({})
   const [postCountInFocus, setPostCountInFocus] = React.useState(0)
   const [activeCommentCount, setActiveCommentCount] = React.useState(0)
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     let selectedChannelId = focusedChannelId
@@ -84,6 +85,7 @@ function FloatingHeader() {
         })
           .then(res=>setPostCountInFocus(res.docs.length))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep, queryPublicStep, focusedChannelId, visitedChannelId, pathname])
 
   React.useEffect(()=>{
@@ -96,6 +98,7 @@ function FloatingHeader() {
       })
         .then(res=>setActiveCommentCount(res.docs.length))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params])
   
   const handleBack = (e) => {

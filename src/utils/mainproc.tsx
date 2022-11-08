@@ -1,4 +1,4 @@
-import { LocalDB, QueryStep } from "./db"
+import { getLocalDB, QueryStep } from "./db"
 import { CommonStatus } from "models/common_content"
 import { HiveApi } from "services/HiveApi"
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
@@ -17,6 +17,7 @@ export const mainproc = (props) => {
     const { dispatch, setQueryStep, setQueryPublicStep, setQueryFlag, setQueryPublicFlag } = props
     const feedsDid = sessionStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
+    const LocalDB = getLocalDB()
 
     // main process steps
     const updateStepFlag = (step, isPublic=false)=>(
@@ -52,6 +53,7 @@ export const mainproc = (props) => {
         new Promise((resolve, reject) => {
             hiveApi.querySelfChannels()
                 .then(async res=>{
+                    console.info(res, feedsDid)
                     if(Array.isArray(res)){
                         const selfChannels = 
                             res.filter(item=>item.status !== CommonStatus.deleted)
@@ -687,6 +689,7 @@ export const nextproc = (props) => {
     const { dispatch } = props
     const feedsDid = sessionStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
+    const LocalDB = getLocalDB()
 
     const queryPostNextStep = (channelId, isPublic=false) => (
         new Promise((resolve, reject) => {

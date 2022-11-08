@@ -11,7 +11,7 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { selectMyInfo } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi'
 import { decodeBase64, reduceDIDstring } from 'utils/common'
-import { LocalDB } from 'utils/db';
+import { getLocalDB } from 'utils/db';
 
 export const CommentForm = (props)=>{
     const { post, dispName } = props
@@ -23,6 +23,7 @@ export const CommentForm = (props)=>{
     const feedsDid = sessionStorage.getItem('FEEDS_DID')
     const commentRef = React.useRef(null)
     const hiveApi = new HiveApi()
+    const LocalDB = getLocalDB()
     const { enqueueSnackbar } = useSnackbar();
     
     const handleComment = async (e) => {

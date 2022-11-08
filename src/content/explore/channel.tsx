@@ -5,7 +5,7 @@ import PostList from 'components/PostList';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectDispNameOfChannels, selectVisitedChannelId } from 'redux/slices/channel';
 import { reduceDIDstring } from 'utils/common'
-import { LocalDB, QueryStep } from 'utils/db';
+import { getLocalDB, QueryStep } from 'utils/db';
 import { getDocId, getTableType } from 'utils/mainproc';
 
 function Channel() {
@@ -17,6 +17,7 @@ function Channel() {
   const [pageEndTime, setPageEndTime] = React.useState(0)
   const [posts, setPosts] = React.useState([]);
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     if(queryPublicStep >= QueryStep.public_channel)
