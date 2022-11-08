@@ -19,6 +19,15 @@ module.exports = {
     filename: 'worker.js',
     path: build
   },
+  module: {
+    rules: [
+        {
+            test: /\.ts$/,
+            exclude: /node_modules/,
+            use: [tsLoader],
+        }
+    ]
+  },
   resolve: {
     modules: ["node_modules", src],
     extensions: [".js", ".json", ".jsx", ".ts", ".tsx"]

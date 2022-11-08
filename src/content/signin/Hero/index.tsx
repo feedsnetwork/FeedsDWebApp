@@ -2,8 +2,8 @@
 import React from 'react'
 import { Link as RouterLink } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
-import { DID } from '@elastosfoundation/elastos-connectivity-sdk-js';
-import { VerifiablePresentation, DefaultDIDAdapter, DIDBackend } from '@elastosfoundation/did-js-sdk';
+import { DID } from '@chenyufei2022/elastos-connectivity-sdk-js';
+import { VerifiablePresentation, DefaultDIDAdapter, DIDBackend } from '@chenyufei2022/did-js-sdk';
 import jwt from 'jsonwebtoken';
 import { Box, Button, Container, Grid, Typography, Link, Stack, LinearProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';

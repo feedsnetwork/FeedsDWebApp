@@ -1,6 +1,6 @@
-import { connectivity, DID as ConDID } from "@elastosfoundation/elastos-connectivity-sdk-js";
-import { Executable, InsertOptions, ScriptRunner, Vault, AppContext, Logger as HiveLogger, UpdateResult, UpdateOptions, Condition, InsertResult } from "@elastosfoundation/hive-js-sdk";
-import { DIDDocument, JWTHeader, JWTParserBuilder, DID, DIDBackend, DefaultDIDAdapter, JSONObject, VerifiablePresentation } from '@elastosfoundation/did-js-sdk'
+import { connectivity, DID as ConDID } from "@chenyufei2022/elastos-connectivity-sdk-js";
+import { Executable, InsertOptions, ScriptRunner, Vault, AppContext, Logger as HiveLogger, UpdateResult, UpdateOptions, Condition, InsertResult } from "@chenyufei2022/hive-js-sdk";
+import { DIDDocument, JWTHeader, JWTParserBuilder, DID, DIDBackend, DefaultDIDAdapter, JSONObject, VerifiablePresentation } from '@chenyufei2022/did-js-sdk'
 import { ApplicationDID, DidResolverUrl } from '../config'
 
 // let TAG: string = 'Feeds-web-dapp-HiveService'
@@ -267,7 +267,7 @@ export class HiveService {
 
   async callScript(scriptName: string, document: any, targetDid: string, appid: string): Promise<any> {
     let scriptRunner = await this.getScriptRunner(targetDid)
-    let result = await scriptRunner.callScript<any>(scriptName, document, targetDid, appid)
+    let result = await scriptRunner.callScript(scriptName, document, targetDid, appid)
     return result
   }
 
@@ -292,7 +292,7 @@ export class HiveService {
       const userDid = `did:elastos:${feedsDid}`
 
       const scriptRunner = await this.getScriptRunner(userDid)
-      return await scriptRunner.callScript<any>(avatarScriptName, avatarParam, tarDID, tarAppDID)
+      return await scriptRunner.callScript(avatarScriptName, avatarParam, tarDID, tarAppDID)
     } catch (error) {
       throw error
     }

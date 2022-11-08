@@ -1,6 +1,6 @@
 import { HiveService } from 'services/HiveService'
 import { QueryHasResultCondition, FindExecutable, AndCondition, InsertExecutable, UpdateExecutable, DeleteExecutable, 
-    UpdateResult, UpdateOptions, InsertResult, FileDownloadExecutable } from "@elastosfoundation/hive-js-sdk"
+    UpdateResult, UpdateOptions, InsertResult, FileDownloadExecutable } from "@chenyufei2022/hive-js-sdk"
 import { utils } from 'services/utils'
 import SparkMD5 from 'spark-md5'
 import { HiveData } from './HiveData'

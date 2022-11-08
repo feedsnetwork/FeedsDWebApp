@@ -1,5 +1,5 @@
-import { connectivity } from '@elastosfoundation/elastos-connectivity-sdk-js';
-import { EssentialsConnector } from '@elastosfoundation/essentials-connector-client-browser';
+import { connectivity } from '@chenyufei2022/elastos-connectivity-sdk-js';
+import { EssentialsConnector } from '@chenyufei2022/essentials-connector-client-browser';
 import { ApplicationDID } from '../../config';
 
 export const essentialsConnector = new EssentialsConnector();

@@ -1,8 +1,9 @@
 import React from 'react'
-// import { connectivity, DID as ConDID } from "@elastosfoundation/elastos-connectivity-sdk-js";
+import { HiveApi } from "services/HiveApi"
 
 self.addEventListener('message', e => {
     if (e.data === 'hello') {
+      const hiveApi = new HiveApi()
       postMessage('ok');
     }
 });

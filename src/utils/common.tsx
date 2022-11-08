@@ -1,5 +1,5 @@
 import Web3 from 'web3';
-import { DID, DIDBackend, DefaultDIDAdapter } from '@elastosfoundation/did-js-sdk';
+import { DID, DIDBackend, DefaultDIDAdapter } from '@chenyufei2022/did-js-sdk';
 import { formatDistance } from 'date-fns';
 import createHash from 'hash.js'
 import Autolinker from 'autolinker';
