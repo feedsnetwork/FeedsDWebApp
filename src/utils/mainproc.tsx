@@ -53,7 +53,6 @@ export const mainproc = (props) => {
         new Promise((resolve, reject) => {
             hiveApi.querySelfChannels()
                 .then(async res=>{
-                    console.info(res, feedsDid)
                     if(Array.isArray(res)){
                         const selfChannels = 
                             res.filter(item=>item.status !== CommonStatus.deleted)
@@ -93,6 +92,7 @@ export const mainproc = (props) => {
                                     table_type: 'channel'
                                 }
                             }
+                            channelDoc['display_name'] = channelDoc['display_name'] || channelDoc['name']
                             selfChannelDoc.push(channelDoc)
                         })
                         const deleteDocs = originSelfChannels.map(item=>({...item, _deleted: true}))
@@ -153,8 +153,9 @@ export const mainproc = (props) => {
                                         if(originChannel['avatar'] !== channelInfo['avatar'])
                                             channelDoc['avatarSrc'] = ''
                                     }
+                                    channelDoc['display_name'] = channelDoc['display_name'] || channelDoc['name']
                                     originSubscribedChannels.splice(channelIndex, 1)
-                                    await LocalDB.put(originChannel)
+                                    await LocalDB.put(channelDoc)
                                 }
                                 else {
                                     channelDoc = {
@@ -166,6 +167,7 @@ export const mainproc = (props) => {
                                         time_range: [], 
                                         table_type: 'channel'
                                     }
+                                    channelDoc['display_name'] = channelDoc['display_name'] || channelDoc['name']
                                     return channelDoc
                                 }
                             }
@@ -472,8 +474,10 @@ export const mainproc = (props) => {
                             avatarSrc: getIpfsUrl(metaContent?.data?.avatar),
                             bannerSrc: getIpfsUrl(metaContent?.data?.banner),
                             table_type: getTableType('channel', true),
+                            display_name: metaContent.display_name || metaContent.name,
                             tokenId
                         }
+                        channelDoc['display_name'] = channelDoc['display_name'] || channelDoc['name']
                         return channelDoc
                     })
                     Promise.all(publicChannelObjs)

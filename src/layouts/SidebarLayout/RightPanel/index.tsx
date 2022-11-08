@@ -59,8 +59,8 @@ const ChannelAbout = (props) => {
           </Stack>
         </Stack>
         <Stack alignItems='center' my={2}>
-          <StyledAvatar alt={this_channel.name} src={this_channel.avatarSrc} width={60}/>
-          <Typography variant='h5' mt={1}>{this_channel.name}</Typography>
+          <StyledAvatar alt={this_channel.display_name} src={this_channel.avatarSrc} width={60}/>
+          <Typography variant='h5' mt={1}>{this_channel.display_name}</Typography>
           <Typography variant='body2'>@{this_channel.owner_name || reduceDIDstring(this_channel.target_did)}</Typography>
           <Typography variant='body2' color='text.secondary' textAlign='center'>{this_channel.intro}</Typography>
         </Stack>

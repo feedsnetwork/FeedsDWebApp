@@ -331,7 +331,7 @@ function SidebarChannel() {
           <Box component="span" className="arrow" ref={setArrowRef} sx={styles.arrow} />
           <Paper sx={{p: 2}}>
             <Stack direction="row">
-              <Typography variant="h5" pb={2} flex={1}>{popoverChannel['name']}</Typography>
+              <Typography variant="h5" pb={2} flex={1}>{popoverChannel['display_name']}</Typography>
               <Box sx={{display: 'inline-block'}}>
                 <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main, mr: 1}} size='small'><Icon icon="ant-design:share-alt-outlined" /></IconButton>
                 <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><Icon icon="clarity:note-edit-line" /></IconButton>
@@ -362,42 +362,6 @@ function SidebarChannel() {
         </StyledPopper>
       </ClickAwayListener>
       <SignoutDlg setOpen={setOpenSignout} isOpen={isOpenSignout}/>
-      {/* <Drawer
-        sx={{
-          boxShadow: `${theme.sidebar.boxShadow}`
-        }}
-        anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-        open={sidebarToggle}
-        onClose={closeSidebar}
-        variant="temporary"
-        elevation={9}
-      >
-        <SidebarWrapper
-          sx={{
-            background:
-              theme.palette.mode === 'dark'
-                ? theme.colors.alpha.white[100]
-                : darken(theme.colors.alpha.black[100], 0.5)
-          }}
-        >
-          <Scrollbar>
-            <Box mt={3}>
-              <Box
-                mx={2}
-              >
-                <Logo />
-              </Box>
-            </Box>
-            <Divider
-              sx={{
-                mt: theme.spacing(3),
-                mx: theme.spacing(2),
-                background: theme.colors.alpha.trueWhite[10]
-              }}
-            />
-          </Scrollbar>
-        </SidebarWrapper>
-      </Drawer> */}
     </>
   );
 }
