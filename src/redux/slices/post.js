@@ -6,7 +6,8 @@ const initialState = {
   isOpened2Post: false,
   isOpened2Comment: false,
   activePost: null,
-  activePostProps: {}
+  activePostProps: {},
+  nextLoadNum: 0
 };
 
 const slice = createSlice({
@@ -24,6 +25,9 @@ const slice = createSlice({
     },
     closeCommentModal(state) {
       state.isOpened2Comment = false;
+    },
+    increaseLoadNum(state) {
+      state.nextLoadNum += 1;
     },
     setActivePost(state, action) {
       state.activePost = action.payload;
@@ -53,7 +57,7 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setPublicPosts, setActivePost, setActivePostProps, updateMediaOfPosts } = slice.actions;
+export const { setPublicPosts, setActivePost, setActivePostProps, increaseLoadNum, updateMediaOfPosts } = slice.actions;
 
 // ----------------------------------------------------------------------
 
@@ -65,6 +69,9 @@ export function selectPostModalState(state) {
 }
 export function selectCommentModalState(state) {
   return state.post.isOpened2Comment
+}
+export function selectNextLoadNum(state) {
+  return state.post.nextLoadNum
 }
 export function handlePostModal(isOpened) {
   return (dispatch) => {

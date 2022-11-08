@@ -3,10 +3,12 @@ import { CommonStatus } from "models/common_content"
 import { HiveApi } from "services/HiveApi"
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config';
+import { DefaultAvatarMap } from "./avatar_map";
 import { setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
+import { increaseLoadNum } from "redux/slices/post";
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
     sortByDate, encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
-import { DefaultAvatarMap } from "./avatar_map";
+const hiveApi = new HiveApi()
 
 export const getTableType = (type, isPublic=false) => (isPublic? `public-${type}`: type)
 export const getDocId = (itemId, isPublic=false) => (isPublic? `p-${itemId}`: itemId)
@@ -15,7 +17,6 @@ export const mainproc = (props) => {
     const { dispatch, setQueryStep, setQueryPublicStep, setQueryFlag, setQueryPublicFlag } = props
     const feedsDid = sessionStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
-    const hiveApi = new HiveApi()
 
     // main process steps
     const updateStepFlag = (step, isPublic=false)=>(
@@ -657,63 +658,6 @@ export const mainproc = (props) => {
             })
     }
 
-    const queryPostNextStep = (channelId, isPublic=false) => (
-        new Promise((resolve, reject) => {
-            const prefConf = getAppPreference()
-            LocalDB.get(getDocId(channelId, isPublic))
-                .then(async doc=>{
-                    let nextPostDocs = []
-                    let prevTimeRange = [...doc['time_range']]
-                    try {
-                        const lastStart = prevTimeRange[0]?.start || 0
-                        const nextEnd = prevTimeRange[1]?.end || 0
-                        const queryApi = isPublic? hiveApi.queryPublicPostRangeOfTime: hiveApi.queryPostByRangeOfTime
-                        const postRes = await queryApi(doc['target_did'], doc['channel_id'], nextEnd, lastStart)
-                        if(postRes['find_message'] && postRes['find_message']['items']) {
-                            let postArr = postRes['find_message']['items']
-                            if(postArr.length >= LimitPostCount) {
-                                const earliestime = getMinValueFromArray(postArr, 'updated_at')
-                                prevTimeRange[0].start = earliestime
-                            }
-                            else {
-                                prevTimeRange[0].start = prevTimeRange[1]?.start || 0
-                                prevTimeRange.splice(1, 1)
-                            }
-                            LocalDB.put({...doc, time_range: prevTimeRange})
-                            if(prefConf.DP)
-                                postArr = postArr.filter(postItem=>postItem.status!==CommonStatus.deleted)
-
-                            nextPostDocs = postArr.map(post=>{
-                                const tempost = {...post}
-                                tempost._id = getDocId(post.post_id, isPublic)
-                                tempost.target_did = doc['target_did']
-                                tempost.table_type = getTableType('post', isPublic) 
-                                tempost.likes = 0
-                                tempost.like_me = false
-                                tempost.like_creators = []
-                                tempost.mediaData = []
-                                if(typeof post.created === 'object')
-                                    tempost.created = new Date(post.created['$date']).getTime()/1000
-                                return tempost
-                            })
-                        }
-                    } catch(err) {}
-                    Promise.resolve()
-                        .then(_=>LocalDB.bulkDocs(nextPostDocs))
-                        .then(_=>updateStepFlag(QueryStep.post_data, isPublic))
-                        .then(_=>{ 
-                            resolve({success: true, timeRange: prevTimeRange})
-                        })
-                        .catch(err=>{
-                            resolve({success: false, error: err})
-                        })
-                })
-                .catch(err=>{
-                    reject(err)
-                })
-        })
-    )
-
     const querySteps = [
         querySelfChannelStep, 
         querySubscribedChannelStep, 
@@ -735,7 +679,98 @@ export const mainproc = (props) => {
         queryDispNameStep, 
         queryChannelAvatarStep, 
         querySubscriptionInfoStep,
-        queryPostNextStep
     }
     return { querySteps, queryPublicSteps, asyncSteps }
+}
+
+export const nextproc = (props) => {
+    const { dispatch } = props
+    const feedsDid = sessionStorage.getItem('FEEDS_DID')
+    const myDID = `did:elastos:${feedsDid}`
+
+    const queryPostNextStep = (channelId, isPublic=false) => (
+        new Promise((resolve, reject) => {
+            const prefConf = getAppPreference()
+            let nextPostDocs = []
+            let channelDoc = {}
+            LocalDB.get(getDocId(channelId, isPublic))
+                .then(doc=>{
+                    channelDoc = {...doc}
+                    const lastStart = channelDoc['time_range'][0]?.start || 0
+                    const nextEnd = channelDoc['time_range'][1]?.end || 0
+                    const queryApi = isPublic? hiveApi.queryPublicPostRangeOfTime: hiveApi.queryPostByRangeOfTime
+                    return queryApi(doc['target_did'], doc['channel_id'], nextEnd, lastStart)
+                })
+                .then(postRes=>{
+                    if(postRes['find_message'] && postRes['find_message']['items']) {
+                        let prevTimeRange = channelDoc['time_range']
+                        let postArr = postRes['find_message']['items']
+                        if(postArr.length >= LimitPostCount) {
+                            const earliestime = getMinValueFromArray(postArr, 'updated_at')
+                            prevTimeRange[0].start = earliestime
+                        }
+                        else {
+                            prevTimeRange[0].start = prevTimeRange[1]?.start || 0
+                            prevTimeRange.splice(1, 1)
+                        }
+                        if(prefConf.DP)
+                            postArr = postArr.filter(postItem=>postItem.status!==CommonStatus.deleted)
+                        nextPostDocs = postArr.map(post=>{
+                            const tempost = {...post}
+                            tempost._id = getDocId(post.post_id, isPublic)
+                            tempost.target_did = channelDoc['target_did']
+                            tempost.table_type = getTableType('post', isPublic) 
+                            tempost.likes = 0
+                            tempost.like_me = false
+                            tempost.like_creators = []
+                            tempost.mediaData = []
+                            tempost.is_new=true
+                            if(typeof post.created === 'object')
+                                tempost.created = new Date(post.created['$date']).getTime()/1000
+                            return tempost
+                        })
+                        return LocalDB.put(channelDoc)
+                    }
+                    resolve({success: false, data: []})
+                })
+                .then(_=>LocalDB.bulkDocs(nextPostDocs))
+                .then(_=>{
+                    dispatch(increaseLoadNum())
+                    resolve({success: true, data: nextPostDocs})
+                })
+                .catch(err=>{
+                    reject(err)
+                })
+        })
+    )
+    const queryLikeInfoNextStep = (nextPostDocs, isPublic=false) => (
+        new Promise((resolve, reject) => {
+            const postDocWithLikeInfo = nextPostDocs.map(async post=>{
+                try {
+                    const postDoc = await LocalDB.get(getDocId(post.post_id, isPublic))
+                    const likeRes = await hiveApi.queryLikeById(post['target_did'], post['channel_id'], post['post_id'], '0')
+                    if(likeRes['find_message'] && likeRes['find_message']['items']) {
+                        const likeArr = likeRes['find_message']['items']
+                        const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
+                        const likeCreators = filteredLikeArr.map(item=>item.creater_did)
+                        postDoc['likes'] = filteredLikeArr.length
+                        postDoc['like_me'] = likeCreators.includes(myDID)
+                        postDoc['like_creators'] = likeCreators
+                    }
+                    await LocalDB.put(postDoc)
+                    return postDoc
+                } catch(err) {}
+                return null
+            })
+            Promise.all(postDocWithLikeInfo)
+                .then(postData => Promise.resolve(postData.filter(post=>!!post)))
+                .then(postDocs => {
+                    dispatch(increaseLoadNum())
+                    resolve({success: true, data: postDocs})
+                })
+                .catch(err=>{
+                    reject(err)
+                })
+        })
+    )
 }

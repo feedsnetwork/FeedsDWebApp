@@ -9,7 +9,6 @@ import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config'
 import { selectCreatedChannel, selectUnpublishModalState, handleUnpublishModal } from 'redux/slices/channel'
 import { getWeb3Contract, getWeb3Connect } from 'utils/common'
-import { getDocId, getTableType } from 'utils/mainproc';
 import { LocalDB } from 'utils/db';
 
 function UnpublishChannel() {
@@ -19,8 +18,6 @@ function UnpublishChannel() {
   const channelTokenId = channel?.tokenId
   const [onProgress, setOnProgress] = React.useState(false);
   const { enqueueSnackbar } = useSnackbar();
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const userDid = `did:elastos:${feedsDid}`
 
   React.useEffect(()=>{
     if(!isOpen) {
