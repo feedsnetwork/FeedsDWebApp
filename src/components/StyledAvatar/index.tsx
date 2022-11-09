@@ -1,6 +1,5 @@
 import { FC } from 'react'
-import PropTypes from 'prop-types';
-import { Avatar, Box, styled } from '@mui/material';
+import { Box, styled } from '@mui/material';
 
 const StyledBox = styled(Box)(
   ({ theme, width }) => `
@@ -31,13 +30,25 @@ interface StyledAvatarProps {
   alt?: string;
   src?: string;
   style?: object;
-  variant?: "circular" | "square" | "rounded";
   width?: number;
 }
 
-const StyledAvatar: FC<StyledAvatarProps> = (props) => {
-  const {alt, src, width=47, variant='circular', style={}} = props
+const AvatarBox = styled(Box)(({ theme }) => ({
+  borderRadius: '50%',
+  display: 'flex',
+  margin: 'auto',
+})) as any;
 
+const StyledAvatar: FC<StyledAvatarProps> = (props) => {
+  const {alt, src, width=47, style={}} = props
+  const handleErrorImage = (e) => {
+    e.target.src = '/loading.svg'
+    fetch(src)
+      .then(res=>res.text())
+      .then(res=>{
+        e.target.src=res
+      })
+  }
   return (
     <StyledBox 
       width={width}
@@ -48,26 +59,19 @@ const StyledAvatar: FC<StyledAvatarProps> = (props) => {
         ...style
       }}
     >
-      <Avatar
-        variant={variant}
+      <AvatarBox 
+        draggable={false} 
+        component="img" 
+        src={src} 
+        alt={alt}
         sx={{
           width: width,
           height: width,
           transition: 'border-radius .2s',
         }}
-        alt={alt}
-        src={src}
+        onError={handleErrorImage}
       />
     </StyledBox>
   );
 }
-
-StyledAvatar.propTypes = {
-  variant: PropTypes.oneOf([
-    "circular",
-    "square",
-    "rounded"
-  ])
-}
-
 export default StyledAvatar;
