@@ -306,7 +306,7 @@ function SidebarMenu(props) {
                               startIcon={<SubscriptionAvatar channel={channel}/>}
                               sx={{p: '4px 14px !important'}}
                             >
-                              <Typography variant="body2" sx={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>{channel.name}</Typography>
+                              <Typography variant="body2" sx={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>{channel.display_name}</Typography>
                             </Button>
                           </ListItem>
                         ))

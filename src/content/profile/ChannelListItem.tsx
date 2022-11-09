@@ -12,7 +12,7 @@ import { getChannelShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
 
 const ChannelListItem = (props) => {
   const {channel, publishTokenId} = props
-  const {name, avatarSrc, intro} = channel
+  const {display_name: name, avatarSrc, intro} = channel
   const avatarImg = decodeBase64(avatarSrc)
   const [isOpenPopup, setOpenPopup] = React.useState(null);
   const { enqueueSnackbar } = useSnackbar();

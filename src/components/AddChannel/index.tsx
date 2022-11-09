@@ -94,7 +94,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       LocalDB.get(params.channelId)
         .then(doc=>{
           setOriginChannel(doc)
-          setName(doc['name'])
+          setName(doc['display_name'] || doc['name'])
           setDescription(doc['intro'])
           setTipping(doc['tipping_address'])
           setAvatarUrl(decodeBase64(doc['avatarSrc'] || ''))
@@ -159,17 +159,17 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
         .then(_=>LocalDB.get(params.channelId))
         .then(doc=>{
           setOnProgress(false)
-          const newChannelDoc = {
+          const channelDoc = {
             ...doc, 
-            name: newChannel.name,
+            display_name: newChannel.name,
             intro: newChannel.intro,
             tipping_address: newChannel.tippingAddr,
           }
           if(avatarContent) {
-            newChannelDoc['avatar'] = newChannel['avatarPath'] || originChannel['avatar']
-            newChannelDoc['avatarSrc'] = encodeBase64(avatarContent)
+            channelDoc['avatar'] = newChannel['avatarPath'] || originChannel['avatar']
+            channelDoc['avatarSrc'] = encodeBase64(avatarContent)
           }
-          return LocalDB.put(newChannelDoc)
+          return LocalDB.put(channelDoc)
         })
         .then(_=>{
           if(avatarContent) {
@@ -197,8 +197,8 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                 const channelInfo = res['find_message']['items'][0]
                 const newChannelDoc = {
                   ...channelInfo,
-                  target_did: myDID,
                   _id: channelInfo['channel_id'], 
+                  target_did: myDID,
                   is_self: true, 
                   is_subscribed: false, 
                   time_range: [], 
@@ -206,6 +206,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                   avatarSrc: encodeBase64(avatarContent),
                   owner_name: myInfo['name'] || "",
                   subscribers: [],
+                  display_name: newChannel.name
                 }
                 return LocalDB.put(newChannelDoc)
               }

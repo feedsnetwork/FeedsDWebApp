@@ -11,7 +11,7 @@ const SubscriptionAvatar = (props) => {
     if(thisChannelAvatar) {
         thisChannelAvatar = decodeBase64(thisChannelAvatar)
     }
-    return <StyledAvatar alt={channelInfo.name} src={thisChannelAvatar} width={20}/>
+    return <StyledAvatar alt={channelInfo.display_name} src={thisChannelAvatar} width={20}/>
 }
 
 export default SubscriptionAvatar

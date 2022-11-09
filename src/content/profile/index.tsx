@@ -76,7 +76,6 @@ function Profile() {
   // const backgroundImg = "/temp-back.png"
   const selfChannels = channels.filter(channel=>channel['is_self'] === true)
   const subscribedChannels = channels.filter(channel=>channel['is_subscribed'] === true)
-  console.info(channelTokens, publicChannels)
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
       <Card>
@@ -128,10 +127,7 @@ function Profile() {
 
             <Stack spacing={1}>
               {
-                selfChannels.map((channel, _i)=>{
-                  console.info(channelTokens[channel.channel_id], channel)
-                  return <ChannelListItem channel={channel} publishTokenId={channelTokens[channel.channel_id]} key={channel.channel_id}/>
-                })
+                selfChannels.map((channel, _i)=><ChannelListItem channel={channel} publishTokenId={channelTokens[channel.channel_id]} key={channel.channel_id}/>)
               }
             </Stack>
           }
