@@ -127,7 +127,7 @@ function FloatingHeader() {
       (pathname.startsWith('/channel') && focusedChannelId) ||
       ((pathname.startsWith('/subscription/channel') || pathname.startsWith('/explore/channel')) && visitedChannelId)
     ) {
-      primaryText = focusedChannel['name']
+      primaryText = focusedChannel['display_name']
       secondaryText = `${postCountInFocus} posts`
     }
     else if(pathname.startsWith('/post/')) {

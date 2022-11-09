@@ -165,9 +165,9 @@ export const mainproc = (props) => {
                                         is_self: false, 
                                         is_subscribed: true, 
                                         time_range: [], 
-                                        table_type: 'channel'
+                                        table_type: 'channel',
+                                        display_name: channelInfo['display_name'] || channelInfo['name']
                                     }
-                                    channelDoc['display_name'] = channelDoc['display_name'] || channelDoc['name']
                                     return channelDoc
                                 }
                             }
@@ -474,10 +474,9 @@ export const mainproc = (props) => {
                             avatarSrc: getIpfsUrl(metaContent?.data?.avatar),
                             bannerSrc: getIpfsUrl(metaContent?.data?.banner),
                             table_type: getTableType('channel', true),
-                            display_name: metaContent.display_name || metaContent.name,
+                            display_name: metaContent?.data?.cname || metaContent.name,
                             tokenId
                         }
-                        channelDoc['display_name'] = channelDoc['display_name'] || channelDoc['name']
                         return channelDoc
                     })
                     Promise.all(publicChannelObjs)
@@ -498,7 +497,7 @@ export const mainproc = (props) => {
                                         const putPublicChannelAction = publicChannelDocs.map(channelDoc=>(
                                             new Promise((resolveSub, rejectSub)=>{
                                                 LocalDB.get(channelDoc._id)
-                                                    .then(resolveSub)
+                                                    .then(doc => resolveSub(LocalDB.put({...channelDoc, _rev: doc._rev})))
                                                     .catch(err => resolveSub(LocalDB.put(channelDoc)))
                                             })
                                         ))
@@ -763,14 +762,13 @@ export const nextproc = (props) => {
                         postDoc['likes'] = filteredLikeArr.length
                         postDoc['like_me'] = likeCreators.includes(myDID)
                         postDoc['like_creators'] = likeCreators
+                        await LocalDB.put(postDoc)
                     }
-                    await LocalDB.put(postDoc)
                     return postDoc
                 } catch(err) {}
-                return null
+                return post
             })
             Promise.all(postDocWithLikeInfo)
-                .then(postData => Promise.resolve(postData.filter(post=>!!post)))
                 .then(postDocs => {
                     dispatch(increaseLoadNum())
                     resolve({success: true, data: postDocs})

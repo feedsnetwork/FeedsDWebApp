@@ -22,8 +22,8 @@ const PostCard = (props) => {
   let cardProps = {}
   if(level === 1) {
     contentObj = typeof post.content === 'object'? {...post.content}: JSON.parse(post.content)
-    contentObj.avatar = { name: channel['name'], src: channelAvatars[channel.channel_id]? decodeBase64(channelAvatars[channel.channel_id]): '' }
-    contentObj.primaryName = channel['name']
+    contentObj.avatar = { name: channel['display_name'], src: channelAvatars[channel.channel_id]? decodeBase64(channelAvatars[channel.channel_id]): '' }
+    contentObj.primaryName = channel['display_name']
     contentObj.secondaryName = `@${dispName}`
     cardProps = {style: {cursor: 'pointer'}, onClick: naviage2detail}
   } 
@@ -58,8 +58,8 @@ const PostCard = (props) => {
                   content: comment.content
                 }
                 if(channel['target_did'] === comment.creater_did) {
-                  subContentObj['avatar'] = { name: channel['name'], src: channel['avatarSrc']}
-                  subContentObj['primaryName'] = `@${channel.name}`
+                  subContentObj['avatar'] = { name: channel['display_name'], src: channel['avatarSrc']}
+                  subContentObj['primaryName'] = `@${channel.display_name}`
                 }
                 const subBodyProps = { post: comment, contentObj: subContentObj, isReply: true, level }
                 return <PostBody {...subBodyProps} key={_i}/>

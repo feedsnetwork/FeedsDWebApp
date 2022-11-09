@@ -48,7 +48,7 @@ const ChannelImgBox = (props) => {
 
 const ChannelCardPaper = (props) => {
   const { info } = props
-  const { name, description } = info
+  const { display_name, intro } = info
 
   return (
       <PaperRecord>
@@ -57,7 +57,7 @@ const ChannelCardPaper = (props) => {
         </Box>
         <Box sx={{px:2, pt: 1, pb: 2}}>
           <Stack direction="column" sx={{justifyContent: 'center', textAlign: 'center'}}>
-            <Typography variant="h6" noWrap sx={{fontWeight: 'normal'}}>{name}</Typography>
+            <Typography variant="h6" noWrap sx={{fontWeight: 'normal'}}>{display_name}</Typography>
             <TypographyStyle 
               variant="subtitle2"
               color='text.secondary'
@@ -71,7 +71,7 @@ const ChannelCardPaper = (props) => {
                 display: '-webkit-box !important'
               }}
             >
-              {description}
+              {intro}
             </TypographyStyle>
           </Stack>
         </Box>
