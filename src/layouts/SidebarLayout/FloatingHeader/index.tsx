@@ -49,7 +49,7 @@ const HeaderWrapper = styled(Box)(
 `
 );
 function FloatingHeader() {
-  const { pageType } = React.useContext(OverPageContext);
+  const { pageType, closeOverPage } = React.useContext(OverPageContext);
   const { queryStep, queryPublicStep } = React.useContext(SidebarContext);
   const { pathname } = useLocation()
   const navigate = useNavigate();
@@ -102,11 +102,12 @@ function FloatingHeader() {
   }, [params])
   
   const handleBack = (e) => {
-    if(pathname.startsWith('/setting')) {
+    if(pathname.startsWith('/setting'))
       navigate('/home')
-    }
-    else
+    else if(!pathname.startsWith('/home'))
       window.history.back()
+    else
+      closeOverPage()
   }
   
   const getActionText = () => {

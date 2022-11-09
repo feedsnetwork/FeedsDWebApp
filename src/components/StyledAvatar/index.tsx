@@ -42,7 +42,7 @@ const AvatarBox = styled(Box)(({ theme }) => ({
 const StyledAvatar: FC<StyledAvatarProps> = (props) => {
   const {alt, src, width=47, style={}} = props
   const handleErrorImage = (e) => {
-    // e.target.src = '/loading.svg'
+    e.target.src = '/loading.svg'
     if(!src.startsWith("http"))
       return
     fetch(src)
