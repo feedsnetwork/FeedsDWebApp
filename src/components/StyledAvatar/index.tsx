@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import { Box, styled } from '@mui/material';
+import { Box, styled, Avatar } from '@mui/material';
 
 const StyledBox = styled(Box)(
   ({ theme, width }) => `
@@ -61,18 +61,31 @@ const StyledAvatar: FC<StyledAvatarProps> = (props) => {
         ...style
       }}
     >
-      <AvatarBox 
-        draggable={false} 
-        component="img" 
-        src={src} 
-        alt={alt}
-        sx={{
-          width: width,
-          height: width,
-          transition: 'border-radius .2s',
-        }}
-        onError={handleErrorImage}
-      />
+      {
+        src?
+        <AvatarBox 
+          draggable={false} 
+          component="img" 
+          src={src} 
+          alt={alt}
+          sx={{
+            width: width,
+            height: width,
+            transition: 'border-radius .2s',
+          }}
+          onError={handleErrorImage}
+        />:
+        
+        <Avatar
+          sx={{
+            width: width,
+            height: width,
+            transition: 'border-radius .2s',
+          }}
+          alt={alt}
+          src={src}
+        />
+      }
     </StyledBox>
   );
 }

@@ -17,15 +17,21 @@ const Home = () => {
   const [posts, setPosts] = React.useState([])
   const [totalCount, setTotalCount] = React.useState(0)
   const [pageEndTime, setPageEndTime] = React.useState(0)
-  const [isLoading, setIsLoading] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(true)
   const channelDispName = useSelector(selectDispNameOfChannels)
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
-    if(queryStep >= QueryStep.self_channel && !posts.length)
-      setIsLoading(true)
+    LocalDB.get('query-step')
+      .then(currentStep=>{
+        if(!currentStep['step'])
+          setIsLoading(false)
+      })
+      .catch(_=>setIsLoading(false))
+  }, [])
+  React.useEffect(()=>{
     if(queryStep >= QueryStep.post_data) {
-      setIsLoading(false)
+      
       appendMoreData()
       LocalDB.find({
         selector: {
@@ -67,6 +73,7 @@ const Home = () => {
       ))
       .then(response => {
         setPosts([...posts, ...response.docs])
+        setIsLoading(false)
         const pageEndPost = response.docs[response.docs.length-1]
         if(pageEndPost)
           setPageEndTime(pageEndPost['created_at'])

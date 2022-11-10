@@ -19,34 +19,36 @@ function Channel() {
   const [posts, setPosts] = React.useState([]);
   const [channelInfo, setChannelInfo] = React.useState({});
   const [selfChannelCount, setSelfChannelCount] = React.useState(0);
-  const [isLoading, setIsLoading] = React.useState(false)
-  const [hasMore, setHasMore] = React.useState(false)
+  const [totalCount, setTotalCount] = React.useState(0)
+  const [hasMore, setHasMore] = React.useState(true)
+  const [isLoading, setIsLoading] = React.useState(true)
+  const [pageEndTime, setPageEndTime] = React.useState(0)
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
+    LocalDB.get('query-step')
+      .then(currentStep=>{
+        if(!currentStep['step'])
+          setIsLoading(false)
+      })
+      .catch(_=>setIsLoading(false))
+  }, [])
+  React.useEffect(()=>{
+    if(queryStep) {
+      setIsLoading(true)
+    }
     if(focusedChannelId) {
-      if(queryStep >= QueryStep.self_channel && !posts.length)
-        setIsLoading(true)
       if(queryStep >= QueryStep.post_data) {
-        LocalDB.createIndex({
-          index: {
-            fields: ['created_at'],
+        appendMoreData('first')
+        LocalDB.find({
+          selector: {
+            table_type: 'post',
+            channel_id: focusedChannelId
           }
         })
-          .then(_=>(
-            LocalDB.find({
-              selector: {
-                table_type: 'post',
-                channel_id: focusedChannelId,
-                created_at: {$exists: true}
-              },
-              sort: [{'created_at': 'desc'}],
-            })
-          ))
-          .then(response => {
-            setIsLoading(false)
-            setPosts(response.docs)
+          .then(response=>{
+            setTotalCount(response.docs.length)
           })
       }
       if(queryStep >= QueryStep.subscribed_channel) {
@@ -70,19 +72,41 @@ function Channel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusedChannelId, publishPostNumber, queryStep])
 
-  React.useEffect(()=>{
-    if(!posts.length)
-      return
-    const timeRange = channelInfo['time_range'] || []
-    if(!timeRange.length || !timeRange[0]['start'])
-      setHasMore(false)
-    else {
-      setHasMore(true)
+  const appendMoreData = (type) => {
+    let limit = 10
+    let createdAt: object = pageEndTime? {$lt: pageEndTime}: {$gt: true}
+    if(type === "first") {
+      limit = pageEndTime? undefined: 10
+      createdAt = pageEndTime? {$gte: pageEndTime}: {$gt: true}
     }
-  }, [posts, channelInfo])
 
-  const appendMoreData = () => {
-
+    LocalDB.createIndex({
+      index: {
+        fields: ['created_at'],
+      }
+    })
+      .then(_=>(
+        LocalDB.find({
+          selector: {
+            table_type: 'post',
+            channel_id: focusedChannelId,
+            created_at: createdAt
+          },
+          sort: [{'created_at': 'desc'}],
+          limit
+        })
+      ))
+      .then(response => {
+        setIsLoading(false)
+        if(type === 'first')
+          setPosts(response.docs)
+        else
+          setPosts([...posts, ...response.docs])
+        const pageEndPost = response.docs[response.docs.length-1]
+        if(pageEndPost)
+          setPageEndTime(pageEndPost['created_at'])
+      })
+      .catch(err=>setIsLoading(false))
   }
   const loadingSkeletons = Array(5).fill(null)
   return (
@@ -100,8 +124,8 @@ function Channel() {
               <Container sx={{ mt: 3, flexGrow: 1 }} maxWidth="lg">
                 <InfiniteScroll
                   dataLength={posts.length}
-                  next={appendMoreData}
-                  hasMore={hasMore}
+                  next={()=>{appendMoreData('next')}}
+                  hasMore={posts.length<totalCount || hasMore}
                   loader={<h4>Loading...</h4>}
                   scrollableTarget="scrollableBox"
                   style={{overflow: 'visible'}}
@@ -138,5 +162,4 @@ function Channel() {
     </>
   );
 }
-
 export default Channel;
