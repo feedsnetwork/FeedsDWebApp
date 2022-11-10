@@ -13,6 +13,7 @@ import { selectPublishModalState, selectCreatedChannel, handlePublishModal } fro
 import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec } from 'utils/common'
 import { getDocId, getTableType } from 'utils/mainproc';
 import { getLocalDB } from 'utils/db';
+import { HiveHelper } from 'services/HiveHelper';
 
 const client = create({url: ipfsURL})
 function PublishChannel() {
@@ -24,6 +25,7 @@ function PublishChannel() {
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const LocalDB = getLocalDB()
+  const hiveHelper = new HiveHelper()
 
   React.useEffect(()=>{
     if(!isOpen) {
@@ -47,20 +49,28 @@ function PublishChannel() {
     if(e.currentTarget.value === 'ok') {
       setOnProgress(true)
       try {
+        // set channel data 
         const avatarBuffer = Buffer.from(channel.avatarContent, 'base64');
         const avatarAdded = await client.add(avatarBuffer)
         const metaObj = new ChannelContent()
         metaObj.name = channel.name
         metaObj.description = channel.intro
         metaObj.creator['did'] = userDid
-        metaObj.data.cname = channel.name
+        metaObj.data.cname = channel.display_name || channel.name
         metaObj.data.avatar = `feeds:image:${avatarAdded.path}`
         metaObj.data.ownerDid = userDid
         const metaAdded = await client.add(JSON.stringify(metaObj))
         const channelID = hash(`${userDid}${channel.name}`)
         const channelEntry = `feeds://v3/${userDid}/${channelID}`
+        metaObj.data.channelEntry = channelEntry
         const tokenID = decFromHex(channelID)
         const tokenURI = `feeds:json:${metaAdded.path}`
+
+        // request sign data
+        const signature = await hiveHelper.requestSigndata(channelEntry)
+        metaObj.data.signature = signature
+
+        // publish data
         const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress)
         const web3Connect = getWeb3Connect()
         const accounts = await web3Connect.eth.getAccounts()

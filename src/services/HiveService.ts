@@ -412,6 +412,12 @@ export class HiveService {
   newInsertOptions() {
     return new InsertOptions(false, true);
   }
+
+  async requestSigndataOnTokenID(tokenId: string) {
+    const didAccess = new ConDID.DIDAccess();
+    const signedData = await didAccess.signData(tokenId, { extraField: 0 }, "signature");
+    return signedData
+  }
 }
 
 const storePassword = "storepass"

@@ -2296,4 +2296,8 @@ export class HiveHelper {
             that.buyStorageSpaceDialog = null
         }
     }
+
+    requestSigndata(tokenId: string): Promise<any> {
+        return hiveService.requestSigndataOnTokenID(tokenId)
+    }
 }

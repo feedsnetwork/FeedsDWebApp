@@ -7,7 +7,7 @@ type ChannelDetail = {
   signature: string
 }
 export class ChannelContent {
-  version: string = "3.0"
+  version: string = "2"
   type: string = "FeedsChannel"
   name: string = ""
   description: string = ""
