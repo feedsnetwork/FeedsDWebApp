@@ -778,4 +778,41 @@ export const nextproc = (props) => {
                 })
         })
     )
+    const queryPostImgNextStep = (nextPostDocs, isPublic=false) => (
+        new Promise((resolve, reject) => {
+            const postDocWithImg = nextPostDocs.map(async post=>{
+                if(post['status'] !== CommonStatus.deleted) {
+                    try {
+                        const postDoc = await LocalDB.get(getDocId(post.post_id, isPublic))
+                        const contentObj = JSON.parse(postDoc['content'])
+                        const mediaData = contentObj.mediaData.filter(media=>!!media.originMediaPath)
+                        if(mediaData.length) {
+                            const mediaObjArr = mediaData.map(async media => {
+                                const mediaObj = {...media}
+                                try {
+                                    const mediaSrc = await hiveApi.downloadScripting(post['target_did'], media.originMediaPath)
+                                    if(mediaSrc) {
+                                        mediaObj['mediaSrc'] = mediaSrc
+                                    }
+                                } catch(err) {}
+                                return mediaObj
+                            })
+                            postDoc['mediaData'] = await Promise.all(mediaObjArr)
+                            await LocalDB.put(postDoc)
+                        }
+                        return postDoc
+                    } catch(err) {}
+                }
+                return post
+            })
+            Promise.all(postDocWithImg)
+                .then(postDocs => {
+                    dispatch(increaseLoadNum())
+                    resolve({success: true, data: postDocs})
+                })
+                .catch(err=>{
+                    reject(err)
+                })
+        })
+    )
 }
