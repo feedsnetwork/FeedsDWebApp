@@ -67,8 +67,8 @@ function PublishChannel() {
         const tokenURI = `feeds:json:${metaAdded.path}`
 
         // request sign data
-        const signature = await hiveHelper.requestSigndata(channelEntry)
-        metaObj.data.signature = signature
+        const signData = await hiveHelper.requestSigndata(channelEntry)
+        metaObj.data.signature = signData.signature
 
         // publish data
         const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress)
