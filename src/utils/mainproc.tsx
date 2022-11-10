@@ -19,7 +19,6 @@ export const mainproc = (props) => {
     const myDID = `did:elastos:${feedsDid}`
     const LocalDB = getLocalDB()
 
-    // main process steps
     const updateStepFlag = (step, isPublic=false)=>(
         new Promise((resolve, reject) => {
             const flagId = `query-${isPublic? 'public-': ''}step`
@@ -48,7 +47,17 @@ export const mainproc = (props) => {
                 )
         })
     )
+    const filterAvatar = (avatarSrc)=>{
+        let content = avatarSrc
+        if(avatarSrc.startsWith('assets/images')) {
+            const avatarSrcSplit = avatarSrc.split("/")
+            const avatarFile = avatarSrcSplit[avatarSrcSplit.length-1]
+            content = DefaultAvatarMap[avatarFile] || ""
+        }
+        return encodeBase64(content)
+    }
 
+    // main process steps
     const querySelfChannelStep = () => (
         new Promise((resolve, reject) => {
             hiveApi.querySelfChannels()
@@ -592,14 +601,7 @@ export const mainproc = (props) => {
                                         content=`${content}${String.fromCharCode(code)}`;
                                         return content
                                     }, '')
-                                    if(avatarSrc.startsWith('assets/images')) {
-                                        const avatarSrcSplit = avatarSrc.split("/")
-                                        const avatarFile = avatarSrcSplit[avatarSrcSplit.length-1]
-                                        const avatarContent = DefaultAvatarMap[avatarFile] || ""
-                                        avatarObj[channel._id] = encodeBase64(avatarContent)
-                                    }
-                                    else
-                                        avatarObj[channel._id] = encodeBase64(avatarSrc)
+                                    avatarObj[channel._id] = filterAvatar(avatarSrc)
                                     return LocalDB.get(channel._id)
                                 }
                             })
@@ -614,7 +616,7 @@ export const mainproc = (props) => {
                         Promise.resolve()
                             .then(_=>hiveApi.downloadScripting(channel['target_did'], channel['avatar']))
                             .then(avatarRes=>{
-                                avatarObj[channel._id] = encodeBase64(avatarRes)
+                                avatarObj[channel._id] = filterAvatar(avatarRes)
                                 return LocalDB.get(channel._id)
                             })
                             .then(doc=>{

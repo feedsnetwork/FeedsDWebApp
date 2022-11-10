@@ -33,6 +33,7 @@ function Channel() {
           setIsLoading(false)
       })
       .catch(_=>setIsLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   React.useEffect(()=>{
     if(queryStep) {
