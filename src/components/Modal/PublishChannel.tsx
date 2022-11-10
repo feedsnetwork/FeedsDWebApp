@@ -40,7 +40,6 @@ function PublishChannel() {
         resolve(receipt)
       })
       .on('error', (error) => {
-        console.error("error", error);
         reject(error)
       })
     })
@@ -110,7 +109,6 @@ function PublishChannel() {
         setOnProgress(false)
         enqueueSnackbar('Publish channel error', { variant: 'error' });
       }
-      
     } else {
       handleClose()
     }

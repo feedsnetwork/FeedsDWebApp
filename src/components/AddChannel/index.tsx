@@ -6,7 +6,7 @@ import { Icon } from '@iconify/react';
 import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormControl, FormHelperText } from '@mui/material';
 
 import StyledButton from 'components/StyledButton';
-import { handleSuccessModal, setChannelAvatarSrc, setCreatedChannel, setDispNameOfChannels } from 'redux/slices/channel';
+import { handleSuccessModal, setChannelAvatarSrc, setCreatedChannel, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
@@ -186,7 +186,17 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
         })
     else
       hiveApi.createChannel(newChannel.name, newChannel.intro, newChannel['avatarPath'], newChannel.tippingAddr)
-        .then(result=>{
+        .then(async result=>{
+          const currentTime = new Date().getTime()
+          await hiveApi.subscribeChannel(myDID, result.channelId, myInfo['name'], currentTime)
+          const newSubscriber = {
+            channel_id: result.channelId,
+            created_at: currentTime,
+            display_name: myInfo['name'],
+            status: 0,
+            updated_at: currentTime,
+            user_did: myDID
+          }
           // enqueueSnackbar('Add channel success', { variant: 'success' });
           setOnProgress(false)
           handleSuccessModal(true)(dispatch)
@@ -200,14 +210,17 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                   _id: channelInfo['channel_id'], 
                   target_did: myDID,
                   is_self: true, 
-                  is_subscribed: false, 
+                  is_subscribed: true, 
                   time_range: [], 
                   table_type: 'channel',
                   avatarSrc: encodeBase64(avatarContent),
                   owner_name: myInfo['name'] || "",
-                  subscribers: [],
+                  subscribers: [newSubscriber],
                   display_name: newChannel.name
                 }
+                const subscribersObj = {}
+                subscribersObj[newChannelDoc.channel_id] = newChannelDoc.subscribers
+                dispatch(setSubscribers(subscribersObj))
                 return LocalDB.put(newChannelDoc)
               }
             })
