@@ -114,7 +114,7 @@ const PostBody = (props) => {
   }, [queryStep, post])
 
   React.useEffect(()=>{
-    if(publishPostNumber && activePost['post_id'] === post.post_id)
+    if(publishPostNumber && activePost && activePost['post_id'] === post.post_id)
       getCommentCount()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publishPostNumber])
