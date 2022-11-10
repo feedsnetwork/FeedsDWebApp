@@ -59,16 +59,18 @@ function PublishChannel() {
         metaObj.data.cname = channel.display_name || channel.name
         metaObj.data.avatar = `feeds:image:${avatarAdded.path}`
         metaObj.data.ownerDid = userDid
-        const metaAdded = await client.add(JSON.stringify(metaObj))
         const channelID = hash(`${userDid}${channel.name}`)
         const channelEntry = `feeds://v3/${userDid}/${channelID}`
         metaObj.data.channelEntry = channelEntry
         const tokenID = decFromHex(channelID)
-        const tokenURI = `feeds:json:${metaAdded.path}`
 
         // request sign data
         const signData = await hiveHelper.requestSigndata(channelEntry)
         metaObj.data.signature = signData.signature
+        
+        // upload data to ipfs
+        const metaAdded = await client.add(JSON.stringify(metaObj))
+        const tokenURI = `feeds:json:${metaAdded.path}`
 
         // publish data
         const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress)
