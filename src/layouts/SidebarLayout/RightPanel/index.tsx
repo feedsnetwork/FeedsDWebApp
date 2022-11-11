@@ -1,8 +1,7 @@
 import React, { useContext } from 'react';
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '@iconify/react';
-import { useSnackbar } from 'notistack';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
 import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, InputAdornment, Typography, Grid, IconButton } from '@mui/material';
@@ -16,11 +15,9 @@ import SubscribeButton from 'components/SubscribeButton';
 import SubscriberListItem from './SubscriberListItem';
 import PublicChannelItem from './PublicChannelItem';
 import { SidebarContext } from 'contexts/SidebarContext';
-import { HiveApi } from 'services/HiveApi';
 import { getLocalDB, QueryStep } from 'utils/db'
 import { getDocId } from 'utils/mainproc';
-import { selectDispNameOfChannels, selectFocusedChannelId, selectVisitedChannelId, selectSubscribers, selectChannelAvatar, setSubscribers } from 'redux/slices/channel';
-import { selectMyInfo } from 'redux/slices/user';
+import { selectDispNameOfChannels, selectFocusedChannelId, selectVisitedChannelId, selectSubscribers, selectChannelAvatar } from 'redux/slices/channel';
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
 
 const SidebarWrapper = styled(Box)(

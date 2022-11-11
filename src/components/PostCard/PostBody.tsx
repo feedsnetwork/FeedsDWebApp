@@ -12,9 +12,9 @@ import "odometer/themes/odometer-theme-default.css";
 import StyledAvatar from 'components/StyledAvatar'
 import DeletePostDlg from 'components/Modal/DeletePost'
 import UnsubscribeDlg from 'components/Modal/Unsubscribe'
-import StyledButton from 'components/StyledButton'
 import IconInCircle from 'components/IconInCircle'
 import Heart from 'components/Heart'
+import SubscribeButton from 'components/SubscribeButton';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
@@ -77,7 +77,7 @@ const PostBody = (props) => {
   const subscribersOfChannel = useSelector(selectSubscribers)
   const userAvatars = useSelector(selectUserAvatar)
   const activePost = useSelector(selectActivePost)
-  const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
+  const { queryStep, publishPostNumber, updateChannelNumber } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [currentChannel, setCurrentChannel] = React.useState({})
   const [commentCount, setCommentCount] = React.useState(0)
@@ -105,7 +105,7 @@ const PostBody = (props) => {
         setCurrentChannel(channelDoc)
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [post])
+  }, [post, updateChannelNumber])
 
   React.useEffect(()=>{
     if(queryStep >= QueryStep.comment_data)
@@ -448,7 +448,7 @@ const PostBody = (props) => {
                       <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={40}/>
                     </Box>
                     <Box sx={{flexGrow: 1}} textAlign="right">
-                      <StyledButton type="contained">Subscribed</StyledButton>
+                      <SubscribeButton channel={currentChannel}/>
                     </Box>
                   </Stack>
                   <Box>
