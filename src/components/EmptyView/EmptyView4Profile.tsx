@@ -2,6 +2,7 @@ import { FC, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography, Stack } from '@mui/material';
 
+import { useNavigate } from 'react-router';
 import StyledButton from 'components/StyledButton';
 import { OverPageContext } from 'contexts/OverPageContext';
 
@@ -10,7 +11,7 @@ interface EmptyViewInProfileProps {
 }
 
 const EmptyViewInProfile: FC<EmptyViewInProfileProps> = ({ type = 'channel' })=>{
-  const { openAddChannelView } = useContext(OverPageContext);
+  const navigate = useNavigate()
 
   const contentTypes = {
     channel: {
@@ -18,7 +19,7 @@ const EmptyViewInProfile: FC<EmptyViewInProfileProps> = ({ type = 'channel' })=>
       title: 'No channels found',
       description: "Let's change that, get started with\nyour first channel!",
       buttonName: 'Add Channel',
-      buttonFunc: openAddChannelView
+      buttonFunc: ()=>navigate('/channel/add')
     },
     collectible: {
       logo: '/collectible-group.svg',
