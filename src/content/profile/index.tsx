@@ -16,7 +16,7 @@ import { selectMyInfo } from 'redux/slices/user';
 import { selectDispNameOfChannels } from 'redux/slices/channel';
 
 function Profile() {
-  const { walletAddress, queryStep, queryPublicStep } = React.useContext(SidebarContext);
+  const { walletAddress, queryStep, queryPublicStep, updateChannelNumber } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [channels, setChannels] = React.useState([])
   const [publicChannels, setPublicChannels] = React.useState([])
@@ -45,6 +45,10 @@ function Profile() {
           setChannels(response.docs)
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryStep, updateChannelNumber])
+
+  React.useEffect(()=>{
     if(queryStep >= QueryStep.post_like) {
       LocalDB.find({
         selector: {
@@ -71,7 +75,7 @@ function Profile() {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPublicStep])
+  }, [queryPublicStep, updateChannelNumber])
 
   // const backgroundImg = "/temp-back.png"
   const selfChannels = channels.filter(channel=>channel['is_self'] === true)

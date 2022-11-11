@@ -7,11 +7,13 @@ import StyledButton from '../StyledButton';
 import StyledAvatar from '../StyledAvatar';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config'
+import { SidebarContext } from 'contexts/SidebarContext';
 import { selectCreatedChannel, selectUnpublishModalState, handleUnpublishModal } from 'redux/slices/channel'
 import { getWeb3Contract, getWeb3Connect } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
 function UnpublishChannel() {
+  const { increaseUpdatingChannelNumber } = React.useContext(SidebarContext)
   const dispatch = useDispatch()
   const isOpen = useSelector(selectUnpublishModalState)
   const channel = useSelector(selectCreatedChannel)
@@ -66,6 +68,7 @@ function UnpublishChannel() {
             if(res.docs.length)
               LocalDB.put({...res.docs[0], _deleted: true})
           })
+          .then(_=>increaseUpdatingChannelNumber())
         enqueueSnackbar('Unpublish channel success', { variant: 'success' });
         setOnProgress(false)
         handleClose()

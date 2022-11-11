@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Dialog, DialogContent, Typography, Stack } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux'
 import { useSnackbar } from 'notistack';
@@ -10,13 +10,15 @@ import { ChannelContent } from 'models/channel_content';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ipfsURL, ChannelRegContractAddress } from 'config'
 import { selectPublishModalState, selectCreatedChannel, handlePublishModal } from 'redux/slices/channel'
+import { HiveHelper } from 'services/HiveHelper';
+import { SidebarContext } from 'contexts/SidebarContext';
 import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec } from 'utils/common'
 import { getDocId, getTableType } from 'utils/mainproc';
 import { getLocalDB } from 'utils/db';
-import { HiveHelper } from 'services/HiveHelper';
 
 const client = create({url: ipfsURL})
 function PublishChannel() {
+  const { increaseUpdatingChannelNumber } = useContext(SidebarContext)
   const dispatch = useDispatch()
   const isOpen = useSelector(selectPublishModalState)
   const channel = useSelector(selectCreatedChannel)
@@ -90,6 +92,7 @@ function PublishChannel() {
           _id: getDocId(channelID, true), 
           type: metaObj.type,
           name: metaObj.name,
+          display_name: channel.display_name || channel.name,
           intro: metaObj.description,
           channel_id: channelID,
           target_did: metaObj.creator['did'], 
@@ -101,7 +104,11 @@ function PublishChannel() {
         }
         LocalDB.get(getDocId(channelID, true))
           .then(doc=>LocalDB.put({...doc, ...channelDoc}))
-          .catch(err=>LocalDB.put(channelDoc))
+          .then(_=>increaseUpdatingChannelNumber())
+          .catch(err=>{
+            LocalDB.put(channelDoc)
+              .then(_=>increaseUpdatingChannelNumber())
+          })
         enqueueSnackbar('Publish channel success', { variant: 'success' });
         setOnProgress(false)
         handleClose()
