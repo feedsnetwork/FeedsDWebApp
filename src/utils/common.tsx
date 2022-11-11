@@ -5,6 +5,7 @@ import createHash from 'hash.js'
 import Autolinker from 'autolinker';
 import axios from 'axios'
 import copy from 'copy-to-clipboard';
+import BigNumber from "bignumber.js";
 
 import { HiveApi } from 'services/HiveApi'
 import { CommonStatus } from 'models/common_content'
@@ -139,10 +140,12 @@ export function hash(string) {
   return createHash.sha256().update(string).digest('hex');
 }
 export function decFromHex(hex) {
-  return BigInt(parseInt(hex, 16)).toString(10);
+  const bigNum = new BigNumber(hex, 16);
+  return bigNum.toString(10)
 }
 export function hexFromDec(dec) {
-  return BigInt(parseInt(dec, 10)).toString(16);
+  const bigNum = new BigNumber(dec, 10);
+  return bigNum.toString(16);
 }
 
 export function getFilteredArrayByUnique(arr, field) {
