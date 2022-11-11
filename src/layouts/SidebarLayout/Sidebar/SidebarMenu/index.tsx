@@ -198,7 +198,7 @@ const ListItemButtonStyle = {
 }
 
 function SidebarMenu(props) {
-  const { closeSidebar, queryStep } = useContext(SidebarContext);
+  const { closeSidebar, queryStep, queryFlag } = useContext(SidebarContext);
   const [subscribedChannels, setSubscribedChannels] = useState([]);
   const { pathname } = useLocation()
   const dispatch = useDispatch();
@@ -209,7 +209,7 @@ function SidebarMenu(props) {
   const LocalDB = getLocalDB()
   
   useEffect(()=>{
-    if(queryStep >= QueryStep.subscribed_channel && !subscribedChannels.length) {
+    if((queryStep >= QueryStep.subscribed_channel && !subscribedChannels.length) || queryFlag >= QueryStep.subscribed_channel) {
       LocalDB.find({
         selector: {
           table_type: 'channel', 
@@ -224,7 +224,7 @@ function SidebarMenu(props) {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep])
+  }, [queryStep, queryFlag])
 
   const toggleChannels = (e) => {
     setVisibleChannels(!isVisibleChannels)

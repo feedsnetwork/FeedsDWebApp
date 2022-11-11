@@ -12,6 +12,7 @@ import StyledAvatar from 'components/StyledAvatar'
 import StyledButton from 'components/StyledButton'
 import InputOutline from 'components/InputOutline'
 import PublicChannelSkeleton from 'components/Skeleton/PublicChannelSkeleton';
+import SubscribeButton from 'components/SubscribeButton';
 import SubscriberListItem from './SubscriberListItem';
 import PublicChannelItem from './PublicChannelItem';
 import { SidebarContext } from 'contexts/SidebarContext';
@@ -41,71 +42,12 @@ const SidebarWrapper = styled(Box)(
 // `
 // );
 const ChannelAbout = (props) => {
-  const { increaseUpdatingChannelNumber } = useContext(SidebarContext);
-  const [isDoingSubscription, setIsDoingSubscription] = React.useState(false)
   const { this_channel } = props
   const editable = this_channel['is_self']
-  const isSubscribed = this_channel['is_subscribed']
   const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const { enqueueSnackbar } = useSnackbar();
-  const myInfo = useSelector(selectMyInfo)
-  const hiveApi = new HiveApi()
-  const LocalDB = getLocalDB()
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const myDID = `did:elastos:${feedsDid}`
 
   const link2Edit = ()=>{
     navigate(`/channel/edit/${this_channel['channel_id']}`);
-  }
-  const handleSubscription = () => {
-    setIsDoingSubscription(true)
-    const currentTime = new Date().getTime()
-    const channel_id = this_channel['channel_id']
-    Promise.resolve()
-      .then(_=>{
-        if(!isSubscribed)
-          return hiveApi.subscribeChannel(this_channel['target_did'], channel_id, myInfo['name'], currentTime)
-        else
-          return hiveApi.unSubscribeChannel(this_channel['target_did'], channel_id)
-      })
-      .then(res=>LocalDB.get(this_channel._id))
-      .then(doc=>{
-        const updatedDoc = {...doc, is_subscribed: !isSubscribed}
-        if(!isSubscribed) {
-          const newSubscriber = {
-            channel_id,
-            created_at: currentTime,
-            display_name: myInfo['name'],
-            status: 0,
-            updated_at: currentTime,
-            user_did: myDID
-          }
-          if(updatedDoc['subscribers'])
-            updatedDoc['subscribers'].push(newSubscriber)
-          else updatedDoc['subscribers'] = [newSubscriber]
-        }
-        else {
-          if(updatedDoc['subscribers']) {
-            const subscriberIndex = updatedDoc['subscribers'].findIndex(el=>el.user_did===myDID)
-            if(subscriberIndex>=0)
-              updatedDoc['subscribers'].splice(subscriberIndex, 1)
-          }
-        }
-        const subscriberObj = {}
-        subscriberObj[channel_id] = updatedDoc['subscribers']
-        dispatch(setSubscribers(subscriberObj))
-        LocalDB.put(updatedDoc)
-      })
-      .then(res=>{
-        increaseUpdatingChannelNumber()
-        enqueueSnackbar(`${!isSubscribed? 'Subscribe': 'Unsubscribe'} channel success`, { variant: 'success' });
-        setIsDoingSubscription(false)
-      })
-      .catch(err=>{
-        enqueueSnackbar(`${!isSubscribed? 'Subscribe': 'Unsubscribe'} channel error`, { variant: 'error' });
-        setIsDoingSubscription(false)
-      })
   }
   return <>
     <Card>
@@ -130,15 +72,7 @@ const ChannelAbout = (props) => {
         <Stack alignItems='center'>
           <Stack direction='row' spacing={1}>
             <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{this_channel['subscribers'].length} Subscribers</Typography>
-            <StyledButton 
-              size='small' 
-              type={isSubscribed? "contained": "outlined"} 
-              loading={isDoingSubscription} 
-              needLoading={true} 
-              onClick={handleSubscription}
-            >
-              {isSubscribed? "Subscribed": "Subscribe"}
-            </StyledButton>
+            <SubscribeButton channel={this_channel}/>
           </Stack>
         </Stack>
       </CardContent>
@@ -176,7 +110,6 @@ function RightPanel() {
   const [focusedChannel, setFocusChannel] = React.useState(null)
   const [isLoadingPublicChannel, setIsLoadingPublicChannels] = React.useState(false)
   const [publicChannels, setPublicChannels] = React.useState([])
-  // const closeSidebar = () => toggleSidebar();
   const theme = useTheme();
   const { pathname } = useLocation();
   const visitedChannelId = useSelector(selectVisitedChannelId)
