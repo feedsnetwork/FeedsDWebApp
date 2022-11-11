@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
-import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, InputAdornment, Typography, Grid, IconButton } from '@mui/material';
+import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, InputAdornment, Typography, Grid, IconButton, Tooltip } from '@mui/material';
 
 import Scrollbar from 'components/Scrollbar';
 import StyledAvatar from 'components/StyledAvatar'
@@ -235,7 +235,12 @@ function RightPanel() {
           <Card>
             <CardHeader 
               title={
-                <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Public Channels&nbsp;<Icon icon="eva:info-outline"/></Typography>
+                <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>
+                  Public Channels&nbsp;
+                  <Tooltip arrow title="Public channels are shared to subscribe.">
+                    <Icon icon="eva:info-outline"/>
+                  </Tooltip>
+                </Typography>
               } 
               subheader={
                 <Typography variant='body2' color='text.secondary'>Powered by Pasar Protocol</Typography>
