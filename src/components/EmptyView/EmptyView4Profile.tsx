@@ -1,10 +1,9 @@
-import { FC, useContext } from 'react';
+import { FC } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography, Stack } from '@mui/material';
 
 import { useNavigate } from 'react-router';
 import StyledButton from 'components/StyledButton';
-import { OverPageContext } from 'contexts/OverPageContext';
 
 interface EmptyViewInProfileProps {
   type?: string;
@@ -33,7 +32,7 @@ const EmptyViewInProfile: FC<EmptyViewInProfileProps> = ({ type = 'channel' })=>
       title: 'Nothing liked yet',
       description: "See what's being posted on the\ntimeline!",
       buttonName: 'Timeline',
-      buttonFunc: ()=>{}
+      buttonFunc: ()=>navigate('/home')
     }
   }
 

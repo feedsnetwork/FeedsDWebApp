@@ -651,7 +651,7 @@ export const mainproc = (props) => {
                         .then(res=>{
                             if(res['find_message']) {
                                 const subscribersArr = res['find_message']['items']
-                                subscribersObj[c_id] = subscribersArr
+                                subscribersObj[c_id] = getFilteredArrayByUnique(subscribersArr, 'user_did')
                                 return LocalDB.get(channel._id)
                             }
                         })
