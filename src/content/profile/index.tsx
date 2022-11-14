@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Card, Container, Box, Typography, Stack, IconButton, Tabs, Tab } from '@mui/material';
-import ShareIcon from '@mui/icons-material/ShareOutlined';
+import { Card, Container, Box, Typography, Stack, Tabs, Tab } from '@mui/material';
+// import ShareIcon from '@mui/icons-material/ShareOutlined';
 
 import StyledButton from 'components/StyledButton'
 import StyledAvatar from 'components/StyledAvatar'
@@ -90,10 +90,12 @@ function Profile() {
         </Box>
         <Box px={2} py={1}>
           <Stack direction='row' spacing={1}>
-            <Box ml='auto'>
+            {/* <Box ml='auto'>
               <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><ShareIcon fontSize='small'/></IconButton>
+            </Box> */}
+            <Box ml='auto'>
+              <StyledButton type='outlined' size='small'>Edit Profile</StyledButton>
             </Box>
-            <StyledButton type='outlined' size='small'>Edit Profile</StyledButton>
           </Stack>
           <Stack spacing={1} px={{sm: 0, md: 3}} mt={2}>
             <Typography variant="h3">@{myInfo['name'] || reduceDIDstring(feedsDid)}</Typography>
