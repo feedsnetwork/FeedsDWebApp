@@ -124,6 +124,8 @@ function FloatingHeader() {
     }
     else if(pathname.startsWith('/channel/add') || pageType==='AddChannel')
       primaryText = "Add Channel"
+    else if(pathname.startsWith('/channel/edit'))
+      primaryText = "Edit Channel"
     else if(
       (pathname.startsWith('/channel') && focusedChannelId) ||
       ((pathname.startsWith('/subscription/channel') || pathname.startsWith('/explore/channel')) && visitedChannelId)
