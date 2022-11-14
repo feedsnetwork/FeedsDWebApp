@@ -67,6 +67,11 @@ function PublishChannel() {
 
         // request sign data
         const signData = await hiveHelper.requestSigndata(channelEntry)
+        if(!signData.signature) {
+          setOnProgress(false)
+          enqueueSnackbar('Publish channel error', { variant: 'error' });
+          return
+        }
         metaObj.data.signature = signData.signature
         
         // upload data to ipfs
