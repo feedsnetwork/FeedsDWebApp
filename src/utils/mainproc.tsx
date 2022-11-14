@@ -479,6 +479,7 @@ export const mainproc = (props) => {
                             intro: metaContent.description,
                             channel_id: channelId,
                             target_did: targetDid, 
+                            tipping_address: channelInfo['receiptAddr'],
                             time_range: [], 
                             avatarSrc: getIpfsUrl(metaContent?.data?.avatar),
                             bannerSrc: getIpfsUrl(metaContent?.data?.banner),

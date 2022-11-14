@@ -90,7 +90,7 @@ function PublishChannel() {
           'gas': _gasLimit,
           'value': 0
         };
-        const mintMethod = channelRegContract.methods.mint(tokenID, tokenURI, channelEntry).send(transactionParams)
+        const mintMethod = channelRegContract.methods.mint(tokenID, tokenURI, channelEntry, channel.tipping_address).send(transactionParams)
         const mintRes = await promiseReceipt(mintMethod)
         const tokenId = `0x${hexFromDec(mintRes['events']?.ChannelRegistered?.returnValues.tokenId || '0')}`
         const channelDoc = {
@@ -101,6 +101,7 @@ function PublishChannel() {
           intro: metaObj.description,
           channel_id: channelID,
           target_did: metaObj.creator['did'], 
+          tipping_address: channel.tipping_address,
           time_range: [], 
           avatarSrc: getIpfsUrl(metaObj?.data?.avatar),
           bannerSrc: getIpfsUrl(metaObj?.data?.banner),
