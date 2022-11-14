@@ -1,10 +1,14 @@
 import React from 'react'
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useSnackbar } from 'notistack';
 import { Stack, Box, Typography } from '@mui/material'
 
 import StyledAvatar from 'components/StyledAvatar'
 import StyledButton from 'components/StyledButton';
-import { selectSubscribers } from 'redux/slices/channel';
+import { selectSubscribers, setSubscribers } from 'redux/slices/channel';
+import { selectMyInfo } from 'redux/slices/user';
+import { HiveApi } from 'services/HiveApi';
+import { getLocalDB } from 'utils/db';
 
 const PublicChannelItem = (props) => {
     const { channel } = props
@@ -13,6 +17,59 @@ const PublicChannelItem = (props) => {
     const feedsDid = sessionStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
     const isSubscribed = subscribers.map(item=>item.user_did).includes(myDID)
+    const [isDoingSubscription, setIsDoingSubscription] = React.useState(false)
+    const dispatch = useDispatch()
+    const { enqueueSnackbar } = useSnackbar();
+    const myInfo = useSelector(selectMyInfo)
+    const hiveApi = new HiveApi()
+    const LocalDB = getLocalDB()
+
+    const handleSubscription = () => {
+        setIsDoingSubscription(true)
+        const currentTime = new Date().getTime()
+        const channel_id = channel['channel_id']
+        Promise.resolve()
+            .then(_=>{
+                if(!isSubscribed)
+                    return hiveApi.subscribeChannel(channel['target_did'], channel_id, myInfo['name'], currentTime)
+                else
+                    return hiveApi.unSubscribeChannel(channel['target_did'], channel_id)
+            })
+            .then(res=>LocalDB.get(channel._id))
+            .then(doc=>{
+                const updatedDoc = {...doc, is_subscribed: !isSubscribed}
+                if(!isSubscribed) {
+                    const newSubscriber = {
+                        channel_id,
+                        created_at: currentTime,
+                        display_name: myInfo['name'],
+                        status: 0,
+                        updated_at: currentTime,
+                        user_did: myDID
+                    }
+                    if(updatedDoc['subscribers'])
+                        updatedDoc['subscribers'].push(newSubscriber)
+                    else updatedDoc['subscribers'] = [newSubscriber]
+                }
+                else if(updatedDoc['subscribers']) {
+                    const subscriberIndex = updatedDoc['subscribers'].findIndex(el=>el.user_did===myDID)
+                    if(subscriberIndex>=0)
+                        updatedDoc['subscribers'].splice(subscriberIndex, 1)
+                }
+                const subscriberObj = {}
+                subscriberObj[channel_id] = updatedDoc['subscribers']
+                dispatch(setSubscribers(subscriberObj))
+                LocalDB.put(updatedDoc)
+            })
+            .then(res=>{
+                enqueueSnackbar(`${!isSubscribed? 'Subscribe': 'Unsubscribe'} channel success`, { variant: 'success' });
+                setIsDoingSubscription(false)
+            })
+            .catch(err=>{
+                enqueueSnackbar(`${!isSubscribed? 'Subscribe': 'Unsubscribe'} channel error`, { variant: 'error' });
+                setIsDoingSubscription(false)
+            })
+    }
 
     return (
         <Stack direction="row" alignItems="center" spacing={1}>
@@ -26,11 +83,15 @@ const PublicChannelItem = (props) => {
                 </Typography>
             </Box>
             <Box>
-                {
-                    isSubscribed?
-                    <StyledButton type="contained" size='small'>Subscribed</StyledButton>:
-                    <StyledButton type="outlined" size='small'>Subscribe</StyledButton>
-                }
+                <StyledButton 
+                    size='small' 
+                    type={isSubscribed? "contained": "outlined"} 
+                    loading={isDoingSubscription} 
+                    needLoading={true} 
+                    onClick={handleSubscription}
+                    >
+                    {isSubscribed? "Subscribed": "Subscribe"}
+                </StyledButton>
             </Box>
         </Stack>
     )
