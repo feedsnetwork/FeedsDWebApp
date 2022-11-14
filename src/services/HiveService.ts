@@ -55,7 +55,7 @@ export class HiveService {
             return new Promise(async (resolve, reject) => {
               try {
                 // const authToken = await self.standardAuthService.generateHiveAuthPresentationJWT(jwtToken)
-                const authToken = generateHiveAuthPresentationJWT(jwtToken)
+                const authToken = await generateHiveAuthPresentationJWT(jwtToken)
                 resolve(authToken)
               } catch (error) {
                 // Logger.error(TAG, "get Authorization Error: ", error)
@@ -454,13 +454,12 @@ async function getAppInstanceDIDDoc() {
 async function issueDiplomaFor() {
   connectivity.setApplicationDID(ApplicationDID)
   const didAccess = new ConDID.DIDAccess()
-  let credential = await didAccess.getExistingAppIdentityCredential()
+  let credential = await didAccess.generateAppIdCredential()
   if (credential) {
     return credential
   }
 
-  credential = await didAccess.generateAppIdCredential()
-
+  credential = await didAccess.getExistingAppIdentityCredential()
   if (credential) {
     return credential
   }
