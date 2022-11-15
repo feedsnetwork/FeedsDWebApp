@@ -115,7 +115,10 @@ export const mainproc = (props) => {
                                         }
                                         return LocalDB.put(channelDoc)
                                     })
-                                    .then(resolveDoc)
+                                    .then(res=>{
+                                        if(res)
+                                            resolveDoc(res)
+                                    })
                             })
                         ))
                         Promise.all([...junkDocs, ...selfChannelDocs])
@@ -245,18 +248,18 @@ export const mainproc = (props) => {
         })
     )
 
-    const queryPostStep = (isPublic=false) => (
+    const queryPostStep = (is_public=false) => (
         new Promise((resolve, reject) => {
             const prefConf = getAppPreference()
-            const table_type = getTableType('channel', isPublic)
-            LocalDB.find({ selector: { table_type } })
+            const selector = { table_type: 'channel', is_public }
+            LocalDB.find({ selector })
                 .then(response=>{
                     const postsByChannel = response.docs.map(async channel=>{
                         try {
                             let prevTimeRange = [...channel['time_range']]
                             const lastime = prevTimeRange.length? prevTimeRange[0].end: 0
                             const currentime = new Date().getTime()
-                            const queryApi = isPublic? hiveApi.queryPublicPostRangeOfTime: hiveApi.queryPostByRangeOfTime
+                            const queryApi = hiveApi.queryPostByRangeOfTime
                             const postRes = await queryApi(channel['target_did'], channel['channel_id'], lastime, currentime)
                             if(postRes['find_message'] && postRes['find_message']['items']) {
                                 let postArr = postRes['find_message']['items']
@@ -274,28 +277,51 @@ export const mainproc = (props) => {
                                 if(prefConf.DP)
                                     postArr = postArr.filter(postItem=>postItem.status!==CommonStatus.deleted)
 
-                                const postDocArr = postArr.map(post=>{
-                                    const tempost = {...post}
-                                    tempost._id = getDocId(post.post_id, isPublic)
-                                    tempost.target_did = channel['target_did']
-                                    tempost.table_type = getTableType('post', isPublic) 
-                                    tempost.likes = 0
-                                    tempost.like_me = false
-                                    tempost.like_creators = []
-                                    tempost.mediaData = []
-                                    if(typeof post.created === 'object')
-                                        tempost.created = new Date(post.created['$date']).getTime()/1000
-                                    return tempost
-                                })
+                                const postDocArr = postArr.map(post=>(
+                                    new Promise((resolveDoc, rejectDoc)=>{
+                                        LocalDB.get(post.post_id)
+                                            .then(doc=>{
+                                                if(doc['modified'] === post['modified'])
+                                                    return
+                                                const postDoc = {...doc, ...post, _id: post.post_id, mediaData: []}
+                                                if(typeof post.created === 'object')
+                                                    postDoc.created = new Date(post.created['$date']).getTime()/1000
+                                                return LocalDB.put(postDoc)
+                                            })
+                                            .then(resolveDoc)
+                                            .catch(_=>{
+                                                const postDoc = {
+                                                    ...post,
+                                                    _id: post.post_id,
+                                                    target_did: channel['target_did'],
+                                                    table_type: 'post',
+                                                    likes: 0,
+                                                    like_me: false,
+                                                    like_creators: [],
+                                                    mediaData: [],
+                                                }
+                                                if(typeof post.created === 'object')
+                                                    postDoc.created = new Date(post.created['$date']).getTime()/1000
+                                                return LocalDB.put(postDoc)
+                                            })
+                                            .then(res=>{
+                                                if(res)
+                                                    resolveDoc(res)
+                                            })
+                                    })
+                                ))
                                 return postDocArr
                             }
                         } catch(err) {}
                         return []
                     })
                     Promise.all(postsByChannel)
-                        .then(postGroup=> Promise.resolve(getMergedArray(postGroup)))
-                        .then(postData => LocalDB.bulkDocs(postData))
-                        .then(_=>updateStepFlag(QueryStep.post_data, isPublic))
+                        .then(postGroup=> Promise.all(getMergedArray(postGroup)))
+                        .then(res=>{
+                            console.info(res, '--')
+                            updateStepFlag(QueryStep.post_data, is_public)
+                        })
+                        // .then(_=>updateStepFlag(QueryStep.post_data, is_public))
                         .then(_=>{ 
                             resolve({success: true})
                         })
