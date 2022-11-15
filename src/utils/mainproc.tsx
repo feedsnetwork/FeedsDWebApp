@@ -92,9 +92,11 @@ export const mainproc = (props) => {
                             new Promise((resolveDoc, rejectDoc) => {
                                 LocalDB.get(channel.channel_id)
                                     .then(doc=>{
-                                        if(doc['modified'] === channel['modified'])
-                                            return
-                                        let channelDoc = {...doc, ...channel, _id: doc._id}
+                                        if(doc['modified'] === channel['modified']){
+                                            doc['is_self'] = true
+                                            return LocalDB.put(doc)
+                                        }
+                                        let channelDoc = {...doc, ...channel, _id: doc._id, is_self: true}
                                         if(doc['avatar'] !== channel['avatar'])
                                             channelDoc['avatarSrc'] = ''
                                         return LocalDB.put(channelDoc)
@@ -144,57 +146,84 @@ export const mainproc = (props) => {
                     if(Array.isArray(backupRes)) {
                         const subscribedChannelsInDB = await LocalDB.find({
                             selector: {
-                                table_type: 'channel'
+                                table_type: 'channel',
+                                is_subscribed: true
                             }
                         })
-                        const originSubscribedChannels = [...subscribedChannelsInDB.docs]
                         const subscribedChannelArr = getFilteredArrayByUnique(backupRes, "channel_id")
-                        const subscribedChannelDocs = subscribedChannelArr.map(async channel=>{
-                            const channelIndex = originSubscribedChannels.findIndex(doc=>doc['channel_id'] === channel.channel_id)
-                            if(channelIndex>=0) {
-                                const originChannel = originSubscribedChannels[channelIndex]
-                                if(originChannel['is_self']){
-                                    await LocalDB.put({...originChannel, is_subscribed: true})
-                                    return null
-                                }
-                            }
-                            const channelInfoRes = await hiveApi.queryChannelInfo(channel.target_did, channel.channel_id)
-                            if(channelInfoRes['find_message'] && channelInfoRes['find_message']['items'].length){
-                                let channelDoc = {}
-                                const channelInfo = channelInfoRes['find_message']['items'][0] 
-                                if(channelIndex>=0) {
-                                    const originChannel = originSubscribedChannels[channelIndex]
-                                    if(originChannel['modified'] === channelInfo['modified'])
-                                        channelDoc = {...originChannel, is_subscribed: true}
-                                    else {
-                                        channelDoc = {...originChannel, ...channelInfo, is_subscribed: true, _id: originChannel._id}
-                                        if(originChannel['avatar'] !== channelInfo['avatar'])
-                                            channelDoc['avatarSrc'] = ''
-                                    }
-                                    channelDoc['display_name'] = channelDoc['display_name'] || channelDoc['name']
-                                    originSubscribedChannels.splice(channelIndex, 1)
-                                    await LocalDB.put(channelDoc)
-                                }
-                                else {
-                                    channelDoc = {
-                                        ...channelInfo, 
-                                        _id: channel.channel_id,
-                                        target_did: channel.target_did,
-                                        is_self: false, 
-                                        is_subscribed: true, 
-                                        time_range: [], 
-                                        table_type: 'channel',
-                                        display_name: channelInfo['display_name'] || channelInfo['name']
-                                    }
-                                    return channelDoc
-                                }
-                            }
-                            return null
-                        })
-                        const deleteDocs = originSubscribedChannels.filter(channel=>!channel['is_self']).map(item=>({...item, _deleted: true}))
-                        Promise.all(subscribedChannelDocs)
-                            .then(subscribedChannels=>LocalDB.bulkDocs(subscribedChannels.filter(channel=>!!channel)))
-                            .then(_=>LocalDB.bulkDocs(deleteDocs))
+                        const junkDocs = subscribedChannelsInDB.docs
+                            .filter(doc=>subscribedChannelArr.every(channel=>channel['channel_id']!==doc['channel_id']))
+                            .map(doc=>(
+                                new Promise((resolveDoc, rejectDoc) => {
+                                    LocalDB.get(doc._id)
+                                        .then(junkDoc=>{
+                                            junkDoc['is_subscribed'] = false
+                                            return LocalDB.put(junkDoc)
+                                        })
+                                        .then(resolveDoc)
+                                        .catch(_=>resolveDoc(null))
+                                })
+                            ))
+                        const getChannelInfo = (channel):Promise<object> => (
+                            new Promise((resolve, reject)=>{
+                                hiveApi.queryChannelInfo(channel.target_did, channel.channel_id)
+                                    .then(response => {
+                                        if(response['find_message'] && response['find_message']['items'].length) {
+                                            resolve(response['find_message']['items'][0])
+                                            return
+                                        }
+                                        reject(new Error())
+                                    })
+                                    .catch(reject)
+                            })
+                        )
+                        const subscribedChannelDocs = subscribedChannelArr.map(channel=>(
+                            new Promise((resolveDoc, rejectDoc) => {
+                                LocalDB.get(channel.channel_id)
+                                    .then(async doc=>{
+                                        if(doc['is_self']) {
+                                            doc['is_subscribed'] = true
+                                            return LocalDB.put(doc)
+                                        }
+                                        try {
+                                            const channelInfo = await getChannelInfo(channel)
+                                            if(doc['modified'] === channelInfo['modified']){
+                                                doc['is_subscribed'] = true
+                                                return LocalDB.put(doc)
+                                            }
+                                            let channelDoc = {...doc, ...channelInfo, is_subscribed: true, _id: doc._id}
+                                            if(doc['avatar'] !== channelInfo['avatar'])
+                                                channelDoc['avatarSrc'] = ''
+                                            return LocalDB.put(channelDoc)
+                                        } catch(e) {
+                                            return
+                                        }
+                                    })
+                                    .then(resolveDoc)
+                                    .catch(_=>getChannelInfo(channel))
+                                    .then(channelInfo=>{
+                                        if(!channelInfo)
+                                            return
+                                        let channelDoc = {
+                                            ...channelInfo, 
+                                            _id: channel.channel_id,
+                                            target_did: channel.target_did,
+                                            is_self: false, 
+                                            is_subscribed: true, 
+                                            is_public: false, 
+                                            time_range: [], 
+                                            table_type: 'channel',
+                                            display_name: channelInfo['display_name'] || channelInfo['name']
+                                        }
+                                        return LocalDB.put(channelDoc)
+                                    })
+                                    .then(res=>{
+                                        if(res)
+                                            resolveDoc(res)
+                                    })
+                            })
+                        ))
+                        Promise.all([...junkDocs, ...subscribedChannelDocs])
                             .then(_=>updateStepFlag(QueryStep.subscribed_channel))
                             .then(_=>{ 
                                 queryDispNameStep()
