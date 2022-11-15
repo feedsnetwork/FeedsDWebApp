@@ -75,39 +75,48 @@ export const mainproc = (props) => {
                                 is_self: true
                             }
                         })
-                        let selfChannelDoc = []
-                        const originSelfChannels = [...selfChannelsInDB.docs]
-                        selfChannels.forEach(channel=>{
-                            let channelDoc = {}
-                            const channelIndex = originSelfChannels.findIndex(doc=>doc['channel_id'] === channel.channel_id)
-                            if(channelIndex>=0) {
-                                const originChannel = originSelfChannels[channelIndex]
-                                if(originChannel['modified'] === channel['modified'])
-                                    channelDoc = originChannel
-                                else {
-                                    channelDoc = {...originChannel, ...channel, _id: originChannel._id}
-                                    if(originChannel['avatar'] !== channel['avatar'])
-                                        channelDoc['avatarSrc'] = ''
-                                }
-                                originSelfChannels.splice(channelIndex, 1)
-                            }
-                            else {
-                                channelDoc = {
-                                    ...channel, 
-                                    _id: channel.channel_id.toString(),
-                                    is_self: true, 
-                                    is_subscribed: false, 
-                                    time_range: [], 
-                                    table_type: 'channel'
-                                }
-                            }
-                            channelDoc['display_name'] = channelDoc['display_name'] || channelDoc['name']
-                            selfChannelDoc.push(channelDoc)
-                        })
-                        const deleteDocs = originSelfChannels.map(item=>({...item, _deleted: true}))
-                        Promise.resolve()
-                            .then(_=>LocalDB.bulkDocs(deleteDocs))
-                            .then(_=>LocalDB.bulkDocs(selfChannelDoc))
+                        const junkDocs = selfChannelsInDB.docs
+                            .filter(doc=>selfChannels.every(channel=>channel['channel_id']!==doc['channel_id']))
+                            .map(doc=>(
+                                new Promise((resolveDoc, rejectDoc) => {
+                                    LocalDB.get(doc._id)
+                                        .then(junkDoc=>{
+                                            junkDoc['is_self'] = false
+                                            return LocalDB.put(junkDoc)
+                                        })
+                                        .then(resolveDoc)
+                                        .catch(_=>resolveDoc(null))
+                                })
+                            ))
+                        const selfChannelDocs = selfChannels.map(channel=>(
+                            new Promise((resolveDoc, rejectDoc) => {
+                                LocalDB.get(channel.channel_id)
+                                    .then(doc=>{
+                                        if(doc['modified'] === channel['modified'])
+                                            return
+                                        let channelDoc = {...doc, ...channel, _id: doc._id}
+                                        if(doc['avatar'] !== channel['avatar'])
+                                            channelDoc['avatarSrc'] = ''
+                                        return LocalDB.put(channelDoc)
+                                    })
+                                    .then(resolveDoc)
+                                    .catch(_=>{
+                                        let channelDoc = {
+                                            ...channel, 
+                                            _id: channel.channel_id.toString(),
+                                            is_self: true, 
+                                            is_subscribed: false, 
+                                            is_public: false, 
+                                            time_range: [], 
+                                            display_name: channel['display_name'] || channel['name'],
+                                            table_type: 'channel'
+                                        }
+                                        return LocalDB.put(channelDoc)
+                                    })
+                                    .then(resolveDoc)
+                            })
+                        ))
+                        Promise.all([...junkDocs, ...selfChannelDocs])
                             .then(_=>updateStepFlag(QueryStep.self_channel))
                             .then(_=>{
                                 queryDispNameStep()
