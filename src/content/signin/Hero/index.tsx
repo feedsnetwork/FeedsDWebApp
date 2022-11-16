@@ -124,6 +124,7 @@ function Hero() {
         // succeed
         const token = jwt.sign(user, 'feeds', { expiresIn: 60 * 60 * 24 * 7 });
         sessionStorage.setItem('FEEDS_TOKEN', token);
+        sessionStorage.setItem('FEEDS_DID_PREV', sessionStorage.getItem('FEEDS_DID'));
         sessionStorage.setItem('FEEDS_DID', did);
         sessionStorage.setItem('FEEDS_LINK', '1');
         sessionLinkFlag = '1';
