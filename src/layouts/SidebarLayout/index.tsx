@@ -53,7 +53,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   useEffect(()=>{
     LocalDB.createIndex({
       index: {
-        fields: ['table_type', 'is_self', 'is_subscribed', 'created_at'],
+        fields: ['table_type'],
       }
     }).then(()=>{
       LocalDB.get('query-step')

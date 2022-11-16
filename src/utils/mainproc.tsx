@@ -7,7 +7,7 @@ import { DefaultAvatarMap } from "./avatar_map";
 import { setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
 import { increaseLoadNum } from "redux/slices/post";
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
-    sortByDate, encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
+    sortByDate, encodeBase64, getWeb3Contract, getIpfsUrl, promiseSeries } from "./common"
 const hiveApi = new HiveApi()
 
 export const getTableType = (type, isPublic=false) => (isPublic? `public-${type}`: type)
@@ -56,6 +56,11 @@ export const mainproc = (props) => {
         }
         return encodeBase64(content)
     }
+    const createIndex = (selector)=>{
+        return LocalDB.createIndex({
+            index: { fields: Object.keys(selector) }
+        })
+    }
 
     // main process steps
     const querySelfChannelStep = () => (
@@ -94,14 +99,13 @@ export const mainproc = (props) => {
                                     .then(doc=>{
                                         if(doc['modified'] === channel['modified']){
                                             doc['is_self'] = true
-                                            return LocalDB.put(doc)
+                                            return LocalDB.put(doc, {force: true})
                                         }
                                         let channelDoc = {...doc, ...channel, _id: doc._id, is_self: true}
                                         if(doc['avatar'] !== channel['avatar'])
                                             channelDoc['avatarSrc'] = ''
-                                        return LocalDB.put(channelDoc)
+                                        return LocalDB.put(channelDoc, {force: true})
                                     })
-                                    .then(resolveDoc)
                                     .catch(_=>{
                                         let channelDoc = {
                                             ...channel, 
@@ -113,15 +117,14 @@ export const mainproc = (props) => {
                                             display_name: channel['display_name'] || channel['name'],
                                             table_type: 'channel'
                                         }
-                                        return LocalDB.put(channelDoc)
+                                        return LocalDB.put(channelDoc, {force: true})
                                     })
                                     .then(res=>{
-                                        if(res)
-                                            resolveDoc(res)
+                                        resolveDoc(res)
                                     })
                             })
                         ))
-                        Promise.all([...junkDocs, ...selfChannelDocs])
+                        promiseSeries([...junkDocs, ...selfChannelDocs])
                             .then(_=>updateStepFlag(QueryStep.self_channel))
                             .then(_=>{
                                 queryDispNameStep()
@@ -226,7 +229,7 @@ export const mainproc = (props) => {
                                     })
                             })
                         ))
-                        Promise.all([...junkDocs, ...subscribedChannelDocs])
+                        promiseSeries([...junkDocs, ...subscribedChannelDocs])
                             .then(_=>updateStepFlag(QueryStep.subscribed_channel))
                             .then(_=>{ 
                                 queryDispNameStep()
@@ -276,7 +279,6 @@ export const mainproc = (props) => {
                                     .then(doc=>LocalDB.put({...doc, time_range: prevTimeRange}))
                                 if(prefConf.DP)
                                     postArr = postArr.filter(postItem=>postItem.status!==CommonStatus.deleted)
-
                                 const postDocArr = postArr.map(post=>(
                                     new Promise((resolveDoc, rejectDoc)=>{
                                         LocalDB.get(post.post_id)
@@ -316,54 +318,69 @@ export const mainproc = (props) => {
                         return []
                     })
                     Promise.all(postsByChannel)
-                        .then(postGroup=> Promise.all(getMergedArray(postGroup)))
-                        .then(res=>{
-                            console.info(res, '--')
-                            updateStepFlag(QueryStep.post_data, is_public)
-                        })
-                        // .then(_=>updateStepFlag(QueryStep.post_data, is_public))
-                        .then(_=>{ 
-                            resolve({success: true})
-                        })
-                        .catch(err=>{
-                            resolve({success: false, error: err})
-                        })
+                        .then(postGroup=>Promise.all(getMergedArray(postGroup)))
+                        .then(_=>updateStepFlag(QueryStep.post_data, is_public))
+                        .then(_=>resolve({success: true}))
+                        .catch(err=>resolve({success: false, error: err}))
                 })
-                .catch(err=>{
-                    reject(err)
-                })
+                .catch(err=>reject(err))
         })
     )
     
-    const queryLikeInfoStep = (isPublic=false) => (
+    const queryLikeInfoStep = (is_public=false) => (
         new Promise((resolve, reject) => {
-            const table_type = getTableType('post', isPublic)
-            LocalDB.find({ selector: { table_type } })
+            const selector = { table_type: 'channel', is_public }
+            createIndex(selector)
+                .then(_=>LocalDB.find({ selector }))
                 .then(response=>{
-                    const postDocWithLikeInfo = response.docs.map(async post=>{
-                        const postDoc = {...post}
-                        try {
-                            const likeRes = await hiveApi.queryLikeById(post['target_did'], post['channel_id'], post['post_id'], '0')
-                            if(likeRes['find_message'] && likeRes['find_message']['items']) {
-                                const likeArr = likeRes['find_message']['items']
-                                const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
-                                const likeCreators = filteredLikeArr.map(item=>item.creater_did)
-                                postDoc['likes'] = filteredLikeArr.length
-                                postDoc['like_me'] = likeCreators.includes(myDID)
-                                postDoc['like_creators'] = likeCreators
-                            }
-                        } catch(err) {}
-                        return postDoc
+                    const postDocsByChannel = response.docs.map(async channel=>{
+                        const postSelector = { table_type: 'post', channel_id: channel['channel_id'] }
+                        const postResponse = await LocalDB.find({ selector: postSelector })
+                        const postDocWithLikeInfo = postResponse.docs.map(post=>(
+                            new Promise((resolveDoc, rejectDoc)=>{
+                                const postDoc = {}
+                                hiveApi.queryLikeById(post['target_did'], post['channel_id'], post['post_id'], '0')
+                                    .then(likeRes=>{
+                                        if(likeRes['find_message'] && likeRes['find_message']['items']) {
+                                            const likeArr = likeRes['find_message']['items']
+                                            const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
+                                            const likeCreators = filteredLikeArr.map(item=>item.creater_did)
+                                            postDoc['likes'] = filteredLikeArr.length
+                                            postDoc['like_me'] = likeCreators.includes(myDID)
+                                            postDoc['like_creators'] = likeCreators
+                                        }
+                                        return LocalDB.get(post._id)
+                                    })
+                                    .then(originDoc=>LocalDB.put({...originDoc, ...postDoc}))
+                                    .catch(err=>resolveDoc({success: false, error: err}))
+                                    .then(resolveDoc)
+                            })
+                        ))
+                        return postDocWithLikeInfo
                     })
-                    Promise.all(postDocWithLikeInfo)
-                        .then(postData => LocalDB.bulkDocs(postData))
-                        .then(_=>updateStepFlag(QueryStep.post_like, isPublic))
-                        .then(_=>{ 
-                            resolve({success: true})
+                    // const postDocWithLikeInfo = response.docs.map(async post=>{
+                    //     const postDoc = {...post}
+                    //     try {
+                    //         const likeRes = await hiveApi.queryLikeById(post['target_did'], post['channel_id'], post['post_id'], '0')
+                    //         if(likeRes['find_message'] && likeRes['find_message']['items']) {
+                    //             const likeArr = likeRes['find_message']['items']
+                    //             const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
+                    //             const likeCreators = filteredLikeArr.map(item=>item.creater_did)
+                    //             postDoc['likes'] = filteredLikeArr.length
+                    //             postDoc['like_me'] = likeCreators.includes(myDID)
+                    //             postDoc['like_creators'] = likeCreators
+                    //         }
+                    //     } catch(err) {}
+                    //     return postDoc
+                    // })
+                    Promise.all(postDocsByChannel)
+                        .then(postGroup=>Promise.all(getMergedArray(postGroup)))
+                        .then(res=>{
+                            console.info(res, "--1")
+                            updateStepFlag(QueryStep.post_like, is_public)
                         })
-                        .catch(err=>{
-                            resolve({success: false, error: err})
-                        })
+                        .then(_=>resolve({success: true}))
+                        .catch(err=>resolve({success: false, error: err}))
                 })
                 .catch(err=>{
                     reject(err)

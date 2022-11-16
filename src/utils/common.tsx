@@ -286,7 +286,7 @@ export function promiseSeries(arrayOfPromises) {
   var results = [];
   return arrayOfPromises.reduce(function(seriesPromise, promise) {
     return seriesPromise
-      .then(() => promise())
+      .then(() => typeof promise === 'function'? promise(): promise)
       .then((result) => {
         results.push(result)
         return Promise.resolve()
