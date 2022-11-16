@@ -356,39 +356,46 @@ export const mainproc = (props) => {
             })
     )
 
-    const queryPostImgStep = (isPublic=false) => (
+    const queryPostImgStep = (is_public=false) => (
         new Promise((resolve, reject) => {
-            const table_type = getTableType('post', isPublic)
-            LocalDB.find({ selector: { table_type } })
+            const selector = { table_type: 'channel', is_public }
+            createIndex(selector)
+                .then(_=>LocalDB.find({ selector }))
                 .then(response=>{
-                    const postDocWithImg = response.docs.map(async post=>{
-                        if(post['status'] !== CommonStatus.deleted) {
-                            try {
-                                const contentObj = JSON.parse(post['content'])
-                                const mediaData = contentObj.mediaData.filter(media=>!!media.originMediaPath).map(async media => {
-                                    const mediaObj = {...media}
-                                    try {
-                                        const mediaSrc = await hiveApi.downloadScripting(post['target_did'], media.originMediaPath)
-                                        if(mediaSrc) {
-                                            mediaObj['mediaSrc'] = mediaSrc
+                    const postDocsByChannel = response.docs.map(async channel=>{
+                        const postSelector = { table_type: 'post', channel_id: channel['channel_id'] }
+                        const postResponse = await LocalDB.find({ selector: postSelector })
+                        const postDocWithImg = postResponse.docs.map(async post=>{
+                            if(post['status'] !== CommonStatus.deleted) {
+                                try {
+                                    const contentObj = JSON.parse(post['content'])
+                                    const mediaData = contentObj.mediaData.filter(media=>!!media.originMediaPath).map(async media => {
+                                        const mediaObj = {...media}
+                                        try {
+                                            const mediaSrc = await hiveApi.downloadScripting(post['target_did'], media.originMediaPath)
+                                            if(mediaSrc) {
+                                                mediaObj['mediaSrc'] = mediaSrc
+                                            }
+                                        } catch(err) {
+                                            console.log(err)
                                         }
-                                    } catch(err) {
-                                        console.log(err)
-                                    }
-                                    return mediaObj
-                                })
-                                const mediaDataArr = await Promise.all(mediaData)
-                                return await LocalDB.upsert(post._id, (doc)=>{
-                                    if(!mediaData.length)
-                                        return false
-                                    doc['mediaData'] = mediaDataArr
-                                    return doc
-                                })
-                            } catch(err) {}
-                        }
-                        return false
+                                        return mediaObj
+                                    })
+                                    const mediaDataArr = await Promise.all(mediaData)
+                                    return await LocalDB.upsert(post._id, (doc)=>{
+                                        if(!mediaData.length)
+                                            return false
+                                        doc['mediaData'] = mediaDataArr
+                                        return doc
+                                    })
+                                } catch(err) {}
+                            }
+                            return false
+                        })
+                        return postDocWithImg
                     })
-                    Promise.all(postDocWithImg)
+                    Promise.all(postDocsByChannel)
+                        .then(postGroup=>Promise.all(getMergedArray(postGroup)))
                         .then(_=>updateStepFlag(QueryStep.post_image, true))
                         .then(_=>resolve({success: true}))
                         .catch(err=>resolve({success: false, error: err}))
