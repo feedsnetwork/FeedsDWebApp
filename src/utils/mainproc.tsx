@@ -7,7 +7,7 @@ import { DefaultAvatarMap } from "./avatar_map";
 import { setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
 import { increaseLoadNum } from "redux/slices/post";
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
-    sortByDate, encodeBase64, getWeb3Contract, getIpfsUrl, promiseSeries } from "./common"
+    sortByDate, encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
 const hiveApi = new HiveApi()
 
 export const getTableType = (type, isPublic=false) => (isPublic? `public-${type}`: type)
@@ -362,7 +362,6 @@ export const mainproc = (props) => {
             LocalDB.find({ selector: { table_type } })
                 .then(response=>{
                     const postDocWithImg = response.docs.map(async post=>{
-                        const postDoc = {...post}
                         if(post['status'] !== CommonStatus.deleted) {
                             try {
                                 const contentObj = JSON.parse(post['content'])
@@ -378,20 +377,21 @@ export const mainproc = (props) => {
                                     }
                                     return mediaObj
                                 })
-                                postDoc['mediaData'] = await Promise.all(mediaData)
+                                const mediaDataArr = await Promise.all(mediaData)
+                                return await LocalDB.upsert(post._id, (doc)=>{
+                                    if(!mediaData.length)
+                                        return false
+                                    doc['mediaData'] = mediaDataArr
+                                    return doc
+                                })
                             } catch(err) {}
                         }
-                        return postDoc
+                        return false
                     })
                     Promise.all(postDocWithImg)
-                        .then(postData => LocalDB.bulkDocs(postData))
                         .then(_=>updateStepFlag(QueryStep.post_image, true))
-                        .then(_=>{ 
-                            resolve({success: true})
-                        })
-                        .catch(err=>{
-                            resolve({success: false, error: err})
-                        })
+                        .then(_=>resolve({success: true}))
+                        .catch(err=>resolve({success: false, error: err}))
                 })
                 .catch(err=>{
                     reject(err)
