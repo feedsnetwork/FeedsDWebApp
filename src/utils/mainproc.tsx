@@ -220,10 +220,7 @@ export const mainproc = (props) => {
                             }
                         })
                         Promise.all([...junkDocs, ...subscribedChannelDocs])
-                            .then(res=>{
-                                console.info(res)
-                                return updateStepFlag(QueryStep.subscribed_channel)
-                            })
+                            .then(_=>updateStepFlag(QueryStep.subscribed_channel))
                             .then(_=>{ 
                                 queryDispNameStep()
                                 queryChannelAvatarStep()
@@ -248,7 +245,8 @@ export const mainproc = (props) => {
         new Promise((resolve, reject) => {
             const prefConf = getAppPreference()
             const selector = { table_type: 'channel', is_public }
-            LocalDB.find({ selector })
+            createIndex(selector)
+                .then(_=>LocalDB.find({ selector }))
                 .then(response=>{
                     const postsByChannel = response.docs.map(async channel=>{
                         try {
@@ -268,41 +266,35 @@ export const mainproc = (props) => {
                                     prevTimeRange[0].end = currentime
                                 else
                                     prevTimeRange = [timeRangeObj, ...prevTimeRange]
-                                LocalDB.get(channel._id)
-                                    .then(doc=>LocalDB.put({...doc, time_range: prevTimeRange}))
+                                LocalDB.upsert(channel._id, (doc)=>{
+                                    doc['time_range'] = prevTimeRange
+                                    return doc
+                                })
                                 if(prefConf.DP)
                                     postArr = postArr.filter(postItem=>postItem.status!==CommonStatus.deleted)
                                 const postDocArr = postArr.map(post=>(
-                                    new Promise((resolveDoc, rejectDoc)=>{
-                                        LocalDB.get(post.post_id)
-                                            .then(doc=>{
-                                                if(doc['modified'] === post['modified'])
-                                                    return
-                                                const postDoc = {...doc, ...post, _id: post.post_id, mediaData: []}
-                                                if(typeof post.created === 'object')
-                                                    postDoc.created = new Date(post.created['$date']).getTime()/1000
-                                                return LocalDB.put(postDoc)
-                                            })
-                                            .then(resolveDoc)
-                                            .catch(_=>{
-                                                const postDoc = {
-                                                    ...post,
-                                                    _id: post.post_id,
-                                                    target_did: channel['target_did'],
-                                                    table_type: 'post',
-                                                    likes: 0,
-                                                    like_me: false,
-                                                    like_creators: [],
-                                                    mediaData: [],
-                                                }
-                                                if(typeof post.created === 'object')
-                                                    postDoc.created = new Date(post.created['$date']).getTime()/1000
-                                                return LocalDB.put(postDoc)
-                                            })
-                                            .then(res=>{
-                                                if(res)
-                                                    resolveDoc(res)
-                                            })
+                                    LocalDB.upsert(post.post_id, (doc)=>{
+                                        if(doc['modified'] === post['modified'])
+                                            return false
+                                        delete post['_id']
+                                        if(doc._id) {
+                                            const postDoc = {...doc, ...post, mediaData: []}
+                                            if(typeof post.created === 'object')
+                                                postDoc.created = new Date(post.created['$date']).getTime()/1000
+                                            return postDoc
+                                        }
+                                        const postDoc = {
+                                            ...post,
+                                            target_did: channel['target_did'],
+                                            table_type: 'post',
+                                            likes: 0,
+                                            like_me: false,
+                                            like_creators: [],
+                                            mediaData: [],
+                                        }
+                                        if(typeof post.created === 'object')
+                                            postDoc.created = new Date(post.created['$date']).getTime()/1000
+                                        return postDoc
                                     })
                                 ))
                                 return postDocArr
