@@ -1,7 +1,9 @@
 import PouchDB from 'pouchdb-browser'
 import PouchdbFind from 'pouchdb-find'
+import upsertPlugin from "pouchdb-upsert";
 
 PouchDB.plugin(PouchdbFind);
+PouchDB.plugin(upsertPlugin);
 
 // export const LocalDB = new PouchDB(`feeds-${sessionStorage.getItem('FEEDS_DID')}`)
 export const getLocalDB = ()=>{
