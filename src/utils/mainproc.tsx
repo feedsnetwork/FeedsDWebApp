@@ -591,9 +591,10 @@ export const mainproc = (props) => {
     const queryPublicCommentLikeStep = () => queryCommentLikeStep(true)
     
     // async steps
-    const queryDispNameStep = (isPublic=false) => {
-        const table_type = getTableType('channel', isPublic)
-        LocalDB.find({ selector: { table_type } })
+    const queryDispNameStep = (is_public=false) => {
+        const selector = { table_type: 'channel', is_public }
+        createIndex(selector)
+            .then(_=>LocalDB.find({ selector }))
             .then(response=>{
                 const channelWithOwnerName = response.docs.filter(doc=>!!doc['owner_name'])
                 const channelDocNoOwnerName = response.docs.filter(doc=>!doc['owner_name'])
@@ -613,27 +614,22 @@ export const mainproc = (props) => {
                             if(res['find_message'] && res['find_message']['items'].length) {
                                 const dispName = res['find_message']['items'][0].display_name
                                 dispNameObj[c_id] = dispName
-                                return LocalDB.get(channel._id)
+                                return LocalDB.upsert(channel._id, (doc)=>{
+                                    doc['owner_name'] = dispName
+                                    return doc
+                                })
                             }
                         })
-                        .then(doc=>{
-                            const infoDoc = {...doc, owner_name: dispNameObj[c_id]}
-                            return LocalDB.put(infoDoc)
-                        })
-                        .then(res=>{
-                            dispatch(setDispNameOfChannels(dispNameObj))
-                        })
+                        .then(_=>dispatch(setDispNameOfChannels(dispNameObj)))
                         .catch(err=>{})
                 })
             })
     }
 
     const queryChannelAvatarStep = () => {
-        LocalDB.find({
-            selector: {
-                table_type: 'channel'
-            },
-        })
+        const selector = { table_type: 'channel' }
+        createIndex(selector)
+            .then(_=>LocalDB.find({ selector }))
             .then(response=>{
                 const channelWithAvatar = response.docs.filter(doc=>!!doc['avatarSrc'])
                 const channelDocNoAvatar = response.docs.filter(doc=>!doc['avatarSrc'])
@@ -643,7 +639,6 @@ export const mainproc = (props) => {
                     return objs
                 }, {})
                 dispatch(setChannelAvatarSrc(avatarObjs))
-
                 channelDocNoAvatar.forEach(channel=>{
                     if(channel['is_self']) {
                         const parseAvatar = channel['avatar'].split('@')
@@ -657,14 +652,13 @@ export const mainproc = (props) => {
                                         return content
                                     }, '')
                                     avatarObj[channel._id] = filterAvatar(avatarSrc)
-                                    return LocalDB.get(channel._id)
+                                    return LocalDB.upsert(channel._id, (doc)=>{
+                                        doc['avatarSrc'] = avatarObj[channel._id]
+                                        return doc
+                                    })
                                 }
                             })
-                            .then(doc=>{
-                                const infoDoc = {...doc, avatarSrc: avatarObj[channel._id]}
-                                LocalDB.put(infoDoc)
-                                dispatch(setChannelAvatarSrc(avatarObj))
-                            })
+                            .then(_=>dispatch(setChannelAvatarSrc(avatarObj)))
                     }
                     else {
                         const avatarObj = {}
@@ -672,32 +666,30 @@ export const mainproc = (props) => {
                             .then(_=>hiveApi.downloadScripting(channel['target_did'], channel['avatar']))
                             .then(avatarRes=>{
                                 avatarObj[channel._id] = filterAvatar(avatarRes)
-                                return LocalDB.get(channel._id)
+                                return LocalDB.upsert(channel._id, (doc)=>{
+                                    doc['avatarSrc'] = avatarObj[channel._id]
+                                    return doc
+                                })
                             })
-                            .then(doc=>{
-                                const infoDoc = {...doc, avatarSrc: avatarObj[channel._id]}
-                                LocalDB.put(infoDoc)
-                                dispatch(setChannelAvatarSrc(avatarObj))
-                            })
+                            .then(_=>dispatch(setChannelAvatarSrc(avatarObj)))
                     }
                 })
             })
             .catch(err=>{})
     }
 
-    const querySubscriptionInfoStep = (isPublic=false) => {
-        const table_type = getTableType('channel', isPublic)
-        LocalDB.find({ selector: { table_type } })
+    const querySubscriptionInfoStep = (is_public=false) => {
+        const selector = { table_type: 'channel', is_public }
+        createIndex(selector)
+            .then(_=>LocalDB.find({ selector }))
             .then(response=>{
                 const channelWithSubscribers = response.docs.filter(doc=>!!doc['subscribers'])
-                // const channelDocNoSubscribers = response.docs.filter(doc=>!doc['subscribers'])
                 const subscribersObj = channelWithSubscribers.reduce((obj, channel) => {
                     const c_id = channel['channel_id']
                     obj[c_id] = channel['subscribers']
                     return obj
                 }, {})
                 dispatch(setSubscribers(subscribersObj))
-
                 response.docs.forEach(channel=>{
                     const c_id = channel['channel_id']
                     const subscribersObj = {}
@@ -707,14 +699,13 @@ export const mainproc = (props) => {
                             if(res['find_message']) {
                                 const subscribersArr = res['find_message']['items']
                                 subscribersObj[c_id] = getFilteredArrayByUnique(subscribersArr, 'user_did')
-                                return LocalDB.get(channel._id)
+                                return LocalDB.upsert(channel._id, (doc)=>{
+                                    doc['subscribers'] = subscribersObj[c_id]
+                                    return doc
+                                })
                             }
                         })
-                        .then(doc=>{
-                            const infoDoc = {...doc, subscribers: subscribersObj[c_id]}
-                            LocalDB.put(infoDoc)
-                            dispatch(setSubscribers(subscribersObj))
-                        })
+                        .then(_=>dispatch(setSubscribers(subscribersObj)))
                         .catch(err=>{})
                 })
             })
