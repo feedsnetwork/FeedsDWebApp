@@ -7,7 +7,7 @@ import { DefaultAvatarMap } from "./avatar_map";
 import { setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
 import { increaseLoadNum } from "redux/slices/post";
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
-    sortByDate, encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
+    encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
 const hiveApi = new HiveApi()
 
 export const getTableType = (type, isPublic=false) => (isPublic? `public-${type}`: type)

@@ -32,7 +32,6 @@ const Home = () => {
   }, [])
   React.useEffect(()=>{
     if(queryStep >= QueryStep.post_data) {
-      
       appendMoreData()
       LocalDB.find({
         selector: {

@@ -153,7 +153,7 @@ function FloatingHeader() {
   const backBtnText = React.useMemo(() => {
     return getActionText()
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageType, pathname, focusedChannel, postCountInFocus])
+  }, [pageType, pathname, focusedChannel, postCountInFocus, activeCommentCount])
   return (
     <>
       <Hidden lgDown>

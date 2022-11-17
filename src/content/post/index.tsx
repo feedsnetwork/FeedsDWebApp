@@ -19,7 +19,7 @@ const Post = () => {
   const [channelInfo, setChannelInfo] = React.useState({})
   const [dispNameOfPost, setDispNameOfPost] = React.useState('')
   const [comments, setComments] = React.useState([])
-  const [isLoading, setIsLoading] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(true)
   const channelDispName = useSelector(selectDispNameOfChannels)
   const users = useSelector(selectUsers)
   const activePost = useSelector(selectActivePost)
@@ -35,18 +35,15 @@ const Post = () => {
   }, [channelInfo, channelDispName])
 
   React.useEffect(()=>{
-    if(queryStep < QueryStep.post_data)
-      setIsLoading(true)
-    else if(queryStep >= QueryStep.post_data) {
-      setIsLoading(false)
-      getComments()
+    if(queryStep >= QueryStep.post_data)
       LocalDB.get(params.post_id.toString())
         .then(doc=>{
           setPostInfo(doc)
           return LocalDB.get(doc['channel_id'].toString())
         })
         .then(doc=>setChannelInfo(doc))
-    }
+    if(queryStep >= QueryStep.comment_data)
+      getComments()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep])
 
@@ -67,6 +64,7 @@ const Post = () => {
       sort: [{'created_at': 'desc'}],
     })
       .then(response=>{
+        setIsLoading(false)
         setComments(response.docs)
       })
   }
@@ -81,41 +79,36 @@ const Post = () => {
         spacing={3}
       >
         {
+          !!postInfo &&
+          <Grid item xs={12}>
+            <PostCard post={postInfo} channel={channelInfo} dispName={dispNameOfPost} replyable={true}/>
+          </Grid>
+        }
+        {
           isLoading?
           loadingSkeletons.map((_, _i)=>(
             <Grid item xs={12} key={_i}>
               <PostSkeleton/>
             </Grid>
           )):
-
-          <>
-            {
-              !!postInfo &&
-              <Grid item xs={12}>
-                <PostCard post={postInfo} channel={channelInfo} dispName={dispNameOfPost} replyable={true}/>
-              </Grid>
+          comments.map((comment, _i)=>{
+            const commentUser = users[comment.creater_did] || {}
+            const commentProps = {
+              post: comment,
+              channel: channelInfo,
+              dispName: commentUser['name'] || reduceDIDstring(comment.creater_did),
+              dispAvatar: { name: commentUser['name'], src: decodeBase64(commentUser['avatarSrc'])},
+              replyingTo: dispNameOfPost,
+              level: 2
             }
-            {
-              comments.map((comment, _i)=>{
-                const commentUser = users[comment.creater_did] || {}
-                const commentProps = {
-                  post: comment,
-                  channel: channelInfo,
-                  dispName: commentUser['name'] || reduceDIDstring(comment.creater_did),
-                  dispAvatar: { name: commentUser['name'], src: decodeBase64(commentUser['avatarSrc'])},
-                  replyingTo: dispNameOfPost,
-                  level: 2
-                }
-                if(channelInfo['target_did'] === comment.creater_did) {
-                  commentProps['dispName'] = channelInfo['name']
-                  commentProps['dispAvatar'] = { name: channelInfo['name'], src: channelInfo['avatarSrc'] }
-                }
-                return <Grid item xs={12} key={_i}>
-                  <PostCard {...commentProps}/>
-                </Grid>
-              })
+            if(channelInfo['target_did'] === comment.creater_did) {
+              commentProps['dispName'] = channelInfo['name']
+              commentProps['dispAvatar'] = { name: channelInfo['name'], src: channelInfo['avatarSrc'] }
             }
-          </>
+            return <Grid item xs={12} key={_i}>
+              <PostCard {...commentProps}/>
+            </Grid>
+          })
         }
       </Grid>
     </Container>

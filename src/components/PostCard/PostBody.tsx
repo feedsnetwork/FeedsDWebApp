@@ -124,12 +124,10 @@ const PostBody = (props) => {
   }, [post.like_me])
 
   const getCommentCount = ()=>{
-    LocalDB.find({
-      selector: {
-        table_type: 'comment',
-        post_id: post.post_id
-      }
-    })
+    const selector = { table_type: 'comment', post_id: post.post_id }
+    if(level === 2)
+      selector['refcomment_id'] = post.comment_id
+    LocalDB.find({ selector })
       .then(response => {
         setCommentCount(response.docs.length)
       })
