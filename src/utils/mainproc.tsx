@@ -512,7 +512,7 @@ export const mainproc = (props) => {
             channelRegContract.methods.channelIds(startChannelIndex, pageLimit).call()
                 .then(res=>{
                     if(!Array.isArray(res))
-                        return
+                        return []
                     const publicChannelObjs = res.map(async tokenId=>{
                         const channelInfo = await channelRegContract.methods.channelInfo(tokenId).call()
                         const metaUri = getIpfsUrl(channelInfo['tokenURI'])
@@ -526,51 +526,51 @@ export const mainproc = (props) => {
                         const channelId = splitEntry[splitEntry.length - 1]
                         const metaRes = await fetch(metaUri)
                         const metaContent = await metaRes.json()
-                        const channelDoc = {
-                            _id: getDocId(channelId, true), 
-                            type: metaContent.type,
-                            name: metaContent.name,
-                            intro: metaContent.description,
+                        return {
                             channel_id: channelId,
+                            name: metaContent.name,
+                            display_name: metaContent?.data?.cname || metaContent.name,
+                            intro: metaContent.description,
                             target_did: targetDid, 
+                            type: metaContent.type,
                             tipping_address: channelInfo['receiptAddr'],
+                            is_public: true,
                             time_range: [], 
                             avatarSrc: getIpfsUrl(metaContent?.data?.avatar),
                             bannerSrc: getIpfsUrl(metaContent?.data?.banner),
-                            table_type: getTableType('channel', true),
-                            display_name: metaContent?.data?.cname || metaContent.name,
+                            table_type: 'channel',
                             tokenId
-                        }
-                        return channelDoc
+                        } 
                     })
                     Promise.all(publicChannelObjs)
-                        .then(publicChannels=>{
-                            const publicChannelDocs = publicChannels.filter(channel=>!!channel)
-                            const storePublicChannels = new Promise((resolveSub, rejectSub)=>{
-                                LocalDB.find({ selector: { table_type: getTableType('channel', true) } })
-                                    .then(res=>{
-                                        const deleteDocs = res.docs.map(item=>({...item, _deleted: true}))
-                                        publicChannelDocs.forEach(channel=>{
-                                            const channelIndex = deleteDocs.findIndex(doc=>doc['channel_id'] === channel.channel_id)
-                                            if(channelIndex>=0)
-                                                deleteDocs.splice(channelIndex, 1)
-                                        })
-                                        return LocalDB.bulkDocs(deleteDocs)
-                                    })
-                                    .then(res=>{
-                                        const putPublicChannelAction = publicChannelDocs.map(channelDoc=>(
-                                            new Promise((resolveSub, rejectSub)=>{
-                                                LocalDB.get(channelDoc._id)
-                                                    .then(doc => resolveSub(LocalDB.put({...channelDoc, _rev: doc._rev})))
-                                                    .catch(err => resolveSub(LocalDB.put(channelDoc)))
-                                            })
-                                        ))
-                                        return Promise.all(putPublicChannelAction)
-                                    })
-                                    .then(resolveSub)
-                                    .catch(resolveSub)
+                        .then(async publicChannels=>{
+                            const publicChannelsInDB = await LocalDB.find({
+                                selector: {
+                                    table_type: 'channel',
+                                    is_public: true
+                                }
                             })
-                            return storePublicChannels
+                            const junkDocs = publicChannelsInDB.docs
+                                .filter(doc=>publicChannels.every(channel=>channel['channel_id']!==doc['channel_id']))
+                                .map(originDoc=>(
+                                    LocalDB.upsert(originDoc._id, (doc)=>{
+                                        doc['is_public'] = false
+                                        return doc
+                                    })
+                                ))
+                            const publicChannelDocs = publicChannels.map(channel=>(
+                                LocalDB.upsert(channel['channel_id'], (doc)=>{
+                                    if(doc._id) {
+                                        if(!doc['is_public']){
+                                            doc['is_public'] = true
+                                            return doc
+                                        }
+                                        return false
+                                    }
+                                    return {...doc, ...channel}
+                                })
+                            ))
+                            return Promise.all([...junkDocs, ...publicChannelDocs])
                         })
                         .then(_=>updateStepFlag(QueryStep.public_channel, true))
                         .then(_=>{
