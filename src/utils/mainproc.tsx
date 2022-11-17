@@ -406,62 +406,53 @@ export const mainproc = (props) => {
         })
     )
 
-    const queryCommentStep = (isPublic=false) => (
+    const queryCommentStep = (is_public=false) => (
         new Promise((resolve, reject) => {
-            const table_type = getTableType('post', isPublic)
-            LocalDB.find({ selector: { table_type } })
+            const selector = { table_type: 'channel', is_public }
+            createIndex(selector)
+                .then(_=>LocalDB.find({ selector }))
                 .then(response=>{
-                    var postGroup = response.docs.reduce((group, p) => {
-                        const {target_did=null, channel_id=null, post_id=null} = {...p}
-                        if(group.some(obj => obj['channel_id'] === channel_id)) {
-                            const gId = group.findIndex(obj => obj['channel_id'] === channel_id)
-                            group[gId]['postIds'].push(post_id)
-                        }
-                        else {
-                            group.push({target_did, channel_id, postIds: [post_id]})
-                        }
-                        return group;
-                    }, []);
-                    const commentsByPost = postGroup.map(async group => {
-                        const {target_did, channel_id, postIds} = group
-                        const commentRes = await hiveApi.queryCommentsFromPosts(target_did, channel_id, postIds)
-                        if(commentRes['find_message'] && commentRes['find_message']['items']) {
-                            const commentArr = commentRes['find_message']['items']
-                            const ascCommentArr = sortByDate(commentArr, 'asc')
-                            const linkedComments = ascCommentArr.reduce((res, item)=>{
-                                if(item.refcomment_id === '0' || !res.some((c) => c.comment_id === item.refcomment_id)) {
-                                    const commentDoc = {
-                                        ...item, 
-                                        _id: getDocId(item.comment_id, isPublic), 
-                                        target_did, 
-                                        table_type: getTableType('comment', isPublic),
-                                        likes: 0,
-                                        like_me: false,
-                                        like_creators: []
+                    const postDocsByChannel = response.docs.map(channel=>(
+                        new Promise((resolveDoc, rejectDoc)=>{
+                            const postSelector = { table_type: 'post', channel_id: channel['channel_id'] }
+                            LocalDB.find({ selector: postSelector })
+                                .then(postResponse=>{
+                                    const postIds = postResponse.docs.map(doc=>doc['post_id'])
+                                    return hiveApi.queryCommentsFromPosts(channel['target_did'], channel['channel_id'], postIds)
+                                })
+                                .then(commentRes=>{
+                                    if(commentRes['find_message'] && commentRes['find_message']['items']) {
+                                        const commentDocs = commentRes['find_message']['items'].map(comment=>(
+                                            LocalDB.upsert(comment.comment_id, (doc)=>{
+                                                if(comment['updated_at'] === doc['updated_at'])
+                                                    return false
+                                                delete comment['_id']
+                                                if(doc._id)
+                                                    return {...doc, ...comment}
+                                                const commentDoc = {
+                                                    ...comment, 
+                                                    target_did: channel['target_did'], 
+                                                    table_type: 'comment',
+                                                    likes: 0,
+                                                    like_me: false,
+                                                    like_creators: []
+                                                }
+                                                return commentDoc
+                                            })
+                                        ))
+                                        return commentDocs
                                     }
-                                    res.push(commentDoc)
-                                    return res
-                                }
-                                const tempRefIndex = res.findIndex((c) => c.comment_id === item.refcomment_id)
-                                if(res[tempRefIndex]['commentData'])
-                                    res[tempRefIndex]['commentData'].push(item)
-                                else res[tempRefIndex]['commentData'] = [item]
-                                return res
-                            }, []).reverse()
-                            return linkedComments
-                        }
-                        return []
-                    })
-                    Promise.all(commentsByPost)
-                        .then(commentGroup=>Promise.resolve(getMergedArray(commentGroup)))
-                        .then(commentData =>LocalDB.bulkDocs(commentData))
-                        .then(_=>updateStepFlag(QueryStep.comment_data, isPublic))
-                        .then(_=>{ 
-                            resolve({success: true})
+                                    return []
+                                })
+                                .then(resolveDoc)
+                                .catch(_=>resolveDoc([]))
                         })
-                        .catch(err=>{
-                            resolve({success: false, error: err})
-                        })
+                    ))
+                    Promise.all(postDocsByChannel)
+                        .then(commentGroup=>Promise.all(getMergedArray(commentGroup)))
+                        .then(_=>updateStepFlag(QueryStep.comment_data, is_public))
+                        .then(_=>resolve({success: true}))
+                        .catch(err=>resolve({success: false, error: err}))
                 })
                 .catch(err=>{
                     reject(err)
