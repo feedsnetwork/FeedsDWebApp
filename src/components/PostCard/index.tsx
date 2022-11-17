@@ -1,3 +1,4 @@
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom';
 import { Box, Stack, Card } from '@mui/material';
@@ -7,12 +8,15 @@ import { CommentForm } from './CommentForm';
 import { selectUsers } from 'redux/slices/user';
 import { selectChannelAvatar } from 'redux/slices/channel';
 import { decodeBase64, reduceDIDstring } from 'utils/common'
+import { getLocalDB } from 'utils/db';
 
 const PostCard = (props) => {
   const navigate = useNavigate();
   const { post, channel, dispName, level=1, replyingTo='', replyable=false, dispAvatar={}, direction='column' } = props
   const channelAvatars = useSelector(selectChannelAvatar)
   const users = useSelector(selectUsers)
+  const [commentData, setCommentData] = React.useState([])
+  const LocalDB = getLocalDB()
 
   const naviage2detail = (e) => {
     navigate(`/post/${post.post_id}`);
@@ -37,6 +41,21 @@ const PostCard = (props) => {
     contentObj.content = "(post deleted)"
 
   const BodyProps = { post, contentObj, level, direction }
+  
+  React.useEffect(()=>{
+    if(level===2)
+      LocalDB.find({
+        selector: {
+          table_type: 'comment',
+          post_id: post.post_id,
+          refcomment_id: post.comment_id
+        }
+      })
+        .then(response => {
+          setCommentData(response.docs)
+        })
+  }, [])
+
   return (
     <Card {...cardProps}>
       <Box p={3}>
@@ -46,10 +65,10 @@ const PostCard = (props) => {
           <CommentForm post={post} dispName={dispName}/>
         }
         {
-          level===2 && post.commentData && 
+          level===2 && commentData && 
           <Stack pl={3} pt={2} spacing={1}>
             {
-              post.commentData.map((comment, _i)=>{
+              commentData.map((comment, _i)=>{
                 const commentUser = users[comment.creator_did] || {}
                 const subContentObj = {
                   avatar: { name: commentUser['name'], src: commentUser['avatarSrc']},
