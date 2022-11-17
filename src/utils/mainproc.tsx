@@ -312,7 +312,7 @@ export const mainproc = (props) => {
         })
     )
     
-    const queryLikeInfoStep = (is_public=false) => (
+    const queryPostLikeStep = (is_public=false) => (
         new Promise((resolve, reject) => {
             const selector = { table_type: 'channel', is_public }
             createIndex(selector)
@@ -460,36 +460,43 @@ export const mainproc = (props) => {
         })
     )
 
-    const queryCommentLikeStep = (isPublic=false) => (
+    const queryCommentLikeStep = (is_public=false) => (
         new Promise((resolve, reject) => {
-            const table_type = getTableType('comment', isPublic)
-            LocalDB.find({ selector: { table_type } })
+            const selector = { table_type: 'channel', is_public }
+            createIndex(selector)
+                .then(_=>LocalDB.find({ selector }))
                 .then(response=>{
-                    const commentDocWithLikeInfo = response.docs.map(async comment=>{
-                        const commentDoc = {...comment}
-                        const {target_did=null, channel_id=null, post_id=null, comment_id=null} = {...comment}
-                        try {
-                            const likeRes = await hiveApi.queryLikeById(target_did, channel_id, post_id, comment_id)
-                            if(likeRes['find_message'] && likeRes['find_message']['items']) {
-                                const likeArr = likeRes['find_message']['items']
-                                const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
-                                const likeCreators = filteredLikeArr.map(item=>item.creater_did)
-                                commentDoc['likes'] = filteredLikeArr.length
-                                commentDoc['like_me'] = likeCreators.includes(myDID)
-                                commentDoc['like_creators'] = likeCreators
-                            }
-                        } catch(err) {}
-                        return commentDoc
+                    const commentDocsByChannel = response.docs.map(async channel=>{
+                        const commentSelector = { table_type: 'comment', channel_id: channel['channel_id'] }
+                        const commentResponse = await LocalDB.find({ selector: commentSelector })
+                        const commentDocWithLikeInfo = commentResponse.docs.map(comment=>(
+                            new Promise((resolveDoc, rejectDoc)=>{
+                                hiveApi.queryLikeById(comment['target_did'], comment['channel_id'], comment['post_id'], comment['comment_id'])
+                                    .then(likeRes=>(
+                                        LocalDB.upsert(comment._id, (doc)=>{
+                                            if(likeRes['find_message'] && likeRes['find_message']['items']) {
+                                                const likeArr = likeRes['find_message']['items']
+                                                const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
+                                                const likeCreators = filteredLikeArr.map(item=>item.creater_did)
+                                                doc['likes'] = filteredLikeArr.length
+                                                doc['like_me'] = likeCreators.includes(myDID)
+                                                doc['like_creators'] = likeCreators
+                                                return doc
+                                            }
+                                            return false
+                                        })
+                                    ))
+                                    .then(resolveDoc)
+                                    .catch(err=>resolveDoc({success: false, error: err}))
+                            })
+                        ))
+                        return commentDocWithLikeInfo
                     })
-                    Promise.all(commentDocWithLikeInfo)
-                        .then(commentData =>LocalDB.bulkDocs(commentData))
-                        .then(_=>updateStepFlag(QueryStep.comment_like, isPublic))
-                        .then(_=>{ 
-                            resolve({success: true})
-                        })
-                        .catch(err=>{
-                            resolve({success: false, error: err})
-                        })
+                    Promise.all(commentDocsByChannel)
+                        .then(commentGroup=>Promise.all(getMergedArray(commentGroup)))
+                        .then(_=>updateStepFlag(QueryStep.comment_like, is_public))
+                        .then(_=>resolve({success: true}))
+                        .catch(err=>resolve({success: false, error: err}))
                 })
                 .catch(err=>{
                     reject(err)
@@ -578,7 +585,7 @@ export const mainproc = (props) => {
         })
     )
     const queryPublicPostStep = () => queryPostStep(true)
-    const queryPublicLikeInfoStep = () => queryLikeInfoStep(true)
+    const queryPublicPostLikeStep = () => queryPostLikeStep(true)
     const queryPublicPostImgStep = () => queryPostImgStep(true)
     const queryPublicCommentStep = () => queryCommentStep(true)
     const queryPublicCommentLikeStep = () => queryCommentLikeStep(true)
@@ -717,7 +724,7 @@ export const mainproc = (props) => {
         querySelfChannelStep, 
         querySubscribedChannelStep, 
         queryPostStep,
-        queryLikeInfoStep,
+        queryPostLikeStep,
         queryPostImgStep,
         queryCommentStep,
         queryCommentLikeStep
@@ -725,7 +732,7 @@ export const mainproc = (props) => {
     const queryPublicSteps = [
         queryPublicChannelStep,
         queryPublicPostStep,
-        queryPublicLikeInfoStep,
+        queryPublicPostLikeStep,
         queryPublicPostImgStep,
         queryPublicCommentStep,
         queryPublicCommentLikeStep
