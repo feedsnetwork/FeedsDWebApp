@@ -7,9 +7,8 @@ import "odometer/themes/odometer-theme-default.css";
 import StyledAvatar from 'components/StyledAvatar'
 import PaperRecord from 'components/PaperRecord'
 import { selectDispNameOfChannels } from 'redux/slices/channel';
-import { getDateDistance, isValidTime, convertAutoLink, isJson } from 'utils/common'
+import { getDateDistance, isValidTime, convertAutoLink, isJson, decodeBase64 } from 'utils/common'
 import { getLocalDB } from 'utils/db';
-import { getDocId } from 'utils/mainproc';
 
 const PostTextCard = (props) => {
   const { post } = props
@@ -18,8 +17,12 @@ const PostTextCard = (props) => {
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
-    LocalDB.get(getDocId(post.channel_id, true))
-      .then(doc=>setThisChannel(doc))
+    LocalDB.get(post.channel_id)
+      .then(doc=>{
+        if(!doc['avatarSrc'].startsWith("http"))
+          doc['avatarSrc'] = decodeBase64(doc['avatarSrc'])
+        setThisChannel(doc)
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   // const [anchorEl, setAnchorEl] = React.useState(null);

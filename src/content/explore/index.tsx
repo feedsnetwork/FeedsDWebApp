@@ -31,10 +31,11 @@ function Explore() {
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
-    if((queryPublicStep >= QueryStep.public_channel && !publicChannels.length) || queryPublicFlag >= QueryStep.public_channel) {
+    if((queryPublicStep >= QueryStep.public_channel && !publicChannels.length) || queryPublicFlag === QueryStep.public_channel) {
       LocalDB.find({
         selector: {
-          table_type: 'public-channel'
+          table_type: 'channel',
+          is_public: true
         },
       })
         .then(response=>{
@@ -42,15 +43,29 @@ function Explore() {
           setPublicChannels(response.docs)
         })
     }
-    if((queryPublicStep >= QueryStep.post_data && !publicChannels.length) || queryPublicFlag >= QueryStep.post_data) {
+    if((queryPublicStep >= QueryStep.post_data && !publicPosts.length) || (queryPublicFlag >= QueryStep.post_data && queryPublicFlag <= QueryStep.post_image)) {
       LocalDB.find({
         selector: {
-          table_type: 'public-post'
+          table_type: 'channel',
+          is_public: true
         },
       })
         .then(response=>{
+          const publicChannelIDs = response.docs.map(doc=>doc._id)
+          return LocalDB.find({
+            selector: {
+              table_type: 'post',
+              channel_id: { $in: publicChannelIDs },
+              created_at: { $gt: true }
+            },
+            sort: [{'created_at': 'desc'}],
+            limit: 10
+          })
+        })
+        .then(response=>{
           setPublicPosts(response.docs)
         })
+        .catch()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryPublicStep, queryPublicFlag])

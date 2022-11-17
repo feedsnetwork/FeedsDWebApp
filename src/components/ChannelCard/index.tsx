@@ -1,11 +1,12 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import { Box, Typography, Stack } from '@mui/material';
 
 import PaperRecord from 'components/PaperRecord'
-import { setVisitedChannelId } from 'redux/slices/channel';
+import { selectChannelAvatar, setVisitedChannelId } from 'redux/slices/channel';
+import { decodeBase64 } from 'utils/common';
 // ----------------------------------------------------------------------
 
 const TypographyStyle = styled(Typography)(({ theme }) => ({
@@ -27,11 +28,18 @@ const AvatarBoxStyle = styled(Box)(({ theme }) => ({
 })) as any;
 
 const ChannelImgBox = (props) => {
-  const { name, bannerSrc=null, avatarSrc } = props;
+  const { name, bannerSrc=null, avatarSrc, channel_id } = props;
   const background = bannerSrc ? `url(${bannerSrc}) no-repeat center` : "linear-gradient(180deg, #000000 0%, #A067FF 300.51%)"
+  const channelAvatars = useSelector(selectChannelAvatar)
+  let avatarImg = avatarSrc || channelAvatars[channel_id]
+  if(!avatarImg.startsWith("http"))
+    avatarImg = decodeBase64(channelAvatars[channel_id])
   
   const handleErrorImage = (e) => {
-    fetch(avatarSrc)
+    e.target.src = '/loading.svg'
+    if(!avatarImg.startsWith("http"))
+      return
+    fetch(avatarImg)
       .then(res=>res.text())
       .then(res=>{e.target.src=res})
   }
@@ -41,7 +49,7 @@ const ChannelImgBox = (props) => {
       <Stack sx={{height: '100%', overflow: 'hidden'}}>
         <Box className='cover-image' sx={{ display: 'inline-flex', height: '100%', background, backgroundSize: 'cover'}}/>
       </Stack>
-      <AvatarBoxStyle draggable = {false} component="img" src={avatarSrc} alt={name} onError={handleErrorImage}/>
+      <AvatarBoxStyle draggable = {false} component="img" src={avatarImg} alt={name} onError={handleErrorImage}/>
     </Stack>
   );
 };
