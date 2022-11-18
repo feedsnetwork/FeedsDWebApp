@@ -777,7 +777,6 @@ export const nextproc = (props) => {
                             tempost.like_me = false
                             tempost.like_creators = []
                             tempost.mediaData = []
-                            tempost.is_new=true
                             if(typeof post.created === 'object')
                                 tempost.created = new Date(post.created['$date']).getTime()/1000
                             return tempost
@@ -859,6 +858,75 @@ export const nextproc = (props) => {
                 .then(_=>{
                     dispatch(increaseLoadNum())
                     resolve({success: true, data: nextPostDocs})
+                })
+                .catch(err=>{
+                    reject(err)
+                })
+        })
+    )
+    const queryCommentNextStep = (nextPostDocs) => (
+        new Promise((resolve, reject) => {
+            if(!nextPostDocs.length) {
+                resolve({success: true, data: []})
+                return
+            }
+            const postIds = nextPostDocs.map(doc=>doc['post_id'])
+            const { target_did, channel_id } = nextPostDocs[0]
+            hiveApi.queryCommentsFromPosts(target_did, channel_id, postIds)
+                .then(commentRes=>{
+                    if(commentRes['find_message'] && commentRes['find_message']['items']) {
+                        const commentDocs = commentRes['find_message']['items'].map(comment=>(
+                            {
+                                ...comment, 
+                                _id: comment.comment_id,
+                                target_did: target_did, 
+                                table_type: 'comment',
+                                likes: 0,
+                                like_me: false,
+                                like_creators: []
+                            }
+                        ))
+                        return commentDocs
+                    }
+                    return []
+                })
+                .then(async nextCommentDocs=>{
+                    await LocalDB.bulkDocs(nextCommentDocs)
+                    dispatch(increaseLoadNum())
+                    resolve({success: true, data: nextCommentDocs})
+                })
+                .catch(err=>{
+                    reject(err)
+                })
+        })
+    )
+    const queryCommentLikeNextStep = (nextCommentDocs) => (
+        new Promise((resolve, reject) => {
+            const commentDocWithLikeInfo = nextCommentDocs.map(comment=>(
+                new Promise((resolveDoc, rejectDoc)=>{
+                    hiveApi.queryLikeById(comment['target_did'], comment['channel_id'], comment['post_id'], comment['comment_id'])
+                        .then(likeRes=>(
+                            LocalDB.upsert(comment._id, (doc)=>{
+                                if(likeRes['find_message'] && likeRes['find_message']['items']) {
+                                    const likeArr = likeRes['find_message']['items']
+                                    const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
+                                    const likeCreators = filteredLikeArr.map(item=>item.creater_did)
+                                    doc['likes'] = filteredLikeArr.length
+                                    doc['like_me'] = likeCreators.includes(myDID)
+                                    doc['like_creators'] = likeCreators
+                                    return doc
+                                }
+                                return false
+                            })
+                        ))
+                        .then(resolveDoc)
+                        .catch(err=>resolveDoc({success: false, error: err}))
+                })
+            ))
+            Promise.all(commentDocWithLikeInfo)
+                .then(_=>{
+                    dispatch(increaseLoadNum())
+                    resolve({success: true})
                 })
                 .catch(err=>{
                     reject(err)
