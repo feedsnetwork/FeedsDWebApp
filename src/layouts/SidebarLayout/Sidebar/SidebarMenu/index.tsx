@@ -1,19 +1,16 @@
-import { useState, useContext, useEffect } from 'react';
-import { NavLink as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { NavLink as RouterLink, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Reveal from "react-awesome-reveal";
 import { keyframes } from "@emotion/react";
 import { Icon } from '@iconify/react';
-import { alpha, Box, List, styled, Button, ListItem, Divider, Typography, ListItemText, ListItemIcon, ListItemButton } from '@mui/material';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { alpha, Box, List, styled, Button, ListItem, Divider, ListItemText, ListItemIcon, ListItemButton } from '@mui/material';
 
 import { SidebarContext } from 'contexts/SidebarContext';
 import StyledButton from 'components/StyledButton';
-import SubscriptionAvatar from './subscriptionAvatar'
+import Subscriptions from './subscriptions'
 import { SettingMenuArray } from 'utils/common'
-import { getLocalDB, QueryStep } from 'utils/db'
-import { setActiveChannelId, setVisitedChannelId, selectFocusedChannelId } from 'redux/slices/channel';
+import { setActiveChannelId, selectFocusedChannelId } from 'redux/slices/channel';
 import { handlePostModal, setActivePost } from 'redux/slices/post';
 
 const MenuWrapper = styled(Box)(
@@ -196,43 +193,11 @@ const ListItemButtonStyle = {
 }
 
 function SidebarMenu(props) {
-  const { closeSidebar, queryStep, queryFlag } = useContext(SidebarContext);
-  const [subscribedChannels, setSubscribedChannels] = useState([]);
+  const { closeSidebar } = useContext(SidebarContext);
   const { pathname } = useLocation()
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [isVisibleChannels, setVisibleChannels] = useState(false)
   const isSettingPage = pathname.startsWith('/setting')
   const focusedChannelId = useSelector(selectFocusedChannelId)
-  const LocalDB = getLocalDB()
-  
-  useEffect(()=>{
-    if((queryStep >= QueryStep.subscribed_channel && !subscribedChannels.length) || queryFlag >= QueryStep.subscribed_channel) {
-      LocalDB.find({
-        selector: {
-          table_type: 'channel', 
-          is_subscribed: true,
-          is_self: false
-        },
-      })
-        .then(response=>{
-          if(!response.docs.length)
-            return
-          setSubscribedChannels(response.docs)
-        })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep, queryFlag])
-
-  const toggleChannels = (e) => {
-    setVisibleChannels(!isVisibleChannels)
-  }
-
-  const link2detail = (e) => {
-    const channel_id = e.currentTarget.value
-    dispatch(setVisitedChannelId(channel_id))
-    navigate('/subscription/channel');
-  }
 
   const handlePostDlg = (e) => {
     dispatch(setActiveChannelId(0))
@@ -259,56 +224,7 @@ function SidebarMenu(props) {
                   </ListItem>
                 ))
               }
-              {
-                subscribedChannels.length>0?
-                <ListItem component="div">
-                  <ListItemButton component={Button} onClick={toggleChannels} endIcon={isVisibleChannels ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon />} sx={ListItemButtonStyle}>
-                    <ListItemIcon sx={{ minWidth: 30 }}>
-                      <Icon icon='clarity:users-line' width={18} height={18} />
-                    </ListItemIcon>
-                    <ListItemText primary='Subscriptions' primaryTypographyProps={{ variant: 'body2' }} />
-                  </ListItemButton>
-                </ListItem>:
-                
-                <ListItem component="div">
-                  <ListItemButton component={RouterLink} to='/subscription' onClick={closeSidebar}>
-                    <ListItemIcon sx={{ minWidth: 30 }}>
-                      <Icon icon='clarity:users-line' width={18} height={18} />
-                    </ListItemIcon>
-                    <ListItemText primary='Subscription' primaryTypographyProps={{ variant: 'body2' }} />
-                  </ListItemButton>
-                </ListItem>
-              }
-              <Box px={2} textAlign="center" style={{display: isVisibleChannels? 'block': 'none'}}>
-                {/* <InputOutline
-                  type="text"
-                  placeholder="Search channels"
-                  size="small"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SearchTwoToneIcon />
-                    </InputAdornment>
-                  }
-                /> */}
-                <Box mt={1}>
-                  {
-                    subscribedChannels.map((channel, _i)=>(
-                      <ListItem component="div" key={_i}>
-                        <Button
-                          value={channel.channel_id}
-                          disableRipple
-                          onClick={link2detail}
-                          startIcon={<SubscriptionAvatar channel={channel}/>}
-                          sx={{p: '4px 14px !important'}}
-                        >
-                          <Typography variant="body2" sx={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>{channel.display_name}</Typography>
-                        </Button>
-                      </ListItem>
-                    ))
-                  }
-                </Box>
-                <Button color="inherit" size="small" sx={{px: 1}}>Show more</Button>
-              </Box>
+              <Subscriptions/>
               <Divider sx={{mx: -1}}/>
               {
                 !!focusedChannelId &&
