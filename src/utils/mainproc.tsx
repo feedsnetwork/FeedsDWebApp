@@ -742,22 +742,17 @@ export const nextproc = (props) => {
     const myDID = `did:elastos:${feedsDid}`
     const LocalDB = getLocalDB()
 
-    const queryPostNextStep = (channelId, isPublic=false) => (
+    const queryPostNextStep = (channelId) => (
         new Promise((resolve, reject) => {
             const prefConf = getAppPreference()
-            let nextPostDocs = []
-            let channelDoc = {}
-            LocalDB.get(getDocId(channelId, isPublic))
-                .then(doc=>{
-                    channelDoc = {...doc}
-                    const lastStart = channelDoc['time_range'][0]?.start || 0
-                    const nextEnd = channelDoc['time_range'][1]?.end || 0
-                    const queryApi = isPublic? hiveApi.queryPublicPostRangeOfTime: hiveApi.queryPostByRangeOfTime
-                    return queryApi(doc['target_did'], doc['channel_id'], nextEnd, lastStart)
-                })
-                .then(postRes=>{
+            LocalDB.get(channelId)
+                .then(async channelDoc=>{
+                    let prevTimeRange = channelDoc['time_range']
+                    const lastStart = prevTimeRange[0]?.start || 0
+                    const nextEnd = prevTimeRange[1]?.end || 0
+                    const queryApi = hiveApi.queryPostByRangeOfTime
+                    const postRes = await queryApi(channelDoc['target_did'], channelDoc['channel_id'], nextEnd, lastStart)
                     if(postRes['find_message'] && postRes['find_message']['items']) {
-                        let prevTimeRange = channelDoc['time_range']
                         let postArr = postRes['find_message']['items']
                         if(postArr.length >= LimitPostCount) {
                             const earliestime = getMinValueFromArray(postArr, 'updated_at')
@@ -767,13 +762,17 @@ export const nextproc = (props) => {
                             prevTimeRange[0].start = prevTimeRange[1]?.start || 0
                             prevTimeRange.splice(1, 1)
                         }
+                        LocalDB.upsert(channelId, (doc)=>{
+                            doc['time_range'] = prevTimeRange
+                            return doc
+                        })
                         if(prefConf.DP)
                             postArr = postArr.filter(postItem=>postItem.status!==CommonStatus.deleted)
-                        nextPostDocs = postArr.map(post=>{
+                        let nextPostDocs = postArr.map(post=>{
                             const tempost = {...post}
-                            tempost._id = getDocId(post.post_id, isPublic)
+                            tempost._id = post.post_id
                             tempost.target_did = channelDoc['target_did']
-                            tempost.table_type = getTableType('post', isPublic) 
+                            tempost.table_type = 'post'
                             tempost.likes = 0
                             tempost.like_me = false
                             tempost.like_creators = []
@@ -783,11 +782,42 @@ export const nextproc = (props) => {
                                 tempost.created = new Date(post.created['$date']).getTime()/1000
                             return tempost
                         })
-                        return LocalDB.put(channelDoc)
+                        await LocalDB.bulkDocs(nextPostDocs)
+                        dispatch(increaseLoadNum())
+                        resolve({success: true, data: nextPostDocs})
+                        return
                     }
                     resolve({success: false, data: []})
                 })
-                .then(_=>LocalDB.bulkDocs(nextPostDocs))
+                .catch(err=>{
+                    reject(err)
+                })
+        })
+    )
+    const queryPostLikeNextStep = (nextPostDocs) => (
+        new Promise((resolve, reject) => {
+            const postDocWithLikeInfo = nextPostDocs.map(post=>(
+                new Promise((resolveDoc, rejectDoc)=>{
+                    hiveApi.queryLikeById(post['target_did'], post['channel_id'], post['post_id'], '0')
+                        .then(likeRes=>(
+                            LocalDB.upsert(post._id, (doc)=>{
+                                if(likeRes['find_message'] && likeRes['find_message']['items']) {
+                                    const likeArr = likeRes['find_message']['items']
+                                    const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
+                                    const likeCreators = filteredLikeArr.map(item=>item.creater_did)
+                                    doc['likes'] = filteredLikeArr.length
+                                    doc['like_me'] = likeCreators.includes(myDID)
+                                    doc['like_creators'] = likeCreators
+                                    return doc
+                                }
+                                return false
+                            })
+                        ))
+                        .then(resolveDoc)
+                        .catch(err=>resolveDoc({success: false, error: err}))
+                })
+            ))
+            Promise.all(postDocWithLikeInfo)
                 .then(_=>{
                     dispatch(increaseLoadNum())
                     resolve({success: true, data: nextPostDocs})
@@ -797,42 +827,12 @@ export const nextproc = (props) => {
                 })
         })
     )
-    const queryLikeInfoNextStep = (nextPostDocs, isPublic=false) => (
-        new Promise((resolve, reject) => {
-            const postDocWithLikeInfo = nextPostDocs.map(async post=>{
-                try {
-                    const postDoc = await LocalDB.get(getDocId(post.post_id, isPublic))
-                    const likeRes = await hiveApi.queryLikeById(post['target_did'], post['channel_id'], post['post_id'], '0')
-                    if(likeRes['find_message'] && likeRes['find_message']['items']) {
-                        const likeArr = likeRes['find_message']['items']
-                        const filteredLikeArr = getFilteredArrayByUnique(likeArr, 'creater_did')
-                        const likeCreators = filteredLikeArr.map(item=>item.creater_did)
-                        postDoc['likes'] = filteredLikeArr.length
-                        postDoc['like_me'] = likeCreators.includes(myDID)
-                        postDoc['like_creators'] = likeCreators
-                        await LocalDB.put(postDoc)
-                    }
-                    return postDoc
-                } catch(err) {}
-                return post
-            })
-            Promise.all(postDocWithLikeInfo)
-                .then(postDocs => {
-                    dispatch(increaseLoadNum())
-                    resolve({success: true, data: postDocs})
-                })
-                .catch(err=>{
-                    reject(err)
-                })
-        })
-    )
-    const queryPostImgNextStep = (nextPostDocs, isPublic=false) => (
+    const queryPostImgNextStep = (nextPostDocs) => (
         new Promise((resolve, reject) => {
             const postDocWithImg = nextPostDocs.map(async post=>{
                 if(post['status'] !== CommonStatus.deleted) {
                     try {
-                        const postDoc = await LocalDB.get(getDocId(post.post_id, isPublic))
-                        const contentObj = JSON.parse(postDoc['content'])
+                        const contentObj = JSON.parse(post['content'])
                         const mediaData = contentObj.mediaData.filter(media=>!!media.originMediaPath)
                         if(mediaData.length) {
                             const mediaObjArr = mediaData.map(async media => {
@@ -845,18 +845,20 @@ export const nextproc = (props) => {
                                 } catch(err) {}
                                 return mediaObj
                             })
-                            postDoc['mediaData'] = await Promise.all(mediaObjArr)
-                            await LocalDB.put(postDoc)
+                            const mediaDataArr = await Promise.all(mediaObjArr)
+                            return await LocalDB.upsert(post._id, (doc)=>{
+                                doc['mediaData'] = mediaDataArr
+                                return doc
+                            })
                         }
-                        return postDoc
                     } catch(err) {}
                 }
-                return post
+                return false
             })
             Promise.all(postDocWithImg)
-                .then(postDocs => {
+                .then(_=>{
                     dispatch(increaseLoadNum())
-                    resolve({success: true, data: postDocs})
+                    resolve({success: true, data: nextPostDocs})
                 })
                 .catch(err=>{
                     reject(err)
