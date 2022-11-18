@@ -17,7 +17,6 @@ const HeaderWrapper = styled(Box)(
         height: ${theme.header.height};
         color: ${theme.header.textColor};
         padding: ${theme.spacing(0, 2)};
-        right: ${theme.rightPanel.width};
         z-index: 6;
         background-color: ${alpha(theme.header.background, 0.95)};
         backdrop-filter: blur(3px);
@@ -48,7 +47,8 @@ const HeaderWrapper = styled(Box)(
         };
 `
 );
-function FloatingHeader() {
+function FloatingHeader(props) {
+  const { rightPanelVisible } = props
   const { pageType, closeOverPage } = React.useContext(OverPageContext);
   const { queryStep, queryPublicStep } = React.useContext(SidebarContext);
   const { pathname } = useLocation()
@@ -158,7 +158,7 @@ function FloatingHeader() {
     <>
       <Hidden lgDown>
         <Box sx={{pb: (theme)=>`${theme.header.height}`}}>
-          <HeaderWrapper>
+          <HeaderWrapper sx={{right: (theme)=>rightPanelVisible? theme.rightPanel.width: 0}}>
             <Stack
               direction="row"
               alignItems="center"

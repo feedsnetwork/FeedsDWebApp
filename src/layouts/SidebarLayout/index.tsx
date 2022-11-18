@@ -196,6 +196,20 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     floatingHeaderVisible = true;
 
   const addChannelVisible = (pathname==='/home' || pathname==='/channel') && pageType==='AddChannel'
+  let rightPanelVisible = true
+  switch(pathname.replaceAll('/','')) {
+    case "home":
+    case "profile":
+      if(focusedChannelId)
+        rightPanelVisible=false
+      break;
+    case "explore":
+      rightPanelVisible = false
+      break;
+    default:
+      rightPanelVisible = true
+      break;
+  }
   return (
     <Box
       sx={{
@@ -253,7 +267,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         >
           {
             floatingHeaderVisible &&
-            <FloatingHeader/>
+            <FloatingHeader rightPanelVisible={rightPanelVisible}/>
           }
           {
               addChannelVisible?
@@ -271,8 +285,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           }
         </Box>
         {
-          !(pathname === '/explore' || pathname === '/explore/') &&
-          <RightPanel />
+          rightPanelVisible && <RightPanel />
         }
       </Stack>
       <ChannelCreatedDlg/>
