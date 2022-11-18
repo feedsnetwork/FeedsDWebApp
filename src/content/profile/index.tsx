@@ -16,19 +16,14 @@ import { selectMyInfo } from 'redux/slices/user';
 import { selectDispNameOfChannels } from 'redux/slices/channel';
 
 function Profile() {
-  const { walletAddress, queryStep, queryPublicStep, updateChannelNumber } = React.useContext(SidebarContext);
+  const { walletAddress, queryStep, updateChannelNumber } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [channels, setChannels] = React.useState([])
-  const [publicChannels, setPublicChannels] = React.useState([])
   const [likedPosts, setLikedPosts] = React.useState([])
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myInfo = useSelector(selectMyInfo)
   const dispNameOfChannels = useSelector(selectDispNameOfChannels)
   const LocalDB = getLocalDB()
-  const channelTokens = publicChannels.reduce((tokens, channel)=>{
-    tokens[channel.channel_id] = channel.tokenId
-    return tokens
-  }, {})
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -62,20 +57,6 @@ function Profile() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryStep])
-
-  React.useEffect(()=>{
-    if(queryPublicStep) {
-      LocalDB.find({
-        selector: {
-          table_type: 'public-channel'
-        }
-      })
-        .then(response => {
-          setPublicChannels(response.docs)
-        })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPublicStep, updateChannelNumber])
 
   // const backgroundImg = "/temp-back.png"
   const selfChannels = channels.filter(channel=>channel['is_self'] === true)
@@ -133,7 +114,7 @@ function Profile() {
 
             <Stack spacing={1}>
               {
-                selfChannels.map((channel, _i)=><ChannelListItem channel={channel} publishTokenId={channelTokens[channel.channel_id]} key={channel.channel_id}/>)
+                selfChannels.map((channel, _i)=><ChannelListItem channel={channel} key={channel.channel_id}/>)
               }
             </Stack>
           }

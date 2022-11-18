@@ -57,17 +57,10 @@ function UnpublishChannel() {
         };
         const burnMethod = channelRegContract.methods.burn(channelTokenId).send(transactionParams)
         await promiseReceipt(burnMethod)
-        
-        LocalDB.find({
-          selector: {
-            table_type: 'public-channel',
-            tokenId: channelTokenId
-          }
+        LocalDB.upsert(channel.channel_id, (doc)=>{
+          doc['is_public'] = false
+          return doc
         })
-          .then(res=>{
-            if(res.docs.length)
-              LocalDB.put({...res.docs[0], _deleted: true})
-          })
           .then(_=>increaseUpdatingChannelNumber())
         enqueueSnackbar('Unpublish channel success', { variant: 'success' });
         setOnProgress(false)
@@ -76,7 +69,6 @@ function UnpublishChannel() {
         setOnProgress(false)
         enqueueSnackbar('Unpublish channel error', { variant: 'error' });
       }
-      
     } else {
       handleClose()
     }

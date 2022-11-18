@@ -11,7 +11,7 @@ import { handlePublishModal, handleUnpublishModal, selectSubscribers, setCreated
 import { getChannelShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
 
 const ChannelListItem = (props) => {
-  const {channel, publishTokenId} = props
+  const {channel} = props
   const {display_name: name, avatarSrc, intro} = channel
   const avatarImg = decodeBase64(avatarSrc)
   const [isOpenPopup, setOpenPopup] = React.useState(null);
@@ -46,7 +46,7 @@ const ChannelListItem = (props) => {
         break;
       }
       case 'unpublish': {
-        const channelObj = {...channel, tokenId: publishTokenId, avatarPreview: avatarImg}
+        const channelObj = {...channel, avatarPreview: avatarImg}
         handleUnpublishModal(true)(dispatch)
         dispatch(setCreatedChannel(channelObj))
         break;
@@ -94,18 +94,10 @@ const ChannelListItem = (props) => {
               <IconInCircle name='clarity:note-edit-line'/>&nbsp;
               <Typography variant="subtitle2">Edit Channel</Typography>
             </MenuItem>
-            {
-              !publishTokenId?
-              <MenuItem value='publish' onClick={handleClosePopup}>
-                <IconInCircle name='fa6-solid:earth-americas'/>&nbsp;
-                <Typography variant="subtitle2" color="#FF453A">Publish Channel</Typography>
-              </MenuItem>:
-
-              <MenuItem value='unpublish' onClick={handleClosePopup}>
-                <IconInCircle name='fa6-solid:earth-americas'/>&nbsp;
-                <Typography variant="subtitle2" color="#FF453A">Unpublish Channel</Typography>
-              </MenuItem>
-            }
+            <MenuItem value={channel['is_public']? 'unpublish': 'publish'} onClick={handleClosePopup}>
+              <IconInCircle name='fa6-solid:earth-americas'/>&nbsp;
+              <Typography variant="subtitle2" color="#FF453A">{channel['is_public']? 'Unpublish': 'Publish'} Channel</Typography>
+            </MenuItem>
           </Menu>
         </Box>
       }

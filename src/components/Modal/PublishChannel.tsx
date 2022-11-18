@@ -13,7 +13,6 @@ import { selectPublishModalState, selectCreatedChannel, handlePublishModal } fro
 import { HiveHelper } from 'services/HiveHelper';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec } from 'utils/common'
-import { getDocId, getTableType } from 'utils/mainproc';
 import { getLocalDB } from 'utils/db';
 
 const client = create({url: ipfsURL})
@@ -94,27 +93,32 @@ function PublishChannel() {
         const mintRes = await promiseReceipt(mintMethod)
         const tokenId = `0x${hexFromDec(mintRes['events']?.ChannelRegistered?.returnValues.tokenId || '0')}`
         const channelDoc = {
-          _id: getDocId(channelID, true), 
-          type: metaObj.type,
+          channel_id: channelID,
           name: metaObj.name,
           display_name: channel.display_name || channel.name,
           intro: metaObj.description,
-          channel_id: channelID,
           target_did: metaObj.creator['did'], 
           tipping_address: channel.tipping_address,
+          type: metaObj.type,
+          is_public: true,
           time_range: [], 
           avatarSrc: getIpfsUrl(metaObj?.data?.avatar),
           bannerSrc: getIpfsUrl(metaObj?.data?.banner),
-          table_type: getTableType('channel', true),
+          table_type: 'channel',
           tokenId
         }
-        LocalDB.get(getDocId(channelID, true))
-          .then(doc=>LocalDB.put({...doc, ...channelDoc}))
+        LocalDB.upsert(channelID, (doc)=>{
+          if(doc._id) {
+            if(!doc['is_public']){
+                doc['is_public'] = true
+                doc['tokenId'] = tokenId
+                return doc
+            }
+            return false
+          }
+          return {...doc, ...channelDoc}
+        })
           .then(_=>increaseUpdatingChannelNumber())
-          .catch(err=>{
-            LocalDB.put(channelDoc)
-              .then(_=>increaseUpdatingChannelNumber())
-          })
         enqueueSnackbar('Publish channel success', { variant: 'success' });
         setOnProgress(false)
         handleClose()

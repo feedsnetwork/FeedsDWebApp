@@ -563,6 +563,7 @@ export const mainproc = (props) => {
                                     if(doc._id) {
                                         if(!doc['is_public']){
                                             doc['is_public'] = true
+                                            doc['tokenId'] = channel.tokenId
                                             return doc
                                         }
                                         return false
