@@ -283,11 +283,9 @@ function PostDlg() {
               <label htmlFor="image-button-file">
                 <StyledIconButton icon="clarity:picture-line"/>
               </label>
-              <StyledIconButton icon="clarity:camera-line"/>
               <StyledIconButton icon="clarity:video-gallery-line"/>
-              <StyledIconButton icon="clarity:video-camera-line"/>
               <StyledIconButton icon="fluent:emoji-laugh-24-regular" onClick={handlePopper}/>
-              <IconButton>
+              {/* <IconButton>
                 <Typography variant='body2' sx={{
                   backgroundImage: 'linear-gradient(90deg, #7624FE 0%, #368BFF 100%)',
                   backgroundSize: '100%',
@@ -299,7 +297,7 @@ function PostDlg() {
                 }}>
                   NFT
                 </Typography>
-              </IconButton>
+              </IconButton> */}
             </Box>
             <Box width={150}>
               <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={handlePost}>{activePost?'Save changes':'Post'}</StyledButton>

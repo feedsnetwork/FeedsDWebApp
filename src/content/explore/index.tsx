@@ -153,8 +153,8 @@ function Explore() {
             <Tab label="All" />
             <Tab label="Channels" />
             <Tab label="Posts" />
-            <Tab label="Hashtags" />
-            <Tab label="NFTs" />
+            {/* <Tab label="Hashtags" />
+            <Tab label="NFTs" /> */}
         </Tabs>
         <InputOutline
           type="text"

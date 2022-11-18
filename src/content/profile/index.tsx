@@ -123,7 +123,7 @@ function Profile() {
           }}
         >
           <Tab label="Channels" />
-          <Tab label="Collectibles" />
+          {/* <Tab label="Collectibles" /> */}
           <Tab label="Likes" />
         </Tabs>
         <TabPanel value={tabValue} index={0}>
@@ -138,10 +138,10 @@ function Profile() {
             </Stack>
           }
         </TabPanel>
-        <TabPanel value={tabValue} index={1}>
+        {/* <TabPanel value={tabValue} index={1}>
           <EmptyViewInProfile type='collectible'/>
-        </TabPanel>
-        <TabPanel value={tabValue} index={2}>
+        </TabPanel> */}
+        <TabPanel value={tabValue} index={1}>
           {
             !likedPosts.length?
             <EmptyViewInProfile type='like'/>:
