@@ -191,7 +191,7 @@ function PostBox() {
             <label htmlFor="contained-button-file">
               <StyledIconButton icon="clarity:picture-line"/>
             </label>
-            <StyledIconButton icon="clarity:video-gallery-line"/>
+            {/* <StyledIconButton icon="clarity:video-gallery-line"/> */}
             <StyledIconButton icon="fluent:emoji-laugh-24-regular" onClick={handlePopper}/>
             {/* <IconButton>
               <Typography variant='body2' sx={{

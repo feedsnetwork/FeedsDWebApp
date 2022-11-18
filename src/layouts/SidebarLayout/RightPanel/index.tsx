@@ -39,12 +39,22 @@ const SidebarWrapper = styled(Box)(
 // );
 const ChannelAbout = (props) => {
   const { this_channel } = props
+  const totalPageOfSubscription = Math.ceil(this_channel['subscribers'].length/10) || 1
+  const [currentPageOfSubscription, setCurrentPageOfSubscription] = React.useState(1);
   const editable = this_channel['is_self']
   const navigate = useNavigate()
+
+  React.useEffect(()=>{
+    setCurrentPageOfSubscription(1)
+  }, [])
 
   const link2Edit = ()=>{
     navigate(`/channel/edit/${this_channel['channel_id']}`);
   }
+  const handleShowMore = () => {
+    setCurrentPageOfSubscription(currentPageOfSubscription+1)
+  }
+
   return <>
     <Card>
       <CardContent>
@@ -85,17 +95,20 @@ const ChannelAbout = (props) => {
       <CardContent sx={{pt: 0}}>
         <Grid container spacing={2}>
           {
-            this_channel['subscribers'].map((item, index)=>(
+            this_channel['subscribers'].slice(0, 10*currentPageOfSubscription).map((item, index)=>(
               <Grid item xs={12} key={index}>
                 <SubscriberListItem subscriber={item}/>
               </Grid>
             ))
           }
-          <Grid item xs={12} textAlign='center'>
-            <Button color="inherit">
-              Show more
-            </Button>
-          </Grid>
+          {
+            currentPageOfSubscription < totalPageOfSubscription &&
+            <Grid item xs={12} textAlign='center'>
+              <Button color="inherit" onClick={handleShowMore}>
+                Show more
+              </Button>
+            </Grid>
+          }
         </Grid>
       </CardContent>
     </Card>
