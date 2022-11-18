@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux'
-import { useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '@iconify/react';
 import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
@@ -155,8 +155,10 @@ function RightPanel() {
     if(queryPublicStep >= QueryStep.public_channel)
       LocalDB.find({
         selector: {
-          table_type: 'public-channel'
+          table_type: 'channel',
+          is_public: true
         },
+        limit: 5
       })
         .then(response=>{
           setPublicChannels(response.docs)
@@ -261,11 +263,19 @@ function RightPanel() {
                     </Grid>
                   ))
                 }
-                <Grid item xs={12} textAlign='center'>
-                  <Button color="inherit">
-                    Show more
-                  </Button>
-                </Grid>
+                {
+                  publicChannels.length>4 &&
+                  <Grid item xs={12} textAlign='center'>
+                    <Button 
+                      to='/explore'
+                      state={{ tab: 1 }} 
+                      component={RouterLink}
+                      color="inherit"
+                    >
+                      Show more
+                    </Button>
+                  </Grid>
+                }
               </Grid>
             </CardContent>
           </Card>

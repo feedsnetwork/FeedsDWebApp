@@ -4,13 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import Reveal from "react-awesome-reveal";
 import { keyframes } from "@emotion/react";
 import { Icon } from '@iconify/react';
-import { alpha, Box, List, styled, Button, ListItem, InputAdornment, Divider, Typography, ListItemText, ListItemIcon, ListItemButton } from '@mui/material';
-import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
+import { alpha, Box, List, styled, Button, ListItem, Divider, Typography, ListItemText, ListItemIcon, ListItemButton } from '@mui/material';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 import { SidebarContext } from 'contexts/SidebarContext';
-import InputOutline from 'components/InputOutline'
 import StyledButton from 'components/StyledButton';
 import SubscriptionAvatar from './subscriptionAvatar'
 import { SettingMenuArray } from 'utils/common'
@@ -178,17 +176,17 @@ const customAnimation = keyframes`
     transform: translate3d(0, 0, 0);
   }
 `;
-const customAnimationForChannels = keyframes`
-  from {
-    opacity: 0;
-    transform: translate3d(0px, 20px, 0);
-  }
+// const customAnimationForChannels = keyframes`
+//   from {
+//     opacity: 0;
+//     transform: translate3d(0px, 20px, 0);
+//   }
 
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-`;
+//   to {
+//     opacity: 1;
+//     transform: translate3d(0, 0, 0);
+//   }
+// `;
 
 const ListItemButtonStyle = {
   '& svg.focused': {display: 'none'},
@@ -281,42 +279,37 @@ function SidebarMenu(props) {
                   </ListItemButton>
                 </ListItem>
               }
-              {
-                isVisibleChannels&&
-                <Reveal keyframes={customAnimationForChannels} duration={500}>
-                  <Box px={2} textAlign="center">
-                    <InputOutline
-                      type="text"
-                      placeholder="Search channels"
-                      size="small"
-                      startAdornment={
-                        <InputAdornment position="start">
-                          <SearchTwoToneIcon />
-                        </InputAdornment>
-                      }
-                    />
-                    <Box mt={1}>
-                      {
-                        subscribedChannels.map((channel, _i)=>(
-                          <ListItem component="div" key={_i}>
-                            <Button
-                              value={channel.channel_id}
-                              disableRipple
-                              onClick={link2detail}
-                              startIcon={<SubscriptionAvatar channel={channel}/>}
-                              sx={{p: '4px 14px !important'}}
-                            >
-                              <Typography variant="body2" sx={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>{channel.display_name}</Typography>
-                            </Button>
-                          </ListItem>
-                        ))
-                      }
-                    </Box>
-                    <Button color="inherit" size="small" sx={{px: 1}}>Show more</Button>
-                  </Box>
-                  <Divider sx={{mx: -1}}/>
-                </Reveal>
-              }
+              <Box px={2} textAlign="center" style={{display: isVisibleChannels? 'block': 'none'}}>
+                {/* <InputOutline
+                  type="text"
+                  placeholder="Search channels"
+                  size="small"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SearchTwoToneIcon />
+                    </InputAdornment>
+                  }
+                /> */}
+                <Box mt={1}>
+                  {
+                    subscribedChannels.map((channel, _i)=>(
+                      <ListItem component="div" key={_i}>
+                        <Button
+                          value={channel.channel_id}
+                          disableRipple
+                          onClick={link2detail}
+                          startIcon={<SubscriptionAvatar channel={channel}/>}
+                          sx={{p: '4px 14px !important'}}
+                        >
+                          <Typography variant="body2" sx={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>{channel.display_name}</Typography>
+                        </Button>
+                      </ListItem>
+                    ))
+                  }
+                </Box>
+                <Button color="inherit" size="small" sx={{px: 1}}>Show more</Button>
+              </Box>
+              <Divider sx={{mx: -1}}/>
               {
                 !!focusedChannelId &&
                 <Box py={3} px={1} textAlign="center">

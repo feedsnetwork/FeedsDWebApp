@@ -1,4 +1,5 @@
 import React from 'react'
+import { useLocation } from 'react-router';
 // import InfiniteScroll from "react-infinite-scroll-component";
 import { Box, Tabs, Tab, Stack, Container, InputAdornment } from '@mui/material';
 import { useTheme } from "@mui/material/styles";
@@ -15,8 +16,10 @@ import { getMergedArray, sortByDate } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db';
 
 function Explore() {
+  const location = useLocation();
+  const { tab=0 } = (location.state || {}) as any
   const { queryPublicStep, queryPublicFlag } = React.useContext(SidebarContext);
-  const [tabValue, setTabValue] = React.useState(0);
+  const [tabValue, setTabValue] = React.useState(tab);
   const [containerWidth, setContainerWidth] = React.useState(0);
   const [publicChannels, setPublicChannels] = React.useState([])
   const [publicPosts, setPublicPosts] = React.useState([])

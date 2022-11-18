@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux';
 import { isString } from 'lodash';
 import { Icon } from '@iconify/react';
-import { Box, Typography, Stack, styled, IconButton, Paper } from '@mui/material';
+import { Box, Stack, styled, IconButton, Paper } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import closeFill from '@iconify/icons-eva/close-fill';
 
