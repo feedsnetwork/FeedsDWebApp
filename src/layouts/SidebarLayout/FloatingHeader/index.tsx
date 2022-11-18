@@ -9,7 +9,6 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { selectVisitedChannelId, selectFocusedChannelId } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { getLocalDB, QueryStep } from 'utils/db';
-import { getDocId, getTableType } from 'utils/mainproc';
 import { SettingMenuArray, reduceDIDstring } from 'utils/common'
 
 const HeaderWrapper = styled(Box)(
@@ -72,7 +71,7 @@ function FloatingHeader(props) {
 
     if(selectedChannelId) {
       if((queryStep && !isPublicChannel) || (queryPublicStep && isPublicChannel))
-        LocalDB.get(getDocId(selectedChannelId, isPublicChannel))
+        LocalDB.get(selectedChannelId)
           .then(doc=>{
             setFocusedChannel(doc)
           })
@@ -80,7 +79,7 @@ function FloatingHeader(props) {
         LocalDB.find({
           selector: {
             channel_id: selectedChannelId,
-            table_type: getTableType('post', isPublicChannel)
+            table_type: 'post'
           }
         })
           .then(res=>setPostCountInFocus(res.docs.length))

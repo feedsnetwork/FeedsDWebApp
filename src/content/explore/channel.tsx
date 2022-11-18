@@ -6,12 +6,11 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { selectDispNameOfChannels, selectVisitedChannelId } from 'redux/slices/channel';
 import { reduceDIDstring } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db';
-import { getDocId, getTableType } from 'utils/mainproc';
 
 function Channel() {
   const { queryPublicStep } = React.useContext(SidebarContext);
   const channel_id = useSelector(selectVisitedChannelId)
-  const [isLoading, setIsLoading] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(true)
   const [totalCount, setTotalCount] = React.useState(0)
   const [channelInfo, setChannelInfo] = React.useState({});
   const [pageEndTime, setPageEndTime] = React.useState(0)
@@ -20,13 +19,23 @@ function Channel() {
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
-    if(queryPublicStep >= QueryStep.public_channel)
+    LocalDB.get('query-public-step')
+      .then(currentStep=>{
+        if(!currentStep['step'])
+          setIsLoading(false)
+      })
+      .catch(_=>setIsLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  React.useEffect(()=>{
+    if(queryPublicStep) {
       setIsLoading(true)
+    }
     if(queryPublicStep >= QueryStep.post_data && channel_id) {
       appendMoreData()
       LocalDB.find({
         selector: {
-          table_type: getTableType('post', true),
+          table_type: 'post',
           channel_id
         }
       })
@@ -35,7 +44,7 @@ function Channel() {
         })
     }
     if(queryPublicStep && channel_id) {
-      LocalDB.get(getDocId(channel_id, true))
+      LocalDB.get(channel_id)
         .then(doc=>{
           setChannelInfo(doc)
         })
@@ -52,7 +61,7 @@ function Channel() {
       .then(_=>(
         LocalDB.find({
           selector: {
-            table_type: getTableType('post', true),
+            table_type: 'post',
             channel_id,
             created_at: pageEndTime? {$lt: pageEndTime}: {$gt: true}
           },

@@ -10,9 +10,6 @@ import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray,
     encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
 const hiveApi = new HiveApi()
 
-export const getTableType = (type, isPublic=false) => (isPublic? `public-${type}`: type)
-export const getDocId = (itemId, isPublic=false) => (isPublic? `p-${itemId}`: itemId)
-
 export const mainproc = (props) => {
     const { dispatch, setQueryStep, setQueryPublicStep, setQueryFlag, setQueryPublicFlag } = props
     const feedsDid = sessionStorage.getItem('FEEDS_DID')

@@ -16,7 +16,6 @@ import SubscriberListItem from './SubscriberListItem';
 import PublicChannelItem from './PublicChannelItem';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { getLocalDB, QueryStep } from 'utils/db'
-import { getDocId } from 'utils/mainproc';
 import { selectDispNameOfChannels, selectFocusedChannelId, selectVisitedChannelId, selectSubscribers, selectChannelAvatar } from 'redux/slices/channel';
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
 
@@ -125,7 +124,7 @@ function RightPanel() {
       selectedChannelId = visitedChannelId
 
     if(selectedChannelId && ((queryStep && !isPublicChannel) || (queryPublicStep && isPublicChannel))) {
-      LocalDB.get(getDocId(selectedChannelId, isPublicChannel))
+      LocalDB.get(selectedChannelId)
         .then(doc=>{
           setFocusChannel(doc)
         })
