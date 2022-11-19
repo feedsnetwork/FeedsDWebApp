@@ -80,15 +80,15 @@ function Profile() {
           </Stack>
           <Stack spacing={1} px={{sm: 0, md: 3}} mt={2}>
             <Typography variant="h3">@{myInfo['name'] || reduceDIDstring(feedsDid)}</Typography>
-            <Typography variant="body1">{reduceHexAddress(walletAddress)}</Typography>
+            {/* <Typography variant="body1">{reduceHexAddress(walletAddress)}</Typography> */}
             <Typography variant="body1">{myInfo['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
               <Typography variant="body1"><strong>{subscribedChannels.length}</strong> Subscriptions</Typography>
             </Stack>
-            <Stack direction='row' spacing={1}>
+            {/* <Stack direction='row' spacing={1}>
               <Box component="img" src='/pasar-logo.svg' width={30}/>
-            </Stack>
+            </Stack> */}
           </Stack>
         </Box>
         <Tabs
