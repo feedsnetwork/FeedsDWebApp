@@ -61,15 +61,15 @@ function OthersProfile() {
           </Stack>
           <Stack spacing={1} px={{sm: 0, md: 3}} mt={2}>
             <Typography variant="h3">@{userInfo['name'] || reduceDIDstring(user_did)}</Typography>
-            <Typography variant="body1">{reduceHexAddress(walletAddress)}</Typography>
+            {/* <Typography variant="body1">{reduceHexAddress(walletAddress)}</Typography> */}
             <Typography variant="body1">{userInfo['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
               <Typography variant="body1"><strong>{subscriptions.length}</strong> Subscriptions</Typography>
             </Stack>
-            <Stack direction='row' spacing={1}>
+            {/* <Stack direction='row' spacing={1}>
               <Box component="img" src='/pasar-logo.svg' width={30}/>
-            </Stack>
+            </Stack> */}
           </Stack>
         </Box>
         <Tabs
@@ -85,7 +85,7 @@ function OthersProfile() {
           }}
         >
           <Tab label="Channels" />
-          <Tab label="Collectibles" />
+          {/* <Tab label="Collectibles" /> */}
           <Tab label="Likes" />
         </Tabs>
         <TabPanel value={tabValue} index={0}>
@@ -102,10 +102,10 @@ function OthersProfile() {
             </Stack>
           }
         </TabPanel>
-        <TabPanel value={tabValue} index={1}>
+        {/* <TabPanel value={tabValue} index={1}>
           <EmptyViewInProfile type='collectible'/>
-        </TabPanel>
-        <TabPanel value={tabValue} index={2}>
+        </TabPanel> */}
+        <TabPanel value={tabValue} index={1}>
           {
             !likedPosts.length?
             <EmptyViewInProfile type='like'/>:
