@@ -198,11 +198,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const addChannelVisible = (pathname==='/home' || pathname==='/channel') && pageType==='AddChannel'
   let rightPanelVisible = true
   switch(pathname.replaceAll('/','')) {
-    case "home":
-    case "profile":
-      if(focusedChannelId)
-        rightPanelVisible=false
-      break;
     case "explore":
       rightPanelVisible = false
       break;

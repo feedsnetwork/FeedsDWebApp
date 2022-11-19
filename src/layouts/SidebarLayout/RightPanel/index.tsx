@@ -204,13 +204,20 @@ function RightPanel() {
   else {
     const loadingChannelSkeletons = Array(5).fill(null)
     if(focusedChannel) {
-      const channelOwnerName = dispNameOfChannels[focusedChannel.channel_id]
-      const channelSubscribers = subscribersOfChannel[focusedChannel.channel_id] || []
-      const channelAvatarSrc = decodeBase64(channelAvatars[focusedChannel.channel_id] || "")
-      const activeChannel = {...focusedChannel, owner_name: channelOwnerName, subscribers: channelSubscribers}
-      if(!pathname.startsWith('/explore/channel'))
-        activeChannel['avatarSrc'] = channelAvatarSrc
-      content = <ChannelAbout this_channel={activeChannel}/>
+      switch(pathname.replaceAll('/','')) {
+        case "home":
+        case "profile":
+          break;
+        default:
+          const channelOwnerName = dispNameOfChannels[focusedChannel.channel_id]
+          const channelSubscribers = subscribersOfChannel[focusedChannel.channel_id] || []
+          const channelAvatarSrc = decodeBase64(channelAvatars[focusedChannel.channel_id] || "")
+          const activeChannel = {...focusedChannel, owner_name: channelOwnerName, subscribers: channelSubscribers}
+          if(!pathname.startsWith('/explore/channel'))
+            activeChannel['avatarSrc'] = channelAvatarSrc
+          content = <ChannelAbout this_channel={activeChannel}/>
+          break;
+      }
     }
     else 
       content = 
