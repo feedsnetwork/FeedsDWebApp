@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Card, Container, Box, Typography, Stack, IconButton, Tabs, Tab } from '@mui/material';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
 
@@ -9,49 +10,69 @@ import PostCard from 'components/PostCard';
 import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
 import { SidebarContext } from 'contexts/SidebarContext';
-// import { HiveApi } from 'services/HiveApi'
-import { reduceHexAddress, reduceDIDstring, getFilteredArrayByUnique, getMergedArray } from 'utils/common'
+import { reduceDIDstring, decodeBase64 } from 'utils/common'
+import { selectUserAvatar, selectUsers } from 'redux/slices/user';
+import { selectDispNameOfChannels } from 'redux/slices/channel';
+import { getLocalDB, QueryStep } from 'utils/db';
 
 function OthersProfile() {
-  const { walletAddress, postsInSelf, postsInSubs, selfChannels, subscribedChannels, subscriberInfo } = React.useContext(SidebarContext);
+  const { queryStep } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
-  const [subscriptions, setSubscriptions] = React.useState([]);
+  const [channels, setChannels] = React.useState([])
+  const [likedPosts, setLikedPosts] = React.useState([])
   const location = useLocation();
   const { user_did } = (location.state || {}) as any
-  const this_user = subscriberInfo[user_did] || {}
-  const userInfo = this_user['info'] || {}
-  const avatarSrc = this_user['avatar']
-  const likedPosts = getFilteredArrayByUnique(
-    [...getMergedArray(postsInSelf), ...getMergedArray(postsInSubs)]
-      .filter(item=>item.like_creators && item.like_creators.includes(user_did)), 'post_id')
-  // const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  // const userDid = `did:elastos:${feedsDid}`
-  // const hiveApi = new HiveApi()
+  const userAvatarSrc = useSelector(selectUserAvatar)
+  const users = useSelector(selectUsers)
+  const dispNameOfChannels = useSelector(selectDispNameOfChannels)
+  const this_user = users[user_did] || {}
+  const avatarContent = userAvatarSrc[user_did] || ""
+  const avatarSrc = decodeBase64(avatarContent)
+  const LocalDB = getLocalDB()
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
   React.useEffect(()=>{
-    setSubscriptions([])
-    // if(!feedsDid)
-    //   return
-      
-    // hiveApi.querySubscriptionInfoByUserDID(userDid, userDid)
-    //   .then(res=>{
-    //     if(res['find_message'])
-    //       setSubscriptions(res['find_message']['items'])
-    //   })
-  }, [])
+    if(queryStep) {
+      LocalDB.find({
+        selector: {
+          table_type: 'channel'
+        }
+      })
+        .then(response => {
+          setChannels(response.docs)
+        })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryStep])
+
+  React.useEffect(()=>{
+    if(queryStep >= QueryStep.post_like) {
+      LocalDB.find({
+        selector: {
+          table_type: 'post',
+          like_creators: {'$elemMatch': {'$eq': user_did}}
+        }
+      })
+        .then(response => {
+          setLikedPosts(response.docs)
+        })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryStep])
 
   // const backgroundImg = "/temp-back.png"
+  const selfChannels = channels.filter(channel=>channel['target_did'] === user_did)
+  const subscribedChannels = channels.filter(channel=>channel['subscribers'].some(subscriber=>subscriber['user_did']===user_did))
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
       <Card>
         <Box sx={{position: 'relative'}}>
           {/* <Box sx={{ height: {xs: 120, md: 200}, background: `url(${backgroundImg}) no-repeat center`, backgroundSize: 'cover'}}/> */}
           <Box sx={{ height: {xs: 120, md: 200}, background: 'linear-gradient(180deg, #000000 0%, #A067FF 300.51%)', backgroundSize: 'cover'}}/>
-          <StyledAvatar alt={userInfo['name']} src={avatarSrc} width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
+          <StyledAvatar alt={this_user['name']} src={avatarSrc} width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
         </Box>
         <Box px={2} py={1}>
           <Stack direction='row' spacing={1}>
@@ -60,12 +81,11 @@ function OthersProfile() {
             </Box>
           </Stack>
           <Stack spacing={1} px={{sm: 0, md: 3}} mt={2}>
-            <Typography variant="h3">@{userInfo['name'] || reduceDIDstring(user_did)}</Typography>
-            {/* <Typography variant="body1">{reduceHexAddress(walletAddress)}</Typography> */}
-            <Typography variant="body1">{userInfo['description']}</Typography>
+            <Typography variant="h3">@{this_user['name'] || reduceDIDstring(user_did)}</Typography>
+            <Typography variant="body1">{this_user['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
-              <Typography variant="body1"><strong>{subscriptions.length}</strong> Subscriptions</Typography>
+              <Typography variant="body1"><strong>{subscribedChannels.length}</strong> Subscriptions</Typography>
             </Stack>
             {/* <Stack direction='row' spacing={1}>
               <Box component="img" src='/pasar-logo.svg' width={30}/>
@@ -113,14 +133,9 @@ function OthersProfile() {
             <Stack spacing={2}>
               {
                 likedPosts.map((post, _i)=>{
-                  const channelOfPost = [...selfChannels, ...subscribedChannels].find(item => item.channel_id === post.channel_id) || {}
-                  let dispName = ''
-                  if(channelOfPost.target_did === user_did) {
-                    dispName = userInfo['name'] || reduceDIDstring(user_did)
-                  } else {
-                    dispName = channelOfPost['owner_name'] || reduceDIDstring(channelOfPost.target_did)
-                  }
-                  return <PostCard post={post} dispName={dispName} key={_i} direction='row'/>
+                  const channelOfPost = channels.find(item=>item.channel_id === post.channel_id) || {}
+                  let dispName = dispNameOfChannels[post.channel_id] || reduceDIDstring(channelOfPost.target_did)
+                  return <PostCard post={post} channel={channelOfPost} dispName={dispName} key={_i} direction='row'/>
                 })
               }
             </Stack>

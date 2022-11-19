@@ -10,13 +10,13 @@ import PostCard from 'components/PostCard';
 import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
+import { reduceDIDstring, decodeBase64 } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db';
 import { selectMyInfo } from 'redux/slices/user';
 import { selectDispNameOfChannels } from 'redux/slices/channel';
 
 function Profile() {
-  const { walletAddress, queryStep, updateChannelNumber } = React.useContext(SidebarContext);
+  const { queryStep, updateChannelNumber } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [channels, setChannels] = React.useState([])
   const [likedPosts, setLikedPosts] = React.useState([])
