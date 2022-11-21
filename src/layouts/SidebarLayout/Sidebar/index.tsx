@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, styled, Divider, useTheme, Stack, Typography } from '@mui/material';
+import { Box, styled, Divider, useTheme, Stack, Typography, Badge } from '@mui/material';
 
 import SidebarMenu from './SidebarMenu';
 import StyledAvatar from 'components/StyledAvatar'
@@ -91,12 +91,14 @@ function Sidebar() {
           <Scrollbar>
             <Box mt={3} mb={4}>
               <Box mx={2}>
-                <Typography
-                  variant="h4"
-                  sx={{ pt: 1, }}
-                >
-                  Feeds Network
-                </Typography>
+                <Badge color="secondary" badgeContent="BETA">
+                  <Typography
+                    variant="h4"
+                    sx={{ pt: 1, }}
+                  >
+                    Feeds Network
+                  </Typography>
+                </Badge>
               </Box>
             </Box>
             <SidebarMenu/>
