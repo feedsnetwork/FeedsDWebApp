@@ -16,6 +16,7 @@ import PublishChannelDlg from 'components/Modal/PublishChannel'
 import UnpublishChannelDlg from 'components/Modal/UnpublishChannel'
 import CommentDlg from 'components/Modal/Comment'
 import PostDlg from 'components/Modal/Post'
+import DeletePostDlg from 'components/Modal/DeletePost'
 import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { HiveApi } from 'services/HiveApi'
@@ -287,6 +288,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
       <PublishChannelDlg/>
       <UnpublishChannelDlg/>
       <PostDlg/>
+      <DeletePostDlg/>
       <CommentDlg/>
     </Box>
   );

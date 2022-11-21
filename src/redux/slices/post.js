@@ -5,6 +5,7 @@ const initialState = {
   publicPosts: {},
   isOpened2Post: false,
   isOpened2Comment: false,
+  isOpened2DelPost: false,
   activePost: null,
   activePostProps: {},
   nextLoadNum: 0
@@ -25,6 +26,12 @@ const slice = createSlice({
     },
     closeCommentModal(state) {
       state.isOpened2Comment = false;
+    },
+    openDelPostModal(state) {
+      state.isOpened2DelPost = true;
+    },
+    closeDelPostModal(state) {
+      state.isOpened2DelPost = false;
     },
     increaseLoadNum(state) {
       state.nextLoadNum += 1;
@@ -70,6 +77,9 @@ export function selectPostModalState(state) {
 export function selectCommentModalState(state) {
   return state.post.isOpened2Comment
 }
+export function selectDelPostModalState(state) {
+  return state.post.isOpened2DelPost
+}
 export function selectNextLoadNum(state) {
   return state.post.nextLoadNum
 }
@@ -88,6 +98,15 @@ export function handleCommentModal(isOpened) {
       isOpened?
       slice.actions.openCommentModal():
       slice.actions.closeCommentModal()
+    );
+  };
+}
+export function handleDelPostModal(isOpened) {
+  return (dispatch) => {
+    dispatch(
+      isOpened?
+      slice.actions.openDelPostModal():
+      slice.actions.closeDelPostModal()
     );
   };
 }

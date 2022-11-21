@@ -1,16 +1,24 @@
 import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Dialog, DialogContent, Typography, Stack } from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 import StyledButton from '../StyledButton';
 import StyledIcon from '../StyledIcon'
+import { CommonStatus } from 'models/common_content';
+import { handleDelPostModal, selectActivePost, selectDelPostModalState } from 'redux/slices/post';
 import { HiveApi } from 'services/HiveApi'
+import { getLocalDB } from 'utils/db';
 
-function DeletePost(props) {
-  const { setOpen, isOpen, post_id, channel_id } = props;
+function DeletePost() {
   const [onProgress, setOnProgress] = React.useState(false);
+  const dispatch = useDispatch()
+  const isOpen = useSelector(selectDelPostModalState)
+  const activePost = useSelector(selectActivePost)
+
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     if(!isOpen) {
@@ -21,8 +29,15 @@ function DeletePost(props) {
   const handleAction = async (e) => {
     if(e.currentTarget.value === 'ok') {
       setOnProgress(true)
-      hiveApi.deletePost(post_id, channel_id)
+      hiveApi.deletePost(activePost?.post_id, activePost?.channel_id)
         .then(_=>{
+          LocalDB.upsert(activePost?.post_id, (doc)=>{
+            if(doc._id) {
+              doc['status'] = CommonStatus.deleted
+              return doc
+            }
+            return false
+          })
           enqueueSnackbar('Delete post success', { variant: 'success' });
           setOnProgress(false)
           handleClose()
@@ -36,7 +51,7 @@ function DeletePost(props) {
   }
 
   const handleClose = () => {
-    setOpen(false);
+    handleDelPostModal(false)(dispatch)
   };
 
   return (
