@@ -6,7 +6,7 @@ import { Icon } from '@iconify/react';
 import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormControl, FormHelperText } from '@mui/material';
 
 import StyledButton from 'components/StyledButton';
-import { handleSuccessModal, setChannelAvatarSrc, setCreatedChannel, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel';
+import { handleSuccessModal, setChannelAvatarSrc, setTargetChannel, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
@@ -200,7 +200,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           // enqueueSnackbar('Add channel success', { variant: 'success' });
           setOnProgress(false)
           handleSuccessModal(true)(dispatch)
-          dispatch(setCreatedChannel(newChannel))
+          dispatch(setTargetChannel(newChannel))
           hiveApi.queryChannelInfo(myDID, result.channelId)
             .then(res=>{
               if(res['find_message'] && res['find_message']['items'].length) {

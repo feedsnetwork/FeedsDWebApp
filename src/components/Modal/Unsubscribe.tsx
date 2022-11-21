@@ -1,16 +1,24 @@
 import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Dialog, DialogContent, Typography, Stack} from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 import StyledButton from '../StyledButton';
 import StyledIcon from '../StyledIcon'
 import { HiveApi } from 'services/HiveApi'
+import { handleUnsubscribeModal, selectTargetChannel, selectUnsubscribeModalState } from 'redux/slices/channel';
+import { getLocalDB } from 'utils/db';
 
-function Unsubscribe(props) {
-  const { setOpen, isOpen, target_did, channel_id } = props;
+function Unsubscribe() {
   const [onProgress, setOnProgress] = React.useState(false);
+  const dispatch = useDispatch()
+  const isOpen = useSelector(selectUnsubscribeModalState)
+  const channel = useSelector(selectTargetChannel)
+
+  console.info(channel)
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
+  const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     if(!isOpen) {
@@ -21,8 +29,15 @@ function Unsubscribe(props) {
   const handleAction = async (e) => {
     if(e.currentTarget.value === 'ok') {
       setOnProgress(true)
-      hiveApi.unSubscribeChannel(target_did, channel_id)
+      hiveApi.unSubscribeChannel(channel?.target_did, channel?.channel_id)
         .then(_=>{
+          LocalDB.upsert(channel?.channel_id, (doc)=>{
+            if(doc._id) {
+              doc['is_subscribed'] = false
+              return doc
+            }
+            return false
+          })
           enqueueSnackbar('Unsubscribe channel success', { variant: 'success' });
           setOnProgress(false)
           handleClose()
@@ -36,7 +51,7 @@ function Unsubscribe(props) {
   }
 
   const handleClose = () => {
-    setOpen(false);
+    handleUnsubscribeModal(false)(dispatch)
   };
 
   return (

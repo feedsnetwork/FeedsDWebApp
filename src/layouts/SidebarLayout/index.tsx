@@ -14,8 +14,9 @@ import AddChannel from 'components/AddChannel';
 import ChannelCreatedDlg from 'components/Modal/ChannelCreated'
 import PublishChannelDlg from 'components/Modal/PublishChannel'
 import UnpublishChannelDlg from 'components/Modal/UnpublishChannel'
-import CommentDlg from 'components/Modal/Comment'
+import UnsubscribeChannelDlg from 'components/Modal/Unsubscribe'
 import PostDlg from 'components/Modal/Post'
+import CommentDlg from 'components/Modal/Comment'
 import DeletePostDlg from 'components/Modal/DeletePost'
 import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
@@ -287,6 +288,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
       <ChannelCreatedDlg/>
       <PublishChannelDlg/>
       <UnpublishChannelDlg/>
+      <UnsubscribeChannelDlg/>
       <PostDlg/>
       <DeletePostDlg/>
       <CommentDlg/>

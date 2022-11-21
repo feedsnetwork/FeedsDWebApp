@@ -8,7 +8,7 @@ import StyledAvatar from '../StyledAvatar';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { selectCreatedChannel, selectUnpublishModalState, handleUnpublishModal } from 'redux/slices/channel'
+import { selectTargetChannel, selectUnpublishModalState, handleUnpublishModal } from 'redux/slices/channel'
 import { getWeb3Contract, getWeb3Connect } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
@@ -16,7 +16,7 @@ function UnpublishChannel() {
   const { increaseUpdatingChannelNumber } = React.useContext(SidebarContext)
   const dispatch = useDispatch()
   const isOpen = useSelector(selectUnpublishModalState)
-  const channel = useSelector(selectCreatedChannel)
+  const channel = useSelector(selectTargetChannel)
   const channelTokenId = channel?.tokenId
   const [onProgress, setOnProgress] = React.useState(false);
   const { enqueueSnackbar } = useSnackbar();

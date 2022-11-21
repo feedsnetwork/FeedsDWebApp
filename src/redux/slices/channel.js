@@ -2,14 +2,15 @@ import { createSlice } from '@reduxjs/toolkit';
 // ----------------------------------------------------------------------
 
 const initialState = {
-  avatarSrc: {},
   isChannelCreated: false,
   isOpened2Publish: false,
   isOpened2Unpublish: false,
+  isOpened2Unsubscribe: false,
   activeChannelId: 0, // active self channel id for detail
   focusedChannelId: 0, // focused self channel id
   visitedChannelId: 0, // selected subscribed channel id
-  createdChannel: {},
+  avatarSrc: {},
+  targetChannel: {}, // target channel object to publish/unpublish/unsubscribe
   dispNameOfChannels: {},
   subscribers: {},
   publicChannels: {}
@@ -37,8 +38,14 @@ const slice = createSlice({
     closeUnpublishModal(state) {
       state.isOpened2Unpublish = false;
     },
-    setCreatedChannel(state, action) {
-      state.createdChannel = action.payload
+    openUnsubscribeModal(state) {
+      state.isOpened2Unsubscribe = true;
+    },
+    closeUnsubscribeModal(state) {
+      state.isOpened2Unsubscribe = false;
+    },
+    setTargetChannel(state, action) {
+      state.targetChannel = action.payload
     },
     setPublicChannels(state, action) {
       const tempState = {...state.publicChannels}
@@ -71,7 +78,7 @@ export default slice.reducer;
 
 // Actions
 export const { 
-  setCreatedChannel, 
+  setTargetChannel, 
   setPublicChannels, 
   setDispNameOfChannels, 
   setFocusedChannelId, 
@@ -110,6 +117,15 @@ export function handleUnpublishModal(isOpened) {
     );
   };
 }
+export function handleUnsubscribeModal(isOpened) {
+  return (dispatch) => {
+    dispatch(
+      isOpened?
+      slice.actions.openUnsubscribeModal():
+      slice.actions.closeUnsubscribeModal()
+    );
+  };
+}
 export function selectSuccessModalState(state) {
   return state.channel.isChannelCreated
 }
@@ -119,8 +135,11 @@ export function selectPublishModalState(state) {
 export function selectUnpublishModalState(state) {
   return state.channel.isOpened2Unpublish
 }
-export function selectCreatedChannel(state) {
-  return state.channel.createdChannel
+export function selectUnsubscribeModalState(state) {
+  return state.channel.isOpened2Unsubscribe
+}
+export function selectTargetChannel(state) {
+  return state.channel.targetChannel
 }
 export function selectPublicChannels(state) {
   return state.channel.publicChannels

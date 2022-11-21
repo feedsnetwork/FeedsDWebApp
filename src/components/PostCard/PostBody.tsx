@@ -10,14 +10,13 @@ import Odometer from "react-odometerjs";
 import "odometer/themes/odometer-theme-default.css";
 
 import StyledAvatar from 'components/StyledAvatar'
-import UnsubscribeDlg from 'components/Modal/Unsubscribe'
 import IconInCircle from 'components/IconInCircle'
 import Heart from 'components/Heart'
 import SubscribeButton from 'components/SubscribeButton';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { selectSubscribers, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
+import { handleUnsubscribeModal, selectSubscribers, setActiveChannelId, setFocusedChannelId, setTargetChannel } from 'redux/slices/channel';
 import { handleCommentModal, handleDelPostModal, handlePostModal, selectActivePost, setActivePost, setActivePostProps } from 'redux/slices/post';
 import { selectUserAvatar } from 'redux/slices/user';
 import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
@@ -80,8 +79,6 @@ const PostBody = (props) => {
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const [currentChannel, setCurrentChannel] = React.useState({})
   const [commentCount, setCommentCount] = React.useState(0)
-
-  const [isOpenUnsubscribe, setOpenUnsubscribe] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
@@ -222,7 +219,11 @@ const PostBody = (props) => {
         handleDelPostModal(true)(dispatch)
         break;
       case 'unsubscribe':
-        setOpenUnsubscribe(true)
+        if(currentChannel['is_self']) {
+          return
+        }
+        dispatch(setTargetChannel(currentChannel))
+        handleUnsubscribeModal(true)(dispatch)
         break;
       default:
         break;
@@ -489,7 +490,6 @@ const PostBody = (props) => {
           }
         </StyledPopper>
       }
-      <UnsubscribeDlg setOpen={setOpenUnsubscribe} isOpen={isOpenUnsubscribe} target_did={post.target_did} channel_id={post.channel_id}/>
     </>
   )
 }

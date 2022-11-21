@@ -9,7 +9,7 @@ import StyledAvatar from '../StyledAvatar';
 import { ChannelContent } from 'models/channel_content';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ipfsURL, ChannelRegContractAddress } from 'config'
-import { selectPublishModalState, selectCreatedChannel, handlePublishModal } from 'redux/slices/channel'
+import { selectPublishModalState, selectTargetChannel, handlePublishModal } from 'redux/slices/channel'
 import { HiveHelper } from 'services/HiveHelper';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec } from 'utils/common'
@@ -20,7 +20,7 @@ function PublishChannel() {
   const { increaseUpdatingChannelNumber } = useContext(SidebarContext)
   const dispatch = useDispatch()
   const isOpen = useSelector(selectPublishModalState)
-  const channel = useSelector(selectCreatedChannel)
+  const channel = useSelector(selectTargetChannel)
   const [onProgress, setOnProgress] = React.useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
