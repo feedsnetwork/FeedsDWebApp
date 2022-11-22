@@ -15,7 +15,6 @@ function Unsubscribe() {
   const isOpen = useSelector(selectUnsubscribeModalState)
   const channel = useSelector(selectTargetChannel)
 
-  console.info(channel)
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
   const LocalDB = getLocalDB()

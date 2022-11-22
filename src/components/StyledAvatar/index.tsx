@@ -1,5 +1,7 @@
-import { FC } from 'react'
+import { FC, useState } from 'react'
 import { Box, styled, Avatar } from '@mui/material';
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import AvatarSkeleton from 'components/Skeleton/AvatarSkeleton';
 
 const StyledBox = styled(Box)(
   ({ theme, width }) => `
@@ -33,24 +35,24 @@ interface StyledAvatarProps {
   width?: number;
 }
 
-const AvatarBox = styled(Box)(({ theme }) => ({
-  borderRadius: '50%',
-  display: 'flex',
-  margin: 'auto',
-})) as any;
-
 const StyledAvatar: FC<StyledAvatarProps> = (props) => {
   const {alt, src, width=47, style={}} = props
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoadError, setIsLoadError] = useState(false)
+
   const handleErrorImage = (e) => {
-    e.target.src = '/loading.svg'
-    if(!src.startsWith("http"))
+    if(!e.target.src.startsWith("http")) {
+      setIsLoadError(true)
       return
-    fetch(src)
+    }
+    setIsLoaded(false)
+    fetch(e.target.src)
       .then(res=>res.text())
       .then(res=>{
         e.target.src=res
       })
   }
+
   return (
     <StyledBox 
       width={width}
@@ -62,19 +64,30 @@ const StyledAvatar: FC<StyledAvatarProps> = (props) => {
       }}
     >
       {
-        src?
-        <AvatarBox 
-          draggable={false} 
-          component="img" 
-          src={src} 
-          alt={alt}
-          sx={{
-            width: width,
-            height: width,
-            transition: 'border-radius .2s',
-          }}
-          onError={handleErrorImage}
-        />:
+        src && !isLoadError?
+        <>
+          {
+            !isLoaded && <Box sx={{width, height: width, lineHeight: 1, position: 'absolute'}}><AvatarSkeleton/></Box>
+          }
+          <LazyLoadImage 
+            src={src}
+            effect="blur" 
+            wrapperProps={{
+              style:{
+                display: 'contents'
+              }
+            }} 
+            style={{
+              borderRadius: '50%',
+              margin: 'auto',
+              width: width,
+              height: width,
+              transition: 'border-radius .2s',
+            }} 
+            afterLoad={()=>setIsLoaded(true)} 
+            onError={handleErrorImage}
+          />
+        </>:
         
         <Avatar
           sx={{
