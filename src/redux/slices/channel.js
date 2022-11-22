@@ -9,10 +9,12 @@ const initialState = {
   activeChannelId: 0, // active self channel id for detail
   focusedChannelId: 0, // focused self channel id
   visitedChannelId: 0, // selected subscribed channel id
-  avatarSrc: {},
   targetChannel: {}, // target channel object to publish/unpublish/unsubscribe
+  avatarSrc: {},
   dispNameOfChannels: {},
   subscribers: {},
+  selfChannels: {},
+  subscribedChannels: {},
   publicChannels: {}
 };
 
@@ -47,6 +49,25 @@ const slice = createSlice({
     setTargetChannel(state, action) {
       state.targetChannel = action.payload
     },
+    setChannelData(state, action) {
+      const type = action.payload.type
+      const channelData = action.payload.data
+      const channelState = `${type}Channels`
+      if(Array.isArray(channelData)) {
+        const channelDocs = channelData.reduce((group, doc)=>{
+          group[doc._id] = doc
+          return group
+        }, {})
+        state[channelState] = channelDocs
+        return
+      }
+      const tempState = {...state[channelState]}
+      Object.keys(channelData).forEach(key=>{
+        if(tempState[key])
+          tempState[key] = {...tempState[key], ...channelData[key]}
+      })
+      state[channelState] = tempState
+    },
     setPublicChannels(state, action) {
       const tempState = {...state.publicChannels}
       tempState[action.payload.channel_id] = action.payload.data
@@ -77,13 +98,14 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { 
-  setTargetChannel, 
+export const {  
+  setChannelData, 
   setPublicChannels, 
   setDispNameOfChannels, 
   setFocusedChannelId, 
   setActiveChannelId, 
   setVisitedChannelId, 
+  setTargetChannel,
   setChannelAvatarSrc, 
   setSubscribers 
 } = slice.actions;
@@ -140,6 +162,9 @@ export function selectUnsubscribeModalState(state) {
 }
 export function selectTargetChannel(state) {
   return state.channel.targetChannel
+}
+export function selectSelfChannels(state) {
+  return state.channel.selfChannels
 }
 export function selectPublicChannels(state) {
   return state.channel.publicChannels

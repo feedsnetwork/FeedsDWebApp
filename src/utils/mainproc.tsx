@@ -4,7 +4,7 @@ import { HiveApi } from "services/HiveApi"
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config';
 import { DefaultAvatarMap } from "./avatar_map";
-import { setChannelAvatarSrc, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
+import { setChannelAvatarSrc, setChannelData, setDispNameOfChannels, setPublicChannels, setSubscribers } from 'redux/slices/channel'
 import { increaseLoadNum } from "redux/slices/post";
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
     encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
@@ -58,10 +58,20 @@ export const mainproc = (props) => {
             index: { fields: Object.keys(selector) }
         })
     }
+    const getSelfChannelDocs = ()=>{
+        LocalDB.find({
+            selector: {
+                table_type: 'channel',
+                is_self: true
+            }
+        })
+            .then(response=>dispatch(setChannelData({type: 'self', data: response.docs})))
+    }
 
     // main process steps
     const querySelfChannelStep = () => (
         new Promise((resolve, reject) => {
+            getSelfChannelDocs()
             hiveApi.querySelfChannels()
                 .then(async res=>{
                     if(Array.isArray(res)){
@@ -113,11 +123,15 @@ export const mainproc = (props) => {
                             })
                         ))
                         Promise.all([...junkDocs, ...selfChannelDocs])
-                            .then(_=>updateStepFlag(QueryStep.self_channel))
+                            .then(_=>(
+                                getSelfChannelDocs()
+                            ))
+                            // .then(response=>dispatch(setChannelData({type: 'self', data: response.docs})))
+                            // .then(_=>updateStepFlag(QueryStep.self_channel))
                             .then(_=>{
-                                queryDispNameStep()
-                                queryChannelAvatarStep()
-                                querySubscriptionInfoStep() 
+                                queryDispNameStepEx('self')
+                                // queryChannelAvatarStep()
+                                // querySubscriptionInfoStep() 
                                 resolve({success: true})
                             })
                             .catch(err=>{
@@ -589,6 +603,51 @@ export const mainproc = (props) => {
     const queryPublicCommentLikeStep = () => queryCommentLikeStep(true)
     
     // async steps
+    const getChannelSelectorByType = (type) => {
+        const selector = { 
+            table_type: 'channel'
+        }
+        switch(type) {
+            case 'self':
+                selector['is_self'] = true
+                break;
+            case 'subscribed':
+                selector['is_self'] = false
+                selector['is_subscribed'] = true
+                break;
+            case 'public':
+                selector['is_public'] = true
+                break;
+        }
+        return selector
+    }
+    const queryDispNameStepEx = (type) => {
+        const selector = getChannelSelectorByType(type)
+        createIndex(selector)
+            .then(_=>LocalDB.find({ selector }))
+            .then(response=>{
+                const channelDocNoOwnerName = response.docs.filter(doc=>!doc['owner_name'])
+                channelDocNoOwnerName.forEach(channel=>{
+                    const c_id = channel['channel_id']
+                    const dispNameObj = {}
+                    Promise.resolve()
+                        .then(_=>hiveApi.queryUserDisplayName(channel['target_did'], channel['channel_id'], channel['target_did']))
+                        .then(res=>{
+                            if(res['find_message'] && res['find_message']['items'].length) {
+                                const dispName = res['find_message']['items'][0].display_name
+                                dispNameObj[c_id] = {owner_name: dispName}
+                                return LocalDB.upsert(channel._id, (doc)=>{
+                                    doc['owner_name'] = dispName
+                                    return doc
+                                })
+                            }
+                        })
+                        .then(_=>dispatch(setDispNameOfChannels({type, data: dispNameObj})))
+                        .catch(err=>{})
+                })
+            })
+    }
+
     const queryDispNameStep = (is_public=false) => {
         const selector = { table_type: 'channel', is_public }
         createIndex(selector)

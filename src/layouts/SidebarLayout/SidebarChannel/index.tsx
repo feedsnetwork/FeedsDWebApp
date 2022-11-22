@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, memo } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux';
 import parse from 'html-react-parser';
@@ -14,7 +14,7 @@ import SignoutDlg from 'components/Modal/Signout';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { sortByDate, isValidTime, getDateDistance, convertAutoLink } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db'
-import { selectFocusedChannelId, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
+import { selectFocusedChannelId, selectSelfChannels, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
 import { handlePostModal, setActivePost } from 'redux/slices/post';
 
 const SidebarWrapper = styled(Box)(
@@ -107,8 +107,9 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 }));
 
 function SidebarChannel() {
-  const { queryStep, queryFlag, updateChannelNumber } = useContext(SidebarContext);
-  const [selfChannels, setSelfChannels] = useState([]);
+  // const { queryStep, queryFlag, updateChannelNumber } = useContext(SidebarContext);/
+  // const [selfChannels, setSelfChannels] = useState([]);
+  const selfChannels = Object.values(useSelector(selectSelfChannels))
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
   const [popoverChannel, setPopoverChannel] = useState({});
@@ -132,40 +133,40 @@ function SidebarChannel() {
 
   // }, [])
 
-  useEffect(()=>{
-    if((queryStep >= QueryStep.self_channel && !selfChannels.length) || queryFlag === QueryStep.self_channel) {
-      LocalDB.find({
-        selector: {
-          table_type: 'channel', 
-          is_self: true
-        },
-      })
-        .then(response=>{
-          if(!response.docs.length)
-            return
-          setSelfChannels(response.docs)
-          dispatch(setFocusedChannelId(response.docs[0]['channel_id']))
-        })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep, queryFlag])
+  // useEffect(()=>{
+  //   if((queryStep >= QueryStep.self_channel && !selfChannels.length) || queryFlag === QueryStep.self_channel) {
+  //     LocalDB.find({
+  //       selector: {
+  //         table_type: 'channel', 
+  //         is_self: true
+  //       },
+  //     })
+  //       .then(response=>{
+  //         if(!response.docs.length)
+  //           return
+  //         setSelfChannels(response.docs)
+  //         dispatch(setFocusedChannelId(response.docs[0]['channel_id']))
+  //       })
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [queryStep, queryFlag])
 
-  useEffect(()=>{
-    if(updateChannelNumber)
-      LocalDB.find({
-        selector: {
-          table_type: 'channel', 
-          is_self: true
-        },
-      })
-        .then(response=>{
-          if(!response.docs.length)
-            return
-          setSelfChannels(response.docs)
-          // dispatch(setFocusedChannelId(response.docs[0]['channel_id']))
-        })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updateChannelNumber])
+  // useEffect(()=>{
+  //   if(updateChannelNumber)
+  //     LocalDB.find({
+  //       selector: {
+  //         table_type: 'channel', 
+  //         is_self: true
+  //       },
+  //     })
+  //       .then(response=>{
+  //         if(!response.docs.length)
+  //           return
+  //         setSelfChannels(response.docs)
+  //         // dispatch(setFocusedChannelId(response.docs[0]['channel_id']))
+  //       })
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [updateChannelNumber])
 
   const handleClickChannel = (item)=>{
     dispatch(setFocusedChannelId(item.channel_id))
@@ -256,7 +257,7 @@ function SidebarChannel() {
                     channel={item}
                     onClick={(e)=>{handleClickChannel(item)}} 
                     onRightClick={(e)=>{handleRightClickChannel(e, item)}} 
-                    focused={focusedChannelId&&focusedChannelId===item.channel_id}/>
+                    focused={focusedChannelId&&focusedChannelId===item['channel_id']}/>
                 )
               }
               {
@@ -366,4 +367,4 @@ function SidebarChannel() {
   );
 }
 
-export default SidebarChannel;
+export default memo(SidebarChannel);
