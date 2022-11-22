@@ -58,7 +58,7 @@ export const mainproc = (props) => {
             index: { fields: Object.keys(selector) }
         })
     }
-    const getSelfChannelDocs = ()=>{
+    const syncSelfChannelData = ()=>{
         LocalDB.find({
             selector: {
                 table_type: 'channel',
@@ -71,7 +71,7 @@ export const mainproc = (props) => {
     // main process steps
     const querySelfChannelStep = () => (
         new Promise((resolve, reject) => {
-            getSelfChannelDocs()
+            syncSelfChannelData()
             hiveApi.querySelfChannels()
                 .then(async res=>{
                     if(Array.isArray(res)){
@@ -123,15 +123,12 @@ export const mainproc = (props) => {
                             })
                         ))
                         Promise.all([...junkDocs, ...selfChannelDocs])
-                            .then(_=>(
-                                getSelfChannelDocs()
-                            ))
-                            // .then(response=>dispatch(setChannelData({type: 'self', data: response.docs})))
+                            .then(_=>syncSelfChannelData())
                             // .then(_=>updateStepFlag(QueryStep.self_channel))
                             .then(_=>{
                                 queryDispNameStepEx('self')
-                                // queryChannelAvatarStep()
-                                // querySubscriptionInfoStep() 
+                                queryChannelAvatarStepEx('self')
+                                querySubscriptionInfoStepEx('self') 
                                 resolve({success: true})
                             })
                             .catch(err=>{
@@ -642,7 +639,76 @@ export const mainproc = (props) => {
                                 })
                             }
                         })
-                        .then(_=>dispatch(setDispNameOfChannels({type, data: dispNameObj})))
+                        .then(_=>dispatch(setChannelData({type, data: dispNameObj})))
+                        .catch(err=>{})
+                })
+            })
+    }
+    const queryChannelAvatarStepEx = (type) => {
+        const selector = getChannelSelectorByType(type)
+        createIndex(selector)
+            .then(_=>LocalDB.find({ selector }))
+            .then(response=>{
+                const channelDocNoAvatar = response.docs.filter(doc=>!doc['avatarSrc'])
+                channelDocNoAvatar.forEach(channel=>{
+                    if(channel['is_self']) {
+                        const parseAvatar = channel['avatar'].split('@')
+                        const avatarObj = {}
+                        Promise.resolve()
+                            .then(_=>hiveApi.downloadCustomeAvatar(parseAvatar[parseAvatar.length-1]))
+                            .then(avatarRes=>{
+                                if(avatarRes && avatarRes.length) {
+                                    const avatarSrc = avatarRes.reduce((content, code)=>{
+                                        content=`${content}${String.fromCharCode(code)}`;
+                                        return content
+                                    }, '')
+                                    avatarObj[channel._id] = {avatarSrc: filterAvatar(avatarSrc)}
+                                    return LocalDB.upsert(channel._id, (doc)=>{
+                                        doc['avatarSrc'] = avatarObj[channel._id].avatarSrc
+                                        return doc
+                                    })
+                                }
+                            })
+                            .then(_=>dispatch(setChannelData(avatarObj)))
+                    }
+                    else {
+                        const avatarObj = {}
+                        Promise.resolve()
+                            .then(_=>hiveApi.downloadScripting(channel['target_did'], channel['avatar']))
+                            .then(avatarRes=>{
+                                avatarObj[channel._id] = {avatarSrc: filterAvatar(avatarRes)}
+                                return LocalDB.upsert(channel._id, (doc)=>{
+                                    doc['avatarSrc'] = avatarObj[channel._id].avatarSrc
+                                    return doc
+                                })
+                            })
+                            .then(_=>dispatch(setChannelData(avatarObj)))
+                    }
+                })
+            })
+            .catch(err=>{})
+    }
+    const querySubscriptionInfoStepEx = (type) => {
+        const selector = getChannelSelectorByType(type)
+        createIndex(selector)
+            .then(_=>LocalDB.find({ selector }))
+            .then(response=>{
+                response.docs.forEach(channel=>{
+                    const c_id = channel['channel_id']
+                    const subscribersObj = {}
+                    Promise.resolve()
+                        .then(_=>hiveApi.querySubscriptionInfoByChannelId(channel['target_did'], channel['channel_id']))
+                        .then(res=>{
+                            if(res['find_message']) {
+                                const subscribersArr = res['find_message']['items']
+                                subscribersObj[c_id] = getFilteredArrayByUnique(subscribersArr, 'user_did')
+                                return LocalDB.upsert(channel._id, (doc)=>{
+                                    doc['subscribers'] = subscribersObj[c_id]
+                                    return doc
+                                })
+                            }
+                        })
+                        .then(_=>dispatch(setSubscribers(subscribersObj)))
                         .catch(err=>{})
                 })
             })
