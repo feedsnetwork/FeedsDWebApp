@@ -41,12 +41,13 @@ const StyledAvatar: FC<StyledAvatarProps> = (props) => {
   const [isLoadError, setIsLoadError] = useState(false)
 
   const handleErrorImage = (e) => {
-    if(!e.target.src.startsWith("http")) {
+    const imgSrc = e.target.getAttribute('src')
+    if(!imgSrc.startsWith("http")) {
       setIsLoadError(true)
       return
     }
     setIsLoaded(false)
-    fetch(e.target.src)
+    fetch(imgSrc)
       .then(res=>res.text())
       .then(res=>{
         e.target.src=res
@@ -82,7 +83,7 @@ const StyledAvatar: FC<StyledAvatarProps> = (props) => {
               margin: 'auto',
               width: width,
               height: width,
-              transition: 'border-radius .2s',
+              transition: 'border-radius .2s'
             }} 
             afterLoad={()=>setIsLoaded(true)} 
             onError={handleErrorImage}
