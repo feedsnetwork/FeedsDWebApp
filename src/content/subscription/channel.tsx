@@ -7,18 +7,16 @@ import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import PostCard from 'components/PostCard';
 import { EmptyView } from 'components/EmptyView'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { reduceDIDstring } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db'
-import { selectVisitedChannelId, selectDispNameOfChannels } from 'redux/slices/channel'
+import { selectVisitedChannelId, selectChannelById } from 'redux/slices/channel'
 
 function Channel() {
   const channel_id = useSelector(selectVisitedChannelId)
-  const dispNameOfChannels = useSelector(selectDispNameOfChannels)
+  const thisChannel = useSelector(selectChannelById(channel_id))
   const { queryStep } = React.useContext(SidebarContext);
   const [isLoading, setIsLoading] = React.useState(false)
   const [totalCount, setTotalCount] = React.useState(0)
   const [pageEndTime, setPageEndTime] = React.useState(0)
-  const [channelInfo, setChannelInfo] = React.useState({});
   const [posts, setPosts] = React.useState([]);
   const LocalDB = getLocalDB()
 
@@ -35,12 +33,6 @@ function Channel() {
       })
         .then(res=>{
           setTotalCount(res.docs.length)
-        })
-    }
-    if(queryStep && channel_id) {
-      LocalDB.get(channel_id.toString())
-        .then(doc=>{
-          setChannelInfo(doc)
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,7 +65,6 @@ function Channel() {
       .catch(err=>setIsLoading(false))
   }
 
-  const dispName = dispNameOfChannels[channel_id] || reduceDIDstring(channelInfo['target_did']) 
   const loadingSkeletons = Array(5).fill(null)
   return (
     <>
@@ -108,7 +99,7 @@ function Channel() {
 
                   posts.map((post, _i)=>(
                     <Grid item xs={12} key={_i}>
-                      <PostCard post={post} channel={channelInfo} dispName={dispName}/>
+                      <PostCard post={post} channel={thisChannel}/>
                     </Grid>
                   ))
                 }

@@ -41,7 +41,7 @@ const PostList = (props)=>{
 
                   posts.map((post, _i)=>(
                     <Grid item xs={12} key={_i}>
-                      <PostCard post={post} channel={channel} dispName={dispName}/>
+                      <PostCard post={post} channel={channel}/>
                     </Grid>
                   ))
                 }

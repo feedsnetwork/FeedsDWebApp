@@ -8,22 +8,19 @@ import { EmptyView } from 'components/EmptyView'
 import { SidebarContext } from 'contexts/SidebarContext';
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import PostBox from './post'
-import { reduceDIDstring } from 'utils/common'
-import { selectDispNameOfChannels, selectFocusedChannelId } from 'redux/slices/channel';
+import { selectChannelById, selectFocusedChannelId } from 'redux/slices/channel';
 import { getLocalDB, QueryStep } from 'utils/db';
 
 function Channel() {
   const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
   const focusedChannelId = useSelector(selectFocusedChannelId)
-  const channelDispName = useSelector(selectDispNameOfChannels)
   const [posts, setPosts] = React.useState([]);
-  const [channelInfo, setChannelInfo] = React.useState({});
+  const thisChannel = useSelector(selectChannelById(focusedChannelId))
   const [selfChannelCount, setSelfChannelCount] = React.useState(0);
   const [totalCount, setTotalCount] = React.useState(0)
   const [hasMore, setHasMore] = React.useState(true)
   const [isLoading, setIsLoading] = React.useState(true)
   const [pageEndTime, setPageEndTime] = React.useState(0)
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
@@ -50,12 +47,6 @@ function Channel() {
         })
           .then(response=>{
             setTotalCount(response.docs.length)
-          })
-      }
-      if(queryStep >= QueryStep.subscribed_channel) {
-        LocalDB.get(focusedChannelId.toString())
-          .then(doc=>{
-            setChannelInfo(doc)
           })
       }
     }
@@ -148,7 +139,7 @@ function Channel() {
 
                       posts.map((post, _i)=>(
                         <Grid item xs={12} key={_i}>
-                          <PostCard post={post} channel={channelInfo} dispName={channelDispName[focusedChannelId] || reduceDIDstring(feedsDid)}/>
+                          <PostCard post={post} channel={thisChannel}/>
                         </Grid>
                       ))
                     }

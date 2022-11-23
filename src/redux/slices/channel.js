@@ -172,6 +172,10 @@ export function selectSubscribedChannels(state) {
 export function selectPublicChannels(state) {
   return state.channel.publicChannels
 }
+export const selectChannelById = channelId => state => {
+  const channels = {...state.channel.selfChannels, ...state.channel.subscribedChannels, ...state.channel.publicChannels}
+  return channels[channelId]
+}
 export function selectDispNameOfChannels(state) {
   return state.channel.dispNameOfChannels
 }
