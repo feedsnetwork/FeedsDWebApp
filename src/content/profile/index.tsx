@@ -13,35 +13,21 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceDIDstring, decodeBase64 } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db';
 import { selectMyInfo } from 'redux/slices/user';
-import { selectDispNameOfChannels } from 'redux/slices/channel';
+import { selectSelfChannels, selectSubscribedChannels } from 'redux/slices/channel';
 
 function Profile() {
-  const { queryStep, updateChannelNumber } = React.useContext(SidebarContext);
+  const { queryStep } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
-  const [channels, setChannels] = React.useState([])
   const [likedPosts, setLikedPosts] = React.useState([])
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myInfo = useSelector(selectMyInfo)
-  const dispNameOfChannels = useSelector(selectDispNameOfChannels)
+  const selfChannels = Object.values(useSelector(selectSelfChannels))
+  const subscribedChannels = Object.values(useSelector(selectSubscribedChannels))
   const LocalDB = getLocalDB()
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-
-  React.useEffect(()=>{
-    if(queryStep) {
-      LocalDB.find({
-        selector: {
-          table_type: 'channel'
-        }
-      })
-        .then(response => {
-          setChannels(response.docs)
-        })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep, updateChannelNumber])
 
   React.useEffect(()=>{
     if(queryStep >= QueryStep.post_like) {
@@ -59,8 +45,7 @@ function Profile() {
   }, [queryStep])
 
   // const backgroundImg = "/temp-back.png"
-  const selfChannels = channels.filter(channel=>channel['is_self'] === true)
-  const subscribedChannels = channels.filter(channel=>channel['is_subscribed'] === true)
+  const subscriptionCount = selfChannels.filter(channel=>channel['is_subscribed']).length + subscribedChannels.length
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
       <Card>
@@ -84,7 +69,7 @@ function Profile() {
             <Typography variant="body1">{myInfo['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
-              <Typography variant="body1"><strong>{subscribedChannels.length}</strong> Subscriptions</Typography>
+              <Typography variant="body1"><strong>{subscriptionCount}</strong> Subscriptions</Typography>
             </Stack>
             {/* <Stack direction='row' spacing={1}>
               <Box component="img" src='/pasar-logo.svg' width={30}/>
@@ -114,7 +99,7 @@ function Profile() {
 
             <Stack spacing={1}>
               {
-                selfChannels.map((channel, _i)=><ChannelListItem channel={channel} key={channel.channel_id}/>)
+                selfChannels.map((channel, _i)=><ChannelListItem channel={channel} key={channel['channel_id']}/>)
               }
             </Stack>
           }
@@ -130,9 +115,8 @@ function Profile() {
             <Stack spacing={2}>
               {
                 likedPosts.map((post, _i)=>{
-                  const channelOfPost = channels.find(item=>item.channel_id === post.channel_id) || {}
-                  let dispName = dispNameOfChannels[post.channel_id] || reduceDIDstring(channelOfPost.target_did)
-                  return <PostCard post={post} channel={channelOfPost} dispName={dispName} key={_i} direction='row'/>
+                  const channelOfPost = [...selfChannels, ...subscribedChannels].find(item=>item['channel_id'] === post.channel_id) || {}
+                  return <PostCard post={post} channel={channelOfPost} key={_i} direction='row'/>
                 })
               }
             </Stack>

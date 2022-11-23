@@ -6,14 +6,13 @@ import { Box, Stack, Card } from '@mui/material';
 import PostBody from './PostBody'
 import { CommentForm } from './CommentForm';
 import { selectUsers } from 'redux/slices/user';
-import { selectChannelAvatar } from 'redux/slices/channel';
 import { decodeBase64, reduceDIDstring } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, channel, dispName, level=1, replyingTo='', replyable=false, dispAvatar={}, direction='column' } = props
-  const channelAvatars = useSelector(selectChannelAvatar)
+  const { post, channel, level=1, replyingTo='', replyable=false, dispAvatar={}, direction='column' } = props
+  const dispName = channel['owner_name'] || reduceDIDstring(channel['target_did'])
   const users = useSelector(selectUsers)
   const [commentData, setCommentData] = React.useState([])
   const LocalDB = getLocalDB()
@@ -26,7 +25,7 @@ const PostCard = (props) => {
   let cardProps = {}
   if(level === 1) {
     contentObj = typeof post.content === 'object'? {...post.content}: JSON.parse(post.content)
-    contentObj.avatar = { name: channel['display_name'], src: channelAvatars[channel.channel_id]? decodeBase64(channelAvatars[channel.channel_id]): channel['avatarSrc']||'' }
+    contentObj.avatar = { name: channel['display_name'], src: decodeBase64(channel['avatarSrc'] || '') }
     contentObj.primaryName = channel['display_name']
     contentObj.secondaryName = `@${dispName}`
     cardProps = {style: {cursor: 'pointer'}, onClick: naviage2detail}
@@ -92,4 +91,4 @@ const PostCard = (props) => {
   );
 }
 
-export default PostCard;
+export default React.memo(PostCard);

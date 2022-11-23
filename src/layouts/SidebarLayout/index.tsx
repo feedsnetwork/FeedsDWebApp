@@ -50,7 +50,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const procSteps = mainproc(propsInProc)
   const querySteps = procSteps.querySteps
   const queryPublicSteps = procSteps.queryPublicSteps
-  const { queryDispNameStep, queryChannelAvatarStep, querySubscriptionInfoStep } = procSteps.asyncSteps
+  const { queryDispNameStep, querySubscriptionInfoStep } = procSteps.asyncSteps
   
   useEffect(()=>{
     LocalDB.get('query-step')

@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink as RouterLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Icon } from '@iconify/react';
@@ -7,7 +7,6 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 import SubscriptionAvatar from './subscriptionAvatar'
-import { SidebarContext } from 'contexts/SidebarContext';
 import { selectSubscribedChannels, setVisitedChannelId } from 'redux/slices/channel';
 
 const ListItemButtonStyle = {
