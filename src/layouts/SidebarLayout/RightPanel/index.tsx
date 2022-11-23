@@ -16,7 +16,7 @@ import SubscriberListItem from './SubscriberListItem';
 import PublicChannelItem from './PublicChannelItem';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { getLocalDB, QueryStep } from 'utils/db'
-import { selectDispNameOfChannels, selectFocusedChannelId, selectVisitedChannelId, selectSubscribers, selectChannelAvatar } from 'redux/slices/channel';
+import { selectFocusedChannelId, selectVisitedChannelId, selectChannelById } from 'redux/slices/channel';
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
 
 const SidebarWrapper = styled(Box)(
@@ -115,51 +115,21 @@ const ChannelAbout = (props) => {
   </>
 }
 function RightPanel() {
-  const { queryStep, queryPublicStep, updateChannelNumber } = useContext(SidebarContext);
-  const [focusedChannel, setFocusChannel] = React.useState(null)
+  const { queryPublicStep } = useContext(SidebarContext);
   const [isLoadingPublicChannel, setIsLoadingPublicChannels] = React.useState(false)
   const [publicChannels, setPublicChannels] = React.useState([])
   const theme = useTheme();
   const { pathname } = useLocation();
   const visitedChannelId = useSelector(selectVisitedChannelId)
-  const dispNameOfChannels = useSelector(selectDispNameOfChannels)
-  const subscribersOfChannel = useSelector(selectSubscribers)
-  const channelAvatars = useSelector(selectChannelAvatar)
   const focusedChannelId = useSelector(selectFocusedChannelId)
+
+  const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
+  const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
+  const selectedChannelId = !isSubscribedChannel && !isPublicChannel? focusedChannelId: visitedChannelId
+  const focusedChannel = useSelector(selectChannelById(selectedChannelId))
+
   const LocalDB = getLocalDB()
   let content = null
-
-  React.useEffect(()=>{
-    let selectedChannelId = focusedChannelId
-    const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
-    const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
-    if(isSubscribedChannel || isPublicChannel)
-      selectedChannelId = visitedChannelId
-
-    if(selectedChannelId && ((queryStep && !isPublicChannel) || (queryPublicStep && isPublicChannel))) {
-      LocalDB.get(selectedChannelId)
-        .then(doc=>{
-          setFocusChannel(doc)
-        })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep, queryPublicStep, visitedChannelId, focusedChannelId, pathname])
-
-  React.useEffect(()=>{
-    let selectedChannelId = focusedChannelId
-    const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
-    const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
-    if(isSubscribedChannel)
-      selectedChannelId = visitedChannelId
-
-    if(selectedChannelId && !isPublicChannel && updateChannelNumber) {
-      LocalDB.get(selectedChannelId)
-        .then(doc=>{
-          setFocusChannel(doc)
-        })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updateChannelNumber])
 
   React.useEffect(()=>{
     if(queryPublicStep < QueryStep.public_channel && !publicChannels.length)
@@ -209,12 +179,9 @@ function RightPanel() {
         case "profile":
           break;
         default:
-          const channelOwnerName = dispNameOfChannels[focusedChannel.channel_id]
-          const channelSubscribers = subscribersOfChannel[focusedChannel.channel_id] || []
-          const channelAvatarSrc = decodeBase64(channelAvatars[focusedChannel.channel_id] || "")
-          const activeChannel = {...focusedChannel, owner_name: channelOwnerName, subscribers: channelSubscribers}
+          const activeChannel = {...focusedChannel}
           if(!pathname.startsWith('/explore/channel'))
-            activeChannel['avatarSrc'] = channelAvatarSrc
+            activeChannel['avatarSrc'] = decodeBase64(activeChannel['avatarSrc'] || '')
           content = <ChannelAbout this_channel={activeChannel}/>
           break;
       }
