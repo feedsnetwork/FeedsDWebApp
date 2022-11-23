@@ -114,10 +114,7 @@ function Profile() {
 
             <Stack spacing={2}>
               {
-                likedPosts.map((post, _i)=>{
-                  const channelOfPost = [...selfChannels, ...subscribedChannels].find(item=>item['channel_id'] === post.channel_id) || {}
-                  return <PostCard post={post} channel={channelOfPost} key={_i} direction='row'/>
-                })
+                likedPosts.map((post, _i)=><PostCard post={post} key={_i} direction='row'/>)
               }
             </Stack>
           }

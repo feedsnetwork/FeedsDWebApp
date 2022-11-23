@@ -12,7 +12,6 @@ import { selectVisitedChannelId, selectChannelById } from 'redux/slices/channel'
 
 function Channel() {
   const channel_id = useSelector(selectVisitedChannelId)
-  const thisChannel = useSelector(selectChannelById(channel_id))
   const { queryStep } = React.useContext(SidebarContext);
   const [isLoading, setIsLoading] = React.useState(false)
   const [totalCount, setTotalCount] = React.useState(0)
@@ -99,7 +98,7 @@ function Channel() {
 
                   posts.map((post, _i)=>(
                     <Grid item xs={12} key={_i}>
-                      <PostCard post={post} channel={thisChannel}/>
+                      <PostCard post={post}/>
                     </Grid>
                   ))
                 }

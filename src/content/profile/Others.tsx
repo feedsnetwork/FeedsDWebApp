@@ -132,11 +132,7 @@ function OthersProfile() {
 
             <Stack spacing={2}>
               {
-                likedPosts.map((post, _i)=>{
-                  const channelOfPost = channels.find(item=>item.channel_id === post.channel_id) || {}
-                  let dispName = dispNameOfChannels[post.channel_id] || reduceDIDstring(channelOfPost.target_did)
-                  return <PostCard post={post} channel={channelOfPost} dispName={dispName} key={_i} direction='row'/>
-                })
+                likedPosts.map((post, _i)=><PostCard post={post} key={_i} direction='row'/>)
               }
             </Stack>
           }

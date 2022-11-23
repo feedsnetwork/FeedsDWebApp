@@ -81,7 +81,7 @@ const Post = () => {
         {
           !!postInfo &&
           <Grid item xs={12}>
-            <PostCard post={postInfo} channel={channelInfo} dispName={dispNameOfPost} replyable={true}/>
+            <PostCard post={postInfo} replyable={true}/>
           </Grid>
         }
         {
@@ -95,7 +95,6 @@ const Post = () => {
             const commentUser = users[comment.creater_did] || {}
             const commentProps = {
               post: comment,
-              channel: channelInfo,
               dispName: commentUser['name'] || reduceDIDstring(comment.creater_did),
               dispAvatar: { name: commentUser['name'], src: decodeBase64(commentUser['avatarSrc'])},
               replyingTo: dispNameOfPost,

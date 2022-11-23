@@ -8,14 +8,13 @@ import { EmptyView } from 'components/EmptyView'
 import { SidebarContext } from 'contexts/SidebarContext';
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import PostBox from './post'
-import { selectChannelById, selectFocusedChannelId } from 'redux/slices/channel';
+import { selectFocusedChannelId } from 'redux/slices/channel';
 import { getLocalDB, QueryStep } from 'utils/db';
 
 function Channel() {
   const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
   const focusedChannelId = useSelector(selectFocusedChannelId)
   const [posts, setPosts] = React.useState([]);
-  const thisChannel = useSelector(selectChannelById(focusedChannelId))
   const [selfChannelCount, setSelfChannelCount] = React.useState(0);
   const [totalCount, setTotalCount] = React.useState(0)
   const [hasMore, setHasMore] = React.useState(true)
@@ -139,7 +138,7 @@ function Channel() {
 
                       posts.map((post, _i)=>(
                         <Grid item xs={12} key={_i}>
-                          <PostCard post={post} channel={thisChannel}/>
+                          <PostCard post={post}/>
                         </Grid>
                       ))
                     }

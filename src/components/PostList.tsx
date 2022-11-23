@@ -6,7 +6,7 @@ import PostCard from 'components/PostCard';
 import { EmptyView } from 'components/EmptyView'
 
 const PostList = (props)=>{
-  const { isLoading, channel, posts, appendMoreData, hasMore } = props
+  const { isLoading, posts, appendMoreData, hasMore } = props
   const loadingSkeletons = Array(5).fill(null)
   return (
     <>
