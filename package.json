@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@chenyufei2022/did-js-sdk": "^2.2.2",
-    "@chenyufei2022/elastos-connectivity-sdk-js": "^2.2.2",
-    "@chenyufei2022/essentials-connector-client-browser": "^2.2.3",
-    "@chenyufei2022/hive-js-sdk": "^2.2.4",
+    "@elastosfoundation/did-js-sdk": "^2.2.9",
+    "@elastosfoundation/elastos-connectivity-sdk-js": "^1.0.23",
+    "@elastosfoundation/essentials-connector-client-browser": "1.0.41",
+    "@elastosfoundation/hive-js-sdk": "^2.7.4",
     "@emotion/react": "11.9.0",
     "@emotion/styled": "11.8.1",
     "@ethersproject/providers": "^5.5.2",
@@ -63,7 +63,7 @@
     "git-info": "node src/utils/gitInfo.js",
     "preinstall": "npx npm-force-resolutions",
     "worker": "webpack --watch",
-    "start": "webpack && npm run git-info && react-scripts start",
+    "start": "npm run git-info && react-scripts start",
     "build": "npm run git-info && react-scripts build",
     "test": "react-scripts test",
     "eject": "npm run git-info && react-scripts eject"
