@@ -8,10 +8,12 @@ import { CommentForm } from './CommentForm';
 import { selectUsers } from 'redux/slices/user';
 import { decodeBase64, reduceDIDstring } from 'utils/common'
 import { getLocalDB } from 'utils/db';
+import { selectChannelById } from 'redux/slices/channel';
 
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, channel, level=1, replyingTo='', replyable=false, dispAvatar={}, direction='column' } = props
+  const { post, level=1, replyingTo='', replyable=false, dispAvatar={}, direction='column' } = props
+  const channel = useSelector(selectChannelById(post.channel_id)) || {}
   const dispName = channel['owner_name'] || reduceDIDstring(channel['target_did'])
   const users = useSelector(selectUsers)
   const [commentData, setCommentData] = React.useState([])

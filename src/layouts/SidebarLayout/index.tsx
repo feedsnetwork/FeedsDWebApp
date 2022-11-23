@@ -70,52 +70,52 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         //   queryDispNameStep()
         //   querySubscriptionInfoStep()
         // }
-        LocalDB.find({
-          selector: {
-            table_type: 'user'
-          }
-        })
-          .then(res=>{
-            const avatarSrcObj = res.docs.filter(doc=>!!doc['avatarSrc'])
-              .reduce((avatarObj, doc)=>{
-                avatarObj[doc._id] = doc['avatarSrc']
-                return avatarObj
-              }, {})
-            const usersObj = res.docs.reduce((userObj, doc)=>{
-              userObj[doc._id] = doc
-              return userObj
-            }, {})
-            setQueriedDIDs([myDID, ...Object.keys(usersObj)])
-            dispatch(setUserInfo(usersObj))
-            dispatch(setUserAvatarSrc(avatarSrcObj))
-          })
+        // LocalDB.find({
+        //   selector: {
+        //     table_type: 'user'
+        //   }
+        // })
+        //   .then(res=>{
+        //     const avatarSrcObj = res.docs.filter(doc=>!!doc['avatarSrc'])
+        //       .reduce((avatarObj, doc)=>{
+        //         avatarObj[doc._id] = doc['avatarSrc']
+        //         return avatarObj
+        //       }, {})
+        //     const usersObj = res.docs.reduce((userObj, doc)=>{
+        //       userObj[doc._id] = doc
+        //       return userObj
+        //     }, {})
+        //     setQueriedDIDs([myDID, ...Object.keys(usersObj)])
+        //     dispatch(setUserInfo(usersObj))
+        //     dispatch(setUserAvatarSrc(avatarSrcObj))
+        //   })
       })
       .catch(err=>{
         setQueriedDIDs([myDID])
         promiseSeries(querySteps)
       })
 
-    LocalDB.get('query-public-step')
-      .then(currentPublicStep=>{
-        setQueryPublicStep(currentPublicStep['step'])
-        // const remainedSteps = queryPublicSteps.slice(currentPublicStep['step']).map(func=>func())
-        // Promise.all(remainedSteps)
-        //   .then(res=>{
-        //     console.log(res, "---result")
-        //   })
-        promiseSeries(queryPublicSteps)
-          .then(res=>{
-            console.log(res, "---result")
-          })
-        if(currentPublicStep['step'] >= QueryStep.public_channel) {
-          queryDispNameStep(true)
-          querySubscriptionInfoStep(true)
-        }
-      })
-      .catch(err=>{
-        promiseSeries(queryPublicSteps)
-          .then(res=>console.info(res, '--------end'))
-      })
+    // LocalDB.get('query-public-step')
+    //   .then(currentPublicStep=>{
+    //     setQueryPublicStep(currentPublicStep['step'])
+    //     // const remainedSteps = queryPublicSteps.slice(currentPublicStep['step']).map(func=>func())
+    //     // Promise.all(remainedSteps)
+    //     //   .then(res=>{
+    //     //     console.log(res, "---result")
+    //     //   })
+    //     promiseSeries(queryPublicSteps)
+    //       .then(res=>{
+    //         console.log(res, "---result")
+    //       })
+    //     if(currentPublicStep['step'] >= QueryStep.public_channel) {
+    //       queryDispNameStep(true)
+    //       querySubscriptionInfoStep(true)
+    //     }
+    //   })
+    //   .catch(err=>{
+    //     promiseSeries(queryPublicSteps)
+    //       .then(res=>console.info(res, '--------end'))
+    //   })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
