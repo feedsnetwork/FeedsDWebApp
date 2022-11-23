@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, memo } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux';
 import parse from 'html-react-parser';
@@ -11,11 +11,10 @@ import Logo from 'components/LogoSign';
 import ChannelAvatar from 'components/ChannelAvatar'
 import StyledButton from 'components/StyledButton'
 import SignoutDlg from 'components/Modal/Signout';
-import { SidebarContext } from 'contexts/SidebarContext';
 import { sortByDate, isValidTime, getDateDistance, convertAutoLink } from 'utils/common'
-import { getLocalDB, QueryStep } from 'utils/db'
 import { selectFocusedChannelId, selectSelfChannels, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
 import { handlePostModal, setActivePost } from 'redux/slices/post';
+import { getLocalDB } from 'utils/db';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -107,8 +106,6 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 }));
 
 function SidebarChannel() {
-  // const { queryStep, queryFlag, updateChannelNumber } = useContext(SidebarContext);/
-  // const [selfChannels, setSelfChannels] = useState([]);
   const selfChannels = Object.values(useSelector(selectSelfChannels))
   const [anchorEl, setAnchorEl] = useState(null);
   const [isOpenPopover, setOpenPopover] = useState(false);
@@ -117,12 +114,18 @@ function SidebarChannel() {
   const [arrowRef, setArrowRef] = useState(null);
   const [isOpenSignout, setOpenSignout] = useState(false)
   // const closeSidebar = () => toggleSidebar();
+  const focusedChannelId = useSelector(selectFocusedChannelId)
   const theme = useTheme();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const focusedChannelId = useSelector(selectFocusedChannelId)
   const LocalDB = getLocalDB()
+
+  useEffect(()=>{
+    if(!focusedChannelId && selfChannels.length)
+      dispatch(setFocusedChannelId(selfChannels[0]['channel_id']))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selfChannels])
 
   // useEffect(()=>{
   //   const worker = new Worker('worker.js');
@@ -132,41 +135,6 @@ function SidebarChannel() {
   //   worker.postMessage("hello")
 
   // }, [])
-
-  // useEffect(()=>{
-  //   if((queryStep >= QueryStep.self_channel && !selfChannels.length) || queryFlag === QueryStep.self_channel) {
-  //     LocalDB.find({
-  //       selector: {
-  //         table_type: 'channel', 
-  //         is_self: true
-  //       },
-  //     })
-  //       .then(response=>{
-  //         if(!response.docs.length)
-  //           return
-  //         setSelfChannels(response.docs)
-  //         dispatch(setFocusedChannelId(response.docs[0]['channel_id']))
-  //       })
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [queryStep, queryFlag])
-
-  // useEffect(()=>{
-  //   if(updateChannelNumber)
-  //     LocalDB.find({
-  //       selector: {
-  //         table_type: 'channel', 
-  //         is_self: true
-  //       },
-  //     })
-  //       .then(response=>{
-  //         if(!response.docs.length)
-  //           return
-  //         setSelfChannels(response.docs)
-  //         // dispatch(setFocusedChannelId(response.docs[0]['channel_id']))
-  //       })
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [updateChannelNumber])
 
   const handleClickChannel = (item)=>{
     dispatch(setFocusedChannelId(item.channel_id))

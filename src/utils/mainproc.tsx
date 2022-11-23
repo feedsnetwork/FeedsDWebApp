@@ -4,7 +4,7 @@ import { HiveApi } from "services/HiveApi"
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config';
 import { DefaultAvatarMap } from "./avatar_map";
-import { setChannelAvatarSrc, setChannelData, setDispNameOfChannels, setPublicChannels, setSubscribers } from 'redux/slices/channel'
+import { setChannelAvatarSrc, setChannelData, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
 import { increaseLoadNum } from "redux/slices/post";
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
     encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
@@ -65,7 +65,9 @@ export const mainproc = (props) => {
                 is_self: true
             }
         })
-            .then(response=>dispatch(setChannelData({type: 'self', data: response.docs})))
+            .then(response=>{
+                dispatch(setChannelData({type: 'self', data: response.docs}))
+            })
     }
 
     // main process steps
@@ -128,7 +130,7 @@ export const mainproc = (props) => {
                             .then(_=>{
                                 queryDispNameStepEx('self')
                                 queryChannelAvatarStepEx('self')
-                                querySubscriptionInfoStepEx('self') 
+                                querySubscriptionInfoStepEx('self')
                                 resolve({success: true})
                             })
                             .catch(err=>{
@@ -633,13 +635,15 @@ export const mainproc = (props) => {
                             if(res['find_message'] && res['find_message']['items'].length) {
                                 const dispName = res['find_message']['items'][0].display_name
                                 dispNameObj[c_id] = {owner_name: dispName}
-                                return LocalDB.upsert(channel._id, (doc)=>{
+                                LocalDB.upsert(channel._id, (doc)=>{
                                     doc['owner_name'] = dispName
                                     return doc
                                 })
+                                    .then(_=>{
+                                        dispatch(setChannelData({type, data: dispNameObj}))
+                                    })
                             }
                         })
-                        .then(_=>dispatch(setChannelData({type, data: dispNameObj})))
                         .catch(err=>{})
                 })
             })
@@ -663,13 +667,13 @@ export const mainproc = (props) => {
                                         return content
                                     }, '')
                                     avatarObj[channel._id] = {avatarSrc: filterAvatar(avatarSrc)}
-                                    return LocalDB.upsert(channel._id, (doc)=>{
+                                    LocalDB.upsert(channel._id, (doc)=>{
                                         doc['avatarSrc'] = avatarObj[channel._id].avatarSrc
                                         return doc
                                     })
+                                        .then(_=>dispatch(setChannelData(avatarObj)))
                                 }
                             })
-                            .then(_=>dispatch(setChannelData(avatarObj)))
                     }
                     else {
                         const avatarObj = {}
@@ -677,12 +681,12 @@ export const mainproc = (props) => {
                             .then(_=>hiveApi.downloadScripting(channel['target_did'], channel['avatar']))
                             .then(avatarRes=>{
                                 avatarObj[channel._id] = {avatarSrc: filterAvatar(avatarRes)}
-                                return LocalDB.upsert(channel._id, (doc)=>{
+                                LocalDB.upsert(channel._id, (doc)=>{
                                     doc['avatarSrc'] = avatarObj[channel._id].avatarSrc
                                     return doc
                                 })
+                                    .then(_=>dispatch(setChannelData(avatarObj)))
                             })
-                            .then(_=>dispatch(setChannelData(avatarObj)))
                     }
                 })
             })
@@ -702,13 +706,13 @@ export const mainproc = (props) => {
                             if(res['find_message']) {
                                 const subscribersArr = res['find_message']['items']
                                 subscribersObj[c_id] = getFilteredArrayByUnique(subscribersArr, 'user_did')
-                                return LocalDB.upsert(channel._id, (doc)=>{
+                                LocalDB.upsert(channel._id, (doc)=>{
                                     doc['subscribers'] = subscribersObj[c_id]
                                     return doc
                                 })
+                                    .then(_=>dispatch(setSubscribers(subscribersObj)))
                             }
                         })
-                        .then(_=>dispatch(setSubscribers(subscribersObj)))
                         .catch(err=>{})
                 })
             })
