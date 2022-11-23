@@ -58,22 +58,38 @@ export const mainproc = (props) => {
             index: { fields: Object.keys(selector) }
         })
     }
-    const syncSelfChannelData = ()=>{
-        LocalDB.find({
-            selector: {
-                table_type: 'channel',
-                is_self: true
-            }
-        })
-            .then(response=>{
-                dispatch(setChannelData({type: 'self', data: response.docs}))
-            })
+    const getChannelSelectorByType = (type) => {
+        const selector = { 
+            table_type: 'channel'
+        }
+        switch(type) {
+            case 'self':
+                selector['is_self'] = true
+                break;
+            case 'subscribed':
+                selector['is_self'] = false
+                selector['is_subscribed'] = true
+                break;
+            case 'public':
+                selector['is_public'] = true
+                break;
+        }
+        return selector
     }
 
+    // functions to synchronize state value with browser db data
+    const syncChannelData = (type)=>{
+        const selector = getChannelSelectorByType(type)
+        LocalDB.find({ selector })
+            .then(response=>{
+                dispatch(setChannelData({type, data: response.docs}))
+            })
+    }
+    
     // main process steps
     const querySelfChannelStep = () => (
         new Promise((resolve, reject) => {
-            syncSelfChannelData()
+            syncChannelData('self')
             hiveApi.querySelfChannels()
                 .then(async res=>{
                     if(Array.isArray(res)){
@@ -125,7 +141,7 @@ export const mainproc = (props) => {
                             })
                         ))
                         Promise.all([...junkDocs, ...selfChannelDocs])
-                            .then(_=>syncSelfChannelData())
+                            .then(_=>syncChannelData('self'))
                             // .then(_=>updateStepFlag(QueryStep.self_channel))
                             .then(_=>{
                                 queryDispNameStepEx('self')
@@ -148,6 +164,7 @@ export const mainproc = (props) => {
 
     const querySubscribedChannelStep = () => (
         new Promise((resolve, reject) => {
+            syncChannelData('subscribed')
             hiveApi.queryBackupData()
                 .then(async backupRes=>{
                     if(Array.isArray(backupRes)) {
@@ -230,11 +247,12 @@ export const mainproc = (props) => {
                             }
                         })
                         Promise.all([...junkDocs, ...subscribedChannelDocs])
-                            .then(_=>updateStepFlag(QueryStep.subscribed_channel))
+                            .then(_=>syncChannelData('subscribed'))
+                            // .then(_=>updateStepFlag(QueryStep.subscribed_channel))
                             .then(_=>{ 
-                                queryDispNameStep()
-                                queryChannelAvatarStep()
-                                querySubscriptionInfoStep()
+                                queryDispNameStepEx('subscribed')
+                                queryChannelAvatarStepEx('subscribed')
+                                querySubscriptionInfoStepEx('subscribed')
                                 resolve({success: true})
                             })
                             .catch(err=>{
@@ -602,24 +620,6 @@ export const mainproc = (props) => {
     const queryPublicCommentLikeStep = () => queryCommentLikeStep(true)
     
     // async steps
-    const getChannelSelectorByType = (type) => {
-        const selector = { 
-            table_type: 'channel'
-        }
-        switch(type) {
-            case 'self':
-                selector['is_self'] = true
-                break;
-            case 'subscribed':
-                selector['is_self'] = false
-                selector['is_subscribed'] = true
-                break;
-            case 'public':
-                selector['is_public'] = true
-                break;
-        }
-        return selector
-    }
     const queryDispNameStepEx = (type) => {
         const selector = getChannelSelectorByType(type)
         createIndex(selector)

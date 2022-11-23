@@ -1,17 +1,13 @@
-import { useSelector } from 'react-redux';
 import StyledAvatar from 'components/StyledAvatar'
 import { decodeBase64 } from 'utils/common';
-import { selectChannelAvatar } from 'redux/slices/channel';
 
 const SubscriptionAvatar = (props) => {
     const { channel } = props
-    const channelInfo = {...channel}
-    const channelAvatars = useSelector(selectChannelAvatar)
-    let thisChannelAvatar = channelAvatars[channel.channel_id]
+    let thisChannelAvatar = channel['avatarSrc']
     if(thisChannelAvatar) {
         thisChannelAvatar = decodeBase64(thisChannelAvatar)
     }
-    return <StyledAvatar alt={channelInfo.display_name} src={thisChannelAvatar} width={20}/>
+    return <StyledAvatar alt={channel['display_name']} src={thisChannelAvatar} width={20}/>
 }
 
 export default SubscriptionAvatar

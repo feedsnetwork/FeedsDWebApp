@@ -166,6 +166,9 @@ export function selectTargetChannel(state) {
 export function selectSelfChannels(state) {
   return state.channel.selfChannels
 }
+export function selectSubscribedChannels(state) {
+  return state.channel.subscribedChannels
+}
 export function selectPublicChannels(state) {
   return state.channel.publicChannels
 }

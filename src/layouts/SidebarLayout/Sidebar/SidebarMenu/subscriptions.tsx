@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import { NavLink as RouterLink, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Icon } from '@iconify/react';
 import { Box, Button, ListItem, ListItemText, ListItemIcon, ListItemButton, Typography } from '@mui/material';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -8,8 +8,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 import SubscriptionAvatar from './subscriptionAvatar'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { getLocalDB, QueryStep } from 'utils/db'
-import { setVisitedChannelId } from 'redux/slices/channel';
+import { selectSubscribedChannels, setVisitedChannelId } from 'redux/slices/channel';
 
 const ListItemButtonStyle = {
   '& svg.focused': {display: 'none'},
@@ -19,33 +18,17 @@ const ListItemButtonStyle = {
 }
 
 function Subscriptions() {
-  const { queryStep, queryFlag } = useContext(SidebarContext);
-  const [subscribedChannels, setSubscribedChannels] = useState([]);
+  const subscribedChannels = Object.values(useSelector(selectSubscribedChannels))
   const [totalPage, setTotalPage] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [isVisibleChannels, setVisibleChannels] = useState(false)
-  const LocalDB = getLocalDB()
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
   useEffect(()=>{
-    if((queryStep >= QueryStep.subscribed_channel && !subscribedChannels.length) || queryFlag === QueryStep.subscribed_channel) {
-      LocalDB.find({
-        selector: {
-          table_type: 'channel', 
-          is_subscribed: true,
-          is_self: false
-        },
-      })
-        .then(response=>{
-          if(!response.docs.length)
-            return
-          setSubscribedChannels(response.docs)
-          setTotalPage(Math.ceil(response.docs.length/10))
-        })
-    }
+    setTotalPage(Math.ceil(subscribedChannels.length/10))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep, queryFlag])
+  }, [subscribedChannels])
 
   const toggleChannels = (e) => {
     setVisibleChannels(!isVisibleChannels)
@@ -100,13 +83,13 @@ function Subscriptions() {
             subscribedChannels.slice(0, 10*currentPage).map((channel, _i)=>(
               <ListItem component="div" key={_i}>
                 <Button
-                  value={channel.channel_id}
+                  value={channel['channel_id']}
                   disableRipple
                   onClick={link2detail}
                   startIcon={<SubscriptionAvatar channel={channel}/>}
                   sx={{p: '4px 14px !important'}}
                 >
-                  <Typography variant="body2" sx={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>{channel.display_name}</Typography>
+                  <Typography variant="body2" sx={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>{channel['display_name']}</Typography>
                 </Button>
               </ListItem>
             ))

@@ -53,75 +53,69 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { queryDispNameStep, queryChannelAvatarStep, querySubscriptionInfoStep } = procSteps.asyncSteps
   
   useEffect(()=>{
-    LocalDB.createIndex({
-      index: {
-        fields: ['table_type'],
-      }
-    }).then(()=>{
-      LocalDB.get('query-step')
-        .then(currentStep=>{
-          setQueryStep(currentStep['step'])
-          // const remainedSteps = querySteps.slice(currentStep['step']).map(func=>func())
-          // Promise.all(remainedSteps)
-          //   .then(res=>{
-          //     console.log(res, "---result")
-          //   })
-          promiseSeries(querySteps)
-            .then(res=>{
-              console.log(res, "---result")
-            })
-          if(currentStep['step'] >= QueryStep.subscribed_channel) {
-            queryChannelAvatarStep()
-            queryDispNameStep()
-            querySubscriptionInfoStep()
-          }
-          LocalDB.find({
-            selector: {
-              table_type: 'user'
-            }
+    LocalDB.get('query-step')
+      .then(currentStep=>{
+        setQueryStep(currentStep['step'])
+        // const remainedSteps = querySteps.slice(currentStep['step']).map(func=>func())
+        // Promise.all(remainedSteps)
+        //   .then(res=>{
+        //     console.log(res, "---result")
+        //   })
+        promiseSeries(querySteps)
+          .then(res=>{
+            console.log(res, "---result")
           })
-            .then(res=>{
-              const avatarSrcObj = res.docs.filter(doc=>!!doc['avatarSrc'])
-                .reduce((avatarObj, doc)=>{
-                  avatarObj[doc._id] = doc['avatarSrc']
-                  return avatarObj
-                }, {})
-              const usersObj = res.docs.reduce((userObj, doc)=>{
-                userObj[doc._id] = doc
-                return userObj
-              }, {})
-              setQueriedDIDs([myDID, ...Object.keys(usersObj)])
-              dispatch(setUserInfo(usersObj))
-              dispatch(setUserAvatarSrc(avatarSrcObj))
-            })
-        })
-        .catch(err=>{
-          setQueriedDIDs([myDID])
-          promiseSeries(querySteps)
-        })
-
-      LocalDB.get('query-public-step')
-        .then(currentPublicStep=>{
-          setQueryPublicStep(currentPublicStep['step'])
-          // const remainedSteps = queryPublicSteps.slice(currentPublicStep['step']).map(func=>func())
-          // Promise.all(remainedSteps)
-          //   .then(res=>{
-          //     console.log(res, "---result")
-          //   })
-          promiseSeries(queryPublicSteps)
-            .then(res=>{
-              console.log(res, "---result")
-            })
-          if(currentPublicStep['step'] >= QueryStep.public_channel) {
-            queryDispNameStep(true)
-            querySubscriptionInfoStep(true)
+        // if(currentStep['step'] >= QueryStep.subscribed_channel) {
+        //   queryChannelAvatarStep()
+        //   queryDispNameStep()
+        //   querySubscriptionInfoStep()
+        // }
+        LocalDB.find({
+          selector: {
+            table_type: 'user'
           }
         })
-        .catch(err=>{
-          promiseSeries(queryPublicSteps)
-            .then(res=>console.info(res, '--------end'))
-        })
-    })
+          .then(res=>{
+            const avatarSrcObj = res.docs.filter(doc=>!!doc['avatarSrc'])
+              .reduce((avatarObj, doc)=>{
+                avatarObj[doc._id] = doc['avatarSrc']
+                return avatarObj
+              }, {})
+            const usersObj = res.docs.reduce((userObj, doc)=>{
+              userObj[doc._id] = doc
+              return userObj
+            }, {})
+            setQueriedDIDs([myDID, ...Object.keys(usersObj)])
+            dispatch(setUserInfo(usersObj))
+            dispatch(setUserAvatarSrc(avatarSrcObj))
+          })
+      })
+      .catch(err=>{
+        setQueriedDIDs([myDID])
+        promiseSeries(querySteps)
+      })
+
+    LocalDB.get('query-public-step')
+      .then(currentPublicStep=>{
+        setQueryPublicStep(currentPublicStep['step'])
+        // const remainedSteps = queryPublicSteps.slice(currentPublicStep['step']).map(func=>func())
+        // Promise.all(remainedSteps)
+        //   .then(res=>{
+        //     console.log(res, "---result")
+        //   })
+        promiseSeries(queryPublicSteps)
+          .then(res=>{
+            console.log(res, "---result")
+          })
+        if(currentPublicStep['step'] >= QueryStep.public_channel) {
+          queryDispNameStep(true)
+          querySubscriptionInfoStep(true)
+        }
+      })
+      .catch(err=>{
+        promiseSeries(queryPublicSteps)
+          .then(res=>console.info(res, '--------end'))
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
