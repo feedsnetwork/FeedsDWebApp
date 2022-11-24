@@ -1,13 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Card, Box, Typography, Stack, Hidden, IconButton, Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useSnackbar } from 'notistack';
 
 import IconInCircle from 'components/IconInCircle'
 import StyledAvatar from 'components/StyledAvatar'
-import { handlePublishModal, handleUnpublishModal, selectSubscribers, setTargetChannel } from 'redux/slices/channel';
+import { handlePublishModal, handleUnpublishModal, setTargetChannel } from 'redux/slices/channel';
 import { getChannelShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
 
 const ChannelListItem = (props) => {

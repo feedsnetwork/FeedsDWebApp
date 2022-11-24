@@ -52,9 +52,6 @@ export function selectUserAvatar(state) {
 export function selectMyInfo(state) {
   return state.user.myInfo
 }
-export function selectUsers(state) {
-  return state.user.userData
-}
 export const selectUserInfoByDID = (userDID) => (state) => {
   return state.user.userData[userDID]
 }
