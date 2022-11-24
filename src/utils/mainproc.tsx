@@ -673,7 +673,7 @@ export const mainproc = (props) => {
                                         doc['avatarSrc'] = avatarObj[channel._id].avatarSrc
                                         return doc
                                     })
-                                        .then(_=>dispatch(setChannelData(avatarObj)))
+                                        .then(_=>dispatch(setChannelData({type, data: avatarObj})))
                                 }
                             })
                     }
@@ -682,12 +682,12 @@ export const mainproc = (props) => {
                         Promise.resolve()
                             .then(_=>hiveApi.downloadScripting(channel['target_did'], channel['avatar']))
                             .then(avatarRes=>{
-                                avatarObj[channel._id] = {avatarSrc: filterAvatar(avatarRes)}
+                                avatarObj[channel._id] = { avatarSrc: filterAvatar(avatarRes) }
                                 LocalDB.upsert(channel._id, (doc)=>{
                                     doc['avatarSrc'] = avatarObj[channel._id].avatarSrc
                                     return doc
                                 })
-                                    .then(_=>dispatch(setChannelData(avatarObj)))
+                                    .then(_=>dispatch(setChannelData({type, data: avatarObj})))
                             })
                     }
                 })
@@ -706,13 +706,14 @@ export const mainproc = (props) => {
                         .then(_=>hiveApi.querySubscriptionInfoByChannelId(channel['target_did'], channel['channel_id']))
                         .then(res=>{
                             if(res['find_message']) {
-                                const subscribersArr = res['find_message']['items']
-                                subscribersObj[c_id] = getFilteredArrayByUnique(subscribersArr, 'user_did')
+                                let subscribersArr = res['find_message']['items']
+                                subscribersArr = getFilteredArrayByUnique(subscribersArr, 'user_did')
+                                subscribersObj[c_id] = { subscribers: subscribersArr }
                                 LocalDB.upsert(channel._id, (doc)=>{
-                                    doc['subscribers'] = subscribersObj[c_id]
+                                    doc['subscribers'] = subscribersArr
                                     return doc
                                 })
-                                    .then(_=>dispatch(setSubscribers(subscribersObj)))
+                                    .then(_=>dispatch(setChannelData({type, data: subscribersObj})))
                             }
                         })
                         .catch(err=>{})
