@@ -5,9 +5,11 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import PostCard from 'components/PostCard';
 import { EmptyView } from 'components/EmptyView'
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
-import { getLocalDB } from 'utils/db';
+import { SidebarContext } from 'contexts/SidebarContext';
+import { getLocalDB, QueryStep } from 'utils/db';
 
 const Home = () => {
+  const { queryStep } = React.useContext(SidebarContext);
   const [posts, setPosts] = React.useState([])
   const [hasMore, setHasMore] = React.useState(true)
   const [pageEndTime, setPageEndTime] = React.useState(0)
@@ -24,6 +26,13 @@ const Home = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   
+  React.useEffect(()=>{
+    if(queryStep >= QueryStep.post_data) {
+      appendMoreData()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryStep])
+
   const appendMoreData = () => {
     LocalDB.find({
       selector: {

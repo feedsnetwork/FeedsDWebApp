@@ -65,11 +65,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           .then(res=>{
             console.log(res, "---result")
           })
-        // if(currentStep['step'] >= QueryStep.subscribed_channel) {
-        //   queryChannelAvatarStep()
-        //   queryDispNameStep()
-        //   querySubscriptionInfoStep()
-        // }
         // LocalDB.find({
         //   selector: {
         //     table_type: 'user'
@@ -119,48 +114,48 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(()=>{
-    if(queriedDIDs) {
-      let subscribers = getMergedArray(subscribersOfChannel)
-      subscribers = getFilteredArrayByUnique(subscribers, 'user_did')
-      subscribers = filterAlreadyQueried(subscribers, [...queriedDIDs, ...queryingDIDs], 'user_did')
-      setQueryingDIDs(prev=>{
-        const tempState = [...prev, ...subscribers.map(subscriber=>subscriber.user_did)]
-        return tempState
-      })
-      subscribers.forEach(subscriber=>{
-        const userObj = {}
-        getInfoFromDID(subscriber.user_did)
-          .then(userInfo=>{
-            const infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
-            userObj[subscriber.user_did] = infoDoc
-            return LocalDB.put(infoDoc)
-          })
-          .then(response=>{
-            dispatch(setUserInfo(userObj))
-            const avatarObj = {}
-            Promise.resolve()
-              .then(_=>hiveApi.getHiveUrl(subscriber.user_did))
-              .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl))
-              .then(res=>{
-                const resBuf = res as Buffer
-                if(resBuf && resBuf.length) {
-                  const base64Content = resBuf.toString('base64')
-                  avatarObj[subscriber.user_did] = encodeBase64(`data:image/png;base64,${base64Content}`)
-                  return LocalDB.get(subscriber.user_did)
-                }
-              })
-              .then(doc=>{
-                const infoDoc = {...doc, avatarSrc: avatarObj[subscriber.user_did]}
-                LocalDB.put(infoDoc)
-                dispatch(setUserAvatarSrc(avatarObj))
-              })
-              .catch(err=>{})
-          })
-      })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subscribersOfChannel, queriedDIDs])
+  // useEffect(()=>{
+  //   if(queriedDIDs) {
+  //     let subscribers = getMergedArray(subscribersOfChannel)
+  //     subscribers = getFilteredArrayByUnique(subscribers, 'user_did')
+  //     subscribers = filterAlreadyQueried(subscribers, [...queriedDIDs, ...queryingDIDs], 'user_did')
+  //     setQueryingDIDs(prev=>{
+  //       const tempState = [...prev, ...subscribers.map(subscriber=>subscriber.user_did)]
+  //       return tempState
+  //     })
+  //     subscribers.forEach(subscriber=>{
+  //       const userObj = {}
+  //       getInfoFromDID(subscriber.user_did)
+  //         .then(userInfo=>{
+  //           const infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
+  //           userObj[subscriber.user_did] = infoDoc
+  //           return LocalDB.put(infoDoc)
+  //         })
+  //         .then(response=>{
+  //           dispatch(setUserInfo(userObj))
+  //           const avatarObj = {}
+  //           Promise.resolve()
+  //             .then(_=>hiveApi.getHiveUrl(subscriber.user_did))
+  //             .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl))
+  //             .then(res=>{
+  //               const resBuf = res as Buffer
+  //               if(resBuf && resBuf.length) {
+  //                 const base64Content = resBuf.toString('base64')
+  //                 avatarObj[subscriber.user_did] = encodeBase64(`data:image/png;base64,${base64Content}`)
+  //                 return LocalDB.get(subscriber.user_did)
+  //               }
+  //             })
+  //             .then(doc=>{
+  //               const infoDoc = {...doc, avatarSrc: avatarObj[subscriber.user_did]}
+  //               LocalDB.put(infoDoc)
+  //               dispatch(setUserAvatarSrc(avatarObj))
+  //             })
+  //             .catch(err=>{})
+  //         })
+  //     })
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [subscribersOfChannel, queriedDIDs])
 
   const initializeWalletConnection = () => {
     if (sessionLinkFlag === '1') {
