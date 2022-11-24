@@ -55,3 +55,6 @@ export function selectMyInfo(state) {
 export function selectUsers(state) {
   return state.user.userData
 }
+export const selectUserInfoByDID = (userDID) => (state) => {
+  return state.user.userData[userDID]
+}

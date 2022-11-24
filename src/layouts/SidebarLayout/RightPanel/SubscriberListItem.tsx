@@ -4,21 +4,19 @@ import { useNavigate, NavLink as RouterLink } from 'react-router-dom';
 import { Stack, Box, Typography, Link } from '@mui/material'
 
 import StyledAvatar from 'components/StyledAvatar'
-import { selectUserAvatar, selectUsers } from 'redux/slices/user';
+import { selectUserInfoByDID } from 'redux/slices/user';
 import { decodeBase64 } from 'utils/common';
 
 const SubscriberListItem = (props) => {
     const { subscriber } = props
-    const userAvatarSrc = useSelector(selectUserAvatar)
-    const users = useSelector(selectUsers)
-    const userInfo = users[subscriber.user_did] || {}
+    const userInfo = useSelector(selectUserInfoByDID(subscriber.user_did)) || {}
     const navigate = useNavigate();
 
     const handleLink2Profile = (user_did)=>{
         navigate('/profile/others', {state: {user_did}});
     }
 
-    const avatarContent = userAvatarSrc[subscriber.user_did] || ""
+    const avatarContent = userInfo['avatarSrc'] || ""
     const avatarSrc = decodeBase64(avatarContent)
     return (
         <Stack direction="row" alignItems="center" spacing={1}>
