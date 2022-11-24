@@ -1,4 +1,4 @@
-import { FC, ReactNode, useEffect, useContext, useState } from 'react';
+import { FC, ReactNode, useEffect, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, useLocation } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
@@ -20,10 +20,8 @@ import CommentDlg from 'components/Modal/Comment'
 import DeletePostDlg from 'components/Modal/DeletePost'
 import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
-import { HiveApi } from 'services/HiveApi'
-import { selectSubscribers, selectFocusedChannelId } from 'redux/slices/channel'
-import { setUserAvatarSrc, setUserInfo } from 'redux/slices/user'
-import { encodeBase64, isInAppBrowser, promiseSeries, getInfoFromDID, getFilteredArrayByUnique, getMergedArray, filterAlreadyQueried } from 'utils/common'
+import { selectFocusedChannelId } from 'redux/slices/channel'
+import { isInAppBrowser, promiseSeries } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db'
 import { mainproc } from 'utils/mainproc';
 
@@ -34,14 +32,8 @@ interface SidebarLayoutProps {
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
   const { setWalletAddress, setQueryStep, setQueryPublicStep, setQueryFlag, setQueryPublicFlag } = useContext(SidebarContext);
-  const [queriedDIDs, setQueriedDIDs] = useState(null)
-  const [queryingDIDs, setQueryingDIDs] = useState([])
-  const hiveApi = new HiveApi()
   const sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
-  const myDID = `did:elastos:${feedsDid}`
   const dispatch = useDispatch()
-  const subscribersOfChannel = useSelector(selectSubscribers)
   const focusedChannelId = useSelector(selectFocusedChannelId)
   const LocalDB = getLocalDB()
   // LocalDB.destroy()
@@ -65,28 +57,8 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           .then(res=>{
             console.log(res, "---result")
           })
-        // LocalDB.find({
-        //   selector: {
-        //     table_type: 'user'
-        //   }
-        // })
-        //   .then(res=>{
-        //     const avatarSrcObj = res.docs.filter(doc=>!!doc['avatarSrc'])
-        //       .reduce((avatarObj, doc)=>{
-        //         avatarObj[doc._id] = doc['avatarSrc']
-        //         return avatarObj
-        //       }, {})
-        //     const usersObj = res.docs.reduce((userObj, doc)=>{
-        //       userObj[doc._id] = doc
-        //       return userObj
-        //     }, {})
-        //     setQueriedDIDs([myDID, ...Object.keys(usersObj)])
-        //     dispatch(setUserInfo(usersObj))
-        //     dispatch(setUserAvatarSrc(avatarSrcObj))
-        //   })
       })
       .catch(err=>{
-        setQueriedDIDs([myDID])
         promiseSeries(querySteps)
       })
 
@@ -113,49 +85,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // useEffect(()=>{
-  //   if(queriedDIDs) {
-  //     let subscribers = getMergedArray(subscribersOfChannel)
-  //     subscribers = getFilteredArrayByUnique(subscribers, 'user_did')
-  //     subscribers = filterAlreadyQueried(subscribers, [...queriedDIDs, ...queryingDIDs], 'user_did')
-  //     setQueryingDIDs(prev=>{
-  //       const tempState = [...prev, ...subscribers.map(subscriber=>subscriber.user_did)]
-  //       return tempState
-  //     })
-  //     subscribers.forEach(subscriber=>{
-  //       const userObj = {}
-  //       getInfoFromDID(subscriber.user_did)
-  //         .then(userInfo=>{
-  //           const infoDoc = {...userInfo as object, _id: subscriber.user_did, table_type: 'user'}
-  //           userObj[subscriber.user_did] = infoDoc
-  //           return LocalDB.put(infoDoc)
-  //         })
-  //         .then(response=>{
-  //           dispatch(setUserInfo(userObj))
-  //           const avatarObj = {}
-  //           Promise.resolve()
-  //             .then(_=>hiveApi.getHiveUrl(subscriber.user_did))
-  //             .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(subscriber.user_did, hiveUrl))
-  //             .then(res=>{
-  //               const resBuf = res as Buffer
-  //               if(resBuf && resBuf.length) {
-  //                 const base64Content = resBuf.toString('base64')
-  //                 avatarObj[subscriber.user_did] = encodeBase64(`data:image/png;base64,${base64Content}`)
-  //                 return LocalDB.get(subscriber.user_did)
-  //               }
-  //             })
-  //             .then(doc=>{
-  //               const infoDoc = {...doc, avatarSrc: avatarObj[subscriber.user_did]}
-  //               LocalDB.put(infoDoc)
-  //               dispatch(setUserAvatarSrc(avatarObj))
-  //             })
-  //             .catch(err=>{})
-  //         })
-  //     })
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [subscribersOfChannel, queriedDIDs])
 
   const initializeWalletConnection = () => {
     if (sessionLinkFlag === '1') {

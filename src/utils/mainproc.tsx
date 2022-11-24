@@ -7,7 +7,8 @@ import { DefaultAvatarMap } from "./avatar_map";
 import { setChannelAvatarSrc, setChannelData, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel'
 import { increaseLoadNum } from "redux/slices/post";
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
-    encodeBase64, getWeb3Contract, getIpfsUrl } from "./common"
+    encodeBase64, getWeb3Contract, getIpfsUrl, excludeFromArray, getInfoFromDID } from "./common"
+import { setUserInfo } from "redux/slices/user";
 const hiveApi = new HiveApi()
 
 export const mainproc = (props) => {
@@ -699,25 +700,81 @@ export const mainproc = (props) => {
         createIndex(selector)
             .then(_=>LocalDB.find({ selector }))
             .then(response=>{
-                response.docs.forEach(channel=>{
-                    const c_id = channel['channel_id']
-                    const subscribersObj = {}
-                    Promise.resolve()
-                        .then(_=>hiveApi.querySubscriptionInfoByChannelId(channel['target_did'], channel['channel_id']))
-                        .then(res=>{
-                            if(res['find_message']) {
-                                let subscribersArr = res['find_message']['items']
-                                subscribersArr = getFilteredArrayByUnique(subscribersArr, 'user_did')
-                                subscribersObj[c_id] = { subscribers: subscribersArr }
-                                LocalDB.upsert(channel._id, (doc)=>{
-                                    doc['subscribers'] = subscribersArr
-                                    return doc
-                                })
-                                    .then(_=>dispatch(setChannelData({type, data: subscribersObj})))
-                            }
+                const channelDocs = response.docs.map(channel=>(
+                    new Promise((resolve, reject)=>{
+                        const c_id = channel['channel_id']
+                        const subscribersObj = {}
+                        hiveApi.querySubscriptionInfoByChannelId(channel['target_did'], channel['channel_id'])
+                            .then(res=>{
+                                if(res['find_message']) {
+                                    let subscribersArr = res['find_message']['items']
+                                    subscribersArr = getFilteredArrayByUnique(subscribersArr, 'user_did')
+                                    subscribersObj[c_id] = { subscribers: subscribersArr }
+                                    LocalDB.upsert(channel._id, (doc)=>{
+                                        doc['subscribers'] = subscribersArr
+                                        return doc
+                                    })
+                                        .then(_=>dispatch(setChannelData({type, data: subscribersObj})))
+                                    return subscribersArr
+                                }
+                                return []
+                            })
+                            .then(resolve)
+                            .catch(err=>resolve([]))
+                    })
+                ))
+                return Promise.all(channelDocs)
+            })
+            .then(async subscriptionGroup=>{
+                let subscriberArr = getMergedArray(subscriptionGroup)
+                subscriberArr = getFilteredArrayByUnique(subscriberArr, 'user_did')
+                const userDataResponse = await LocalDB.find({ selector: {table_type: 'user'} })
+                const userDataDocs = userDataResponse.docs
+                dispatch(setUserInfo(userDataDocs))
+                // query user info
+                const queriedDIDs = userDataDocs.map(doc=>doc._id)
+                subscriberArr = excludeFromArray(subscriberArr, queriedDIDs)
+                const userDocs = subscriberArr.map(async userDID=>{
+                    try {
+                        const userInfo = await getInfoFromDID(userDID)
+                        const infoDoc = {...userInfo as object, table_type: 'user'}
+                        await LocalDB.upsert(userDID, (doc)=>{
+                            return {...doc, ...infoDoc}
                         })
-                        .catch(err=>{})
+                        return infoDoc
+                    } catch(err) {
+                        return null
+                    }
                 })
+                const userInfoArr = await Promise.all(userDocs)
+                dispatch(setUserInfo(userInfoArr.filter(item=>item!==null)))
+                // query user avatar
+                const queriedDIDsWithoutAvatar = userDataDocs.filter(doc=>!doc['avatarSrc']).map(doc=>doc._id)
+                const userDocsWithAvatar = [...queriedDIDsWithoutAvatar, ...subscriberArr].map(userDID=>(
+                    new Promise((resolve, reject)=>{
+                        const avatarObj = {}
+                        hiveApi.getHiveUrl(userDID)
+                            .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(userDID, hiveUrl))
+                            .then(res=>{
+                                const resBuf = res as Buffer
+                                if(resBuf && resBuf.length) {
+                                    const base64Content = resBuf.toString('base64')
+                                    avatarObj[userDID] = { avatarSrc: encodeBase64(`data:image/png;base64,${base64Content}`) }
+                                    LocalDB.upsert(userDID, (doc)=>{
+                                        if(doc._id) {
+                                            return {...doc, ...avatarObj[userDID]}
+                                        }
+                                        return false
+                                    })
+                                    dispatch(setUserInfo(avatarObj))
+                                }
+                                return
+                            })
+                            .then(resolve)
+                            .catch(err=>{})
+                    })
+                ))
+                Promise.all(userDocsWithAvatar)
             })
     }
 

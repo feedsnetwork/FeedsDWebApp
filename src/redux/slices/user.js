@@ -4,7 +4,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   avatarSrc: {},
   myInfo: {},
-  users: {}
+  userData: {}
 };
 
 const slice = createSlice({
@@ -18,7 +18,22 @@ const slice = createSlice({
       state.myInfo = {...state.myInfo, ...action.payload}
     },
     setUserInfo(state, action) {
-      state.users = {...state.users, ...action.payload}
+      if(Array.isArray(action.payload)) {
+        let tempDocs = [...action.payload]
+        tempDocs = tempDocs.filter(doc=>!Object.keys(state.userData).includes(doc._id))
+        const userDocs = tempDocs.reduce((group, doc)=>{
+          group[doc._id] = doc
+          return group
+        }, {})
+        state.userData = { ...state.userData, ...userDocs }
+        return
+      }
+      const tempState = { ...state.userData }
+      Object.keys(action.payload).forEach(key=>{
+        if(tempState[key])
+          tempState[key] = {...tempState[key], ...action.payload[key]}
+      })
+      state.userData = tempState
     },
   }
 });
@@ -38,5 +53,5 @@ export function selectMyInfo(state) {
   return state.user.myInfo
 }
 export function selectUsers(state) {
-  return state.user.users
+  return state.user.userData
 }
