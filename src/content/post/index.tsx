@@ -4,44 +4,27 @@ import { useParams } from 'react-router-dom';
 import { Grid, Container } from '@mui/material';
 
 import PostCard from 'components/PostCard';
+import CommentCard from 'components/CommentCard';
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { selectUsers } from 'redux/slices/user';
-import { selectDispNameOfChannels } from 'redux/slices/channel';
 import { selectActivePost } from 'redux/slices/post';
-import { decodeBase64, reduceDIDstring } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db';
 
 const Post = () => {
   const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
   const params = useParams()
   const [postInfo, setPostInfo] = React.useState(null)
-  const [channelInfo, setChannelInfo] = React.useState({})
-  const [dispNameOfPost, setDispNameOfPost] = React.useState('')
   const [comments, setComments] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(true)
-  const channelDispName = useSelector(selectDispNameOfChannels)
-  const users = useSelector(selectUsers)
   const activePost = useSelector(selectActivePost)
   const LocalDB = getLocalDB()
-
-  React.useEffect(()=>{
-    const channelId = channelInfo['channel_id']
-    if(channelId) {
-      setDispNameOfPost(
-        channelDispName[channelId] || reduceDIDstring(channelInfo['target_did'])
-      )
-    }
-  }, [channelInfo, channelDispName])
 
   React.useEffect(()=>{
     if(queryStep >= QueryStep.post_data)
       LocalDB.get(params.post_id.toString())
         .then(doc=>{
           setPostInfo(doc)
-          return LocalDB.get(doc['channel_id'].toString())
         })
-        .then(doc=>setChannelInfo(doc))
     if(queryStep >= QueryStep.comment_data)
       getComments()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,23 +74,11 @@ const Post = () => {
               <PostSkeleton/>
             </Grid>
           )):
-          comments.map((comment, _i)=>{
-            const commentUser = users[comment.creater_did] || {}
-            const commentProps = {
-              post: comment,
-              dispName: commentUser['name'] || reduceDIDstring(comment.creater_did),
-              dispAvatar: { name: commentUser['name'], src: decodeBase64(commentUser['avatarSrc'])},
-              replyingTo: dispNameOfPost,
-              level: 2
-            }
-            if(channelInfo['target_did'] === comment.creater_did) {
-              commentProps['dispName'] = channelInfo['name']
-              commentProps['dispAvatar'] = { name: channelInfo['name'], src: channelInfo['avatarSrc'] }
-            }
-            return <Grid item xs={12} key={_i}>
-              <PostCard {...commentProps}/>
+          comments.map((comment, _i)=>(
+            <Grid item xs={12} key={_i}>
+              <CommentCard comment={comment}/>
             </Grid>
-          })
+          ))
         }
       </Grid>
     </Container>

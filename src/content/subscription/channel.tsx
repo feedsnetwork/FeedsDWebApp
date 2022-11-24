@@ -8,7 +8,7 @@ import PostCard from 'components/PostCard';
 import { EmptyView } from 'components/EmptyView'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { getLocalDB, QueryStep } from 'utils/db'
-import { selectVisitedChannelId, selectChannelById } from 'redux/slices/channel'
+import { selectVisitedChannelId } from 'redux/slices/channel'
 
 function Channel() {
   const channel_id = useSelector(selectVisitedChannelId)

@@ -12,7 +12,6 @@ import ChannelListItem from './ChannelListItem'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceDIDstring, decodeBase64 } from 'utils/common'
 import { selectUserAvatar, selectUsers } from 'redux/slices/user';
-import { selectDispNameOfChannels } from 'redux/slices/channel';
 import { getLocalDB, QueryStep } from 'utils/db';
 
 function OthersProfile() {
@@ -24,7 +23,6 @@ function OthersProfile() {
   const { user_did } = (location.state || {}) as any
   const userAvatarSrc = useSelector(selectUserAvatar)
   const users = useSelector(selectUsers)
-  const dispNameOfChannels = useSelector(selectDispNameOfChannels)
   const this_user = users[user_did] || {}
   const avatarContent = userAvatarSrc[user_did] || ""
   const avatarSrc = decodeBase64(avatarContent)
