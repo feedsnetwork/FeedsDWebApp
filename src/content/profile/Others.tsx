@@ -11,7 +11,7 @@ import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceDIDstring, decodeBase64 } from 'utils/common'
-import { selectUserAvatar, selectUsers } from 'redux/slices/user';
+import { selectUserInfoByDID } from 'redux/slices/user';
 import { getLocalDB, QueryStep } from 'utils/db';
 
 function OthersProfile() {
@@ -21,11 +21,8 @@ function OthersProfile() {
   const [likedPosts, setLikedPosts] = React.useState([])
   const location = useLocation();
   const { user_did } = (location.state || {}) as any
-  const userAvatarSrc = useSelector(selectUserAvatar)
-  const users = useSelector(selectUsers)
-  const this_user = users[user_did] || {}
-  const avatarContent = userAvatarSrc[user_did] || ""
-  const avatarSrc = decodeBase64(avatarContent)
+  const this_user = useSelector(selectUserInfoByDID(user_did)) || {}
+  const avatarSrc = decodeBase64(this_user['avatarSrc'] || "")
   const LocalDB = getLocalDB()
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {

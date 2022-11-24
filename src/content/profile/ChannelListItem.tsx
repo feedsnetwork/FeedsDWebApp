@@ -13,12 +13,13 @@ import { getChannelShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
 const ChannelListItem = (props) => {
   const {channel} = props
   const {display_name: name, avatarSrc, intro} = channel
-  const avatarImg = decodeBase64(avatarSrc)
+  let avatarImg = avatarSrc
+  if(!avatarImg.startsWith("http"))
+    avatarImg = decodeBase64(avatarSrc)
   const [isOpenPopup, setOpenPopup] = React.useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const subscribersOfChannel = useSelector(selectSubscribers)
   const openPopupMenu = (event) => {
     setOpenPopup(event.currentTarget);
   };
@@ -57,7 +58,7 @@ const ChannelListItem = (props) => {
     setOpenPopup(null);
   };
 
-  const subscriberCount = subscribersOfChannel[channel.channel_id]?.length || 0
+  const subscriberCount = channel['subscribers'].length || 0
   return <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
     <Stack direction="row" spacing={2} alignItems="center">
       <StyledAvatar alt={name} src={avatarImg}/>
