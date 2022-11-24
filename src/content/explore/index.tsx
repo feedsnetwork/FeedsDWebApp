@@ -1,5 +1,6 @@
 import React from 'react'
 import { useLocation } from 'react-router';
+import { useSelector } from 'react-redux';
 // import InfiniteScroll from "react-infinite-scroll-component";
 import { Box, Tabs, Tab, Stack, Container, InputAdornment } from '@mui/material';
 import { useTheme } from "@mui/material/styles";
@@ -12,6 +13,7 @@ import PostTextCard from 'components/PostCard/PostTextCard'
 import PostImgCard from 'components/PostCard/PostImgCard'
 import InputOutline from 'components/InputOutline'
 import { SidebarContext } from 'contexts/SidebarContext';
+import { selectPublicChannels } from 'redux/slices/channel';
 import { getMergedArray, sortByDate } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db';
 
@@ -21,8 +23,8 @@ function Explore() {
   const { queryPublicStep, queryPublicFlag } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(tab);
   const [containerWidth, setContainerWidth] = React.useState(0);
-  const [publicChannels, setPublicChannels] = React.useState([])
   const [publicPosts, setPublicPosts] = React.useState([])
+  const publicChannels = useSelector(selectPublicChannels)
   const latestPublicPosts = sortByDate(getMergedArray(publicPosts)).slice(0, 10)
   const containerRef = React.useRef(null)
   const theme = useTheme();
@@ -34,18 +36,6 @@ function Explore() {
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
-    if((queryPublicStep >= QueryStep.public_channel && !publicChannels.length) || queryPublicFlag === QueryStep.public_channel) {
-      LocalDB.find({
-        selector: {
-          table_type: 'channel',
-          is_public: true
-        },
-      })
-        .then(response=>{
-          // console.info(response.docs)
-          setPublicChannels(response.docs)
-        })
-    }
     if((queryPublicStep >= QueryStep.post_data && !publicPosts.length) || (queryPublicFlag >= QueryStep.post_data && queryPublicFlag <= QueryStep.post_image)) {
       LocalDB.find({
         selector: {
@@ -76,7 +66,7 @@ function Explore() {
   React.useEffect(()=>{
     handleResize()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicChannels])
+  }, [publicChannels.length])
   
   const handleResize = () => {
     if(containerRef.current)
@@ -102,7 +92,7 @@ function Explore() {
     if("01".includes(tabValue.toString())) {
       content = content.concat(
         Object.values(publicChannels).map((channel, _i)=>(
-          <div className="item" key={channel.channel_id} style={
+          <div className="item" key={channel['channel_id']} style={
             {
               width: cardWidthUnit,
               height: 240,
@@ -110,7 +100,7 @@ function Explore() {
               paddingBottom: 8,
             }
           }>
-            <ChannelCard info={channel} key={_i}/>
+            <ChannelCard channel={channel} key={_i}/>
           </div>
         ))
       )

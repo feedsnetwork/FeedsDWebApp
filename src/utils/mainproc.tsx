@@ -535,6 +535,7 @@ export const mainproc = (props) => {
     // public process steps
     const queryPublicChannelStep = () => (
         new Promise((resolve, reject) => {
+            syncChannelData('public')
             const startChannelIndex = 0, pageLimit = 0
             const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress, false)
             channelRegContract.methods.channelIds(startChannelIndex, pageLimit).call()
@@ -601,10 +602,11 @@ export const mainproc = (props) => {
                             ))
                             return Promise.all([...junkDocs, ...publicChannelDocs])
                         })
-                        .then(_=>updateStepFlag(QueryStep.public_channel, true))
+                        .then(_=>syncChannelData('public'))
+                        // .then(_=>updateStepFlag(QueryStep.public_channel, true))
                         .then(_=>{
-                            queryDispNameStep(true)
-                            querySubscriptionInfoStep(true)
+                            queryDispNameStepEx('public')
+                            querySubscriptionInfoStepEx('public')
                             resolve({success: true})
                         })
                         .catch(err=>{

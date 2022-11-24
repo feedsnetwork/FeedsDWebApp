@@ -1,11 +1,11 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import { Box, Typography, Stack } from '@mui/material';
 
 import PaperRecord from 'components/PaperRecord'
-import { selectChannelAvatar, setVisitedChannelId } from 'redux/slices/channel';
+import { setVisitedChannelId } from 'redux/slices/channel';
 import { decodeBase64 } from 'utils/common';
 // ----------------------------------------------------------------------
 
@@ -28,12 +28,11 @@ const AvatarBoxStyle = styled(Box)(({ theme }) => ({
 })) as any;
 
 const ChannelImgBox = (props) => {
-  const { name, bannerSrc=null, avatarSrc, channel_id } = props;
+  const { name, bannerSrc=null, avatarSrc } = props;
   const background = bannerSrc ? `url(${bannerSrc}) no-repeat center` : "linear-gradient(180deg, #000000 0%, #A067FF 300.51%)"
-  const channelAvatars = useSelector(selectChannelAvatar)
-  let avatarImg = avatarSrc || channelAvatars[channel_id]
+  let avatarImg = avatarSrc
   if(!avatarImg.startsWith("http"))
-    avatarImg = decodeBase64(channelAvatars[channel_id])
+    avatarImg = decodeBase64(avatarSrc)
   
   const handleErrorImage = (e) => {
     e.target.src = '/loading.svg'
@@ -55,13 +54,13 @@ const ChannelImgBox = (props) => {
 };
 
 const ChannelCardPaper = (props) => {
-  const { info } = props
-  const { display_name, intro } = info
+  const { channel } = props
+  const { display_name, intro } = channel
 
   return (
       <PaperRecord>
         <Box>
-          <ChannelImgBox {...info}/>
+          <ChannelImgBox {...channel}/>
         </Box>
         <Box sx={{px:2, pt: 1, pb: 2}}>
           <Stack direction="column" sx={{justifyContent: 'center', textAlign: 'center'}}>
@@ -87,12 +86,14 @@ const ChannelCardPaper = (props) => {
   );
 };
 
-export default function ChannelCard(props) {
-  const { info } = props
+const ChannelCard = (props) => {
+  const { channel } = props
   const navigate = useNavigate();
   const dispatch = useDispatch()
   const route2Detail = () => {
-    dispatch(setVisitedChannelId(info.channel_id))
+    if(!channel['channel_id'])
+      return
+    dispatch(setVisitedChannelId(channel['channel_id']))
     navigate('/explore/channel');
   }
 
@@ -102,3 +103,4 @@ export default function ChannelCard(props) {
     </Box>
   );
 };
+export default React.memo(ChannelCard)

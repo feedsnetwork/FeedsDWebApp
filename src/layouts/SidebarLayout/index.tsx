@@ -95,27 +95,27 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         promiseSeries(querySteps)
       })
 
-    // LocalDB.get('query-public-step')
-    //   .then(currentPublicStep=>{
-    //     setQueryPublicStep(currentPublicStep['step'])
-    //     // const remainedSteps = queryPublicSteps.slice(currentPublicStep['step']).map(func=>func())
-    //     // Promise.all(remainedSteps)
-    //     //   .then(res=>{
-    //     //     console.log(res, "---result")
-    //     //   })
-    //     promiseSeries(queryPublicSteps)
-    //       .then(res=>{
-    //         console.log(res, "---result")
-    //       })
-    //     if(currentPublicStep['step'] >= QueryStep.public_channel) {
-    //       queryDispNameStep(true)
-    //       querySubscriptionInfoStep(true)
-    //     }
-    //   })
-    //   .catch(err=>{
-    //     promiseSeries(queryPublicSteps)
-    //       .then(res=>console.info(res, '--------end'))
-    //   })
+    LocalDB.get('query-public-step')
+      .then(currentPublicStep=>{
+        setQueryPublicStep(currentPublicStep['step'])
+        // const remainedSteps = queryPublicSteps.slice(currentPublicStep['step']).map(func=>func())
+        // Promise.all(remainedSteps)
+        //   .then(res=>{
+        //     console.log(res, "---result")
+        //   })
+        promiseSeries(queryPublicSteps)
+          .then(res=>{
+            console.log(res, "---result")
+          })
+        if(currentPublicStep['step'] >= QueryStep.public_channel) {
+          queryDispNameStep(true)
+          querySubscriptionInfoStep(true)
+        }
+      })
+      .catch(err=>{
+        promiseSeries(queryPublicSteps)
+          .then(res=>console.info(res, '--------end'))
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
