@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, Typography, Stack } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux'
 import { useSnackbar } from 'notistack';
@@ -9,15 +9,13 @@ import StyledAvatar from '../StyledAvatar';
 import { ChannelContent } from 'models/channel_content';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ipfsURL, ChannelRegContractAddress } from 'config'
-import { selectPublishModalState, selectTargetChannel, handlePublishModal } from 'redux/slices/channel'
+import { selectPublishModalState, selectTargetChannel, handlePublishModal, setChannelData } from 'redux/slices/channel'
 import { HiveHelper } from 'services/HiveHelper';
-import { SidebarContext } from 'contexts/SidebarContext';
 import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
 const client = create({url: ipfsURL})
 function PublishChannel() {
-  const { increaseUpdatingChannelNumber } = useContext(SidebarContext)
   const dispatch = useDispatch()
   const isOpen = useSelector(selectPublishModalState)
   const channel = useSelector(selectTargetChannel)
@@ -118,7 +116,11 @@ function PublishChannel() {
           }
           return {...doc, ...channelDoc}
         })
-          .then(_=>increaseUpdatingChannelNumber())
+          .then(_=>{
+            const updateObj = {}
+            updateObj[channelID] = {is_public: true}
+            dispatch(setChannelData(updateObj))
+          })
         enqueueSnackbar('Publish channel success', { variant: 'success' });
         setOnProgress(false)
         handleClose()

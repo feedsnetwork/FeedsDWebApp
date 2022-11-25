@@ -10,7 +10,6 @@ const initialState = {
   focusedChannelId: 0, // focused self channel id
   visitedChannelId: 0, // selected subscribed channel id
   targetChannel: {}, // target channel object to publish/unpublish/unsubscribe
-  avatarSrc: {},
   selfChannels: {},
   subscribedChannels: {},
   publicChannels: {}

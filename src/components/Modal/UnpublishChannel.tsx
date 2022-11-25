@@ -7,13 +7,11 @@ import StyledButton from '../StyledButton';
 import StyledAvatar from '../StyledAvatar';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config'
-import { SidebarContext } from 'contexts/SidebarContext';
-import { selectTargetChannel, selectUnpublishModalState, handleUnpublishModal } from 'redux/slices/channel'
+import { selectTargetChannel, selectUnpublishModalState, handleUnpublishModal, setChannelData } from 'redux/slices/channel'
 import { getWeb3Contract, getWeb3Connect } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
 function UnpublishChannel() {
-  const { increaseUpdatingChannelNumber } = React.useContext(SidebarContext)
   const dispatch = useDispatch()
   const isOpen = useSelector(selectUnpublishModalState)
   const channel = useSelector(selectTargetChannel)
@@ -61,7 +59,11 @@ function UnpublishChannel() {
           doc['is_public'] = false
           return doc
         })
-          .then(_=>increaseUpdatingChannelNumber())
+          .then(_=>{
+            const updateObj = {}
+            updateObj[channel.channel_id] = {is_public: false}
+            dispatch(setChannelData(updateObj))
+          })
         enqueueSnackbar('Unpublish channel success', { variant: 'success' });
         setOnProgress(false)
         handleClose()

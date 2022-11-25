@@ -33,7 +33,6 @@ type SidebarContext = {
   setQueryPublicStep: Dispatch<any>;
   setQueryFlag: Dispatch<any>;
   setQueryPublicFlag: Dispatch<any>;
-  increaseUpdatingChannelNumber: Function;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -66,10 +65,6 @@ export const SidebarProvider = (props) => {
   const closeSidebar = () => {
     setSidebarToggle(false);
   };
-  const increaseUpdatingChannelNumber = () => {
-    setUpdateChannelNumber(prevNum=>prevNum+1)
-  }
-
   return (
     <SidebarContext.Provider
       value={{ 
@@ -105,8 +100,7 @@ export const SidebarProvider = (props) => {
         setQueryStep,
         setQueryPublicStep,
         setQueryFlag,
-        setQueryPublicFlag,
-        increaseUpdatingChannelNumber
+        setQueryPublicFlag
       }}
     >
       {props.children}
