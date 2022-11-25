@@ -1,4 +1,4 @@
-import { FC, useState, useRef, useContext, useEffect } from 'react';
+import { FC, useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
@@ -6,10 +6,9 @@ import { Icon } from '@iconify/react';
 import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormControl, FormHelperText } from '@mui/material';
 
 import StyledButton from 'components/StyledButton';
-import { handleSuccessModal, setTargetChannel, setChannelData } from 'redux/slices/channel';
+import { handleSuccessModal, setTargetChannel, setChannelData, selectSelfChannels } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi'
-import { SidebarContext } from 'contexts/SidebarContext';
 import { decodeBase64, encodeBase64, getBufferFromFile } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
@@ -54,7 +53,6 @@ interface AddChannelProps {
 const AddChannel: FC<AddChannelProps> = (props)=>{
   const { action='add' } = props
   const params = useParams(); // params.key
-  const { updateChannelNumber, setUpdateChannelNumber } = useContext(SidebarContext)
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -62,8 +60,8 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const [isOnValidation, setOnValidation] = useState(false);
   const [onProgress, setOnProgress] = useState(false);
   const [originChannel, setOriginChannel] = useState({});
-  const [selfChannels, setSelfChannels] = useState([]);
-  const selfChannelNames = selfChannels.filter(c=>c.channel_id!==params.channelId).map(c=>c['name'])
+  const selfChannels = useSelector(selectSelfChannels)
+  const selfChannelNames = selfChannels.filter(c=>c.channel_id!==params.channelId).map(c=>c['display_name'])
   const nameRef = useRef(null)
   const descriptionRef = useRef(null)
   const tippingRef = useRef(null)
@@ -75,19 +73,6 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const navigate = useNavigate()
   const myInfo = useSelector(selectMyInfo)
   const { enqueueSnackbar } = useSnackbar();
-  
-  useEffect(()=>{
-    LocalDB.find({
-      selector: {
-        table_type: 'channel',
-        is_self: true
-      }
-    })
-      .then(res=>{
-        setSelfChannels(res.docs)
-      })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updateChannelNumber])
 
   useEffect(()=>{
     if(action === 'edit') {
@@ -184,7 +169,6 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
             dispatch(setChannelData(updateObj))
           }
           enqueueSnackbar('Edit channel success', { variant: 'success' });
-          setUpdateChannelNumber(updateChannelNumber+1)
         })
         .catch(error=>{
           enqueueSnackbar('Edit channel error', { variant: 'error' });

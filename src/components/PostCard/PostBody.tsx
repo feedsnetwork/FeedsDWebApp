@@ -15,7 +15,7 @@ import ChannelAvatarWithPopper from './ChannelAvatarWithPopper';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { handleUnsubscribeModal, setActiveChannelId, setFocusedChannelId, setTargetChannel } from 'redux/slices/channel';
+import { handleUnsubscribeModal, selectChannelById, setActiveChannelId, setFocusedChannelId, setTargetChannel } from 'redux/slices/channel';
 import { handleCommentModal, handleDelPostModal, handlePostModal, selectActivePost, setActivePost, setActivePostProps } from 'redux/slices/post';
 import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db';
@@ -24,9 +24,9 @@ const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1, direction='column' } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   const activePost = useSelector(selectActivePost)
-  const { queryStep, publishPostNumber, updateChannelNumber } = React.useContext(SidebarContext);
+  const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
-  const [currentChannel, setCurrentChannel] = React.useState({})
+  const currentChannel = useSelector(selectChannelById(post.channel_id)) || {}
   const [commentCount, setCommentCount] = React.useState(0)
   const [isSaving, setIsSaving] = React.useState(false)
   const [isOpenPopup, setOpenPopup] = React.useState(null);
@@ -38,14 +38,6 @@ const PostBody = (props) => {
   const dispatch = useDispatch()
   const LocalDB = getLocalDB()
   const { enqueueSnackbar } = useSnackbar();
-
-  React.useEffect(()=>{
-    LocalDB.get(post.channel_id.toString())
-      .then(channelDoc => {
-        setCurrentChannel(channelDoc)
-      })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [post, updateChannelNumber])
 
   React.useEffect(()=>{
     if(queryStep >= QueryStep.comment_data)
