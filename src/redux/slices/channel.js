@@ -12,7 +12,6 @@ const initialState = {
   targetChannel: {}, // target channel object to publish/unpublish/unsubscribe
   avatarSrc: {},
   dispNameOfChannels: {},
-  subscribers: {},
   selfChannels: {},
   subscribedChannels: {},
   publicChannels: {}
@@ -85,9 +84,6 @@ const slice = createSlice({
     setVisitedChannelId(state, action) {
       state.visitedChannelId = action.payload
     },
-    setSubscribers(state, action) {
-      state.subscribers = {...state.subscribers, ...action.payload}
-    },
   }
 });
 
@@ -102,8 +98,7 @@ export const {
   setFocusedChannelId, 
   setActiveChannelId, 
   setVisitedChannelId, 
-  setTargetChannel,
-  setSubscribers 
+  setTargetChannel
 } = slice.actions;
 
 // ----------------------------------------------------------------------
@@ -183,7 +178,4 @@ export function selectFocusedChannelId(state) {
 }
 export function selectVisitedChannelId(state) {
   return state.channel.visitedChannelId
-}
-export function selectSubscribers(state) {
-  return state.channel.subscribers
 }

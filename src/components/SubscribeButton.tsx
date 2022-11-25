@@ -2,15 +2,13 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSnackbar } from 'notistack'
 import StyledButton from 'components/StyledButton'
-import { SidebarContext } from 'contexts/SidebarContext'
 import { selectMyInfo } from 'redux/slices/user'
-import { setSubscribers } from 'redux/slices/channel'
+import { setChannelData } from 'redux/slices/channel'
 import { HiveApi } from 'services/HiveApi'
 import { getLocalDB } from 'utils/db'
 
 const SubscribeButton = (props) => {
   const { channel } = props
-  const { increaseUpdatingChannelNumber } = React.useContext(SidebarContext);
   const [isDoingSubscription, setIsDoingSubscription] = React.useState(false)
   const isSubscribed = channel['is_subscribed']
   const dispatch = useDispatch()
@@ -26,15 +24,9 @@ const SubscribeButton = (props) => {
     const currentTime = new Date().getTime()
     const channel_id = channel['channel_id']
     Promise.resolve()
-      .then(_=>{
-        if(!isSubscribed)
-          return hiveApi.subscribeChannel(channel['target_did'], channel_id, myInfo['name'], currentTime)
-        else
-          return hiveApi.unSubscribeChannel(channel['target_did'], channel_id)
-      })
-      .then(res=>LocalDB.get(channel._id))
-      .then(doc=>{
-        const updatedDoc = {...doc, is_subscribed: !isSubscribed}
+      .then(async _=>{
+        const originDoc = { is_subscribed: isSubscribed, subscribers: [...(channel['subscribers'] || [])]}
+        const updateDoc = { is_subscribed: !isSubscribed }
         if(!isSubscribed) {
           const newSubscriber = {
             channel_id,
@@ -44,24 +36,35 @@ const SubscribeButton = (props) => {
             updated_at: currentTime,
             user_did: myDID
           }
-          if(updatedDoc['subscribers'])
-            updatedDoc['subscribers'].push(newSubscriber)
-          else updatedDoc['subscribers'] = [newSubscriber]
+          updateDoc['subscribers'] = [...(channel['subscribers'] || []), newSubscriber]
+          return hiveApi.subscribeChannel(channel['target_did'], channel_id, myInfo['name'], currentTime)
         }
         else {
-          if(updatedDoc['subscribers']) {
-            const subscriberIndex = updatedDoc['subscribers'].findIndex(el=>el.user_did===myDID)
-            if(subscriberIndex>=0)
-              updatedDoc['subscribers'].splice(subscriberIndex, 1)
+          if(channel['subscribers']) {
+            const subscriberIndex = channel['subscribers'].findIndex(el=>el.user_did===myDID)
+            if(subscriberIndex>=0) {
+              updateDoc['subscribers'] = [...channel['subscribers']]
+              updateDoc['subscribers'].splice(subscriberIndex, 1)
+            }
           }
         }
-        const subscriberObj = {}
-        subscriberObj[channel_id] = updatedDoc['subscribers']
-        dispatch(setSubscribers(subscriberObj))
-        LocalDB.put(updatedDoc)
+        const updateObj = {}
+        updateObj[channel_id] = updateDoc
+        dispatch(setChannelData(updateObj))
+        try {
+          if(!isSubscribed) 
+            await hiveApi.subscribeChannel(channel['target_did'], channel_id, myInfo['name'], currentTime)
+          else
+            await hiveApi.unSubscribeChannel(channel['target_did'], channel_id)
+          return LocalDB.upsert(channel_id, (doc)=>{
+            return {...doc, ...updateDoc}
+          })
+        } catch(err) {
+          updateObj[channel_id] = originDoc
+          dispatch(setChannelData(updateObj))
+        }
       })
-      .then(res=>{
-        increaseUpdatingChannelNumber()
+      .then(_=>{
         enqueueSnackbar(`${!isSubscribed? 'Subscribe': 'Unsubscribe'} channel success`, { variant: 'success' });
         setIsDoingSubscription(false)
       })
