@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom'
-import { Box, Stack, Typography, IconButton, Popper, Paper, styled, Divider, AvatarGroup, Fade, Menu, MenuItem, Link } from '@mui/material';
+import { Box, Stack, Typography, IconButton, Menu, MenuItem, Link } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
@@ -9,26 +9,20 @@ import parse from 'html-react-parser';
 import Odometer from "react-odometerjs";
 import "odometer/themes/odometer-theme-default.css";
 
-import StyledAvatar from 'components/StyledAvatar'
 import IconInCircle from 'components/IconInCircle'
 import Heart from 'components/Heart'
-import SubscribeButton from 'components/SubscribeButton';
 import ChannelAvatarWithPopper from './ChannelAvatarWithPopper';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { handleUnsubscribeModal, selectSubscribers, setActiveChannelId, setFocusedChannelId, setTargetChannel } from 'redux/slices/channel';
+import { handleUnsubscribeModal, setActiveChannelId, setFocusedChannelId, setTargetChannel } from 'redux/slices/channel';
 import { handleCommentModal, handleDelPostModal, handlePostModal, selectActivePost, setActivePost, setActivePostProps } from 'redux/slices/post';
-import { selectUserAvatar } from 'redux/slices/user';
-import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
+import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db';
-
 
 const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1, direction='column' } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
-  const subscribersOfChannel = useSelector(selectSubscribers)
-  const userAvatars = useSelector(selectUserAvatar)
   const activePost = useSelector(selectActivePost)
   const { queryStep, publishPostNumber, updateChannelNumber } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
@@ -37,8 +31,6 @@ const PostBody = (props) => {
   const [isSaving, setIsSaving] = React.useState(false)
   const [isOpenPopup, setOpenPopup] = React.useState(null);
   const hiveApi = new HiveApi()
-  const subscribersOfThis = subscribersOfChannel[post.channel_id] || []
-  const subscribedByWho = `Subscribed by ${subscribersOfThis.slice(0,3).map(subscriber=>subscriber.display_name).join(', ')}${subscribersOfThis.length>3?' and more!':'.'}`
   const PostOrComment = !post.comment_id?'Post':'Comment'
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
@@ -201,13 +193,6 @@ const PostBody = (props) => {
       <Stack spacing={2}>
         <Stack direction="row" alignItems="center" spacing={2}>
           <ChannelAvatarWithPopper {...channelAvatarProps} />
-          {/* <Box
-            onMouseEnter={(e)=>{handlePopper(e, true)}}
-            onMouseLeave={(e)=>{handlePopper(e, false)}}
-            onClick={level===1? handleLink2Channel: null}
-          >
-            <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
-          </Box> */}
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography component='div' variant="subtitle2" noWrap>
               {

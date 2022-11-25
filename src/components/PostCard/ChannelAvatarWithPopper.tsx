@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { Icon } from '@iconify/react';
-import { Box, Paper, Stack, Divider, AvatarGroup, Fade, Popper, styled, Typography, Link } from '@mui/material';
+import { Box, Paper, Stack, Divider, AvatarGroup, Fade, Popper, styled, Typography, Link, Avatar } from '@mui/material';
 
 import StyledAvatar from 'components/StyledAvatar'
 import SubscribeButton from 'components/SubscribeButton';
@@ -59,7 +59,11 @@ const SubscriberAvatar = (props) => {
     const { subscriber } = props
     const userInfo = useSelector(selectUserInfoByDID(subscriber.user_did)) || {}
     const avatarSrc = decodeBase64(userInfo['avatarSrc'] || "")
-    return <StyledAvatar alt={subscriber.display_name} src={avatarSrc} width={18}/>
+    return (
+        <Avatar sx={{ width: 'auto', height: 'auto', background: 'none' }}>
+            <StyledAvatar alt={subscriber.display_name} src={avatarSrc} width={18}/>
+        </Avatar>
+    )
 }
 const ChannelAvatarWithPopper = (props) => {
     const { contentObj, isReply, level=1, channel_id, handleLink2Channel, handleLink2Profile } = props
@@ -150,7 +154,7 @@ const ChannelAvatarWithPopper = (props) => {
                                     {
                                         subscribersOfThis.length>0 &&
                                         <Stack direction="row" mt={1} spacing={1}>
-                                            <AvatarGroup spacing={20}>
+                                            <AvatarGroup spacing={10}>
                                             {
                                                 subscribersOfThis.slice(0, 3).map((subscriber, _i)=>(
                                                     <SubscriberAvatar subscriber={subscriber} key={_i} />
