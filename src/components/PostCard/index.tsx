@@ -14,9 +14,11 @@ const PostCard = (props) => {
   const channel = useSelector(selectChannelById(post.channel_id)) || {}
   const dispName = channel['owner_name'] || reduceDIDstring(channel['target_did'])
   const contentObj = typeof post.content === 'object'? {...post.content}: JSON.parse(post.content)
-  contentObj.avatar = { name: channel['display_name'], src: decodeBase64(channel['avatarSrc'] || '') }
+  contentObj.avatar = { name: channel['display_name'], src: (channel['avatarSrc'] || '') }
   contentObj.primaryName = channel['display_name']
   contentObj.secondaryName = `@${dispName}`
+  if(!contentObj.avatar.src.startsWith("http"))
+    contentObj.avatar.src = decodeBase64(contentObj.avatar.src)
   if(post.status === 1)
     contentObj.content = "(post deleted)"
 

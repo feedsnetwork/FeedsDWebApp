@@ -180,8 +180,9 @@ function RightPanel() {
           break;
         default:
           const activeChannel = {...focusedChannel}
-          if(!pathname.startsWith('/explore/channel'))
-            activeChannel['avatarSrc'] = decodeBase64(activeChannel['avatarSrc'] || '')
+          const channelAvatar = activeChannel['avatarSrc'] || ""
+          if(!channelAvatar.startsWith("http"))
+            activeChannel['avatarSrc'] = decodeBase64(channelAvatar)
           content = <ChannelAbout this_channel={activeChannel}/>
           break;
       }
