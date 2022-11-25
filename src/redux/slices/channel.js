@@ -11,7 +11,6 @@ const initialState = {
   visitedChannelId: 0, // selected subscribed channel id
   targetChannel: {}, // target channel object to publish/unpublish/unsubscribe
   avatarSrc: {},
-  dispNameOfChannels: {},
   selfChannels: {},
   subscribedChannels: {},
   publicChannels: {}
@@ -72,9 +71,6 @@ const slice = createSlice({
       tempState[action.payload.channel_id] = action.payload.data
       state.publicChannels = tempState
     },
-    setDispNameOfChannels(state, action) {
-      state.dispNameOfChannels = {...state.dispNameOfChannels, ...action.payload}
-    },
     setActiveChannelId(state, action) {
       state.activeChannelId = action.payload
     },
@@ -94,7 +90,6 @@ export default slice.reducer;
 export const {  
   setChannelData, 
   setPublicChannels, 
-  setDispNameOfChannels, 
   setFocusedChannelId, 
   setActiveChannelId, 
   setVisitedChannelId, 
@@ -166,9 +161,6 @@ export function selectPublicChannels(state) {
 export const selectChannelById = channelId => state => {
   const channels = {...state.channel.selfChannels, ...state.channel.subscribedChannels, ...state.channel.publicChannels}
   return channels[channelId]
-}
-export function selectDispNameOfChannels(state) {
-  return state.channel.dispNameOfChannels
 }
 export function selectActiveChannelId(state) {
   return state.channel.activeChannelId

@@ -1,4 +1,3 @@
-import React from 'react'
 import { useSelector } from 'react-redux'
 import { Box, Stack, Typography } from '@mui/material';
 import parse from 'html-react-parser';
@@ -6,25 +5,13 @@ import "odometer/themes/odometer-theme-default.css";
 
 import StyledAvatar from 'components/StyledAvatar'
 import PaperRecord from 'components/PaperRecord'
-import { selectDispNameOfChannels } from 'redux/slices/channel';
+import { selectChannelById } from 'redux/slices/channel';
 import { getDateDistance, isValidTime, convertAutoLink, isJson, decodeBase64 } from 'utils/common'
-import { getLocalDB } from 'utils/db';
 
 const PostTextCard = (props) => {
   const { post } = props
-  const [thisChannel, setThisChannel] = React.useState({})
   const distanceTime = isValidTime(post.created_at)? getDateDistance(post.created_at): ''
-  const LocalDB = getLocalDB()
 
-  React.useEffect(()=>{
-    LocalDB.get(post.channel_id)
-      .then(doc=>{
-        if(!doc['avatarSrc'].startsWith("http"))
-          doc['avatarSrc'] = decodeBase64(doc['avatarSrc'])
-        setThisChannel(doc)
-      })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
   // const [anchorEl, setAnchorEl] = React.useState(null);
   // const [isOpenPopover, setOpenPopover] = React.useState(false);
   // const [isEnterPopover, setEnterPopover] = React.useState(false);
@@ -32,7 +19,7 @@ const PostTextCard = (props) => {
   // const subscribersOfThis = currentChannel['subscribers'] || []
   // const subscribedByWho = `Subscribed by ${subscribersOfThis.slice(0,3).map(subscriber=>subscriber.display_name).join(', ')}${subscribersOfThis.length>3?' and more!':'.'}`
 
-  const dispNameOfChannels = useSelector(selectDispNameOfChannels)
+  const thisChannel = useSelector(selectChannelById(post.channel_id)) || {}
   let postContent = post.content
   if(isJson(postContent))
     postContent = JSON.parse(postContent)
@@ -44,6 +31,9 @@ const PostTextCard = (props) => {
   //   setOpenPopover(open)
   // }
 
+  let avatarImg = thisChannel['avatarSrc']
+  if(!avatarImg.startsWith("http"))
+    avatarImg = decodeBase64(avatarImg)
   return (
     <PaperRecord sx={{p: 2}}>
       <Stack spacing={2}>
@@ -52,14 +42,14 @@ const PostTextCard = (props) => {
             // onMouseEnter={(e)=>{handlePopper(e, true)}}
             // onMouseLeave={(e)=>{handlePopper(e, false)}}
           >
-            <StyledAvatar alt={thisChannel['name']} src={thisChannel['avatarSrc']} width={47}/>
+            <StyledAvatar alt={thisChannel['name']} src={avatarImg} width={47}/>
           </Box>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography component='div' variant="subtitle2" noWrap>
               {thisChannel['name']}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
             </Typography>
             <Typography variant="body2" noWrap>
-              @{dispNameOfChannels[post.channel_id] || ''}
+              @{thisChannel['owner_name'] || ''}
             </Typography>
           </Box>
         </Stack>

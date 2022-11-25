@@ -3,8 +3,7 @@ import { useSelector } from 'react-redux'
 
 import PostList from 'components/PostList';
 import { SidebarContext } from 'contexts/SidebarContext';
-import { selectDispNameOfChannels, selectVisitedChannelId } from 'redux/slices/channel';
-import { reduceDIDstring } from 'utils/common'
+import { selectVisitedChannelId } from 'redux/slices/channel';
 import { getLocalDB, QueryStep } from 'utils/db';
 
 function Channel() {
@@ -12,10 +11,8 @@ function Channel() {
   const channel_id = useSelector(selectVisitedChannelId)
   const [isLoading, setIsLoading] = React.useState(true)
   const [totalCount, setTotalCount] = React.useState(0)
-  const [channelInfo, setChannelInfo] = React.useState({});
   const [pageEndTime, setPageEndTime] = React.useState(0)
   const [posts, setPosts] = React.useState([]);
-  const dispNameOfChannels = useSelector(selectDispNameOfChannels)
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
@@ -41,12 +38,6 @@ function Channel() {
       })
         .then(res=>{
           setTotalCount(res.docs.length)
-        })
-    }
-    if(queryPublicStep && channel_id) {
-      LocalDB.get(channel_id)
-        .then(doc=>{
-          setChannelInfo(doc)
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -81,9 +72,7 @@ function Channel() {
 
   const postListProps = { 
     isLoading, 
-    posts, 
-    channel: channelInfo,
-    dispName: dispNameOfChannels[channel_id] || reduceDIDstring(channelInfo['target_did']),
+    posts,
     appendMoreData, 
     hasMore: posts.length < totalCount 
   }
