@@ -2,7 +2,6 @@ import { createSlice } from '@reduxjs/toolkit';
 // ----------------------------------------------------------------------
 
 const initialState = {
-  avatarSrc: {},
   myInfo: {},
   userData: {}
 };
@@ -11,9 +10,6 @@ const slice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUserAvatarSrc(state, action) {
-      state.avatarSrc = {...state.avatarSrc, ...action.payload}
-    },
     setMyInfo(state, action) {
       state.myInfo = {...state.myInfo, ...action.payload}
     },
@@ -42,13 +38,10 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setUserAvatarSrc, setMyInfo, setUserInfo } = slice.actions;
+export const { setMyInfo, setUserInfo } = slice.actions;
 
 // ----------------------------------------------------------------------
 
-export function selectUserAvatar(state) {
-  return state.user.avatarSrc
-}
 export function selectMyInfo(state) {
   return state.user.myInfo
 }

@@ -22,7 +22,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectFocusedChannelId } from 'redux/slices/channel'
 import { isInAppBrowser, promiseSeries } from 'utils/common'
-import { getLocalDB, QueryStep } from 'utils/db'
+import { getLocalDB } from 'utils/db'
 import { mainproc } from 'utils/mainproc';
 
 interface SidebarLayoutProps {
@@ -42,7 +42,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const procSteps = mainproc(propsInProc)
   const querySteps = procSteps.querySteps
   const queryPublicSteps = procSteps.queryPublicSteps
-  const { queryDispNameStep, querySubscriptionInfoStep } = procSteps.asyncSteps
   
   useEffect(()=>{
     LocalDB.get('query-step')
@@ -74,10 +73,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           .then(res=>{
             console.log(res, "---result")
           })
-        if(currentPublicStep['step'] >= QueryStep.public_channel) {
-          queryDispNameStep(true)
-          querySubscriptionInfoStep(true)
-        }
       })
       .catch(err=>{
         promiseSeries(queryPublicSteps)

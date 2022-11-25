@@ -5,7 +5,7 @@ import { Stack, Box, Typography } from '@mui/material'
 
 import StyledAvatar from 'components/StyledAvatar'
 import StyledButton from 'components/StyledButton';
-import { selectChannelAvatar, selectSubscribers, setSubscribers } from 'redux/slices/channel';
+import { setChannelData } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi';
 import { getLocalDB } from 'utils/db';
@@ -13,8 +13,7 @@ import { decodeBase64 } from 'utils/common';
 
 const PublicChannelItem = (props) => {
     const { channel } = props
-    const subscribersOfChannel = useSelector(selectSubscribers)
-    const subscribers = subscribersOfChannel[channel.channel_id] || []
+    const subscribers = channel['subscribers'] || []
     const feedsDid = sessionStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
     const isSubscribed = subscribers.map(item=>item.user_did).includes(myDID)
@@ -22,10 +21,9 @@ const PublicChannelItem = (props) => {
     const dispatch = useDispatch()
     const { enqueueSnackbar } = useSnackbar();
     const myInfo = useSelector(selectMyInfo)
-    const channelAvatars = useSelector(selectChannelAvatar)
-    let avatarImg = channel['avatarSrc'] || channelAvatars[channel.channel_id]
+    let avatarImg = channel['avatarSrc']
     if(!avatarImg.startsWith("http"))
-        avatarImg = decodeBase64(channelAvatars[channel.channel_id])
+        avatarImg = decodeBase64(avatarImg)
     const hiveApi = new HiveApi()
     const LocalDB = getLocalDB()
 
@@ -62,8 +60,8 @@ const PublicChannelItem = (props) => {
                         updatedDoc['subscribers'].splice(subscriberIndex, 1)
                 }
                 const subscriberObj = {}
-                subscriberObj[channel_id] = updatedDoc['subscribers']
-                dispatch(setSubscribers(subscriberObj))
+                subscriberObj[channel_id] = { is_subscribed: updatedDoc['is_subscribed'], subscribers: updatedDoc['subscribers'] }
+                dispatch(setChannelData(subscriberObj))
                 LocalDB.put(updatedDoc)
             })
             .then(res=>{
@@ -84,7 +82,7 @@ const PublicChannelItem = (props) => {
                     {channel['name']}
                 </Typography>
                 <Typography variant="body2" color='text.secondary' noWrap>
-                    {subscribersOfChannel[channel.channel_id]?.length || 0} Subscribers
+                    {subscribers?.length || 0} Subscribers
                 </Typography>
             </Box>
             <Box>

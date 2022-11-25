@@ -6,7 +6,7 @@ import { Icon } from '@iconify/react';
 import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormControl, FormHelperText } from '@mui/material';
 
 import StyledButton from 'components/StyledButton';
-import { handleSuccessModal, setChannelAvatarSrc, setTargetChannel, setDispNameOfChannels, setSubscribers } from 'redux/slices/channel';
+import { handleSuccessModal, setTargetChannel, setChannelData } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
@@ -156,26 +156,32 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
     }
     if(action === 'edit')
       hiveApi.updateChannel(originChannel['channel_id'], newChannel.name, newChannel.intro, newChannel['avatarPath'] || originChannel['avatar'], originChannel['type'], originChannel['memo'], newChannel.tippingAddr, originChannel['nft'])
-        .then(_=>LocalDB.get(params.channelId))
-        .then(doc=>{
+        .then(_=>{
           setOnProgress(false)
-          const channelDoc = {
-            ...doc, 
-            display_name: newChannel.name,
-            intro: newChannel.intro,
-            tipping_address: newChannel.tippingAddr,
-          }
-          if(avatarContent) {
-            channelDoc['avatar'] = newChannel['avatarPath'] || originChannel['avatar']
-            channelDoc['avatarSrc'] = encodeBase64(avatarContent)
-          }
-          return LocalDB.put(channelDoc)
+          return LocalDB.upsert(params.channelId, (doc)=>{
+            const channelDoc = {
+              ...doc, 
+              display_name: newChannel.name,
+              intro: newChannel.intro,
+              tipping_address: newChannel.tippingAddr,
+            }
+            if(avatarContent) {
+              channelDoc['avatar'] = newChannel['avatarPath'] || originChannel['avatar']
+              channelDoc['avatarSrc'] = encodeBase64(avatarContent)
+            }
+            return channelDoc
+          })
         })
         .then(_=>{
           if(avatarContent) {
-            const avatarObj = {}
-            avatarObj[params.channelId] = encodeBase64(avatarContent)
-            dispatch(setChannelAvatarSrc(avatarObj))
+            const updateObj = {}
+            updateObj[params.channelId] = {
+              display_name: newChannel.name,
+              intro: newChannel.intro,
+              tipping_address: newChannel.tippingAddr,
+              avatarSrc: encodeBase64(avatarContent)
+            }
+            dispatch(setChannelData(updateObj))
           }
           enqueueSnackbar('Edit channel success', { variant: 'success' });
           setUpdateChannelNumber(updateChannelNumber+1)
@@ -219,19 +225,12 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                   display_name: newChannel.name
                 }
                 const subscribersObj = {}
-                subscribersObj[newChannelDoc.channel_id] = newChannelDoc.subscribers
-                dispatch(setSubscribers(subscribersObj))
+                subscribersObj[newChannelDoc.channel_id] = newChannelDoc
+                dispatch(setChannelData(subscribersObj))
                 return LocalDB.put(newChannelDoc)
               }
             })
-            .then(res=>{
-              const avatarObj = {}
-              avatarObj[result.channelId] = encodeBase64(avatarContent)
-              dispatch(setChannelAvatarSrc(avatarObj))
-              const dispNameObj = {}
-              dispNameObj[result.channelId] = myInfo['name']
-              dispatch(setDispNameOfChannels(dispNameObj))
-              setUpdateChannelNumber(updateChannelNumber+1)
+            .then(_=>{
               navigate('/channel')
             })
         })

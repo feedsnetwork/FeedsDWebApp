@@ -7,7 +7,7 @@ import StyledAvatar from 'components/StyledAvatar'
 import Scrollbar from 'components/Scrollbar';
 import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
-import { selectMyInfo, setMyInfo, setUserAvatarSrc } from 'redux/slices/user';
+import { selectMyInfo, setMyInfo, setUserInfo } from 'redux/slices/user';
 import { getLocalDB } from 'utils/db';
 import { reduceDIDstring, getInfoFromDID, reduceHexAddress, encodeBase64, decodeBase64 } from 'utils/common'
 
@@ -50,8 +50,8 @@ function Sidebar() {
           const avatarObj = { avatarSrc: encodeBase64(`data:image/png;base64,${base64Content}`) }
           storeMyInfo(avatarObj)
           const avatarUserObj = {}
-          avatarUserObj[myDID] = avatarObj.avatarSrc
-          dispatch(setUserAvatarSrc(avatarUserObj))
+          avatarUserObj[myDID] = {avatarSrc: avatarObj.avatarSrc}
+          dispatch(setUserInfo(avatarUserObj))
         }
       })
       .catch(err=>{})

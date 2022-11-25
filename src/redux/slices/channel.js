@@ -85,9 +85,6 @@ const slice = createSlice({
     setVisitedChannelId(state, action) {
       state.visitedChannelId = action.payload
     },
-    setChannelAvatarSrc(state, action) {
-      state.avatarSrc = {...state.avatarSrc, ...action.payload}
-    },
     setSubscribers(state, action) {
       state.subscribers = {...state.subscribers, ...action.payload}
     },
@@ -106,7 +103,6 @@ export const {
   setActiveChannelId, 
   setVisitedChannelId, 
   setTargetChannel,
-  setChannelAvatarSrc, 
   setSubscribers 
 } = slice.actions;
 
@@ -187,9 +183,6 @@ export function selectFocusedChannelId(state) {
 }
 export function selectVisitedChannelId(state) {
   return state.channel.visitedChannelId
-}
-export function selectChannelAvatar(state) {
-  return state.channel.avatarSrc
 }
 export function selectSubscribers(state) {
   return state.channel.subscribers
