@@ -454,16 +454,16 @@ async function getAppInstanceDIDDoc() {
 async function issueDiplomaFor() {
   connectivity.setApplicationDID(ApplicationDID)
   const didAccess = new ConDID.DIDAccess()
-  if(sessionStorage.getItem('FEEDS_DID_PREV') === sessionStorage.getItem('FEEDS_DID')) {
-    let credential = await didAccess.getExistingAppIdentityCredential()
-    if (credential) {
-      return credential
-    }
-  }
+  // if(sessionStorage.getItem('FEEDS_DID_PREV') === sessionStorage.getItem('FEEDS_DID')) {
+  //   let credential = await didAccess.getExistingAppIdentityCredential()
+  //   if (credential) {
+  //     return credential
+  //   }
+  // }
 
   let credential = await didAccess.generateAppIdCredential()
   if (credential) {
-    sessionStorage.setItem('FEEDS_DID_PREV', sessionStorage.getItem('FEEDS_DID'))
+    // sessionStorage.setItem('FEEDS_DID_PREV', sessionStorage.getItem('FEEDS_DID'))
     return credential
   }
 }
