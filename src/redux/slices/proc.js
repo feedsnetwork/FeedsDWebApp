@@ -43,8 +43,11 @@ export const { updateStep, updatePublicStep } = slice.actions;
 // ----------------------------------------------------------------------
 
 export const selectQueryStep = (type) => (state) => {
-  return state.queryStep[type]
+  return state.proc.queryStep[type]
+}
+export const selectQueryStepStatus = (type) => (state) => {
+  return state.proc.queryStep[type]>0
 }
 export const selectQueryPublicStep = (type) => (state) => {
-  return state.queryPublicStep[type]
+  return state.proc.queryPublicStep[type]
 }

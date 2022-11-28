@@ -49,7 +49,7 @@ export const mainproc = (props) => {
     const updateQueryStep = (step, isPublic=false, isLocal=false)=>(
         new Promise((resolve, reject) => {
             const flagId = `query-${isPublic? 'public-': ''}step`
-            const stepUpdateAction = isPublic? updateStep: updatePublicStep
+            const stepUpdateAction = isPublic? updatePublicStep: updateStep
             LocalDB.upsert(flagId, (doc)=>{
                 const stepDoc = {...doc, step: step['index']}
                 if(doc._id) {

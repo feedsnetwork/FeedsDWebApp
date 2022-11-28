@@ -9,20 +9,25 @@ import { EmptyViewInProfile } from 'components/EmptyView'
 import PostCard from 'components/PostCard';
 import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
+import ChannelSkeleton from 'components/Skeleton/ChannelSkeleton';
+import PostSkeleton from 'components/Skeleton/PostSkeleton';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceDIDstring, decodeBase64 } from 'utils/common'
 import { getLocalDB, QueryStep } from 'utils/db';
 import { selectMyInfo } from 'redux/slices/user';
 import { selectSelfChannels, selectSubscribedChannels } from 'redux/slices/channel';
+import { selectQueryStepStatus } from 'redux/slices/proc';
 
 function Profile() {
   const { queryStep } = React.useContext(SidebarContext);
   const [tabValue, setTabValue] = React.useState(0);
   const [likedPosts, setLikedPosts] = React.useState([])
+  const [isLoadingLike, setIsLoadingLike] = React.useState(true)
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const myInfo = useSelector(selectMyInfo)
   const selfChannels = Object.values(useSelector(selectSelfChannels))
   const subscribedChannels = Object.values(useSelector(selectSubscribedChannels))
+  const isSelfChannelLoaded = useSelector(selectQueryStepStatus('self_channel'))
   const LocalDB = getLocalDB()
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
@@ -39,6 +44,7 @@ function Profile() {
       })
         .then(response => {
           setLikedPosts(response.docs)
+          setIsLoadingLike(false)
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,6 +52,7 @@ function Profile() {
 
   // const backgroundImg = "/temp-back.png"
   const subscriptionCount = selfChannels.filter(channel=>channel['is_subscribed']).length + subscribedChannels.length
+  const loadingSkeletons = Array(5).fill(null)
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
       <Card>
@@ -94,11 +101,13 @@ function Profile() {
         </Tabs>
         <TabPanel value={tabValue} index={0}>
           {
-            !selfChannels.length?
+            !selfChannels.length && isSelfChannelLoaded?
             <EmptyViewInProfile type='channel'/>:
 
             <Stack spacing={1}>
               {
+                !isSelfChannelLoaded?
+                loadingSkeletons.map((_, _i)=><ChannelSkeleton key={_i}/>):
                 selfChannels.map((channel, _i)=><ChannelListItem channel={channel} key={channel['channel_id']}/>)
               }
             </Stack>
@@ -109,11 +118,13 @@ function Profile() {
         </TabPanel> */}
         <TabPanel value={tabValue} index={1}>
           {
-            !likedPosts.length?
+            !likedPosts.length && !isLoadingLike?
             <EmptyViewInProfile type='like'/>:
 
             <Stack spacing={2}>
               {
+                isLoadingLike?
+                loadingSkeletons.map((_, _i)=><PostSkeleton key={_i}/>):
                 likedPosts.map((post, _i)=><PostCard post={post} key={_i} direction='row'/>)
               }
             </Stack>
