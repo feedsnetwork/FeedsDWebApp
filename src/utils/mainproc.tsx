@@ -1,4 +1,4 @@
-import { getLocalDB, QueryStep } from "./db"
+import { getLocalDB, QueryStep, StepType } from "./db"
 import { CommonStatus } from "models/common_content"
 import { HiveApi } from "services/HiveApi"
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
@@ -9,6 +9,7 @@ import { increaseLoadNum } from "redux/slices/post";
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
     encodeBase64, getWeb3Contract, getIpfsUrl, excludeFromArray, getInfoFromDID } from "./common"
 import { setUserInfo } from "redux/slices/user";
+import { updatePublicStep, updateStep } from "redux/slices/proc";
 const hiveApi = new HiveApi()
 
 export const mainproc = (props) => {
@@ -45,6 +46,28 @@ export const mainproc = (props) => {
                 )
         })
     )
+    const updateQueryStep = (step, isPublic=false, isLocal=false)=>(
+        new Promise((resolve, reject) => {
+            const flagId = `query-${isPublic? 'public-': ''}step`
+            const stepUpdateAction = isPublic? updateStep: updatePublicStep
+            LocalDB.upsert(flagId, (doc)=>{
+                const stepDoc = {...doc, step: step['index']}
+                if(doc._id) {
+                    dispatch(stepUpdateAction(step['name']))
+                    if(doc['step'] < step['index'] && !isLocal) {
+                        return stepDoc
+                    }
+                    return false
+                }
+                if(!isLocal) {
+                    dispatch(stepUpdateAction(step['name']))
+                    return stepDoc
+                }
+                return false
+            })
+                .then(resolve)
+        })
+    )
     const filterAvatar = (avatarSrc)=>{
         let content = avatarSrc
         if(avatarSrc.startsWith('assets/images')) {
@@ -79,18 +102,22 @@ export const mainproc = (props) => {
     }
 
     // functions to synchronize state value with browser db data
-    const syncChannelData = (type)=>{
+    const syncChannelData = (type, isLocal=false)=>{
         const selector = getChannelSelectorByType(type)
+        const channelStepTypes = { self: StepType.self_channel, subscribed: StepType.subscribed_channel, public: StepType.public_channel }
         LocalDB.find({ selector })
-            .then(response=>{
+            .then(response=>(
                 dispatch(setChannelData({type, data: response.docs}))
+            ))
+            .then(_=>{
+                updateQueryStep(channelStepTypes[type], type==='public', isLocal)
             })
     }
     
     // main process steps
     const querySelfChannelStep = () => (
         new Promise((resolve, reject) => {
-            syncChannelData('self')
+            syncChannelData('self', true)
             hiveApi.querySelfChannels()
                 .then(async res=>{
                     if(Array.isArray(res)){
@@ -165,7 +192,7 @@ export const mainproc = (props) => {
 
     const querySubscribedChannelStep = () => (
         new Promise((resolve, reject) => {
-            syncChannelData('subscribed')
+            syncChannelData('subscribed', true)
             hiveApi.queryBackupData()
                 .then(async backupRes=>{
                     if(Array.isArray(backupRes)) {
@@ -536,7 +563,7 @@ export const mainproc = (props) => {
     // public process steps
     const queryPublicChannelStep = () => (
         new Promise((resolve, reject) => {
-            syncChannelData('public')
+            syncChannelData('public', true)
             const startChannelIndex = 0, pageLimit = 0
             const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress, false)
             channelRegContract.methods.channelIds(startChannelIndex, pageLimit).call()
