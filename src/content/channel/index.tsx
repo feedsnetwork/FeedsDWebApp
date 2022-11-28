@@ -89,6 +89,8 @@ function Channel() {
       ))
       .then(response => {
         setIsLoading(false)
+        if(response.docs.length<limit)
+          setHasMore(false)
         if(type === 'first')
           setPosts(response.docs)
         else
