@@ -831,7 +831,7 @@ export const mainproc = (props) => {
 
     const querySteps = [
         querySelfChannelStep, 
-        // querySubscribedChannelStep, 
+        querySubscribedChannelStep, 
         queryPostStep,
         queryPostLikeStep,
         queryPostImgStep,
@@ -842,7 +842,7 @@ export const mainproc = (props) => {
         queryPublicChannelStep,
         queryPublicPostStep,
         queryPublicPostLikeStep,
-        // queryPublicPostImgStep,
+        queryPublicPostImgStep,
         queryPublicCommentStep,
         queryPublicCommentLikeStep
     ]
