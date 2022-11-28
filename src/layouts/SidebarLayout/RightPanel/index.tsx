@@ -39,7 +39,8 @@ const SidebarWrapper = styled(Box)(
 // );
 const ChannelAbout = (props) => {
   const { this_channel } = props
-  const totalPageOfSubscription = Math.ceil(this_channel['subscribers'].length/10) || 1
+  const subscribers = this_channel['subscribers'] || []
+  const totalPageOfSubscription = Math.ceil((subscribers.length || 0)/10) || 1
   const [currentPageOfSubscription, setCurrentPageOfSubscription] = React.useState(1);
   const editable = this_channel['is_self']
   const navigate = useNavigate()
@@ -77,7 +78,7 @@ const ChannelAbout = (props) => {
         </Stack>
         <Stack alignItems='center'>
           <Stack direction='row' spacing={1}>
-            <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{this_channel['subscribers'].length} Subscribers</Typography>
+            <Typography variant='subtitle2' sx={{display: 'flex', alignItems: 'center'}}><Icon icon="clarity:group-line" fontSize='20px' />&nbsp;{subscribers.length} Subscribers</Typography>
             <SubscribeButton channel={this_channel}/>
           </Stack>
         </Stack>
@@ -95,7 +96,7 @@ const ChannelAbout = (props) => {
       <CardContent sx={{pt: 0}}>
         <Grid container spacing={2}>
           {
-            this_channel['subscribers'].slice(0, 10*currentPageOfSubscription).map((item, index)=>(
+            subscribers.slice(0, 10*currentPageOfSubscription).map((item, index)=>(
               <Grid item xs={12} key={index}>
                 <SubscriberListItem subscriber={item}/>
               </Grid>

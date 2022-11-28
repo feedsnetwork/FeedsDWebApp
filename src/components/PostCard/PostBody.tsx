@@ -274,8 +274,8 @@ const PostBody = (props) => {
           <Box>
             {
               !!post.mediaData && post.mediaData.map((media, _i)=>(
-                media.kind === 'image'?
-                <Box component='img' src={media.mediaSrc} key={_i} sx={direction==='row'? {width: 150, borderRadius: 1}: {width: '100%'}}/>:
+                media.kind === 'image' && media.thumbnailSrc?
+                <Box component='img' src={media.thumbnailSrc} key={_i} sx={direction==='row'? {width: 150, borderRadius: 1}: {width: '100%'}}/>:
                 <div key={_i}/>
                 // <Box component='video' src={media.mediaSrc}/>
               ))

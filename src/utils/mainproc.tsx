@@ -425,23 +425,47 @@ export const mainproc = (props) => {
                             if(post['status'] !== CommonStatus.deleted) {
                                 try {
                                     const contentObj = JSON.parse(post['content'])
-                                    const mediaData = contentObj.mediaData.filter(media=>!!media.originMediaPath).map(async media => {
+                                    const mediaThumbnailData = contentObj.mediaData.filter(media=>!!media.thumbnailPath).map(async media => {
+                                        const mediaObj = {...media}
+                                        try {
+                                            const mediaSrc = await hiveApi.downloadScripting(post['target_did'], media.originMediaPath)
+                                            if(mediaSrc) {
+                                                mediaObj['thumbnailSrc'] = mediaSrc
+                                                return mediaObj
+                                            }
+                                        } catch(err) {
+                                            console.log(err)
+                                        }
+                                        return null
+                                    })
+                                    const mediaOriginData = contentObj.mediaData.filter(media=>!!media.originMediaPath).map(async media => {
                                         const mediaObj = {...media}
                                         try {
                                             const mediaSrc = await hiveApi.downloadScripting(post['target_did'], media.originMediaPath)
                                             if(mediaSrc) {
                                                 mediaObj['mediaSrc'] = mediaSrc
+                                                return mediaObj
                                             }
                                         } catch(err) {
                                             console.log(err)
                                         }
-                                        return mediaObj
+                                        return null
                                     })
-                                    const mediaDataArr = await Promise.all(mediaData)
+                                    const mediaDataRes = await Promise.all([...mediaThumbnailData, ...mediaOriginData])
+                                    const mediaData = mediaDataRes.filter(item=>!!item).reduce((mediaDataArr, item)=>{
+                                        if(!mediaDataArr.length)
+                                            mediaDataArr.push(item)
+                                        else {
+                                            const mediaIndex = mediaDataArr.findIndex(media=>media['originMediaPath']===item['originMediaPath'])
+                                            if(mediaIndex>=0)
+                                                mediaDataArr[mediaIndex] = {...mediaDataArr[mediaIndex], ...item}
+                                            else
+                                                mediaDataArr.push(item)
+                                        }
+                                        return mediaDataArr
+                                    }, [])
                                     return await LocalDB.upsert(post._id, (doc)=>{
-                                        if(!mediaData.length)
-                                            return false
-                                        doc['mediaData'] = mediaDataArr
+                                        doc['mediaData'] = mediaData
                                         return doc
                                     })
                                 } catch(err) {}
@@ -807,7 +831,7 @@ export const mainproc = (props) => {
 
     const querySteps = [
         querySelfChannelStep, 
-        querySubscribedChannelStep, 
+        // querySubscribedChannelStep, 
         queryPostStep,
         queryPostLikeStep,
         queryPostImgStep,
@@ -818,7 +842,7 @@ export const mainproc = (props) => {
         queryPublicChannelStep,
         queryPublicPostStep,
         queryPublicPostLikeStep,
-        queryPublicPostImgStep,
+        // queryPublicPostImgStep,
         queryPublicCommentStep,
         queryPublicCommentLikeStep
     ]
