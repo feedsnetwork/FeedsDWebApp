@@ -172,7 +172,7 @@ export const mainproc = (props) => {
                             .then(_=>syncChannelData('self'))
                             .then(_=>{
                                 queryDispNameStepEx('self')
-                                queryChannelAvatarStepEx('self')
+                                // queryChannelAvatarStepEx('self')
                                 querySubscriptionInfoStepEx('self')
                                 resolve({success: true})
                             })
@@ -277,7 +277,7 @@ export const mainproc = (props) => {
                             .then(_=>syncChannelData('subscribed'))
                             .then(_=>{ 
                                 queryDispNameStepEx('subscribed')
-                                queryChannelAvatarStepEx('subscribed')
+                                // queryChannelAvatarStepEx('subscribed')
                                 querySubscriptionInfoStepEx('subscribed')
                                 resolve({success: true})
                             })
@@ -808,22 +808,22 @@ export const mainproc = (props) => {
                     new Promise((resolve, reject)=>{
                         const avatarObj = {}
                         hiveApi.getHiveUrl(userDID)
-                            .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(userDID, hiveUrl))
-                            .then(res=>{
-                                const resBuf = res as Buffer
-                                if(resBuf && resBuf.length) {
-                                    const base64Content = resBuf.toString('base64')
-                                    avatarObj[userDID] = { avatarSrc: encodeBase64(`data:image/png;base64,${base64Content}`) }
-                                    LocalDB.upsert(userDID, (doc)=>{
-                                        if(doc._id) {
-                                            return {...doc, ...avatarObj[userDID]}
-                                        }
-                                        return false
-                                    })
-                                    dispatch(setUserInfo(avatarObj))
-                                }
-                                return
-                            })
+                            // .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(userDID, hiveUrl))
+                            // .then(res=>{
+                            //     const resBuf = res as Buffer
+                            //     if(resBuf && resBuf.length) {
+                            //         const base64Content = resBuf.toString('base64')
+                            //         avatarObj[userDID] = { avatarSrc: encodeBase64(`data:image/png;base64,${base64Content}`) }
+                            //         LocalDB.upsert(userDID, (doc)=>{
+                            //             if(doc._id) {
+                            //                 return {...doc, ...avatarObj[userDID]}
+                            //             }
+                            //             return false
+                            //         })
+                            //         dispatch(setUserInfo(avatarObj))
+                            //     }
+                            //     return
+                            // })
                             .then(resolve)
                             .catch(err=>{})
                     })
@@ -837,7 +837,7 @@ export const mainproc = (props) => {
         querySubscribedChannelStep, 
         queryPostStep,
         queryPostLikeStep,
-        queryPostImgStep,
+        // queryPostImgStep,
         queryCommentStep,
         queryCommentLikeStep
     ]
@@ -845,7 +845,7 @@ export const mainproc = (props) => {
         queryPublicChannelStep,
         queryPublicPostStep,
         queryPublicPostLikeStep,
-        queryPublicPostImgStep,
+        // queryPublicPostImgStep,
         queryPublicCommentStep,
         queryPublicCommentLikeStep
     ]
