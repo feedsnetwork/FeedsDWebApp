@@ -32,6 +32,9 @@ function Channel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   React.useEffect(()=>{
+    setPageEndTime(0)
+  }, [focusedChannelId])
+  React.useEffect(()=>{
     if(queryStep) {
       setIsLoading(true)
     }

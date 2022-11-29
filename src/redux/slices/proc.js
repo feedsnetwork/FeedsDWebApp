@@ -31,6 +31,12 @@ const slice = createSlice({
     updatePublicStep(state, action) {
       state.queryPublicStep[action.payload] += 1
     },
+    updateProc(state, action) {
+      state.queryStep = {...state.queryStep, ...action.payload}
+    },
+    updatePublicProc(state, action) {
+      state.queryPublicStep = {...state.queryPublicStep, ...action.payload}
+    },
   }
 });
 
@@ -38,7 +44,7 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { updateStep, updatePublicStep } = slice.actions;
+export const { updateStep, updatePublicStep, updateProc, updatePublicProc } = slice.actions;
 
 // ----------------------------------------------------------------------
 

@@ -8,8 +8,9 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { OverPageContext } from 'contexts/OverPageContext';
 import { selectVisitedChannelId, selectFocusedChannelId, selectChannelById } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
-import { getLocalDB, QueryStep } from 'utils/db';
+import { getLocalDB } from 'utils/db';
 import { SettingMenuArray, reduceDIDstring } from 'utils/common'
+import { selectQueryPublicStep, selectQueryStep } from 'redux/slices/proc';
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -49,7 +50,6 @@ const HeaderWrapper = styled(Box)(
 function FloatingHeader(props) {
   const { rightPanelVisible } = props
   const { pageType, closeOverPage } = React.useContext(OverPageContext);
-  const { queryStep, queryPublicStep } = React.useContext(SidebarContext);
   const { pathname } = useLocation()
   const navigate = useNavigate();
   const params = useParams()
@@ -63,13 +63,15 @@ function FloatingHeader(props) {
   if(isSubscribedChannel || isPublicChannel)
     selectedChannelId = visitedChannelId
   const focusedChannel = useSelector(selectChannelById(selectedChannelId)) || {}
+  const currentPostStep = useSelector(selectQueryStep('post_data'))
+  const currentPublicPostStep = useSelector(selectQueryPublicStep('post_data'))
   const [postCountInFocus, setPostCountInFocus] = React.useState(0)
   const [activeCommentCount, setActiveCommentCount] = React.useState(0)
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
     if(selectedChannelId) {
-      if((queryStep>=QueryStep.post_data && !isPublicChannel) || (queryPublicStep>=QueryStep.post_data && isPublicChannel))
+      if((currentPostStep && !isPublicChannel) || (currentPublicPostStep && isPublicChannel))
         LocalDB.find({
           selector: {
             channel_id: selectedChannelId,
@@ -79,7 +81,7 @@ function FloatingHeader(props) {
           .then(res=>setPostCountInFocus(res.docs.length))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep, queryPublicStep, selectedChannelId])
+  }, [currentPostStep, currentPublicPostStep, selectedChannelId])
 
   React.useEffect(()=>{
     if(params.post_id) {

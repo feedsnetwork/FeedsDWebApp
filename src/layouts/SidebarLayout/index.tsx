@@ -22,8 +22,9 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectFocusedChannelId } from 'redux/slices/channel'
 import { isInAppBrowser, promiseSeries } from 'utils/common'
-import { getLocalDB } from 'utils/db'
+import { getLocalDB, StepType } from 'utils/db'
 import { mainproc } from 'utils/mainproc';
+import { updateProc, updatePublicProc } from 'redux/slices/proc';
 
 interface SidebarLayoutProps {
   children?: ReactNode;
@@ -47,6 +48,13 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     LocalDB.get('query-step')
       .then(currentStep=>{
         setQueryStep(currentStep['step'])
+        const passedSteps = Object.values(StepType)
+          .filter(step=>(step.index <= currentStep['step'] && step.name !== 'public_channel'))
+          .reduce((stepObj, step)=>{
+            stepObj[step.name] = 1
+            return stepObj
+          }, {})
+        dispatch(updateProc(passedSteps))
         // const remainedSteps = querySteps.slice(currentStep['step']).map(func=>func())
         // Promise.all(remainedSteps)
         //   .then(res=>{
@@ -64,6 +72,13 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     LocalDB.get('query-public-step')
       .then(currentPublicStep=>{
         setQueryPublicStep(currentPublicStep['step'])
+        const passedSteps = Object.values(StepType)
+          .filter(step=>(1<step.index && step.index<=currentPublicStep['step'] && step.name !== 'subscribed_channel'))
+          .reduce((stepObj, step)=>{
+            stepObj[step.name] = 1
+            return stepObj
+          }, {})
+        dispatch(updatePublicProc(passedSteps))
         // const remainedSteps = queryPublicSteps.slice(currentPublicStep['step']).map(func=>func())
         // Promise.all(remainedSteps)
         //   .then(res=>{
