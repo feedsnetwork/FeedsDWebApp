@@ -1,4 +1,4 @@
-import { getLocalDB, QueryStep, StepType } from "./db"
+import { getLocalDB, StepType } from "./db"
 import { CommonStatus } from "models/common_content"
 import { HiveApi } from "services/HiveApi"
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
@@ -13,39 +13,39 @@ import { updatePublicStep, updateStep } from "redux/slices/proc";
 const hiveApi = new HiveApi()
 
 export const mainproc = (props) => {
-    const { dispatch, setQueryStep, setQueryPublicStep, setQueryFlag, setQueryPublicFlag } = props
+    const { dispatch } = props
     const feedsDid = sessionStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
     const LocalDB = getLocalDB()
 
-    const updateStepFlag = (step, isPublic=false)=>(
-        new Promise((resolve, reject) => {
-            const flagId = `query-${isPublic? 'public-': ''}step`
-            const queryStepSetter = isPublic? setQueryPublicStep: setQueryStep
-            const queryUpdateSetter = isPublic? setQueryPublicFlag: setQueryFlag
-            LocalDB.get(flagId)
-                .then(stepDoc => {
-                    if(stepDoc['step'] < step)
-                        LocalDB.put({_id: flagId, step, _rev: stepDoc._rev})
-                            .then(res=>{
-                                queryStepSetter(step)
-                                resolve(res)
-                            })
-                    else
-                        queryUpdateSetter(step)
-                        resolve({})
-                    }
-                )
-                .catch(err => {
-                    LocalDB.put({_id: flagId, step})
-                        .then(res=>{
-                            queryStepSetter(step)
-                            resolve(res)
-                        })
-                    }
-                )
-        })
-    )
+    // const updateStepFlag = (step, isPublic=false)=>(
+    //     new Promise((resolve, reject) => {
+    //         const flagId = `query-${isPublic? 'public-': ''}step`
+    //         const queryStepSetter = isPublic? setQueryPublicStep: setQueryStep
+    //         const queryUpdateSetter = isPublic? setQueryPublicFlag: setQueryFlag
+    //         LocalDB.get(flagId)
+    //             .then(stepDoc => {
+    //                 if(stepDoc['step'] < step)
+    //                     LocalDB.put({_id: flagId, step, _rev: stepDoc._rev})
+    //                         .then(res=>{
+    //                             queryStepSetter(step)
+    //                             resolve(res)
+    //                         })
+    //                 else
+    //                     queryUpdateSetter(step)
+    //                     resolve({})
+    //                 }
+    //             )
+    //             .catch(err => {
+    //                 LocalDB.put({_id: flagId, step})
+    //                     .then(res=>{
+    //                         queryStepSetter(step)
+    //                         resolve(res)
+    //                     })
+    //                 }
+    //             )
+    //     })
+    // )
     const updateQueryStep = (step, isPublic=false, isLocal=false)=>(
         new Promise((resolve, reject) => {
             const flagId = `query-${isPublic? 'public-': ''}step`
@@ -170,7 +170,6 @@ export const mainproc = (props) => {
                         ))
                         Promise.all([...junkDocs, ...selfChannelDocs])
                             .then(_=>syncChannelData('self'))
-                            // .then(_=>updateStepFlag(QueryStep.self_channel))
                             .then(_=>{
                                 queryDispNameStepEx('self')
                                 queryChannelAvatarStepEx('self')
@@ -276,7 +275,6 @@ export const mainproc = (props) => {
                         })
                         Promise.all([...junkDocs, ...subscribedChannelDocs])
                             .then(_=>syncChannelData('subscribed'))
-                            // .then(_=>updateStepFlag(QueryStep.subscribed_channel))
                             .then(_=>{ 
                                 queryDispNameStepEx('subscribed')
                                 queryChannelAvatarStepEx('subscribed')
@@ -360,7 +358,8 @@ export const mainproc = (props) => {
                     })
                     Promise.all(postsByChannel)
                         .then(postGroup=>Promise.all(getMergedArray(postGroup)))
-                        .then(_=>updateStepFlag(QueryStep.post_data, is_public))
+                        // .then(_=>updateStepFlag(QueryStep.post_data, is_public))
+                        .then(_=>updateQueryStep(StepType.post_data, is_public))
                         .then(_=>resolve({success: true}))
                         .catch(err=>resolve({success: false, error: err}))
                 })
@@ -402,7 +401,8 @@ export const mainproc = (props) => {
                     })
                     Promise.all(postDocsByChannel)
                         .then(postGroup=>Promise.all(getMergedArray(postGroup)))
-                        .then(_=>updateStepFlag(QueryStep.post_like, is_public))
+                        // .then(_=>updateStepFlag(QueryStep.post_like, is_public))
+                        .then(_=>updateQueryStep(StepType.post_like, is_public))
                         .then(_=>resolve({success: true}))
                         .catch(err=>resolve({success: false, error: err}))
                 })
@@ -476,7 +476,8 @@ export const mainproc = (props) => {
                     })
                     Promise.all(postDocsByChannel)
                         .then(postGroup=>Promise.all(getMergedArray(postGroup)))
-                        .then(_=>updateStepFlag(QueryStep.post_image, true))
+                        // .then(_=>updateStepFlag(QueryStep.post_image, true))
+                        .then(_=>updateQueryStep(StepType.post_like, is_public))
                         .then(_=>resolve({success: true}))
                         .catch(err=>resolve({success: false, error: err}))
                 })
@@ -530,7 +531,8 @@ export const mainproc = (props) => {
                     ))
                     Promise.all(postDocsByChannel)
                         .then(commentGroup=>Promise.all(getMergedArray(commentGroup)))
-                        .then(_=>updateStepFlag(QueryStep.comment_data, is_public))
+                        // .then(_=>updateStepFlag(QueryStep.comment_data, is_public))
+                        .then(_=>updateQueryStep(StepType.comment_data, is_public))
                         .then(_=>resolve({success: true}))
                         .catch(err=>resolve({success: false, error: err}))
                 })
@@ -574,7 +576,8 @@ export const mainproc = (props) => {
                     })
                     Promise.all(commentDocsByChannel)
                         .then(commentGroup=>Promise.all(getMergedArray(commentGroup)))
-                        .then(_=>updateStepFlag(QueryStep.comment_like, is_public))
+                        // .then(_=>updateStepFlag(QueryStep.comment_like, is_public))
+                        .then(_=>updateQueryStep(StepType.comment_like, is_public))
                         .then(_=>resolve({success: true}))
                         .catch(err=>resolve({success: false, error: err}))
                 })

@@ -6,7 +6,7 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 
 import { SidebarContext } from 'contexts/SidebarContext';
 import { OverPageContext } from 'contexts/OverPageContext';
-import { selectVisitedChannelId, selectFocusedChannelId } from 'redux/slices/channel';
+import { selectVisitedChannelId, selectFocusedChannelId, selectChannelById } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { getLocalDB, QueryStep } from 'utils/db';
 import { SettingMenuArray, reduceDIDstring } from 'utils/common'
@@ -57,24 +57,18 @@ function FloatingHeader(props) {
   const visitedChannelId = useSelector(selectVisitedChannelId)
   const myInfo = useSelector(selectMyInfo)
   const focusedChannelId = useSelector(selectFocusedChannelId)
-  const [focusedChannel, setFocusedChannel] = React.useState({})
+  let selectedChannelId = focusedChannelId
+  const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
+  const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
+  if(isSubscribedChannel || isPublicChannel)
+    selectedChannelId = visitedChannelId
+  const focusedChannel = useSelector(selectChannelById(selectedChannelId)) || {}
   const [postCountInFocus, setPostCountInFocus] = React.useState(0)
   const [activeCommentCount, setActiveCommentCount] = React.useState(0)
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
-    let selectedChannelId = focusedChannelId
-    const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
-    const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
-    if(isSubscribedChannel || isPublicChannel)
-      selectedChannelId = visitedChannelId
-
     if(selectedChannelId) {
-      if((queryStep && !isPublicChannel) || (queryPublicStep && isPublicChannel))
-        LocalDB.get(selectedChannelId)
-          .then(doc=>{
-            setFocusedChannel(doc)
-          })
       if((queryStep>=QueryStep.post_data && !isPublicChannel) || (queryPublicStep>=QueryStep.post_data && isPublicChannel))
         LocalDB.find({
           selector: {
@@ -85,7 +79,7 @@ function FloatingHeader(props) {
           .then(res=>setPostCountInFocus(res.docs.length))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep, queryPublicStep, focusedChannelId, visitedChannelId, pathname])
+  }, [queryStep, queryPublicStep, selectedChannelId])
 
   React.useEffect(()=>{
     if(params.post_id) {
