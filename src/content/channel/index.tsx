@@ -40,19 +40,17 @@ function Channel() {
     if(currentPostStep) {
       setIsLoading(true)
     }
-    if(focusedChannelId) {
-      if(currentPostStep) {
-        appendMoreData('first')
-        LocalDB.find({
-          selector: {
-            table_type: 'post',
-            channel_id: focusedChannelId
-          }
+    if(focusedChannelId && currentPostStep) {
+      appendMoreData('first')
+      LocalDB.find({
+        selector: {
+          table_type: 'post',
+          channel_id: focusedChannelId
+        }
+      })
+        .then(response=>{
+          setTotalCount(response.docs.length)
         })
-          .then(response=>{
-            setTotalCount(response.docs.length)
-          })
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusedChannelId, publishPostNumber, currentPostStep])
