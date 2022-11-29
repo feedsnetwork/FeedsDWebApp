@@ -4,7 +4,6 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Stack, Box, Button, Hidden, ListItemText, Typography, styled, alpha, lighten } from '@mui/material';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 
-import { SidebarContext } from 'contexts/SidebarContext';
 import { OverPageContext } from 'contexts/OverPageContext';
 import { selectVisitedChannelId, selectFocusedChannelId, selectChannelById } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';

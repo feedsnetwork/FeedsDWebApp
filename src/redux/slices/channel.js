@@ -151,6 +151,9 @@ export function selectTargetChannel(state) {
 export function selectSelfChannels(state) {
   return state.channel.selfChannels
 }
+export function selectSelfChannelsCount(state) {
+  return Object.keys(state.channel.selfChannels).length
+}
 export function selectSubscribedChannels(state) {
   return state.channel.subscribedChannels
 }

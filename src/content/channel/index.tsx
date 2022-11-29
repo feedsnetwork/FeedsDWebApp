@@ -8,18 +8,20 @@ import { EmptyView } from 'components/EmptyView'
 import { SidebarContext } from 'contexts/SidebarContext';
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import PostBox from './post'
-import { selectFocusedChannelId } from 'redux/slices/channel';
-import { getLocalDB, QueryStep } from 'utils/db';
+import { selectFocusedChannelId, selectSelfChannelsCount } from 'redux/slices/channel';
+import { selectQueryStep } from 'redux/slices/proc';
+import { getLocalDB } from 'utils/db';
 
 function Channel() {
-  const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
+  const { publishPostNumber } = React.useContext(SidebarContext);
   const focusedChannelId = useSelector(selectFocusedChannelId)
   const [posts, setPosts] = React.useState([]);
-  const [selfChannelCount, setSelfChannelCount] = React.useState(0);
+  const selfChannelCount = useSelector(selectSelfChannelsCount)
   const [totalCount, setTotalCount] = React.useState(0)
   const [hasMore, setHasMore] = React.useState(true)
   const [isLoading, setIsLoading] = React.useState(true)
   const [pageEndTime, setPageEndTime] = React.useState(0)
+  const currentPostStep = useSelector(selectQueryStep('post_data'))
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
@@ -35,11 +37,11 @@ function Channel() {
     setPageEndTime(0)
   }, [focusedChannelId])
   React.useEffect(()=>{
-    if(queryStep) {
+    if(currentPostStep) {
       setIsLoading(true)
     }
     if(focusedChannelId) {
-      if(queryStep >= QueryStep.post_data) {
+      if(currentPostStep) {
         appendMoreData('first')
         LocalDB.find({
           selector: {
@@ -52,19 +54,8 @@ function Channel() {
           })
       }
     }
-    if(queryStep && !selfChannelCount) {
-      LocalDB.find({
-        selector: {
-          is_self: true,
-          table_type: 'channel'
-        }
-      })
-        .then(res=>{
-          setSelfChannelCount(res.docs.length)
-        })
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusedChannelId, publishPostNumber, queryStep])
+  }, [focusedChannelId, publishPostNumber, currentPostStep])
 
   const appendMoreData = (type) => {
     let limit = 10
