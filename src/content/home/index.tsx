@@ -1,15 +1,16 @@
 import React from 'react'
+import { useSelector } from 'react-redux';
 import { Grid, Container } from '@mui/material';
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import PostCard from 'components/PostCard';
 import { EmptyView } from 'components/EmptyView'
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
-import { SidebarContext } from 'contexts/SidebarContext';
-import { getLocalDB, QueryStep } from 'utils/db';
+import { selectQueryStep } from 'redux/slices/proc';
+import { getLocalDB } from 'utils/db';
 
 const Home = () => {
-  const { queryStep } = React.useContext(SidebarContext);
+  const currentPostStep = useSelector(selectQueryStep('post_data'))
   const [posts, setPosts] = React.useState([])
   const [hasMore, setHasMore] = React.useState(true)
   const [pageEndTime, setPageEndTime] = React.useState(0)
@@ -27,11 +28,11 @@ const Home = () => {
   }, [])
   
   React.useEffect(()=>{
-    if(queryStep >= QueryStep.post_data) {
+    if(currentPostStep) {
       appendMoreData()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep])
+  }, [currentPostStep])
 
   const appendMoreData = () => {
     LocalDB.find({
