@@ -234,7 +234,11 @@ export class HiveService {
         const result = await databaseService.createCollection(channelName);
         resolve(result)
       } catch (error) {
-        reject(error);
+        if (error.message === "Already exists") {
+          // ignore
+        } else {
+          reject(error)
+        }
       }
     })
   }
