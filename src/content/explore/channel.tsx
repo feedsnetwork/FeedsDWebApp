@@ -2,17 +2,18 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 
 import PostList from 'components/PostList';
-import { SidebarContext } from 'contexts/SidebarContext';
 import { selectVisitedChannelId } from 'redux/slices/channel';
-import { getLocalDB, QueryStep } from 'utils/db';
+import { getLocalDB } from 'utils/db';
+import { selectQueryPublicStep } from 'redux/slices/proc';
 
 function Channel() {
-  const { queryPublicStep } = React.useContext(SidebarContext);
   const channel_id = useSelector(selectVisitedChannelId)
   const [isLoading, setIsLoading] = React.useState(true)
   const [totalCount, setTotalCount] = React.useState(0)
   const [pageEndTime, setPageEndTime] = React.useState(0)
+  const [hasMore, setHasMore] = React.useState(true)
   const [posts, setPosts] = React.useState([]);
+  const currentPostStep = useSelector(selectQueryPublicStep('post_data'))
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
@@ -25,11 +26,14 @@ function Channel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   React.useEffect(()=>{
-    if(queryPublicStep) {
+    setPageEndTime(0)
+  }, [channel_id])
+  React.useEffect(()=>{
+    if(currentPostStep) {
       setIsLoading(true)
     }
-    if(queryPublicStep >= QueryStep.post_data && channel_id) {
-      appendMoreData()
+    if(currentPostStep && channel_id) {
+      appendMoreData('first')
       LocalDB.find({
         selector: {
           table_type: 'post',
@@ -41,9 +45,16 @@ function Channel() {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPublicStep, channel_id])
+  }, [currentPostStep, channel_id])
 
-  const appendMoreData = () => {
+  const appendMoreData = (type) => {
+    let limit = 10
+    let created_at: object = pageEndTime? {$lt: pageEndTime}: {$gt: true}
+    if(type === "first") {
+      limit = pageEndTime? undefined: 10
+      created_at = pageEndTime? {$gte: pageEndTime}: {$gt: true}
+    }
+
     LocalDB.createIndex({
       index: {
         fields: ['created_at'],
@@ -54,7 +65,7 @@ function Channel() {
           selector: {
             table_type: 'post',
             channel_id,
-            created_at: pageEndTime? {$lt: pageEndTime}: {$gt: true}
+            created_at
           },
           sort: [{'created_at': 'desc'}],
           limit: 10
@@ -62,7 +73,12 @@ function Channel() {
       ))
       .then(response => {
         setIsLoading(false)
-        setPosts([...posts, ...response.docs])
+        if(response.docs.length<limit)
+          setHasMore(false)
+        if(type === 'first')
+          setPosts(response.docs)
+        else
+          setPosts([...posts, ...response.docs])
         const pageEndPost = response.docs[response.docs.length-1]
         if(pageEndPost)
           setPageEndTime(pageEndPost['created_at'])
@@ -74,7 +90,7 @@ function Channel() {
     isLoading, 
     posts,
     appendMoreData, 
-    hasMore: posts.length < totalCount 
+    hasMore: posts.length < totalCount || hasMore
   }
   return (
     <PostList {...postListProps}/>

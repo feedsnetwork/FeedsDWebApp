@@ -18,7 +18,7 @@ const PostList = (props)=>{
           <Container sx={{ mt: 3, flexGrow: 1, overFlow: 'auto' }} maxWidth="lg">
             <InfiniteScroll
               dataLength={posts.length}
-              next={appendMoreData}
+              next={()=>{appendMoreData('next')}}
               hasMore={hasMore}
               loader={<h4>Loading...</h4>}
               scrollableTarget="scrollableBox"

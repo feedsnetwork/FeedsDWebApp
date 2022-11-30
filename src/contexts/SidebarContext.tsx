@@ -11,7 +11,6 @@ type SidebarContext = {
   subscriberInfo: any;
   myAvatar: any;
   userInfo: any;
-  queryStep: any;
   queryPublicStep: any;
   queryFlag: any;
   queryPublicFlag: any;
@@ -27,7 +26,6 @@ type SidebarContext = {
   setSubscriberInfo: Dispatch<any>;
   setMyAvatar: Dispatch<any>;
   setUserInfo: Dispatch<any>;
-  setQueryStep: Dispatch<any>;
   setQueryPublicStep: Dispatch<any>;
   setQueryFlag: Dispatch<any>;
   setQueryPublicFlag: Dispatch<any>;
@@ -51,7 +49,6 @@ export const SidebarProvider = (props) => {
   const [myAvatar, setMyAvatar] = useState('');
   const [subscriberInfo, setSubscriberInfo] = useState({});
   const [userInfo, setUserInfo] = useState('');
-  const [queryStep, setQueryStep] = useState(0);
   const [queryPublicStep, setQueryPublicStep] = useState(0);
   const [queryFlag, setQueryFlag] = useState(0);
   const [queryPublicFlag, setQueryPublicFlag] = useState(0);
@@ -76,7 +73,6 @@ export const SidebarProvider = (props) => {
         myAvatar,
         subscriberInfo,
         userInfo,
-        queryStep,
         queryPublicStep,
         queryFlag,
         queryPublicFlag,
@@ -92,7 +88,6 @@ export const SidebarProvider = (props) => {
         setSubscriberInfo,
         setMyAvatar,
         setUserInfo,
-        setQueryStep,
         setQueryPublicStep,
         setQueryFlag,
         setQueryPublicFlag

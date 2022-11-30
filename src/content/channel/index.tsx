@@ -34,33 +34,38 @@ function Channel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   React.useEffect(()=>{
-    setPageEndTime(0)
+    setIsLoading(true)
+    if(focusedChannelId && currentPostStep)
+      loadPostData(focusedChannelId, 0)
   }, [focusedChannelId])
   React.useEffect(()=>{
     if(currentPostStep) {
       setIsLoading(true)
     }
     if(focusedChannelId && currentPostStep) {
-      appendMoreData('first')
-      LocalDB.find({
-        selector: {
-          table_type: 'post',
-          channel_id: focusedChannelId
-        }
-      })
-        .then(response=>{
-          setTotalCount(response.docs.length)
-        })
+      loadPostData(focusedChannelId, pageEndTime)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusedChannelId, publishPostNumber, currentPostStep])
+  }, [currentPostStep, publishPostNumber])
 
-  const appendMoreData = (type) => {
+  const loadPostData = (channel_id, endTime) => {
+    appendMoreData('first', endTime)
+    LocalDB.find({
+      selector: {
+        table_type: 'post',
+        channel_id
+      }
+    })
+      .then(response=>{
+        setTotalCount(response.docs.length)
+      })
+  }
+  const appendMoreData = React.useCallback((type, endTime=pageEndTime) => {
     let limit = 10
-    let createdAt: object = pageEndTime? {$lt: pageEndTime}: {$gt: true}
+    let createdAt: object = endTime? {$lt: endTime}: {$gt: true}
     if(type === "first") {
-      limit = pageEndTime? undefined: 10
-      createdAt = pageEndTime? {$gte: pageEndTime}: {$gt: true}
+      limit = endTime? undefined: 10
+      createdAt = endTime? {$gte: endTime}: {$gt: true}
     }
 
     LocalDB.createIndex({
@@ -92,7 +97,7 @@ function Channel() {
           setPageEndTime(pageEndPost['created_at'])
       })
       .catch(err=>setIsLoading(false))
-  }
+  }, [pageEndTime, focusedChannelId])
   const loadingSkeletons = Array(5).fill(null)
   return (
     <>

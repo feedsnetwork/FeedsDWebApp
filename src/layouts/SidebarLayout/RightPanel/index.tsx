@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux'
 import { Icon } from '@iconify/react';
@@ -14,10 +14,10 @@ import PublicChannelSkeleton from 'components/Skeleton/PublicChannelSkeleton';
 import SubscribeButton from 'components/SubscribeButton';
 import SubscriberListItem from './SubscriberListItem';
 import PublicChannelItem from './PublicChannelItem';
-import { SidebarContext } from 'contexts/SidebarContext';
-import { getLocalDB, QueryStep } from 'utils/db'
 import { selectFocusedChannelId, selectVisitedChannelId, selectChannelById } from 'redux/slices/channel';
+import { selectQueryPublicStep } from 'redux/slices/proc';
 import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
+import { getLocalDB } from 'utils/db'
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -116,13 +116,13 @@ const ChannelAbout = (props) => {
   </>
 }
 function RightPanel() {
-  const { queryPublicStep } = useContext(SidebarContext);
-  const [isLoadingPublicChannel, setIsLoadingPublicChannels] = React.useState(false)
+  const [isLoadingPublicChannel, setIsLoadingPublicChannels] = React.useState(true)
   const [publicChannels, setPublicChannels] = React.useState([])
   const theme = useTheme();
   const { pathname } = useLocation();
   const visitedChannelId = useSelector(selectVisitedChannelId)
   const focusedChannelId = useSelector(selectFocusedChannelId)
+  const currentPublicChannelStep = useSelector(selectQueryPublicStep('public_channel'))
 
   const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
   const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
@@ -133,9 +133,7 @@ function RightPanel() {
   let content = null
 
   React.useEffect(()=>{
-    if(queryPublicStep < QueryStep.public_channel && !publicChannels.length)
-      setIsLoadingPublicChannels(true)
-    if(queryPublicStep >= QueryStep.public_channel)
+    if(currentPublicChannelStep)
       LocalDB.find({
         selector: {
           table_type: 'channel',
@@ -148,7 +146,7 @@ function RightPanel() {
           setIsLoadingPublicChannels(false)
         })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPublicStep])
+  }, [currentPublicChannelStep])
 
   if(pathname.startsWith('/setting')) {
     if(pathname.endsWith('/credentials'))

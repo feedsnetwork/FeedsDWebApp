@@ -27,7 +27,7 @@ function CommentDlg() {
   const isOpen = useSelector(selectCommentModalState)
   const activePost = useSelector(selectActivePost)
   const activePostProps = useSelector(selectActivePostProps)
-  const currentChannel = useSelector(selectChannelById(activePost['channel_id'])) || {}
+  const currentChannel = useSelector(selectChannelById(activePost?.channel_id)) || {}
   const myInfo = useSelector(selectMyInfo)
 
   const { enqueueSnackbar } = useSnackbar();
