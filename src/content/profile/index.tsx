@@ -11,15 +11,14 @@ import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
 import ChannelSkeleton from 'components/Skeleton/ChannelSkeleton';
 import PostSkeleton from 'components/Skeleton/PostSkeleton';
-import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceDIDstring, decodeBase64 } from 'utils/common'
-import { getLocalDB, QueryStep } from 'utils/db';
+import { getLocalDB } from 'utils/db';
 import { selectMyInfo } from 'redux/slices/user';
 import { selectSelfChannels, selectSubscribedChannels } from 'redux/slices/channel';
 import { selectQueryStepStatus } from 'redux/slices/proc';
 
 function Profile() {
-  const { queryStep } = React.useContext(SidebarContext);
+  const currentLikeStep = useSelector(selectQueryStepStatus('post_like'))
   const [tabValue, setTabValue] = React.useState(0);
   const [likedPosts, setLikedPosts] = React.useState([])
   const [isLoadingLike, setIsLoadingLike] = React.useState(true)
@@ -35,7 +34,7 @@ function Profile() {
   };
 
   React.useEffect(()=>{
-    if(queryStep >= QueryStep.post_like) {
+    if(currentLikeStep) {
       LocalDB.find({
         selector: {
           table_type: 'post',
@@ -48,7 +47,7 @@ function Profile() {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep])
+  }, [currentLikeStep])
 
   // const backgroundImg = "/temp-back.png"
   const subscriptionCount = selfChannels.filter(channel=>channel['is_subscribed']).length + subscribedChannels.length

@@ -16,9 +16,9 @@ const slice = createSlice({
     setUserInfo(state, action) {
       if(Array.isArray(action.payload)) {
         let tempDocs = [...action.payload]
-        tempDocs = tempDocs.filter(doc=>!Object.keys(state.userData).includes(doc._id))
+        tempDocs = tempDocs.filter(doc=>!Object.keys(state.userData).includes(doc?.user_did))
         const userDocs = tempDocs.reduce((group, doc)=>{
-          group[doc._id] = doc
+          group[doc?.user_did] = doc
           return group
         }, {})
         state.userData = { ...state.userData, ...userDocs }

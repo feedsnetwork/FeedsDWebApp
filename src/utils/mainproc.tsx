@@ -787,18 +787,22 @@ export const mainproc = (props) => {
                 dispatch(setUserInfo(userDataDocs))
                 // query user info
                 const queriedDIDs = userDataDocs.map(doc=>doc._id)
-                subscriberArr = excludeFromArray(subscriberArr, queriedDIDs)
-                const userDocs = subscriberArr.map(async userDID=>{
-                    try {
-                        const userInfo = await getInfoFromDID(userDID)
-                        const infoDoc = {...userInfo as object, table_type: 'user'}
-                        await LocalDB.upsert(userDID, (doc)=>{
-                            return {...doc, ...infoDoc}
-                        })
-                        return infoDoc
-                    } catch(err) {
-                        return null
+                subscriberArr = excludeFromArray(subscriberArr, queriedDIDs, 'user_did')
+                const userDocs = subscriberArr.map(async subscriber=>{
+                    const user_did = subscriber['user_did']
+                    let infoDoc = {
+                        user_did, 
+                        name: subscriber['display_name'], 
+                        table_type: 'user'
                     }
+                    try {
+                        const userInfo = await getInfoFromDID(user_did)
+                        infoDoc = {...infoDoc, ...userInfo as object}
+                    } catch(err) {}
+                    await LocalDB.upsert(user_did, (doc)=>{
+                        return {...doc, ...infoDoc}
+                    })
+                    return infoDoc
                 })
                 const userInfoArr = await Promise.all(userDocs)
                 dispatch(setUserInfo(userInfoArr.filter(item=>item!==null)))

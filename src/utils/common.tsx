@@ -159,8 +159,8 @@ export function filterAlreadyQueried(origin, needle, field) {
   const result = origin.filter(item => !needle.includes(item[field]));
   return result
 }
-export function excludeFromArray(origin, needleArr) {
-  const result = origin.filter(item => !needleArr.includes(item));
+export function excludeFromArray(origin, needleArr, needleKey) {
+  const result = origin.filter(item => !needleArr.includes(item[needleKey]));
   return result
 }
 export function convertAutoLink(content) {

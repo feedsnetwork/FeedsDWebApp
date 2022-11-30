@@ -1,21 +1,22 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Card, Container, Box, Typography, Stack, IconButton, Tabs, Tab } from '@mui/material';
-import ShareIcon from '@mui/icons-material/ShareOutlined';
+import { Card, Container, Box, Typography, Stack, Tabs, Tab } from '@mui/material';
+// import ShareIcon from '@mui/icons-material/ShareOutlined';
 
 import StyledAvatar from 'components/StyledAvatar'
 import { EmptyViewInProfile } from 'components/EmptyView'
 import PostCard from 'components/PostCard';
 import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
-import { SidebarContext } from 'contexts/SidebarContext';
 import { reduceDIDstring, decodeBase64 } from 'utils/common'
 import { selectUserInfoByDID } from 'redux/slices/user';
-import { getLocalDB, QueryStep } from 'utils/db';
+import { getLocalDB } from 'utils/db';
+import { selectQueryStep, selectQueryStepStatus } from 'redux/slices/proc';
 
 function OthersProfile() {
-  const { queryStep } = React.useContext(SidebarContext);
+  const isPassedChannelStep = useSelector(selectQueryStepStatus('subscribed_channel'))
+  const currentLikeStep = useSelector(selectQueryStep('post_like'))
   const [tabValue, setTabValue] = React.useState(0);
   const [channels, setChannels] = React.useState([])
   const [likedPosts, setLikedPosts] = React.useState([])
@@ -30,7 +31,7 @@ function OthersProfile() {
   };
 
   React.useEffect(()=>{
-    if(queryStep) {
+    if(isPassedChannelStep) {
       LocalDB.find({
         selector: {
           table_type: 'channel'
@@ -41,10 +42,10 @@ function OthersProfile() {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep])
+  }, [isPassedChannelStep])
 
   React.useEffect(()=>{
-    if(queryStep >= QueryStep.post_like) {
+    if(currentLikeStep) {
       LocalDB.find({
         selector: {
           table_type: 'post',
@@ -56,11 +57,11 @@ function OthersProfile() {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep])
+  }, [currentLikeStep])
 
   // const backgroundImg = "/temp-back.png"
   const selfChannels = channels.filter(channel=>channel['target_did'] === user_did)
-  const subscribedChannels = channels.filter(channel=>channel['subscribers'].some(subscriber=>subscriber['user_did']===user_did))
+  const subscribedChannels = channels.filter(channel=>(channel['subscribers'] && channel['subscribers'].some(subscriber=>subscriber['user_did']===user_did)))
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
       <Card>
@@ -70,10 +71,10 @@ function OthersProfile() {
           <StyledAvatar alt={this_user['name']} src={avatarSrc} width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
         </Box>
         <Box px={2} py={1}>
-          <Stack direction='row' spacing={1}>
-            <Box ml='auto'>
+          <Stack direction='row' spacing={1} mt={4}>
+            {/* <Box ml='auto'>
               <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><ShareIcon fontSize='small'/></IconButton>
-            </Box>
+            </Box> */}
           </Stack>
           <Stack spacing={1} px={{sm: 0, md: 3}} mt={2}>
             <Typography variant="h3">@{this_user['name'] || reduceDIDstring(user_did)}</Typography>
