@@ -10,16 +10,6 @@ export const getLocalDB = ()=>{
   // console.info(sessionStorage.getItem('FEEDS_DID'))
   return new PouchDB(`feeds-${sessionStorage.getItem('FEEDS_DID')}`)
 }
-export const enum QueryStep {
-  self_channel = 1,
-  subscribed_channel = 2,
-  public_channel = 2,
-  post_data = 3,
-  post_like = 4,
-  post_image = 5,
-  comment_data = 6,
-  comment_like = 7,
-}
 export const StepType = {
   self_channel: { index: 1, name: "self_channel" },
   subscribed_channel: { index: 2, name: "subscribed_channel" },

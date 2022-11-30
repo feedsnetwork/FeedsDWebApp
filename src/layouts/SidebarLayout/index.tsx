@@ -32,14 +32,14 @@ interface SidebarLayoutProps {
 }
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
-  const { setWalletAddress, setQueryFlag, setQueryPublicFlag } = useContext(SidebarContext);
+  const { setWalletAddress } = useContext(SidebarContext);
   const sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
   const dispatch = useDispatch()
   const focusedChannelId = useSelector(selectFocusedChannelId)
   const LocalDB = getLocalDB()
   // LocalDB.destroy()
 
-  const propsInProc = { dispatch, setQueryFlag, setQueryPublicFlag }
+  const propsInProc = { dispatch }
   const procSteps = mainproc(propsInProc)
   const querySteps = procSteps.querySteps
   const queryPublicSteps = procSteps.queryPublicSteps

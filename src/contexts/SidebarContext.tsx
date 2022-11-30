@@ -1,32 +1,12 @@
 import React, { useState, createContext, Dispatch } from 'react';
 type SidebarContext = {
   sidebarToggle: any;
-  selfChannels: any;
-  subscribedChannels: any;
-  selectedChannel: any;
   walletAddress: any;
   publishPostNumber: number;
-  postsInSelf: any;
-  postsInSubs: any;
-  subscriberInfo: any;
-  myAvatar: any;
-  userInfo: any;
-  queryFlag: any;
-  queryPublicFlag: any;
   toggleSidebar: () => void;
   closeSidebar: () => void;
-  setSelfChannels: Dispatch<any>;
-  setSubscribedChannels: Dispatch<any>;
-  setSelectChannel: Dispatch<any>;
   setWalletAddress: Dispatch<any>;
   setPublishPostNumber: Dispatch<any>;
-  setPostsInSelf: Dispatch<any>;
-  setPostsInSubs: Dispatch<any>;
-  setSubscriberInfo: Dispatch<any>;
-  setMyAvatar: Dispatch<any>;
-  setUserInfo: Dispatch<any>;
-  setQueryFlag: Dispatch<any>;
-  setQueryPublicFlag: Dispatch<any>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -37,18 +17,8 @@ export const SidebarContext = createContext<SidebarContext>(
 export const SidebarProvider = (props) => {
   
   const [sidebarToggle, setSidebarToggle] = useState(false);
-  const [selfChannels, setSelfChannels] = useState([]);
-  const [subscribedChannels, setSubscribedChannels] = useState([]);
-  const [selectedChannel, setSelectChannel] = useState(null);
   const [walletAddress, setWalletAddress] = useState(null);
   const [publishPostNumber, setPublishPostNumber] = useState(0);
-  const [postsInSelf, setPostsInSelf] = useState({});
-  const [postsInSubs, setPostsInSubs] = useState({});
-  const [myAvatar, setMyAvatar] = useState('');
-  const [subscriberInfo, setSubscriberInfo] = useState({});
-  const [userInfo, setUserInfo] = useState('');
-  const [queryFlag, setQueryFlag] = useState(0);
-  const [queryPublicFlag, setQueryPublicFlag] = useState(0);
 
   const toggleSidebar = () => {
     setSidebarToggle(!sidebarToggle);
@@ -60,32 +30,12 @@ export const SidebarProvider = (props) => {
     <SidebarContext.Provider
       value={{ 
         sidebarToggle, 
-        selfChannels, 
-        subscribedChannels, 
-        selectedChannel,
         walletAddress,
         publishPostNumber,
-        postsInSelf,
-        postsInSubs,
-        myAvatar,
-        subscriberInfo,
-        userInfo,
-        queryFlag,
-        queryPublicFlag,
         toggleSidebar, 
         closeSidebar, 
-        setSelfChannels, 
-        setSubscribedChannels, 
-        setSelectChannel,
         setWalletAddress,
         setPublishPostNumber,
-        setPostsInSelf,
-        setPostsInSubs,
-        setSubscriberInfo,
-        setMyAvatar,
-        setUserInfo,
-        setQueryFlag,
-        setQueryPublicFlag
       }}
     >
       {props.children}
