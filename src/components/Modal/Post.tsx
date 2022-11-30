@@ -17,19 +17,18 @@ import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
 import { HiveApi } from 'services/HiveApi'
 import { CommonStatus } from 'models/common_content'
 import { decodeBase64, getBufferFromFile } from 'utils/common'
-import { getLocalDB, QueryStep } from 'utils/db';
+import { getLocalDB } from 'utils/db';
 import { handlePostModal, selectPostModalState, selectActivePost } from 'redux/slices/post';
-import { selectActiveChannelId, selectFocusedChannelId } from 'redux/slices/channel';
+import { selectActiveChannelId, selectChannelById, selectFocusedChannelId } from 'redux/slices/channel';
 
 function PostDlg() {
-  const { queryStep, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
+  const { publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
   const [postext, setPostext] = React.useState('');
   const [imageAttach, setImageAttach] = React.useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOpenPopover, setOpenPopover] = React.useState(false);
-  const [focusedChannel, setFocusedChannel] = React.useState({})
   const postRef = React.useRef(null)
 
   const dispatch = useDispatch()
@@ -39,7 +38,7 @@ function PostDlg() {
   const activePost = useSelector(selectActivePost)
   
   const currentChannelId = activeChannelId || activePost?.channel_id || focusedChannelId
-  // const focusedChannel = selfChannels.find(item=>item.channel_id === currentChannelId) || {}
+  const focusedChannel = useSelector(selectChannelById(currentChannelId)) || {}
   const isComment = activePost && !!activePost.comment_id
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
@@ -53,14 +52,6 @@ function PostDlg() {
       setImageAttach(null)
     }
   }, [isOpen])
-
-  React.useEffect(()=>{
-    if(queryStep >= QueryStep.self_channel && currentChannelId) {
-      LocalDB.get(currentChannelId)
-        .then(doc=>setFocusedChannel(doc))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep, currentChannelId])
 
   React.useEffect(()=>{
     if(activePost && isOpen) {

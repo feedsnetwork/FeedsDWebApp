@@ -14,19 +14,20 @@ import { handleCommentModal, selectActivePost, selectActivePostProps, selectComm
 import { selectMyInfo } from 'redux/slices/user';
 import { reduceDIDstring, decodeBase64 } from 'utils/common'
 import { getLocalDB } from 'utils/db';
+import { selectChannelById } from 'redux/slices/channel';
 
 function CommentDlg() {
-  const { queryStep, publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
+  const { publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
   const [isOnValidation, setOnValidation] = React.useState(false);
   const [onProgress, setOnProgress] = React.useState(false);
   const [commentext, setCommentext] = React.useState('');
-  const [currentChannel, setCurrentChannel] = React.useState({})
   const commentRef = React.useRef(null)
   
   const dispatch = useDispatch()
   const isOpen = useSelector(selectCommentModalState)
   const activePost = useSelector(selectActivePost)
   const activePostProps = useSelector(selectActivePostProps)
+  const currentChannel = useSelector(selectChannelById(activePost['channel_id'])) || {}
   const myInfo = useSelector(selectMyInfo)
 
   const { enqueueSnackbar } = useSnackbar();
@@ -41,14 +42,6 @@ function CommentDlg() {
       setOnProgress(false)
     }
   }, [isOpen])
-
-  React.useEffect(()=>{
-    if(queryStep && activePost?.channel_id) {
-      LocalDB.get(activePost['channel_id'])
-        .then(doc=>setCurrentChannel(doc))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep, activePost])
 
   const handlePost = async (e) => {
     setOnValidation(true)
