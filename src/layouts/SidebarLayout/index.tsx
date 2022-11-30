@@ -121,7 +121,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     || pathname.startsWith('/explore/channel')
     || pathname.startsWith('/setting')
     || pathname.startsWith('/post/')
-    || pathname==='/profile'
+    || pathname.startsWith('/profile')
   )
     floatingHeaderVisible = true;
 

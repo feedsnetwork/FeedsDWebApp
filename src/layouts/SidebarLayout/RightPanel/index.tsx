@@ -178,6 +178,7 @@ function RightPanel() {
       switch(pathname.replaceAll('/','')) {
         case "home":
         case "profile":
+        case "profileothers":
           break;
         default:
           const activeChannel = {...focusedChannel}
