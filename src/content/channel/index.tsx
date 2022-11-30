@@ -37,6 +37,7 @@ function Channel() {
     setIsLoading(true)
     if(focusedChannelId && currentPostStep)
       loadPostData(focusedChannelId, 0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusedChannelId])
   React.useEffect(()=>{
     if(currentPostStep) {
@@ -97,6 +98,7 @@ function Channel() {
           setPageEndTime(pageEndPost['created_at'])
       })
       .catch(err=>setIsLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageEndTime, focusedChannelId])
   const loadingSkeletons = Array(5).fill(null)
   return (

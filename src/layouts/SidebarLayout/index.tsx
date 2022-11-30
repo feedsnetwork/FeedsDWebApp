@@ -32,14 +32,14 @@ interface SidebarLayoutProps {
 }
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
-  const { setWalletAddress, setQueryPublicStep, setQueryFlag, setQueryPublicFlag } = useContext(SidebarContext);
+  const { setWalletAddress, setQueryFlag, setQueryPublicFlag } = useContext(SidebarContext);
   const sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
   const dispatch = useDispatch()
   const focusedChannelId = useSelector(selectFocusedChannelId)
   const LocalDB = getLocalDB()
   // LocalDB.destroy()
 
-  const propsInProc = { dispatch, setQueryPublicStep, setQueryFlag, setQueryPublicFlag }
+  const propsInProc = { dispatch, setQueryFlag, setQueryPublicFlag }
   const procSteps = mainproc(propsInProc)
   const querySteps = procSteps.querySteps
   const queryPublicSteps = procSteps.queryPublicSteps
@@ -70,7 +70,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
 
     LocalDB.get('query-public-step')
       .then(currentPublicStep=>{
-        setQueryPublicStep(currentPublicStep['step'])
         const passedSteps = Object.values(StepType)
           .filter(step=>(1<step.index && step.index<=currentPublicStep['step'] && step.name !== 'subscribed_channel'))
           .reduce((stepObj, step)=>{
