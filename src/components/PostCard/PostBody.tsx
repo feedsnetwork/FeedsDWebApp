@@ -18,18 +18,20 @@ import { HiveApi } from 'services/HiveApi'
 import { handleUnsubscribeModal, selectChannelById, setActiveChannelId, setFocusedChannelId, setTargetChannel } from 'redux/slices/channel';
 import { handleCommentModal, handleDelPostModal, handlePostModal, selectActivePost, setActivePost, setActivePostProps } from 'redux/slices/post';
 import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard } from 'utils/common'
-import { getLocalDB, QueryStep } from 'utils/db';
+import { getLocalDB } from 'utils/db';
+import { selectQueryStep } from 'redux/slices/proc';
 
 const PostBody = (props) => {
   const { post, contentObj, isReply=false, level=1, direction='column' } = props
   const distanceTime = isValidTime(post.created_at)?getDateDistance(post.created_at):''
   const activePost = useSelector(selectActivePost)
-  const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
+  const { publishPostNumber } = React.useContext(SidebarContext);
   const [isLike, setIsLike] = React.useState(!!post.like_me)
   const currentChannel = useSelector(selectChannelById(post.channel_id)) || {}
   const [commentCount, setCommentCount] = React.useState(0)
   const [isSaving, setIsSaving] = React.useState(false)
   const [isOpenPopup, setOpenPopup] = React.useState(null);
+  const currentCommentStep = useSelector(selectQueryStep('comment_data'))
   const hiveApi = new HiveApi()
   const PostOrComment = !post.comment_id?'Post':'Comment'
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -40,10 +42,10 @@ const PostBody = (props) => {
   const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(()=>{
-    if(queryStep >= QueryStep.comment_data)
+    if(currentCommentStep)
       getCommentCount()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep, post])
+  }, [currentCommentStep, post])
 
   React.useEffect(()=>{
     if(publishPostNumber && activePost && activePost['post_id'] === post.post_id)

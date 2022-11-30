@@ -8,27 +8,34 @@ import CommentCard from 'components/CommentCard';
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectActivePost } from 'redux/slices/post';
-import { getLocalDB, QueryStep } from 'utils/db';
+import { getLocalDB } from 'utils/db';
+import { selectQueryStep } from 'redux/slices/proc';
 
 const Post = () => {
-  const { queryStep, publishPostNumber } = React.useContext(SidebarContext);
+  const { publishPostNumber } = React.useContext(SidebarContext);
   const params = useParams()
   const [postInfo, setPostInfo] = React.useState(null)
   const [comments, setComments] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(true)
   const activePost = useSelector(selectActivePost)
+  const currentPostStep = useSelector(selectQueryStep('post_data'))
+  const currentCommentStep = useSelector(selectQueryStep('comment_data'))
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
-    if(queryStep >= QueryStep.post_data)
+    if(currentPostStep && !postInfo)
       LocalDB.get(params.post_id.toString())
         .then(doc=>{
           setPostInfo(doc)
         })
-    if(queryStep >= QueryStep.comment_data)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPostStep])
+
+  React.useEffect(()=>{
+    if(currentCommentStep)
       getComments()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryStep])
+  }, [currentCommentStep])
 
   React.useEffect(()=>{
     if(publishPostNumber && activePost['post_id']===params.post_id) {
