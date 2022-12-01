@@ -28,6 +28,8 @@ const slice = createSlice({
       Object.keys(action.payload).forEach(key=>{
         if(tempState[key])
           tempState[key] = {...tempState[key], ...action.payload[key]}
+        else
+          tempState[key] = {...action.payload[key]}
       })
       state.userData = tempState
     },
@@ -44,6 +46,9 @@ export const { setMyInfo, setUserInfo } = slice.actions;
 
 export function selectMyInfo(state) {
   return state.user.myInfo
+}
+export function selectMyName(state) {
+  return state.user.myInfo['name']
 }
 export const selectUserInfoByDID = (userDID) => (state) => {
   return state.user.userData[userDID]

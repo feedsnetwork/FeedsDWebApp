@@ -7,7 +7,7 @@ import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectMyInfo, setMyInfo, setUserInfo } from 'redux/slices/user';
 import { getLocalDB } from 'utils/db';
-import { reduceDIDstring, getInfoFromDID, reduceHexAddress, encodeBase64, decodeBase64 } from 'utils/common'
+import { reduceDIDstring, getInfoFromDID, reduceHexAddress, encodeBase64, decodeBase64, compressImage } from 'utils/common'
 
 
 function MyInfoAtBottom() {
@@ -27,38 +27,39 @@ function MyInfoAtBottom() {
         dispatch(setMyInfo(doc))
       })
       .catch(err=>{})
+
+    getInfoFromDID(myDID).then(res=>{
+      const userInfoObj = {}
+      userInfoObj[myDID] = res
+      dispatch(setUserInfo(userInfoObj))
+      storeMyInfo(res as object)
+    })
     hiveApi.getHiveUrl(myDID)
       .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(myDID, hiveUrl))
       .then(res=>{
         const resBuf = res as Buffer
         if(resBuf && resBuf.length) {
           const base64Content = resBuf.toString('base64')
-          const avatarObj = { avatarSrc: encodeBase64(`data:image/png;base64,${base64Content}`) }
-          storeMyInfo(avatarObj)
-          const avatarUserObj = {}
-          avatarUserObj[myDID] = {avatarSrc: avatarObj.avatarSrc}
-          dispatch(setUserInfo(avatarUserObj))
+          return compressImage(`data:image/png;base64,${base64Content}`)
         }
+        return ''
+      })
+      .then(avatarSrc=>{
+        const avatarObj = { avatarSrc: encodeBase64(avatarSrc) }
+        storeMyInfo(avatarObj)
+        const avatarUserObj = {}
+        avatarUserObj[myDID] = avatarObj
+        dispatch(setUserInfo(avatarUserObj))
       })
       .catch(err=>{})
-
-    getInfoFromDID(myDID).then(res=>{
-      storeMyInfo(res as object)
-    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const storeMyInfo = (userInfo: object)=>{
     dispatch(setMyInfo(userInfo))
-    LocalDB.get(myDID)
-      .then(doc=>{
-        const updateDoc = {...doc, ...userInfo}
-        LocalDB.put(updateDoc)
-      })
-      .catch(_=>{
-        const newDoc = {...userInfo, _id: myDID, table_type: 'user'}
-        LocalDB.put(newDoc)
-      })
+    LocalDB.upsert(myDID, (doc)=>{
+      return {...doc, ...userInfo, table_type: 'user'}
+    })
   }
   return (
     <Box p={1}>

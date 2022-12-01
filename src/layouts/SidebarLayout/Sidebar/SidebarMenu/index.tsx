@@ -205,57 +205,55 @@ function SidebarMenu() {
     handlePostModal(true)(dispatch)
   }
   return (
-    <>
-      <MenuWrapper>
-        <SubMenuWrapper>
-          {
-            !isSettingPage?
-            <List component="div">
-              {
-                MainMenuArray.map((menuItem, _i)=>(
-                  <ListItem component="div" key={_i}>
-                    <ListItemButton component={RouterLink} to={menuItem.to} onClick={closeSidebar} sx={ListItemButtonStyle}>
-                      <ListItemIcon sx={{ minWidth: 30 }}>
-                        <Icon className='unfocused' icon={menuItem.icon} width={18} height={18} />
-                        <Icon className='focused' icon={menuItem.focus_icon} width={18} height={18} />
-                      </ListItemIcon>
-                      <ListItemText primary={menuItem.name} primaryTypographyProps={{ variant: 'body2' }} />
-                    </ListItemButton>
-                  </ListItem>
-                ))
-              }
-              <Subscriptions/>
-              <Divider sx={{mx: -1}}/>
-              {
-                !!focusedChannelId &&
-                <Box py={3} px={1} textAlign="center">
-                  <StyledButton variant="contained" fullWidth onClick={handlePostDlg}>Post</StyledButton>
-                </Box>
-              }
-            </List>:
+    <MenuWrapper>
+      <SubMenuWrapper>
+        {
+          !isSettingPage?
+          <List component="div">
+            {
+              MainMenuArray.map((menuItem, _i)=>(
+                <ListItem component="div" key={_i}>
+                  <ListItemButton component={RouterLink} to={menuItem.to} onClick={closeSidebar} sx={ListItemButtonStyle}>
+                    <ListItemIcon sx={{ minWidth: 30 }}>
+                      <Icon className='unfocused' icon={menuItem.icon} width={18} height={18} />
+                      <Icon className='focused' icon={menuItem.focus_icon} width={18} height={18} />
+                    </ListItemIcon>
+                    <ListItemText primary={menuItem.name} primaryTypographyProps={{ variant: 'body2' }} />
+                  </ListItemButton>
+                </ListItem>
+              ))
+            }
+            <Subscriptions/>
+            <Divider sx={{mx: -1}}/>
+            {
+              !!focusedChannelId &&
+              <Box py={3} px={1} textAlign="center">
+                <StyledButton variant="contained" fullWidth onClick={handlePostDlg}>Post</StyledButton>
+              </Box>
+            }
+          </List>:
 
-            <Reveal keyframes={customAnimation}>
-              <List component="div">
-              {
-                SettingMenuArray.map((menuItem, _i)=>(
-                  <ListItem component="div" key={_i}>
-                    <Button
-                      disableRipple
-                      component={RouterLink}
-                      onClick={closeSidebar}
-                      to={`/setting${menuItem.to}`}
-                    >
-                      {menuItem.name}
-                    </Button>
-                  </ListItem>
-                ))
-              }
-              </List>
-            </Reveal>
-          }
-        </SubMenuWrapper>
-      </MenuWrapper>
-    </>
+          <Reveal keyframes={customAnimation}>
+            <List component="div">
+            {
+              SettingMenuArray.map((menuItem, _i)=>(
+                <ListItem component="div" key={_i}>
+                  <Button
+                    disableRipple
+                    component={RouterLink}
+                    onClick={closeSidebar}
+                    to={`/setting${menuItem.to}`}
+                  >
+                    {menuItem.name}
+                  </Button>
+                </ListItem>
+              ))
+            }
+            </List>
+          </Reveal>
+        }
+      </SubMenuWrapper>
+    </MenuWrapper>
   );
 }
 

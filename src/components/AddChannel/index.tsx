@@ -7,7 +7,7 @@ import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormCont
 
 import StyledButton from 'components/StyledButton';
 import { handleSuccessModal, setTargetChannel, setChannelData, selectSelfChannels } from 'redux/slices/channel';
-import { selectMyInfo } from 'redux/slices/user';
+import { selectMyName } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi'
 import { decodeBase64, encodeBase64, getBufferFromFile } from 'utils/common'
 import { getLocalDB } from 'utils/db';
@@ -71,7 +71,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const LocalDB = getLocalDB()
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const myInfo = useSelector(selectMyInfo)
+  const myName = useSelector(selectMyName)
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(()=>{
@@ -178,11 +178,11 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       hiveApi.createChannel(newChannel.name, newChannel.intro, newChannel['avatarPath'], newChannel.tippingAddr)
         .then(async result=>{
           const currentTime = new Date().getTime()
-          await hiveApi.subscribeChannel(myDID, result.channelId, myInfo['name'], currentTime)
+          await hiveApi.subscribeChannel(myDID, result.channelId, myName, currentTime)
           const newSubscriber = {
             channel_id: result.channelId,
             created_at: currentTime,
-            display_name: myInfo['name'],
+            display_name: myName,
             status: 0,
             updated_at: currentTime,
             user_did: myDID
@@ -204,7 +204,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                   time_range: [], 
                   table_type: 'channel',
                   avatarSrc: encodeBase64(avatarContent),
-                  owner_name: myInfo['name'] || "",
+                  owner_name: myName || "",
                   subscribers: [newSubscriber],
                   display_name: newChannel.name
                 }

@@ -6,7 +6,7 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 
 import { OverPageContext } from 'contexts/OverPageContext';
 import { selectVisitedChannelId, selectFocusedChannelId, selectChannelById } from 'redux/slices/channel';
-import { selectMyInfo, selectUserInfoByDID } from 'redux/slices/user';
+import { selectMyName, selectUserInfoByDID } from 'redux/slices/user';
 import { getLocalDB } from 'utils/db';
 import { SettingMenuArray, reduceDIDstring } from 'utils/common'
 import { selectQueryPublicStep, selectQueryStep } from 'redux/slices/proc';
@@ -56,7 +56,7 @@ function FloatingHeader(props) {
   const { user_did } = (location.state || {}) as any
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
   const visitedChannelId = useSelector(selectVisitedChannelId)
-  const myInfo = useSelector(selectMyInfo)
+  const myName = useSelector(selectMyName)
   const userInfo = useSelector(selectUserInfoByDID(user_did)) || {}
   const focusedChannelId = useSelector(selectFocusedChannelId)
   let selectedChannelId = focusedChannelId
@@ -139,7 +139,7 @@ function FloatingHeader(props) {
         primaryText = userInfo['name'] || `@${reduceDIDstring(user_did)}`
       }
       else
-        primaryText = myInfo['name'] || `@${reduceDIDstring(feedsDid)}`
+        primaryText = myName || `@${reduceDIDstring(feedsDid)}`
       // secondaryText = "0 post"
     }
     if(primaryText) {

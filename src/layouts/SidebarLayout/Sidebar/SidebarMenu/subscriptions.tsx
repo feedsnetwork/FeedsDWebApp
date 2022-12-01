@@ -25,9 +25,10 @@ function Subscriptions() {
   const navigate = useNavigate();
   
   useEffect(()=>{
-    setTotalPage(Math.ceil(subscribedChannels.length/10))
+    if(subscribedChannels.length)
+      setTotalPage(Math.ceil(subscribedChannels.length/10))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subscribedChannels])
+  }, [subscribedChannels.length])
 
   const toggleChannels = (e) => {
     setVisibleChannels(!isVisibleChannels)

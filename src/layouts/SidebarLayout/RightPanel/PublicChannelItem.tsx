@@ -6,7 +6,7 @@ import { Stack, Box, Typography } from '@mui/material'
 import StyledAvatar from 'components/StyledAvatar'
 import StyledButton from 'components/StyledButton';
 import { setChannelData } from 'redux/slices/channel';
-import { selectMyInfo } from 'redux/slices/user';
+import { selectMyName } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi';
 import { getLocalDB } from 'utils/db';
 import { getImageSource } from 'utils/common';
@@ -20,7 +20,7 @@ const PublicChannelItem = (props) => {
     const [isDoingSubscription, setIsDoingSubscription] = React.useState(false)
     const dispatch = useDispatch()
     const { enqueueSnackbar } = useSnackbar();
-    const myInfo = useSelector(selectMyInfo)
+    const myName = useSelector(selectMyName)
     const hiveApi = new HiveApi()
     const LocalDB = getLocalDB()
 
@@ -31,7 +31,7 @@ const PublicChannelItem = (props) => {
         Promise.resolve()
             .then(_=>{
                 if(!isSubscribed)
-                    return hiveApi.subscribeChannel(channel['target_did'], channel_id, myInfo['name'], currentTime)
+                    return hiveApi.subscribeChannel(channel['target_did'], channel_id, myName, currentTime)
                 else
                     return hiveApi.unSubscribeChannel(channel['target_did'], channel_id)
             })
@@ -42,7 +42,7 @@ const PublicChannelItem = (props) => {
                     const newSubscriber = {
                         channel_id,
                         created_at: currentTime,
-                        display_name: myInfo['name'],
+                        display_name: myName,
                         status: 0,
                         updated_at: currentTime,
                         user_did: myDID

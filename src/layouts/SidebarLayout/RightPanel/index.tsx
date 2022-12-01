@@ -47,7 +47,7 @@ const ChannelAbout = (props) => {
 
   React.useEffect(()=>{
     setCurrentPageOfSubscription(1)
-  }, [])
+  }, [this_channel['channel_id']])
 
   const link2Edit = ()=>{
     navigate(`/channel/edit/${this_channel['channel_id']}`);

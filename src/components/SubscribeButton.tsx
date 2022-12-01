@@ -2,7 +2,7 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSnackbar } from 'notistack'
 import StyledButton from 'components/StyledButton'
-import { selectMyInfo } from 'redux/slices/user'
+import { selectMyName } from 'redux/slices/user'
 import { setChannelData } from 'redux/slices/channel'
 import { HiveApi } from 'services/HiveApi'
 import { getLocalDB } from 'utils/db'
@@ -13,7 +13,7 @@ const SubscribeButton = (props) => {
   const isSubscribed = channel['is_subscribed']
   const dispatch = useDispatch()
   const { enqueueSnackbar } = useSnackbar();
-  const myInfo = useSelector(selectMyInfo)
+  const myName = useSelector(selectMyName)
   const hiveApi = new HiveApi()
   const LocalDB = getLocalDB()
   const feedsDid = sessionStorage.getItem('FEEDS_DID')
@@ -31,13 +31,13 @@ const SubscribeButton = (props) => {
           const newSubscriber = {
             channel_id,
             created_at: currentTime,
-            display_name: myInfo['name'],
+            display_name: myName,
             status: 0,
             updated_at: currentTime,
             user_did: myDID
           }
           updateDoc['subscribers'] = [...(channel['subscribers'] || []), newSubscriber]
-          return hiveApi.subscribeChannel(channel['target_did'], channel_id, myInfo['name'], currentTime)
+          return hiveApi.subscribeChannel(channel['target_did'], channel_id, myName, currentTime)
         }
         else {
           if(channel['subscribers']) {
@@ -53,7 +53,7 @@ const SubscribeButton = (props) => {
         dispatch(setChannelData(updateObj))
         try {
           if(!isSubscribed) 
-            await hiveApi.subscribeChannel(channel['target_did'], channel_id, myInfo['name'], currentTime)
+            await hiveApi.subscribeChannel(channel['target_did'], channel_id, myName, currentTime)
           else
             await hiveApi.unSubscribeChannel(channel['target_did'], channel_id)
           return LocalDB.upsert(channel_id, (doc)=>{
