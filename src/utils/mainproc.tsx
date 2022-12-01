@@ -708,8 +708,9 @@ export const mainproc = (props) => {
                         const avatarObj = {}
                         Promise.resolve()
                             .then(_=>hiveApi.downloadScripting(channel['target_did'], channel['avatar']))
-                            .then(avatarRes=>{
-                                avatarObj[channel._id] = { avatarSrc: filterAvatar(avatarRes) }
+                            .then(avatarRes=>filterAvatar(avatarRes))
+                            .then(avatarSrc=>{
+                                avatarObj[channel._id] = { avatarSrc }
                                 LocalDB.upsert(channel._id, (doc)=>{
                                     doc['avatarSrc'] = avatarObj[channel._id].avatarSrc
                                     return doc

@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, memo } from 'react';
 import { NavLink as RouterLink, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Reveal from "react-awesome-reveal";
@@ -192,7 +192,7 @@ const ListItemButtonStyle = {
   '&.active svg.unfocused': {display: 'none'}
 }
 
-function SidebarMenu(props) {
+function SidebarMenu() {
   const { closeSidebar } = useContext(SidebarContext);
   const { pathname } = useLocation()
   const dispatch = useDispatch();
@@ -259,4 +259,4 @@ function SidebarMenu(props) {
   );
 }
 
-export default SidebarMenu;
+export default memo(SidebarMenu);
