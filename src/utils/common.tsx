@@ -303,4 +303,76 @@ export function promiseSeries(arrayOfPromises) {
 export function getMinValueFromArray(arrayOfObject, field) {
   return Math.min(...arrayOfObject.map(obj=>(obj[field] || Infinity)))
 }
+function bytesToSize(bytes) {
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+
+  if (bytes === 0) {
+    return "0 Byte";
+  }
+
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+
+  return Math.round(bytes / Math.pow(1024, i)) + " " + sizes[i];
+}
+export function compressImage(imgSrc) {
+  const quality = 0.7
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = imgSrc;
+    img.onload = () => {
+      // showing the compressed image
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+    
+      const originalWidth = img.width;
+      const originalHeight = img.height;
+
+      const canvasDimension = { width: 100, height: 100}
+    
+      if(Math.max(originalWidth, originalHeight) < 100) {
+        canvasDimension.width = originalWidth
+        canvasDimension.height = originalHeight
+      } else {
+        canvasDimension.width = originalWidth>originalHeight? 100: originalWidth/originalHeight * 100;
+        canvasDimension.height = originalHeight>originalWidth? 100: originalHeight/originalWidth * 100;
+      }
+    
+      canvas.width = canvasDimension.width;
+      canvas.height = canvasDimension.height;
+    
+      context.drawImage(
+        img,
+        0,
+        0,
+        canvasDimension.width,
+        canvasDimension.height
+      );
+    
+      // reducing the quality of the image
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob)
+            // console.info(URL.createObjectURL(blob))
+            // console.info(bytesToSize(blob.size))
+          }
+          else
+            resolve('')
+        },
+        "image/jpeg",
+        quality
+      );
+    }
+  })
+}
+export const getImageSource = (content) => {
+  let imgSrc = ""
+  if(typeof content === 'object')
+    imgSrc = URL.createObjectURL(content)
+  else if(content.startsWith("http"))
+    imgSrc = content
+  else
+    imgSrc = decodeBase64(content || "")
+  return imgSrc
+}
 export const LimitPostCount = 30

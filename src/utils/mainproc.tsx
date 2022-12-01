@@ -7,7 +7,7 @@ import { DefaultAvatarMap } from "./avatar_map";
 import { setChannelData } from 'redux/slices/channel'
 import { increaseLoadNum } from "redux/slices/post";
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
-    encodeBase64, getWeb3Contract, getIpfsUrl, excludeFromArray, getInfoFromDID } from "./common"
+    encodeBase64, getWeb3Contract, getIpfsUrl, excludeFromArray, getInfoFromDID, compressImage } from "./common"
 import { setUserInfo } from "redux/slices/user";
 import { updatePublicStep, updateStep } from "redux/slices/proc";
 const hiveApi = new HiveApi()
@@ -40,14 +40,17 @@ export const mainproc = (props) => {
                 .then(resolve)
         })
     )
-    const filterAvatar = (avatarSrc)=>{
-        let content = avatarSrc
+    const filterAvatar = async (avatarSrc)=>{
         if(avatarSrc.startsWith('assets/images')) {
+            let content = avatarSrc
             const avatarSrcSplit = avatarSrc.split("/")
             const avatarFile = avatarSrcSplit[avatarSrcSplit.length-1]
             content = DefaultAvatarMap[avatarFile] || ""
+            return encodeBase64(content)
+        } else {
+            const imgBlob = await compressImage(avatarSrc)
+            return imgBlob
         }
-        return encodeBase64(content)
     }
     const createIndex = (selector)=>{
         return LocalDB.createIndex({
@@ -144,7 +147,7 @@ export const mainproc = (props) => {
                             .then(_=>syncChannelData('self'))
                             .then(_=>{
                                 queryDispNameStepEx('self')
-                                // queryChannelAvatarStepEx('self')
+                                queryChannelAvatarStepEx('self')
                                 querySubscriptionInfoStepEx('self')
                                 resolve({success: true})
                             })
@@ -689,13 +692,17 @@ export const mainproc = (props) => {
                                         content=`${content}${String.fromCharCode(code)}`;
                                         return content
                                     }, '')
-                                    avatarObj[channel._id] = {avatarSrc: filterAvatar(avatarSrc)}
-                                    LocalDB.upsert(channel._id, (doc)=>{
-                                        doc['avatarSrc'] = avatarObj[channel._id].avatarSrc
-                                        return doc
-                                    })
-                                        .then(_=>dispatch(setChannelData({type, data: avatarObj})))
+                                    return filterAvatar(avatarSrc)
                                 }
+                                return ''
+                            })
+                            .then(avatarSrc=>{
+                                avatarObj[channel._id] = { avatarSrc }
+                                LocalDB.upsert(channel._id, (doc)=>{
+                                    doc['avatarSrc'] = avatarObj[channel._id].avatarSrc
+                                    return doc
+                                })
+                                    .then(_=>dispatch(setChannelData({type, data: avatarObj})))
                             })
                     }
                     else {

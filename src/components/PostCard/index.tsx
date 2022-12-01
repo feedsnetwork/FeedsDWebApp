@@ -5,7 +5,7 @@ import { Box, Card } from '@mui/material';
 
 import PostBody from './PostBody'
 import { CommentForm } from './CommentForm';
-import { decodeBase64, reduceDIDstring } from 'utils/common'
+import { decodeBase64, getImageSource, reduceDIDstring } from 'utils/common'
 import { selectChannelById } from 'redux/slices/channel';
 
 const PostCard = (props) => {
@@ -17,8 +17,7 @@ const PostCard = (props) => {
   contentObj.avatar = { name: channel['display_name'], src: (channel['avatarSrc'] || '') }
   contentObj.primaryName = channel['display_name']
   contentObj.secondaryName = `@${dispName}`
-  if(!contentObj.avatar.src.startsWith("http"))
-    contentObj.avatar.src = decodeBase64(contentObj.avatar.src)
+  contentObj.avatar.src = getImageSource(contentObj.avatar.src)
   if(post.status === 1)
     contentObj.content = "(post deleted)"
 

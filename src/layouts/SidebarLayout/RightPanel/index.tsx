@@ -16,7 +16,7 @@ import SubscriberListItem from './SubscriberListItem';
 import PublicChannelItem from './PublicChannelItem';
 import { selectFocusedChannelId, selectVisitedChannelId, selectChannelById } from 'redux/slices/channel';
 import { selectQueryPublicStep } from 'redux/slices/proc';
-import { reduceHexAddress, reduceDIDstring, decodeBase64 } from 'utils/common'
+import { reduceHexAddress, reduceDIDstring, decodeBase64, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db'
 
 const SidebarWrapper = styled(Box)(
@@ -180,9 +180,7 @@ function RightPanel() {
           break;
         default:
           const activeChannel = {...focusedChannel}
-          const channelAvatar = activeChannel['avatarSrc'] || ""
-          if(!channelAvatar.startsWith("http"))
-            activeChannel['avatarSrc'] = decodeBase64(channelAvatar)
+          activeChannel['avatarSrc'] = getImageSource(activeChannel['avatarSrc'])
           content = <ChannelAbout this_channel={activeChannel}/>
           break;
       }

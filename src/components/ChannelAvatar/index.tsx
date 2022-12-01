@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Avatar, Box, styled } from '@mui/material';
 import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
 
-import { decodeBase64 } from 'utils/common'
+import { decodeBase64, getImageSource } from 'utils/common'
 
 const ChannelWrapper = styled(Box)(
   ({ theme }) => `
@@ -90,7 +90,7 @@ interface ChannelAvatarProps {
 const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
   const { channel, width=40, variant = 'circular', onClick=(e)=>{}, onRightClick=(e)=>{}, focused=false } = props
   const channelInfo = {...channel}
-  let avatarSrc = decodeBase64(channel['avatarSrc'] || "")
+  const avatarSrc = getImageSource(channel['avatarSrc'])
   const rippleRef = useRef(null);
   const onRippleStart = (e) => {
     rippleRef.current.start(e);
