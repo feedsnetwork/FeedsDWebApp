@@ -16,7 +16,7 @@ import SubscriberListItem from './SubscriberListItem';
 import PublicChannelItem from './PublicChannelItem';
 import { selectFocusedChannelId, selectVisitedChannelId, selectChannelById } from 'redux/slices/channel';
 import { selectQueryPublicStep } from 'redux/slices/proc';
-import { reduceHexAddress, reduceDIDstring, decodeBase64, getImageSource } from 'utils/common'
+import { reduceHexAddress, reduceDIDstring, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db'
 
 const SidebarWrapper = styled(Box)(

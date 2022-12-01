@@ -9,7 +9,7 @@ import { setChannelData } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi';
 import { getLocalDB } from 'utils/db';
-import { decodeBase64 } from 'utils/common';
+import { getImageSource } from 'utils/common';
 
 const PublicChannelItem = (props) => {
     const { channel } = props
@@ -21,9 +21,6 @@ const PublicChannelItem = (props) => {
     const dispatch = useDispatch()
     const { enqueueSnackbar } = useSnackbar();
     const myInfo = useSelector(selectMyInfo)
-    let avatarImg = channel['avatarSrc']
-    if(!avatarImg.startsWith("http"))
-        avatarImg = decodeBase64(avatarImg)
     const hiveApi = new HiveApi()
     const LocalDB = getLocalDB()
 
@@ -76,7 +73,7 @@ const PublicChannelItem = (props) => {
 
     return (
         <Stack direction="row" alignItems="center" spacing={1}>
-            <StyledAvatar alt={channel['name']} src={avatarImg} width={32}/>
+            <StyledAvatar alt={channel['name']} src={getImageSource(channel['avatarSrc'])} width={32}/>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
                 <Typography component='div' variant="subtitle2" noWrap>
                     {channel['name']}

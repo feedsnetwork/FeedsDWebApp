@@ -6,7 +6,7 @@ import "odometer/themes/odometer-theme-default.css";
 import StyledAvatar from 'components/StyledAvatar'
 import PaperRecord from 'components/PaperRecord'
 import { selectChannelById } from 'redux/slices/channel';
-import { getDateDistance, isValidTime, convertAutoLink, isJson, decodeBase64 } from 'utils/common'
+import { getDateDistance, isValidTime, convertAutoLink, isJson, getImageSource } from 'utils/common'
 
 const PostTextCard = (props) => {
   const { post } = props
@@ -31,9 +31,6 @@ const PostTextCard = (props) => {
   //   setOpenPopover(open)
   // }
 
-  let avatarImg = thisChannel['avatarSrc']
-  if(!avatarImg.startsWith("http"))
-    avatarImg = decodeBase64(avatarImg)
   return (
     <PaperRecord sx={{p: 2}}>
       <Stack spacing={2}>
@@ -42,7 +39,7 @@ const PostTextCard = (props) => {
             // onMouseEnter={(e)=>{handlePopper(e, true)}}
             // onMouseLeave={(e)=>{handlePopper(e, false)}}
           >
-            <StyledAvatar alt={thisChannel['name']} src={avatarImg} width={47}/>
+            <StyledAvatar alt={thisChannel['name']} src={getImageSource(thisChannel['avatarSrc'])} width={47}/>
           </Box>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography component='div' variant="subtitle2" noWrap>

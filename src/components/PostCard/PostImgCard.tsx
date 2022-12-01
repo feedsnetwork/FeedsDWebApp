@@ -7,7 +7,7 @@ import "odometer/themes/odometer-theme-default.css";
 
 import StyledAvatar from 'components/StyledAvatar'
 import PaperRecord from 'components/PaperRecord'
-import { convertAutoLink, isJson, decodeBase64 } from 'utils/common'
+import { convertAutoLink, isJson, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
 const PostImgCard = (props) => {
@@ -18,8 +18,7 @@ const PostImgCard = (props) => {
   React.useEffect(()=>{
     LocalDB.get(post.channel_id)
       .then(doc=>{
-        if(!doc['avatarSrc'].startsWith("http"))
-          doc['avatarSrc'] = decodeBase64(doc['avatarSrc'])
+        doc['avatarSrc'] = getImageSource(doc['avatarSrc'])
         setThisChannel(doc)
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps

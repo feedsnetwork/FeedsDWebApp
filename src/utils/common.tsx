@@ -303,17 +303,17 @@ export function promiseSeries(arrayOfPromises) {
 export function getMinValueFromArray(arrayOfObject, field) {
   return Math.min(...arrayOfObject.map(obj=>(obj[field] || Infinity)))
 }
-function bytesToSize(bytes) {
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+// function bytesToSize(bytes) {
+//   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
 
-  if (bytes === 0) {
-    return "0 Byte";
-  }
+//   if (bytes === 0) {
+//     return "0 Byte";
+//   }
 
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+//   const i = Math.floor(Math.log(bytes) / Math.log(1024));
 
-  return Math.round(bytes / Math.pow(1024, i)) + " " + sizes[i];
-}
+//   return Math.round(bytes / Math.pow(1024, i)) + " " + sizes[i];
+// }
 export function compressImage(imgSrc) {
   const quality = 0.7
   return new Promise((resolve, reject) => {

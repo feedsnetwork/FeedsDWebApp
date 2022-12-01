@@ -5,7 +5,7 @@ import { Box, Card } from '@mui/material';
 
 import PostBody from './PostBody'
 import { CommentForm } from './CommentForm';
-import { decodeBase64, getImageSource, reduceDIDstring } from 'utils/common'
+import { getImageSource, reduceDIDstring } from 'utils/common'
 import { selectChannelById } from 'redux/slices/channel';
 
 const PostCard = (props) => {

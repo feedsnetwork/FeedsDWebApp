@@ -8,14 +8,12 @@ import { useSnackbar } from 'notistack';
 import IconInCircle from 'components/IconInCircle'
 import StyledAvatar from 'components/StyledAvatar'
 import { handlePublishModal, handleUnpublishModal, setTargetChannel } from 'redux/slices/channel';
-import { getChannelShortUrl, copy2clipboard, decodeBase64 } from 'utils/common'
+import { getChannelShortUrl, copy2clipboard, getImageSource } from 'utils/common'
 
 const ChannelListItem = (props) => {
   const {channel} = props
   const {display_name: name, avatarSrc, intro} = channel
-  let avatarImg = avatarSrc || ''
-  if(!avatarImg.startsWith("http"))
-    avatarImg = decodeBase64(avatarSrc)
+  const avatarImg = getImageSource(avatarSrc)
   const [isOpenPopup, setOpenPopup] = React.useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const dispatch = useDispatch()

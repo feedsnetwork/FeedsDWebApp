@@ -16,7 +16,7 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
 import { HiveApi } from 'services/HiveApi'
 import { CommonStatus } from 'models/common_content'
-import { decodeBase64, getBufferFromFile, getImageSource } from 'utils/common'
+import { getBufferFromFile, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 import { handlePostModal, selectPostModalState, selectActivePost } from 'redux/slices/post';
 import { selectActiveChannelId, selectChannelById, selectFocusedChannelId } from 'redux/slices/channel';

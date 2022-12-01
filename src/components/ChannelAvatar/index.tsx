@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Avatar, Box, styled } from '@mui/material';
 import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
 
-import { decodeBase64, getImageSource } from 'utils/common'
+import { getImageSource } from 'utils/common'
 
 const ChannelWrapper = styled(Box)(
   ({ theme }) => `
