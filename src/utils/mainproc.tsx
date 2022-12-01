@@ -41,16 +41,15 @@ export const mainproc = (props) => {
         })
     )
     const filterAvatar = async (avatarSrc)=>{
+        let content = avatarSrc
         if(avatarSrc.startsWith('assets/images')) {
-            let content = avatarSrc
             const avatarSrcSplit = avatarSrc.split("/")
             const avatarFile = avatarSrcSplit[avatarSrcSplit.length-1]
             content = DefaultAvatarMap[avatarFile] || ""
-            return encodeBase64(content)
         } else {
-            const imgBlob = await compressImage(avatarSrc)
-            return imgBlob
+            content = await compressImage(avatarSrc)
         }
+        return encodeBase64(content)
     }
     const createIndex = (selector)=>{
         return LocalDB.createIndex({
@@ -252,7 +251,7 @@ export const mainproc = (props) => {
                             .then(_=>syncChannelData('subscribed'))
                             .then(_=>{ 
                                 queryDispNameStepEx('subscribed')
-                                // queryChannelAvatarStepEx('subscribed')
+                                queryChannelAvatarStepEx('subscribed')
                                 querySubscriptionInfoStepEx('subscribed')
                                 resolve({success: true})
                             })

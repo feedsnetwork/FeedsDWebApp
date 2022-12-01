@@ -315,7 +315,7 @@ export function getMinValueFromArray(arrayOfObject, field) {
 //   return Math.round(bytes / Math.pow(1024, i)) + " " + sizes[i];
 // }
 export function compressImage(imgSrc) {
-  const quality = 0.7
+  const quality = 0.65
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = imgSrc;
@@ -349,19 +349,22 @@ export function compressImage(imgSrc) {
       );
     
       // reducing the quality of the image
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            resolve(blob)
-            // console.info(URL.createObjectURL(blob))
-            // console.info(bytesToSize(blob.size))
-          }
-          else
-            resolve('')
-        },
-        "image/jpeg",
-        quality
-      );
+      
+      const base64Canvas = canvas.toDataURL("image/jpeg", quality)
+      resolve(base64Canvas)
+      // canvas.toBlob(
+      //   (blob) => {
+      //     if (blob) {
+      //       resolve(blob)
+      //       // console.info(URL.createObjectURL(blob))
+      //       // console.info(bytesToSize(blob.size), bytesToSize(base64Canvas.length))
+      //     }
+      //     else
+      //       resolve('')
+      //   },
+      //   "image/jpeg",
+      //   quality
+      // );
     }
   })
 }
