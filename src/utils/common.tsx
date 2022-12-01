@@ -366,12 +366,10 @@ export function compressImage(imgSrc) {
   })
 }
 export const getImageSource = (content) => {
-  let imgSrc = ""
-  if(typeof content === 'object')
-    imgSrc = URL.createObjectURL(content)
-  else if(content.startsWith("http"))
-    imgSrc = content
-  else
+  let imgSrc = content || ""
+  if(typeof imgSrc === 'object')
+    imgSrc = URL.createObjectURL(imgSrc)
+  else if(!imgSrc.startsWith("http"))
     imgSrc = decodeBase64(content || "")
   return imgSrc
 }
