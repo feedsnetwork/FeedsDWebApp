@@ -89,9 +89,16 @@ export const mainproc = (props) => {
     }
     
     // main process steps
-    const querySelfChannelStep = () => (
+    const queryLocalChannelStep = () => (
         new Promise((resolve, reject) => {
             syncChannelData('self', true)
+            syncChannelData('subscribed', true)
+            syncChannelData('public', true)
+            resolve(true)
+        })
+    )
+    const querySelfChannelStep = () => (
+        new Promise((resolve, reject) => {
             hiveApi.querySelfChannels()
                 .then(async res=>{
                     if(Array.isArray(res)){
@@ -165,7 +172,6 @@ export const mainproc = (props) => {
 
     const querySubscribedChannelStep = () => (
         new Promise((resolve, reject) => {
-            syncChannelData('subscribed', true)
             hiveApi.queryBackupData()
                 .then(async backupRes=>{
                     if(Array.isArray(backupRes)) {
@@ -559,7 +565,6 @@ export const mainproc = (props) => {
     // public process steps
     const queryPublicChannelStep = () => (
         new Promise((resolve, reject) => {
-            syncChannelData('public', true)
             const startChannelIndex = 0, pageLimit = 0
             const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress, false)
             channelRegContract.methods.channelIds(startChannelIndex, pageLimit).call()
@@ -825,6 +830,7 @@ export const mainproc = (props) => {
     }
 
     const querySteps = [
+        queryLocalChannelStep,
         querySelfChannelStep, 
         querySubscribedChannelStep, 
         queryPostStep,
