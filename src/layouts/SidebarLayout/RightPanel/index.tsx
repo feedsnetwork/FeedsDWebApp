@@ -47,6 +47,7 @@ const ChannelAbout = (props) => {
 
   React.useEffect(()=>{
     setCurrentPageOfSubscription(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [this_channel['channel_id']])
 
   const link2Edit = ()=>{
@@ -127,7 +128,7 @@ function RightPanel() {
   const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
   const isPublicChannel = pathname.startsWith('/explore/channel')? true: false
   const selectedChannelId = !isSubscribedChannel && !isPublicChannel? focusedChannelId: visitedChannelId
-  const focusedChannel = useSelector(selectChannelById(selectedChannelId))
+  const focusedChannel = useSelector(selectChannelById(selectedChannelId)) || {}
 
   const LocalDB = getLocalDB()
   let content = null

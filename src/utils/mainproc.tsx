@@ -780,27 +780,42 @@ export const mainproc = (props) => {
                 const userInfoArr = await Promise.all(userDocs)
                 dispatch(setUserInfo(userInfoArr.filter(item=>item!==null)))
                 // query user avatar
-                const queriedDIDsWithoutAvatar = userDataDocs.filter(doc=>!doc['avatarSrc']).map(doc=>doc._id)
+                const queriedDIDsWithoutAvatar = userDataDocs.filter(doc=>!doc['avatar_url']).map(doc=>doc._id)
                 const userDocsWithAvatar = [...queriedDIDsWithoutAvatar, ...subscriberArr].map(userDID=>(
                     new Promise((resolve, reject)=>{
-                        const avatarObj = {}
+                        let avatarHiveUrl = ''
                         hiveApi.getHiveUrl(userDID)
-                            // .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(userDID, hiveUrl))
-                            // .then(res=>{
-                            //     const resBuf = res as Buffer
-                            //     if(resBuf && resBuf.length) {
-                            //         const base64Content = resBuf.toString('base64')
-                            //         avatarObj[userDID] = { avatarSrc: encodeBase64(`data:image/png;base64,${base64Content}`) }
-                            //         LocalDB.upsert(userDID, (doc)=>{
-                            //             if(doc._id) {
-                            //                 return {...doc, ...avatarObj[userDID]}
-                            //             }
-                            //             return false
-                            //         })
-                            //         dispatch(setUserInfo(avatarObj))
-                            //     }
-                            //     return
-                            // })
+                            .then(hiveUrl=>{
+                                avatarHiveUrl = hiveUrl
+                                return hiveApi.downloadFileByHiveUrl(userDID, hiveUrl)
+                            })
+                            .then(res=>{
+                                const resBuf = res as Buffer
+                                if(resBuf && resBuf.length) {
+                                    const base64Content = resBuf.toString('base64')
+                                    return filterAvatar(`data:image/png;base64,${base64Content}`)
+                                }
+                                return ''
+                            })
+                            .then(avatarSrc=>{
+                                if(!avatarSrc)
+                                    return false
+                                const avatarObj = {}
+                                avatarObj[userDID] = { avatar_url: avatarHiveUrl }
+                                LocalDB.upsert(userDID, (doc)=>{
+                                    if(doc._id) {
+                                        return {...doc, ...avatarObj[userDID] }
+                                    }
+                                    return false
+                                })
+                                LocalDB.upsert(avatarHiveUrl, (doc)=>{
+                                    if(!doc._id) {
+                                        return {...doc, source: avatarSrc, table_type: 'image' }
+                                    }
+                                    return false
+                                })
+                                dispatch(setUserInfo(avatarObj))
+                            })
                             .then(resolve)
                             .catch(err=>{})
                     })
