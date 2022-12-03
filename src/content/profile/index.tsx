@@ -22,7 +22,7 @@ function Profile() {
   const [tabValue, setTabValue] = React.useState(0);
   const [likedPosts, setLikedPosts] = React.useState([])
   const [isLoadingLike, setIsLoadingLike] = React.useState(true)
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const feedsDid = localStorage.getItem('FEEDS_DID')
   const myInfo = useSelector(selectMyInfo)
   const selfChannels = Object.values(useSelector(selectSelfChannels))
   const subscribedChannels = Object.values(useSelector(selectSubscribedChannels))

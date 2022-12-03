@@ -7,7 +7,7 @@ import { HiveData } from './HiveData'
 import { ApplicationDID } from 'config'
 // const TAG = 'HiveHelper'
 
-const feedsDid = sessionStorage.getItem('FEEDS_DID')
+const feedsDid = localStorage.getItem('FEEDS_DID')
 const userDid_local = `did:elastos:${feedsDid}`
 const hiveService = new HiveService()
 

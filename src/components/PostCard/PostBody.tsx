@@ -34,7 +34,7 @@ const PostBody = (props) => {
   const currentCommentStep = useSelector(selectQueryStep('comment_data'))
   const hiveApi = new HiveApi()
   const PostOrComment = !post.comment_id?'Post':'Comment'
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const feedsDid = localStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
   const navigate = useNavigate()
   const dispatch = useDispatch()

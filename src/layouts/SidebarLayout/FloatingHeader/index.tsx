@@ -54,7 +54,7 @@ function FloatingHeader(props) {
   const navigate = useNavigate();
   const params = useParams()
   const { user_did } = (location.state || {}) as any
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const feedsDid = localStorage.getItem('FEEDS_DID')
   const visitedChannelId = useSelector(selectVisitedChannelId)
   const myName = useSelector(selectMyName)
   const userInfo = useSelector(selectUserInfoByDID(user_did)) || {}

@@ -13,7 +13,7 @@ interface AccountInfoProps {
 const AccountInfo: React.FC<AccountInfoProps> = (props)=>{
   const { walletAddress } = React.useContext(SidebarContext);
   const myInfo = useSelector(selectMyInfo)
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const feedsDid = localStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
 
   return (

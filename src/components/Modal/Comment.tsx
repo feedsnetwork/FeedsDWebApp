@@ -33,7 +33,7 @@ function CommentDlg() {
   const { enqueueSnackbar } = useSnackbar();
   const hiveApi = new HiveApi()
   const LocalDB = getLocalDB()
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const feedsDid = localStorage.getItem('FEEDS_DID')
   
   React.useEffect(()=>{
     if(!isOpen) {

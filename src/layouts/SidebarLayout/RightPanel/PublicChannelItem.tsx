@@ -14,7 +14,7 @@ import { getImageSource } from 'utils/common';
 const PublicChannelItem = (props) => {
     const { channel } = props
     const subscribers = channel['subscribers'] || []
-    const feedsDid = sessionStorage.getItem('FEEDS_DID')
+    const feedsDid = localStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
     const isSubscribed = subscribers.map(item=>item.user_did).includes(myDID)
     const [isDoingSubscription, setIsDoingSubscription] = React.useState(false)

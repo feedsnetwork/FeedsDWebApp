@@ -21,7 +21,7 @@ function PublishChannel() {
   const channel = useSelector(selectTargetChannel)
   const [onProgress, setOnProgress] = React.useState(false);
   const { enqueueSnackbar } = useSnackbar();
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const feedsDid = localStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
   const LocalDB = getLocalDB()
   const hiveHelper = new HiveHelper()

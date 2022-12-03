@@ -86,7 +86,7 @@ export class HiveService {
 
   async createVault() {
     try {
-      const feedsDid = sessionStorage.getItem('FEEDS_DID')
+      const feedsDid = localStorage.getItem('FEEDS_DID')
       const userDid = `did:elastos:${feedsDid}`      
       const appinstanceDocument = await getAppInstanceDIDDoc()
       const context = await this.creatAppContext(appinstanceDocument, userDid)
@@ -280,7 +280,7 @@ export class HiveService {
   }
 
   async uploadScriting(transactionId: string, data: string) {
-    const feedsDid = sessionStorage.getItem('FEEDS_DID')
+    const feedsDid = localStorage.getItem('FEEDS_DID')
     const userDid = `did:elastos:${feedsDid}`
 
     const scriptRunner = await this.getScriptRunner(userDid)
@@ -292,7 +292,7 @@ export class HiveService {
       if (avatarParam === null || avatarParam === undefined) {
         return
       }
-      const feedsDid = sessionStorage.getItem('FEEDS_DID')
+      const feedsDid = localStorage.getItem('FEEDS_DID')
       const userDid = `did:elastos:${feedsDid}`
 
       const scriptRunner = await this.getScriptRunner(userDid)
@@ -458,7 +458,7 @@ async function getAppInstanceDIDDoc() {
 async function issueDiplomaFor() {
   connectivity.setApplicationDID(ApplicationDID)
   const didAccess = new ConDID.DIDAccess()
-  if(sessionStorage.getItem('FEEDS_DID_PREV') === sessionStorage.getItem('FEEDS_DID')) {
+  if(sessionStorage.getItem('FEEDS_DID_PREV') === localStorage.getItem('FEEDS_DID')) {
     let credential = await didAccess.getExistingAppIdentityCredential()
     if (credential) {
       return credential
@@ -467,7 +467,7 @@ async function issueDiplomaFor() {
 
   let credential = await didAccess.generateAppIdCredential()
   if (credential) {
-    sessionStorage.setItem('FEEDS_DID_PREV', sessionStorage.getItem('FEEDS_DID'))
+    sessionStorage.setItem('FEEDS_DID_PREV', localStorage.getItem('FEEDS_DID'))
     return credential
   }
 }

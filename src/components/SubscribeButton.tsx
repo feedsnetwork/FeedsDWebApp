@@ -16,7 +16,7 @@ const SubscribeButton = (props) => {
   const myName = useSelector(selectMyName)
   const hiveApi = new HiveApi()
   const LocalDB = getLocalDB()
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const feedsDid = localStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
 
   const handleSubscription = () => {

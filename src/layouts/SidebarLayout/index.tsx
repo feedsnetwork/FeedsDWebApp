@@ -34,7 +34,7 @@ interface SidebarLayoutProps {
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
   const { setWalletAddress } = useContext(SidebarContext);
-  const sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
+  const sessionLinkFlag = localStorage.getItem('FEEDS_LINK');
   const dispatch = useDispatch()
   const focusedChannelId = useSelector(selectFocusedChannelId)
   const LocalDB = getLocalDB()

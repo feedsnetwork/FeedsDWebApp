@@ -14,7 +14,7 @@ function MyInfoAtBottom() {
   const { walletAddress } = React.useContext(SidebarContext)
   const dispatch = useDispatch()
   const myInfo = useSelector(selectMyInfo)
-  const feedsDid = sessionStorage.getItem('FEEDS_DID')
+  const feedsDid = localStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
   const LocalDB = getLocalDB()

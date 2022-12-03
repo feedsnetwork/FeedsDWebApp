@@ -39,24 +39,25 @@ function Hero() {
   const [activatingConnector, setActivatingConnector] = React.useState(null);
   const { setWalletAddress } = React.useContext(SidebarContext);
   const hiveApi = new HiveApi()
-  let sessionLinkFlag = sessionStorage.getItem('FEEDS_LINK');
+  let sessionLinkFlag = localStorage.getItem('FEEDS_LINK');
   
   const initializeWalletConnection = React.useCallback(async () => {
-    if (sessionLinkFlag === '1' && !activatingConnector) {
+    if (!activatingConnector) {
       setWalletAddress(
         isInAppBrowser()
           ? await window['elastos'].getWeb3Provider().address
           : essentialsConnector.getWalletConnectProvider().wc.accounts[0]
       );
-      // const mydid = sessionStorage.getItem('PASAR_DID')
-      // getAvatarUrl(mydid)
       setActivatingConnector(essentialsConnector);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionLinkFlag, activatingConnector]);
+  }, [activatingConnector]);
 
   React.useEffect(()=>{
-    initializeWalletConnection()
+    if(sessionLinkFlag === '1') {
+      initializeWalletConnection()
+      setVerifyState(2)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -123,10 +124,10 @@ function Hero() {
         };
         // succeed
         const token = jwt.sign(user, 'feeds', { expiresIn: 60 * 60 * 24 * 7 });
-        sessionStorage.setItem('FEEDS_TOKEN', token);
+        localStorage.setItem('FEEDS_TOKEN', token);
         sessionStorage.setItem('FEEDS_DID_PREV', '');
-        sessionStorage.setItem('FEEDS_DID', did);
-        sessionStorage.setItem('FEEDS_LINK', '1');
+        localStorage.setItem('FEEDS_DID', did);
+        localStorage.setItem('FEEDS_LINK', '1');
         sessionLinkFlag = '1';
 
         // HIVE START
@@ -161,8 +162,8 @@ function Hero() {
   };
 
   const signOutWithEssentials = async () => {
-    sessionStorage.removeItem('FEEDS_LINK');
-    sessionStorage.removeItem('FEEDS_DID');
+    localStorage.removeItem('FEEDS_LINK');
+    localStorage.removeItem('FEEDS_DID');
     try {
       // setSigninEssentialSuccess(false);
       setActivatingConnector(null);

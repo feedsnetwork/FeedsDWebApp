@@ -14,8 +14,8 @@ function SignoutDlg(props) {
   const { setWalletAddress } = React.useContext(SidebarContext);
 
   const signOutWithEssentials = async () => {
-    sessionStorage.removeItem('FEEDS_LINK');
-    sessionStorage.removeItem('FEEDS_DID');
+    localStorage.removeItem('FEEDS_LINK');
+    localStorage.removeItem('FEEDS_DID');
     try {
       // setSigninEssentialSuccess(false);
       setWalletAddress(null);

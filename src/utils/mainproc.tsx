@@ -14,7 +14,7 @@ const hiveApi = new HiveApi()
 
 export const mainproc = (props) => {
     const { dispatch } = props
-    const feedsDid = sessionStorage.getItem('FEEDS_DID')
+    const feedsDid = localStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
     const LocalDB = getLocalDB()
     const loadingPostState = {}
@@ -817,7 +817,7 @@ export const mainproc = (props) => {
 
 export const nextproc = (props) => {
     const { dispatch } = props
-    const feedsDid = sessionStorage.getItem('FEEDS_DID')
+    const feedsDid = localStorage.getItem('FEEDS_DID')
     const myDID = `did:elastos:${feedsDid}`
     const LocalDB = getLocalDB()
 

@@ -20,7 +20,7 @@ export const CommentForm = (props)=>{
     const [onProgress, setOnProgress] = React.useState(false);
     const [commentext, setCommentext] = React.useState('');
     const myInfo = useSelector(selectMyInfo)
-    const feedsDid = sessionStorage.getItem('FEEDS_DID')
+    const feedsDid = localStorage.getItem('FEEDS_DID')
     const commentRef = React.useRef(null)
     const hiveApi = new HiveApi()
     const LocalDB = getLocalDB()
