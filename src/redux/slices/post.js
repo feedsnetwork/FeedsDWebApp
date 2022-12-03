@@ -8,6 +8,7 @@ const initialState = {
   isOpened2DelPost: false,
   activePost: null,
   activePostProps: {},
+  loadedPostCount: 0,
   nextLoadNum: 0
 };
 
@@ -56,6 +57,9 @@ const slice = createSlice({
           currentGroup[postIndex].mediaData = [{mediaSrc: post.mediaSrc}]
       }
       state.publicPosts[post.channel_id] = currentGroup
+    },
+    updateLoadedPostCount(state, action) {
+      state.loadedPostCount += action.payload
     }
   }
 });
@@ -64,7 +68,7 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setPublicPosts, setActivePost, setActivePostProps, increaseLoadNum, updateMediaOfPosts } = slice.actions;
+export const { setPublicPosts, setActivePost, setActivePostProps, increaseLoadNum, updateMediaOfPosts, updateLoadedPostCount } = slice.actions;
 
 // ----------------------------------------------------------------------
 
@@ -115,4 +119,7 @@ export function selectActivePost(state) {
 }
 export function selectActivePostProps(state) {
   return state.post.activePostProps
+}
+export function selectLoadedPostCount(state) {
+  return state.post.loadedPostCount
 }

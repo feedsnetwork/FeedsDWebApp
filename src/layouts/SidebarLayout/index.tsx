@@ -21,7 +21,7 @@ import DeletePostDlg from 'components/Modal/DeletePost'
 import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectFocusedChannelId } from 'redux/slices/channel'
-import { isInAppBrowser, promiseSeries } from 'utils/common'
+import { isInAppBrowser } from 'utils/common'
 import { getLocalDB, StepType } from 'utils/db'
 import { mainproc } from 'utils/mainproc';
 import { updateProc, updatePublicProc } from 'redux/slices/proc';
@@ -40,11 +40,10 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   // LocalDB.destroy()
 
   const propsInProc = { dispatch }
-  const procSteps = mainproc(propsInProc)
-  const querySteps = procSteps.querySteps
-  const queryPublicSteps = procSteps.queryPublicSteps
+  const proc = mainproc(propsInProc)
   
   useEffect(()=>{
+    mainQueryAction()
     LocalDB.get('query-step')
       .then(currentStep=>{
         const passedSteps = Object.values(StepType)
@@ -54,19 +53,8 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             return stepObj
           }, {})
         dispatch(updateProc(passedSteps))
-        // const remainedSteps = querySteps.slice(currentStep['step']).map(func=>func())
-        // Promise.all(remainedSteps)
-        //   .then(res=>{
-        //     console.log(res, "---result")
-        //   })
-        promiseSeries(querySteps)
-          .then(res=>{
-            console.log(res, "---result")
-          })
       })
-      .catch(err=>{
-        promiseSeries(querySteps)
-      })
+      .catch(err=>{})
 
     LocalDB.get('query-public-step')
       .then(currentPublicStep=>{
@@ -77,23 +65,19 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
             return stepObj
           }, {})
         dispatch(updatePublicProc(passedSteps))
-        // const remainedSteps = queryPublicSteps.slice(currentPublicStep['step']).map(func=>func())
-        // Promise.all(remainedSteps)
-        //   .then(res=>{
-        //     console.log(res, "---result")
-        //   })
-        promiseSeries(queryPublicSteps)
-          .then(res=>{
-            console.log(res, "---result")
-          })
       })
-      .catch(err=>{
-        promiseSeries(queryPublicSteps)
-          .then(res=>console.info(res, '--------end'))
-      })
+      .catch(err=>{})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const mainQueryAction = () => {
+    const queryProc = proc.queryProc
+    proc.queryLocalChannelStep()
+    Object.keys(queryProc).forEach(type=>{
+      queryProc[type]()
+        .then(_=>proc.streamByChannelType(type))
+    })
+  }
   const initializeWalletConnection = () => {
     if (sessionLinkFlag === '1') {
       setWalletAddress(

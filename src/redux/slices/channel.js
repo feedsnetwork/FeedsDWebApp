@@ -12,7 +12,8 @@ const initialState = {
   targetChannel: {}, // target channel object to publish/unpublish/unsubscribe
   selfChannels: {},
   subscribedChannels: {},
-  publicChannels: {}
+  publicChannels: {},
+  postLoadedChannels: {}
 };
 
 const slice = createSlice({
@@ -79,6 +80,10 @@ const slice = createSlice({
     setVisitedChannelId(state, action) {
       state.visitedChannelId = action.payload
     },
+    setPostLoadedChannel(state, action) {
+      if(!state.postLoadedChannels[action.payload])
+        state.postLoadedChannels[action.payload] = true
+    },
   }
 });
 
@@ -92,7 +97,8 @@ export const {
   setFocusedChannelId, 
   setActiveChannelId, 
   setVisitedChannelId, 
-  setTargetChannel
+  setTargetChannel,
+  setPostLoadedChannel
 } = slice.actions;
 
 // ----------------------------------------------------------------------
@@ -172,4 +178,7 @@ export function selectFocusedChannelId(state) {
 }
 export function selectVisitedChannelId(state) {
   return state.channel.visitedChannelId
+}
+export const selectIsLoadedPost = (channelId) => (state) => {
+  return !!state.channel.postLoadedChannels[channelId]
 }
