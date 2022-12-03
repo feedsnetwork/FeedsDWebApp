@@ -424,7 +424,8 @@ export const mainproc = (props) => {
                             return doc
                         })
                         dispatch(setPostLoadedChannel(channel._id))
-                        dispatch(updateLoadedPostCount(postDocArr.length))
+                        if(channel['is_subscribed'])
+                            dispatch(updateLoadedPostCount(postDocArr.length))
                         return postDocArr
                     })
                     Promise.all(postsByChannel)

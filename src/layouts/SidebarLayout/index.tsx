@@ -21,10 +21,11 @@ import DeletePostDlg from 'components/Modal/DeletePost'
 import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectFocusedChannelId } from 'redux/slices/channel'
+import { updateProc, updatePublicProc } from 'redux/slices/proc';
+import { updateLoadedPostCount } from 'redux/slices/post';
 import { isInAppBrowser } from 'utils/common'
 import { getLocalDB, StepType } from 'utils/db'
 import { mainproc } from 'utils/mainproc';
-import { updateProc, updatePublicProc } from 'redux/slices/proc';
 
 interface SidebarLayoutProps {
   children?: ReactNode;
@@ -48,6 +49,22 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   }, [])
 
   const mainQueryAction = () => {
+    LocalDB.find({
+      selector: {
+        table_type: 'channel',
+        is_subscribed: true
+      }
+    })
+      .then(response=>response.docs.map(doc=>doc._id))
+      .then(channelIDs=>{
+        LocalDB.find({
+          selector: {
+            table_type: 'post',
+            channel_id: { $in: channelIDs },
+          },
+        })
+          .then(response => dispatch(updateLoadedPostCount(response.docs.length)))
+      })
     const queryProc = proc.queryProc
     proc.queryLocalChannelStep()
       .then(_=>{
