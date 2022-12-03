@@ -7,55 +7,34 @@ import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import PostCard from 'components/PostCard';
 import { EmptyView } from 'components/EmptyView'
 import { getLocalDB } from 'utils/db'
-import { selectVisitedChannelId } from 'redux/slices/channel'
-import { selectQueryStep } from 'redux/slices/proc';
+import { selectIsLoadedPost, selectVisitedChannelId } from 'redux/slices/channel'
 
 function Channel() {
   const channel_id = useSelector(selectVisitedChannelId)
+  const isLoadedPost = useSelector(selectIsLoadedPost(channel_id))
   const [isLoading, setIsLoading] = React.useState(false)
   const [hasMore, setHasMore] = React.useState(true)
-  const [totalCount, setTotalCount] = React.useState(0)
   const [pageEndTime, setPageEndTime] = React.useState(0)
   const [posts, setPosts] = React.useState([]);
-  const currentPostStep = useSelector(selectQueryStep('post_data'))
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
-    LocalDB.get('query-step')
-      .then(currentStep=>{
-        if(!currentStep['step'])
-          setIsLoading(false)
-      })
-      .catch(_=>setIsLoading(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  React.useEffect(()=>{
+    setIsLoading(true)
     setPageEndTime(0)
-  }, [channel_id])
-  React.useEffect(()=>{
-    if(currentPostStep)
-      setIsLoading(true)
-    if(currentPostStep && channel_id) {
-      appendMoreData('first')
-      LocalDB.find({
-        selector: {
-          table_type: 'post',
-          channel_id: channel_id
-        }
-      })
-        .then(res=>{
-          setTotalCount(res.docs.length)
-        })
+    setHasMore(true)
+    setPosts([])
+    if(channel_id && isLoadedPost) {
+      appendMoreData('first', 0)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPostStep, channel_id])
+  }, [channel_id, isLoadedPost])
 
-  const appendMoreData = (type) => {
+  const appendMoreData = React.useCallback((type, endTime=pageEndTime) => {
     let limit = 10
-    let createdAt: object = pageEndTime? {$lt: pageEndTime}: {$gt: true}
+    let created_at: object = endTime? {$lt: endTime}: {$gt: true}
     if(type === "first") {
-      limit = pageEndTime? undefined: 10
-      createdAt = pageEndTime? {$gte: pageEndTime}: {$gt: true}
+      limit = endTime? undefined: 10
+      created_at = endTime? {$gte: endTime}: {$gt: true}
     }
     LocalDB.createIndex({
       index: {
@@ -67,7 +46,7 @@ function Channel() {
           selector: {
             table_type: 'post',
             channel_id,
-            created_at: createdAt
+            created_at
           },
           sort: [{'created_at': 'desc'}],
           limit
@@ -86,7 +65,7 @@ function Channel() {
           setPageEndTime(pageEndPost['created_at'])
       })
       .catch(err=>setIsLoading(false))
-  }
+  }, [pageEndTime, channel_id])
 
   const loadingSkeletons = Array(5).fill(null)
   return (
@@ -100,7 +79,7 @@ function Channel() {
             <InfiniteScroll
               dataLength={posts.length}
               next={()=>{appendMoreData('next')}}
-              hasMore={posts.length<totalCount || hasMore}
+              hasMore={hasMore}
               loader={<h4>Loading...</h4>}
               scrollableTarget="scrollableBox"
               style={{overflow: 'visible'}}

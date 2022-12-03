@@ -8,46 +8,34 @@ import { EmptyView } from 'components/EmptyView'
 import { SidebarContext } from 'contexts/SidebarContext';
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import PostBox from './post'
-import { selectFocusedChannelId, selectSelfChannelsCount } from 'redux/slices/channel';
-import { selectQueryStep } from 'redux/slices/proc';
+import { selectFocusedChannelId, selectIsLoadedPost, selectSelfChannelsCount } from 'redux/slices/channel';
 import { getLocalDB } from 'utils/db';
 
 function Channel() {
   const { publishPostNumber } = React.useContext(SidebarContext);
   const focusedChannelId = useSelector(selectFocusedChannelId)
+  const isLoadedPost = useSelector(selectIsLoadedPost(focusedChannelId))
   const [posts, setPosts] = React.useState([]);
   const selfChannelCount = useSelector(selectSelfChannelsCount)
   const [totalCount, setTotalCount] = React.useState(0)
   const [hasMore, setHasMore] = React.useState(true)
   const [isLoading, setIsLoading] = React.useState(true)
   const [pageEndTime, setPageEndTime] = React.useState(0)
-  const currentPostStep = useSelector(selectQueryStep('post_data'))
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
-    LocalDB.get('query-step')
-      .then(currentStep=>{
-        if(!currentStep['step'])
-          setIsLoading(false)
-      })
-      .catch(_=>setIsLoading(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  React.useEffect(()=>{
     setIsLoading(true)
-    if(focusedChannelId && currentPostStep)
+    setPageEndTime(0)
+    if(focusedChannelId && isLoadedPost)
       loadPostData(focusedChannelId, 0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusedChannelId])
+  }, [focusedChannelId, isLoadedPost])
   React.useEffect(()=>{
-    if(currentPostStep) {
-      setIsLoading(true)
-    }
-    if(focusedChannelId && currentPostStep) {
+    if(focusedChannelId && isLoadedPost) {
       loadPostData(focusedChannelId, pageEndTime)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPostStep, publishPostNumber])
+  }, [publishPostNumber])
 
   const loadPostData = (channel_id, endTime) => {
     appendMoreData('first', endTime)
