@@ -44,39 +44,40 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   
   useEffect(()=>{
     mainQueryAction()
-    LocalDB.get('query-step')
-      .then(currentStep=>{
-        const passedSteps = Object.values(StepType)
-          .filter(step=>(step.index <= currentStep['step'] && step.name !== 'public_channel'))
-          .reduce((stepObj, step)=>{
-            stepObj[step.name] = 1
-            return stepObj
-          }, {})
-        dispatch(updateProc(passedSteps))
-      })
-      .catch(err=>{})
-
-    LocalDB.get('query-public-step')
-      .then(currentPublicStep=>{
-        const passedSteps = Object.values(StepType)
-          .filter(step=>(1<step.index && step.index<=currentPublicStep['step'] && step.name !== 'subscribed_channel'))
-          .reduce((stepObj, step)=>{
-            stepObj[step.name] = 1
-            return stepObj
-          }, {})
-        dispatch(updatePublicProc(passedSteps))
-      })
-      .catch(err=>{})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const mainQueryAction = () => {
     const queryProc = proc.queryProc
     proc.queryLocalChannelStep()
+      .then(_=>{
+        syncPassedStep()
+        syncPassedStep(true)
+      })
     Object.keys(queryProc).forEach(type=>{
       queryProc[type]()
         .then(_=>proc.streamByChannelType(type))
     })
+  }
+  const syncPassedStep = (isPublic=false) => {
+    let stepId = `query${isPublic? '-public': ''}-step`
+    const stepFilterMethod = (item, currentStep, isPublic) => {
+      if(isPublic)
+        return 1<item.index && item.index<=currentStep['step'] && item.name !== 'subscribed_channel'
+      return item.index <= currentStep['step'] && item.name !== 'public_channel'
+    }
+    const updateStateAction = isPublic? updatePublicProc: updateProc
+    LocalDB.get(stepId)
+      .then(currentStep=>{
+        const passedSteps = Object.values(StepType)
+          .filter(step=>stepFilterMethod(step, currentStep, isPublic))
+          .reduce((stepObj, step)=>{
+            stepObj[step.name] = 1
+            return stepObj
+          }, {})
+        dispatch(updateStateAction(passedSteps))
+      })
+      .catch(err=>{})
   }
   const initializeWalletConnection = () => {
     if (sessionLinkFlag === '1') {

@@ -77,25 +77,28 @@ export const mainproc = (props) => {
     }
 
     // functions to synchronize state value with browser db data
-    const syncChannelData = (type, isLocal=false)=>{
-        const selector = getChannelSelectorByType(type)
-        const channelStepTypes = { self: StepType.self_channel, subscribed: StepType.subscribed_channel, public: StepType.public_channel }
-        LocalDB.find({ selector })
-            .then(response=>(
-                dispatch(setChannelData({type, data: response.docs}))
-            ))
-            .then(_=>{
-                updateQueryStep(channelStepTypes[type], type==='public', isLocal)
-            })
-    }
+    const syncChannelData = (type, isLocal=false)=>(
+        new Promise((resolve, reject)=>{
+            const selector = getChannelSelectorByType(type)
+            const channelStepTypes = { self: StepType.self_channel, subscribed: StepType.subscribed_channel, public: StepType.public_channel }
+            LocalDB.find({ selector })
+                .then(response=>dispatch(setChannelData({type, data: response.docs})))
+                .then(_=>updateQueryStep(channelStepTypes[type], type==='public', isLocal))
+                .then(resolve)
+                .catch(reject)
+        })
+    )
     
     // main process steps
     const queryLocalChannelStep = () => (
         new Promise((resolve, reject) => {
-            syncChannelData('self', true)
-            syncChannelData('subscribed', true)
-            syncChannelData('public', true)
-            resolve(true)
+            Promise.all([
+                syncChannelData('self', true),
+                syncChannelData('subscribed', true),
+                syncChannelData('public', true)
+            ])
+                .then(resolve)
+                .catch(reject)
         })
     )
     const querySelfChannelStep = () => (
@@ -622,12 +625,6 @@ export const mainproc = (props) => {
             .then(res=>queryCommentStep(res['loadingChannels'], isPublic))
             .then(res=>queryCommentLikeStep(res['loadingChannels'], isPublic))
     }
-
-    const queryPublicPostStep = () => queryPostStep(true)
-    const queryPublicPostLikeStep = () => queryPostLikeStep(true)
-    const queryPublicPostImgStep = () => queryPostImgStep(true)
-    const queryPublicCommentStep = () => queryCommentStep(true)
-    const queryPublicCommentLikeStep = () => queryCommentLikeStep(true)
     
     // async steps
     const queryDispNameStepEx = (type) => {
@@ -814,24 +811,6 @@ export const mainproc = (props) => {
         subscribed: querySubscribedChannelStep,
         public: queryPublicChannelStep
     }
-    const querySteps = [
-        queryLocalChannelStep,
-        querySelfChannelStep, 
-        querySubscribedChannelStep, 
-        queryPostStep,
-        queryPostLikeStep,
-        // queryPostImgStep,
-        queryCommentStep,
-        queryCommentLikeStep
-    ]
-    const queryPublicSteps = [
-        queryPublicChannelStep,
-        queryPublicPostStep,
-        queryPublicPostLikeStep,
-        // queryPublicPostImgStep,
-        queryPublicCommentStep,
-        queryPublicCommentLikeStep
-    ]
     return { queryProc, queryLocalChannelStep, streamByChannelType }
 }
 
