@@ -7,7 +7,8 @@ import StyledAvatar from 'components/StyledAvatar'
 import SubscribeButton from 'components/SubscribeButton';
 import { selectChannelById } from 'redux/slices/channel';
 import { selectUserInfoByDID } from 'redux/slices/user';
-import { decodeBase64 } from 'utils/common'
+import { getImageSource } from 'utils/common'
+import { getLocalDB } from 'utils/db';
 
 const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `PopperUnstyled` for lower bundle size.
     maxWidth: '350px',
@@ -58,7 +59,18 @@ const StyledPopper = styled(Popper)(({ theme }) => ({ // You can replace with `P
 const SubscriberAvatar = (props) => {
     const { subscriber } = props
     const userInfo = useSelector(selectUserInfoByDID(subscriber.user_did)) || {}
-    const avatarSrc = decodeBase64(userInfo['avatarSrc'] || "")
+    const userAvatarUrl = userInfo['avatar_url']
+    const [avatarSrc, setAvatarSrc] = React.useState('')
+    const LocalDB = getLocalDB()
+    React.useEffect(()=>{
+        if(userAvatarUrl) {
+            LocalDB.get(userAvatarUrl)
+                .then(doc=>getImageSource(doc['source']))
+                .then(setAvatarSrc)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userAvatarUrl])
+
     return (
         <Avatar sx={{ width: 'auto', height: 'auto', background: 'none' }}>
             <StyledAvatar alt={subscriber.display_name} src={avatarSrc} width={18}/>
