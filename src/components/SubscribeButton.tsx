@@ -37,7 +37,6 @@ const SubscribeButton = (props) => {
             user_did: myDID
           }
           updateDoc['subscribers'] = [...(channel['subscribers'] || []), newSubscriber]
-          return hiveApi.subscribeChannel(channel['target_did'], channel_id, myName, currentTime)
         }
         else {
           if(channel['subscribers']) {

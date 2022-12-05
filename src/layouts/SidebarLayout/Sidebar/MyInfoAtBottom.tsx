@@ -7,18 +7,30 @@ import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectMyInfo, setMyInfo, setUserInfo } from 'redux/slices/user';
 import { getLocalDB } from 'utils/db';
-import { reduceDIDstring, getInfoFromDID, reduceHexAddress, encodeBase64, decodeBase64, compressImage } from 'utils/common'
+import { reduceDIDstring, getInfoFromDID, reduceHexAddress, encodeBase64, decodeBase64, compressImage, getImageSource } from 'utils/common'
 
 
 function MyInfoAtBottom() {
   const { walletAddress } = React.useContext(SidebarContext)
   const dispatch = useDispatch()
   const myInfo = useSelector(selectMyInfo)
+  const [avatarSrc, setAvatarSrc] = React.useState('')
   const feedsDid = localStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
   const LocalDB = getLocalDB()
   
+  React.useEffect(()=>{
+    if(myInfo['avatar_url']) {
+        LocalDB.get(myInfo['avatar_url'])
+            .then(doc=>getImageSource(doc['source']))
+            .then(setAvatarSrc)
+    }
+    else
+        setAvatarSrc('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myInfo['avatar_url']])
+
   React.useEffect(()=>{
     if(!feedsDid)
       return
@@ -34,8 +46,12 @@ function MyInfoAtBottom() {
       dispatch(setUserInfo(userInfoObj))
       storeMyInfo(res as object)
     })
+    let avatarHiveUrl = ''
     hiveApi.getHiveUrl(myDID)
-      .then(hiveUrl=>hiveApi.downloadFileByHiveUrl(myDID, hiveUrl))
+      .then(hiveUrl=>{
+        avatarHiveUrl = hiveUrl
+        return hiveApi.downloadFileByHiveUrl(myDID, hiveUrl)
+      })
       .then(res=>{
         const resBuf = res as Buffer
         if(resBuf && resBuf.length) {
@@ -45,10 +61,16 @@ function MyInfoAtBottom() {
         return ''
       })
       .then(avatarSrc=>{
-        const avatarObj = { avatarSrc: encodeBase64(avatarSrc) }
-        storeMyInfo(avatarObj)
+        const myAvatarObj = { avatar_url: avatarHiveUrl }
+        storeMyInfo(myAvatarObj)
         const avatarUserObj = {}
-        avatarUserObj[myDID] = avatarObj
+        avatarUserObj[myDID] = { avatarSrc: encodeBase64(avatarSrc) }
+        LocalDB.upsert(avatarHiveUrl, (doc)=>{
+          if(!doc._id) {
+              return {...doc, source: avatarUserObj[myDID].avatarSrc, table_type: 'image' }
+          }
+          return false
+        })
         dispatch(setUserInfo(avatarUserObj))
       })
       .catch(err=>{})
@@ -64,7 +86,7 @@ function MyInfoAtBottom() {
   return (
     <Box p={1}>
       <Stack direction="row" alignItems="center" spacing={1}>
-        <StyledAvatar alt="" src={decodeBase64(myInfo['avatarSrc'])} width={36}/>
+        <StyledAvatar alt="" src={avatarSrc} width={36}/>
         <Box sx={{ minWidth: 0, flexGrow: 1 }}>
           <Typography variant="subtitle2" noWrap>
             {myInfo['name'] || reduceHexAddress(walletAddress)}

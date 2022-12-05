@@ -22,6 +22,8 @@ const SubscriberListItem = (props) => {
                 .then(doc=>getImageSource(doc['source']))
                 .then(setAvatarSrc)
         }
+        else
+            setAvatarSrc('')
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userAvatarUrl])
     const handleLink2Profile = (user_did)=>{
