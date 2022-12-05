@@ -662,7 +662,7 @@ export const mainproc = (props) => {
                                     return doc
                                 })
                                     .then(_=>{
-                                        dispatch(setChannelData({type, data: dispNameObj}))
+                                        dispatch(setChannelData(dispNameObj))
                                     })
                             }
                         })
@@ -698,7 +698,7 @@ export const mainproc = (props) => {
                                     doc['avatarSrc'] = avatarObj[channel._id].avatarSrc
                                     return doc
                                 })
-                                    .then(_=>dispatch(setChannelData({type, data: avatarObj})))
+                                    .then(_=>dispatch(setChannelData(avatarObj)))
                             })
                     }
                     else {
@@ -712,7 +712,7 @@ export const mainproc = (props) => {
                                     doc['avatarSrc'] = avatarObj[channel._id].avatarSrc
                                     return doc
                                 })
-                                    .then(_=>dispatch(setChannelData({type, data: avatarObj})))
+                                    .then(_=>dispatch(setChannelData(avatarObj)))
                             })
                     }
                 })
@@ -738,7 +738,7 @@ export const mainproc = (props) => {
                                         doc['subscribers'] = subscribersArr
                                         return doc
                                     })
-                                        .then(_=>dispatch(setChannelData({type, data: subscribersObj})))
+                                        .then(_=>dispatch(setChannelData(subscribersObj)))
                                     return subscribersArr
                                 }
                                 return []

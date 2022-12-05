@@ -11,7 +11,7 @@ import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
 import ChannelSkeleton from 'components/Skeleton/ChannelSkeleton';
 import PostSkeleton from 'components/Skeleton/PostSkeleton';
-import { reduceDIDstring, decodeBase64 } from 'utils/common'
+import { reduceDIDstring, decodeBase64, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 import { selectMyInfo } from 'redux/slices/user';
 import { selectSelfChannels, selectSubscribedChannels } from 'redux/slices/channel';
@@ -19,11 +19,13 @@ import { selectQueryStepStatus } from 'redux/slices/proc';
 
 function Profile() {
   const currentLikeStep = useSelector(selectQueryStepStatus('post_like'))
+  const [avatarSrc, setAvatarSrc] = React.useState('');
   const [tabValue, setTabValue] = React.useState(0);
   const [likedPosts, setLikedPosts] = React.useState([])
   const [isLoadingLike, setIsLoadingLike] = React.useState(true)
   const feedsDid = localStorage.getItem('FEEDS_DID')
   const myInfo = useSelector(selectMyInfo)
+  const myAvatarUrl = myInfo['avatar_url']
   const selfChannels = Object.values(useSelector(selectSelfChannels))
   const subscribedChannels = Object.values(useSelector(selectSubscribedChannels))
   const isSelfChannelLoaded = useSelector(selectQueryStepStatus('self_channel'))
@@ -32,6 +34,17 @@ function Profile() {
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+
+  React.useEffect(()=>{
+    if(myAvatarUrl) {
+      LocalDB.get(myAvatarUrl)
+        .then(doc=>getImageSource(doc['source']))
+        .then(setAvatarSrc)
+    }
+    else
+        setAvatarSrc('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myAvatarUrl])
 
   React.useEffect(()=>{
     if(currentLikeStep) {
@@ -58,7 +71,7 @@ function Profile() {
         <Box sx={{position: 'relative'}}>
           {/* <Box sx={{ height: {xs: 120, md: 200}, background: `url(${backgroundImg}) no-repeat center`, backgroundSize: 'cover'}}/> */}
           <Box sx={{ height: {xs: 120, md: 200}, background: 'linear-gradient(180deg, #000000 0%, #A067FF 300.51%)', backgroundSize: 'cover'}}/>
-          <StyledAvatar alt={myInfo['name']} src={decodeBase64(myInfo['avatarSrc'])} width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
+          <StyledAvatar alt={myInfo['name']} src={avatarSrc} width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
         </Box>
         <Box px={2} py={1}>
           <Stack direction='row' spacing={1}>

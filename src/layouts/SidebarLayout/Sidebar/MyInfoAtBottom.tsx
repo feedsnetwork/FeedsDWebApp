@@ -7,13 +7,14 @@ import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectMyInfo, setMyInfo, setUserInfo } from 'redux/slices/user';
 import { getLocalDB } from 'utils/db';
-import { reduceDIDstring, getInfoFromDID, reduceHexAddress, encodeBase64, decodeBase64, compressImage, getImageSource } from 'utils/common'
+import { reduceDIDstring, getInfoFromDID, reduceHexAddress, encodeBase64, compressImage, getImageSource } from 'utils/common'
 
 
 function MyInfoAtBottom() {
   const { walletAddress } = React.useContext(SidebarContext)
   const dispatch = useDispatch()
   const myInfo = useSelector(selectMyInfo)
+  const myAvatarUrl = myInfo['avatar_url']
   const [avatarSrc, setAvatarSrc] = React.useState('')
   const feedsDid = localStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
@@ -21,15 +22,15 @@ function MyInfoAtBottom() {
   const LocalDB = getLocalDB()
   
   React.useEffect(()=>{
-    if(myInfo['avatar_url']) {
-        LocalDB.get(myInfo['avatar_url'])
-            .then(doc=>getImageSource(doc['source']))
-            .then(setAvatarSrc)
+    if(myAvatarUrl) {
+      LocalDB.get(myAvatarUrl)
+        .then(doc=>getImageSource(doc['source']))
+        .then(setAvatarSrc)
     }
     else
         setAvatarSrc('')
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [myInfo['avatar_url']])
+  }, [myAvatarUrl])
 
   React.useEffect(()=>{
     if(!feedsDid)
@@ -61,17 +62,18 @@ function MyInfoAtBottom() {
         return ''
       })
       .then(avatarSrc=>{
-        const myAvatarObj = { avatar_url: avatarHiveUrl }
-        storeMyInfo(myAvatarObj)
-        const avatarUserObj = {}
-        avatarUserObj[myDID] = myAvatarObj
         LocalDB.upsert(avatarHiveUrl, (doc)=>{
-          if(!doc._id) {
-              return {...doc, source: encodeBase64(avatarSrc), table_type: 'image' }
-          }
+          if(!doc._id)
+            return {...doc, source: encodeBase64(avatarSrc), table_type: 'image' }
           return false
         })
-        dispatch(setUserInfo(avatarUserObj))
+          .then(_=>{
+            const myAvatarObj = { avatar_url: avatarHiveUrl }
+            storeMyInfo(myAvatarObj)
+            const avatarUserObj = {}
+            avatarUserObj[myDID] = myAvatarObj
+            dispatch(setUserInfo(avatarUserObj))
+          })
       })
       .catch(err=>{})
     // eslint-disable-next-line react-hooks/exhaustive-deps

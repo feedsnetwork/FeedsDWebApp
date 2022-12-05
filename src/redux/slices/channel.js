@@ -55,10 +55,11 @@ const slice = createSlice({
         state.channels = channelDocs
         return
       }
-      const tempState = {...state.channels}
       Object.keys(channelData).forEach(key=>{
         if(state.channels[key])
-          state.channels[key] = {...tempState[key], ...channelData[key]}
+          state.channels[key] = {...state.channels[key], ...channelData[key]}
+        else
+          state.channels[key] = channelData[key]
       })
     },
     setActiveChannelId(state, action) {
