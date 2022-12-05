@@ -64,10 +64,10 @@ function MyInfoAtBottom() {
         const myAvatarObj = { avatar_url: avatarHiveUrl }
         storeMyInfo(myAvatarObj)
         const avatarUserObj = {}
-        avatarUserObj[myDID] = { avatarSrc: encodeBase64(avatarSrc) }
+        avatarUserObj[myDID] = myAvatarObj
         LocalDB.upsert(avatarHiveUrl, (doc)=>{
           if(!doc._id) {
-              return {...doc, source: avatarUserObj[myDID].avatarSrc, table_type: 'image' }
+              return {...doc, source: encodeBase64(avatarSrc), table_type: 'image' }
           }
           return false
         })
