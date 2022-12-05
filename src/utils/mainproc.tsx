@@ -18,6 +18,7 @@ export const mainproc = (props) => {
     const myDID = `did:elastos:${feedsDid}`
     const LocalDB = getLocalDB()
     const loadingPostState = {}
+    const channelState = {}
 
     const updateQueryStep = (step, isPublic=false, isLocal=false)=>(
         new Promise((resolve, reject) => {
@@ -75,6 +76,9 @@ export const mainproc = (props) => {
         }
         return selector
     }
+    const updateChannelState = (channelId, stateObj) => {
+        channelState[channelId] = { ...(channelState[channelId] || {}), ...stateObj }
+    }
 
     // functions to synchronize state value with browser db data
     const syncChannelData = (data, type, isLocal=false)=>(
@@ -120,15 +124,17 @@ export const mainproc = (props) => {
                         const selfChannelUpdateObj = {}
                         const junkDocs = selfChannelsInDB.docs
                             .filter(doc=>selfChannels.every(channel=>channel['channel_id']!==doc['channel_id']))
-                            .map(originDoc=>(
-                                LocalDB.upsert(originDoc._id, (doc)=>{
+                            .map(originDoc=>{
+                                updateChannelState(originDoc._id, { is_self: false })
+                                return LocalDB.upsert(originDoc._id, (doc)=>{
                                     selfChannelUpdateObj[originDoc._id] = { is_self: false }
                                     doc['is_self'] = false
                                     return doc
                                 })
-                            ))
-                        const selfChannelDocs = selfChannels.map(channel=>(
-                            LocalDB.upsert(channel.channel_id, (doc)=>{
+                            })
+                        const selfChannelDocs = selfChannels.map(channel=>{
+                            updateChannelState(channel.channel_id, { is_self: true })
+                            return LocalDB.upsert(channel.channel_id, (doc)=>{
                                 if(doc['modified'] === channel['modified']){
                                     if(!doc['is_self']) {
                                         selfChannelUpdateObj[channel.channel_id] = { is_self: true }
@@ -150,13 +156,14 @@ export const mainproc = (props) => {
                                     is_self: true, 
                                     is_subscribed: false, 
                                     is_public: false, 
+                                    ...channelState[channel.channel_id],
                                     time_range: [], 
                                     display_name: channel['display_name'] || channel['name'],
                                     table_type: 'channel'
                                 }
-                                return selfChannelUpdateObj[channel.channel_id]
+                                return {...doc, ...selfChannelUpdateObj[channel.channel_id]}
                             })
-                        ))
+                        })
                         Promise.all([...junkDocs, ...selfChannelDocs])
                             .then(_=>syncChannelData(selfChannelUpdateObj, 'self'))
                             .then(_=>{
@@ -192,13 +199,14 @@ export const mainproc = (props) => {
                         const subscribedChannelUpdateObj = {}
                         const junkDocs = subscribedChannelsInDB.docs
                             .filter(doc=>subscribedChannelArr.every(channel=>channel['channel_id']!==doc['channel_id']))
-                            .map(originDoc=>(
-                                LocalDB.upsert(originDoc._id, (doc)=>{
+                            .map(originDoc=>{
+                                updateChannelState(originDoc._id, { is_subscribed: false })
+                                return LocalDB.upsert(originDoc._id, (doc)=>{
                                     subscribedChannelUpdateObj[originDoc._id] = { is_subscribed: false }
                                     doc['is_subscribed'] = false
                                     return doc
                                 })
-                            ))
+                            })
                         const getChannelInfo = (channel):Promise<object> => (
                             new Promise((resolve, reject)=>{
                                 hiveApi.queryChannelInfo(channel.target_did, channel.channel_id)
@@ -213,6 +221,7 @@ export const mainproc = (props) => {
                             })
                         )
                         const subscribedChannelDocs = subscribedChannelArr.map(async channel=>{
+                            updateChannelState(channel.channel_id, { is_subscribed: true })
                             try {
                                 const originDoc = await LocalDB.get(channel.channel_id)
                                 if(originDoc['is_self']) {
@@ -255,6 +264,7 @@ export const mainproc = (props) => {
                                             is_self: false, 
                                             is_subscribed: true, 
                                             is_public: false, 
+                                            ...channelState[channel.channel_id],
                                             time_range: [], 
                                             table_type: 'channel',
                                             display_name: channelInfo['display_name'] || channelInfo['name']
@@ -308,6 +318,7 @@ export const mainproc = (props) => {
                         const channelId = splitEntry[splitEntry.length - 1]
                         const metaRes = await fetch(metaUri)
                         const metaContent = await metaRes.json()
+                        updateChannelState(channelId, { is_public: true })
                         return {
                             channel_id: channelId,
                             name: metaContent.name,
@@ -317,6 +328,7 @@ export const mainproc = (props) => {
                             type: metaContent.type,
                             tipping_address: channelInfo['receiptAddr'],
                             is_public: true,
+                            ...channelState[channelId],
                             time_range: [], 
                             avatarSrc: getIpfsUrl(metaContent?.data?.avatar),
                             bannerSrc: getIpfsUrl(metaContent?.data?.banner),
@@ -335,13 +347,14 @@ export const mainproc = (props) => {
                             })
                             const junkDocs = publicChannelsInDB.docs
                                 .filter(doc=>publicChannels.every(channel=>channel['channel_id']!==doc['channel_id']))
-                                .map(originDoc=>(
-                                    LocalDB.upsert(originDoc._id, (doc)=>{
+                                .map(originDoc=>{
+                                    updateChannelState(originDoc._id, { is_public: false })
+                                    return LocalDB.upsert(originDoc._id, (doc)=>{
                                         publicChannelUpdateObj[originDoc._id] = { is_public: false }
                                         doc['is_public'] = false
                                         return doc
                                     })
-                                ))
+                                })
                             const publicChannelDocs = publicChannels.map(channel=>(
                                 LocalDB.upsert(channel['channel_id'], (doc)=>{
                                     if(doc._id) {
