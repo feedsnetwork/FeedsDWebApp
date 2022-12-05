@@ -48,19 +48,23 @@ const SubscribeButton = (props) => {
           }
         }
         const updateObj = {}
-        updateObj[channel_id] = updateDoc
-        dispatch(setChannelData(updateObj))
         try {
-          if(!isSubscribed) 
+          if(!isSubscribed) {
             await hiveApi.subscribeChannel(channel['target_did'], channel_id, myName, currentTime)
-          else
+            await hiveApi.backupSubscribedChannel(channel['target_did'], channel_id)
+          }
+          else {
             await hiveApi.unSubscribeChannel(channel['target_did'], channel_id)
+            await hiveApi.removeBackupData(channel['target_did'], channel_id)
+          }
+          updateObj[channel_id] = updateDoc
+          dispatch(setChannelData(updateObj))
           return LocalDB.upsert(channel_id, (doc)=>{
             return {...doc, ...updateDoc}
           })
         } catch(err) {
-          updateObj[channel_id] = originDoc
-          dispatch(setChannelData(updateObj))
+          // updateObj[channel_id] = originDoc
+          // dispatch(setChannelData(updateObj))
         }
       })
       .then(_=>{

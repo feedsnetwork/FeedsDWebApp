@@ -1,12 +1,9 @@
 import StyledAvatar from 'components/StyledAvatar'
-import { decodeBase64 } from 'utils/common';
+import { getImageSource } from 'utils/common';
 
 const SubscriptionAvatar = (props) => {
     const { channel } = props
-    let thisChannelAvatar = channel['avatarSrc']
-    if(thisChannelAvatar) {
-        thisChannelAvatar = decodeBase64(thisChannelAvatar)
-    }
+    let thisChannelAvatar = getImageSource(channel['avatarSrc'])
     return <StyledAvatar alt={channel['display_name']} src={thisChannelAvatar} width={20}/>
 }
 
