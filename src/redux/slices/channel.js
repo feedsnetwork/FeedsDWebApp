@@ -10,9 +10,7 @@ const initialState = {
   focusedChannelId: 0, // focused self channel id
   visitedChannelId: 0, // selected subscribed channel id
   targetChannel: {}, // target channel object to publish/unpublish/unsubscribe
-  selfChannels: {},
-  subscribedChannels: {},
-  publicChannels: {},
+  channels: {},
   postLoadedChannels: {}
 };
 
@@ -48,28 +46,20 @@ const slice = createSlice({
       state.targetChannel = action.payload
     },
     setChannelData(state, action) {
-      const type = action.payload.type
-      const channelData = action.payload.data
-      const channelState = `${type}Channels`
+      const channelData = action.payload
       if(Array.isArray(channelData)) {
         const channelDocs = channelData.reduce((group, doc)=>{
           group[doc._id] = doc
           return group
         }, {})
-        state[channelState] = channelDocs
+        state.channels = channelDocs
         return
       }
-      const tempState = {...state[channelState]}
+      const tempState = {...state.channels}
       Object.keys(channelData).forEach(key=>{
-        if(tempState[key])
-          tempState[key] = {...tempState[key], ...channelData[key]}
+        if(state.channels[key])
+          state.channels[key] = {...tempState[key], ...channelData[key]}
       })
-      state[channelState] = tempState
-    },
-    setPublicChannels(state, action) {
-      const tempState = {...state.publicChannels}
-      tempState[action.payload.channel_id] = action.payload.data
-      state.publicChannels = tempState
     },
     setActiveChannelId(state, action) {
       state.activeChannelId = action.payload
@@ -93,7 +83,6 @@ export default slice.reducer;
 // Actions
 export const {  
   setChannelData, 
-  setPublicChannels, 
   setFocusedChannelId, 
   setActiveChannelId, 
   setVisitedChannelId, 
@@ -154,21 +143,33 @@ export function selectUnsubscribeModalState(state) {
 export function selectTargetChannel(state) {
   return state.channel.targetChannel
 }
+const getChannelsByType = (channelObj, type) => {
+  let filterFunc = channel=>channel['is_self']
+  if(type === 'subscribed')
+    filterFunc = channel=>(!channel['is_self'] && channel['is_subscribed'])
+  else if(type === 'public')
+    filterFunc = channel=>channel['is_public']
+  return Object.values(channelObj)
+    .filter(filterFunc)
+    .reduce((res, channel)=>{
+      res[channel.channel_id] = channel
+      return res
+    }, {})
+}
 export function selectSelfChannels(state) {
-  return state.channel.selfChannels
+  return getChannelsByType(state.channel.channels, 'self')
 }
 export function selectSelfChannelsCount(state) {
-  return Object.keys(state.channel.selfChannels).length
+  return Object.values(state.channel.channels).filter(channel=>channel['is_self']).length
 }
 export function selectSubscribedChannels(state) {
-  return state.channel.subscribedChannels
+  return getChannelsByType(state.channel.channels, 'subscribed')
 }
 export function selectPublicChannels(state) {
-  return state.channel.publicChannels
+  return getChannelsByType(state.channel.channels, 'public')
 }
 export const selectChannelById = channelId => state => {
-  const channels = {...state.channel.selfChannels, ...state.channel.subscribedChannels, ...state.channel.publicChannels}
-  return channels[channelId]
+  return state.channel.channels[channelId]
 }
 export function selectActiveChannelId(state) {
   return state.channel.activeChannelId

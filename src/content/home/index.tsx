@@ -18,7 +18,6 @@ const Home = () => {
   const [pageEndTime, setPageEndTime] = React.useState(0)
   const [isLoading, setIsLoading] = React.useState(true)
   const LocalDB = getLocalDB()
-  console.info(currentPostStep, loadedPostCount)
 
   React.useEffect(()=>{
     if(loadedPostCount || currentPostStep){

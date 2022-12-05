@@ -77,26 +77,25 @@ export const mainproc = (props) => {
     }
 
     // functions to synchronize state value with browser db data
-    const syncChannelData = (type, isLocal=false)=>(
+    const syncChannelData = (data, type, isLocal=false)=>(
         new Promise((resolve, reject)=>{
-            const selector = getChannelSelectorByType(type)
             const channelStepTypes = { self: StepType.self_channel, subscribed: StepType.subscribed_channel, public: StepType.public_channel }
-            LocalDB.find({ selector })
-                .then(response=>dispatch(setChannelData({type, data: response.docs})))
+            Promise.resolve()
+                .then(_=>dispatch(setChannelData(data)))
                 .then(_=>updateQueryStep(channelStepTypes[type], type==='public', isLocal))
                 .then(resolve)
                 .catch(reject)
         })
     )
-    
     // main process steps
     const queryLocalChannelStep = () => (
         new Promise((resolve, reject) => {
-            Promise.all([
-                syncChannelData('self', true),
-                syncChannelData('subscribed', true),
-                syncChannelData('public', true)
-            ])
+            LocalDB.find({
+                selector: {
+                    table_type: 'channel'
+                }
+            })
+                .then(response=>dispatch(setChannelData(response.docs)))
                 .then(resolve)
                 .catch(reject)
         })
@@ -118,10 +117,12 @@ export const mainproc = (props) => {
                                 is_self: true
                             }
                         })
+                        const selfChannelUpdateObj = {}
                         const junkDocs = selfChannelsInDB.docs
                             .filter(doc=>selfChannels.every(channel=>channel['channel_id']!==doc['channel_id']))
                             .map(originDoc=>(
                                 LocalDB.upsert(originDoc._id, (doc)=>{
+                                    selfChannelUpdateObj[originDoc._id] = { is_self: false }
                                     doc['is_self'] = false
                                     return doc
                                 })
@@ -130,6 +131,7 @@ export const mainproc = (props) => {
                             LocalDB.upsert(channel.channel_id, (doc)=>{
                                 if(doc['modified'] === channel['modified']){
                                     if(!doc['is_self']) {
+                                        selfChannelUpdateObj[channel.channel_id] = { is_self: true }
                                         doc['is_self'] = true
                                         return doc
                                     }
@@ -140,9 +142,10 @@ export const mainproc = (props) => {
                                     const channelDoc = {...doc, ...channel, is_self: true}
                                     if(doc['avatar'] !== channel['avatar'])
                                         channelDoc['avatarSrc'] = ''
+                                    selfChannelUpdateObj[channel.channel_id] = { ...channelDoc }
                                     return channelDoc
                                 }
-                                return {
+                                selfChannelUpdateObj[channel.channel_id] = {
                                     ...channel, 
                                     is_self: true, 
                                     is_subscribed: false, 
@@ -151,10 +154,11 @@ export const mainproc = (props) => {
                                     display_name: channel['display_name'] || channel['name'],
                                     table_type: 'channel'
                                 }
+                                return selfChannelUpdateObj[channel.channel_id]
                             })
                         ))
                         Promise.all([...junkDocs, ...selfChannelDocs])
-                            .then(_=>syncChannelData('self'))
+                            .then(_=>syncChannelData(selfChannelUpdateObj, 'self'))
                             .then(_=>{
                                 queryDispNameStepEx('self')
                                 queryChannelAvatarStepEx('self')
@@ -185,10 +189,12 @@ export const mainproc = (props) => {
                             }
                         })
                         const subscribedChannelArr = getFilteredArrayByUnique(backupRes, "channel_id")
+                        const subscribedChannelUpdateObj = {}
                         const junkDocs = subscribedChannelsInDB.docs
                             .filter(doc=>subscribedChannelArr.every(channel=>channel['channel_id']!==doc['channel_id']))
                             .map(originDoc=>(
                                 LocalDB.upsert(originDoc._id, (doc)=>{
+                                    subscribedChannelUpdateObj[originDoc._id] = { is_subscribed: false }
                                     doc['is_subscribed'] = false
                                     return doc
                                 })
@@ -212,6 +218,7 @@ export const mainproc = (props) => {
                                 if(originDoc['is_self']) {
                                     return await LocalDB.upsert(originDoc._id, (doc)=>{
                                         if(!doc['is_subscribed']){
+                                            subscribedChannelUpdateObj[originDoc._id] = { is_subscribed: true }
                                             doc['is_subscribed'] = true
                                             return doc
                                         }
@@ -223,6 +230,7 @@ export const mainproc = (props) => {
                                     return await LocalDB.upsert(originDoc._id, (doc)=>{
                                         if(doc['modified'] === channelInfo['modified']) {
                                             if(!doc['is_subscribed']){
+                                                subscribedChannelUpdateObj[originDoc._id] = { is_subscribed: true }
                                                 doc['is_subscribed'] = true
                                                 return doc
                                             }
@@ -231,6 +239,7 @@ export const mainproc = (props) => {
                                         let channelDoc = {...doc, ...channelInfo, is_subscribed: true, _id: doc._id}
                                         if(doc['avatar'] !== channelInfo['avatar'])
                                             channelDoc['avatarSrc'] = ''
+                                        subscribedChannelUpdateObj[originDoc._id] = { ...channelDoc }
                                         return channelDoc 
                                     })
                                 } catch(e) {
@@ -240,7 +249,7 @@ export const mainproc = (props) => {
                                 try {
                                     const channelInfo = await getChannelInfo(channel)
                                     return await LocalDB.upsert(channel.channel_id, ()=>{
-                                        return {
+                                        subscribedChannelUpdateObj[channel.channel_id] = {
                                             ...channelInfo, 
                                             target_did: channel.target_did,
                                             is_self: false, 
@@ -250,6 +259,7 @@ export const mainproc = (props) => {
                                             table_type: 'channel',
                                             display_name: channelInfo['display_name'] || channelInfo['name']
                                         }
+                                        return subscribedChannelUpdateObj[channel.channel_id]
                                     })
                                 } catch(e) {
                                     return {success: false, error: e}
@@ -257,7 +267,7 @@ export const mainproc = (props) => {
                             }
                         })
                         Promise.all([...junkDocs, ...subscribedChannelDocs])
-                            .then(_=>syncChannelData('subscribed'))
+                            .then(_=>syncChannelData(subscribedChannelUpdateObj, 'subscribed'))
                             .then(_=>{ 
                                 queryDispNameStepEx('subscribed')
                                 queryChannelAvatarStepEx('subscribed')
@@ -314,6 +324,7 @@ export const mainproc = (props) => {
                             tokenId
                         } 
                     })
+                    const publicChannelUpdateObj = {}
                     Promise.all(publicChannelObjs)
                         .then(async publicChannels=>{
                             const publicChannelsInDB = await LocalDB.find({
@@ -326,6 +337,7 @@ export const mainproc = (props) => {
                                 .filter(doc=>publicChannels.every(channel=>channel['channel_id']!==doc['channel_id']))
                                 .map(originDoc=>(
                                     LocalDB.upsert(originDoc._id, (doc)=>{
+                                        publicChannelUpdateObj[originDoc._id] = { is_public: false }
                                         doc['is_public'] = false
                                         return doc
                                     })
@@ -334,18 +346,20 @@ export const mainproc = (props) => {
                                 LocalDB.upsert(channel['channel_id'], (doc)=>{
                                     if(doc._id) {
                                         if(!doc['is_public']){
+                                            publicChannelUpdateObj[channel.channel_id] = { is_public: true, tokenId: channel.tokenId }
                                             doc['is_public'] = true
                                             doc['tokenId'] = channel.tokenId
                                             return doc
                                         }
                                         return false
                                     }
-                                    return {...doc, ...channel}
+                                    publicChannelUpdateObj[channel.channel_id] = {...doc, ...channel}
+                                    return publicChannelUpdateObj[channel.channel_id]
                                 })
                             ))
                             return Promise.all([...junkDocs, ...publicChannelDocs])
                         })
-                        .then(_=>syncChannelData('public'))
+                        .then(_=>syncChannelData(publicChannelUpdateObj, 'public'))
                         .then(_=>{
                             queryDispNameStepEx('public')
                             querySubscriptionInfoStepEx('public')

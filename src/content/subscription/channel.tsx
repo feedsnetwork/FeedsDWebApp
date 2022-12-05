@@ -65,6 +65,7 @@ function Channel() {
           setPageEndTime(pageEndPost['created_at'])
       })
       .catch(err=>setIsLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageEndTime, channel_id])
 
   const loadingSkeletons = Array(5).fill(null)
