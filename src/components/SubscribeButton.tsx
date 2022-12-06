@@ -25,7 +25,7 @@ const SubscribeButton = (props) => {
     const channel_id = channel['channel_id']
     Promise.resolve()
       .then(async _=>{
-        const originDoc = { is_subscribed: isSubscribed, subscribers: [...(channel['subscribers'] || [])]}
+        // const originDoc = { is_subscribed: isSubscribed, subscribers: [...(channel['subscribers'] || [])]}
         const updateDoc = { is_subscribed: !isSubscribed }
         if(!isSubscribed) {
           const newSubscriber = {

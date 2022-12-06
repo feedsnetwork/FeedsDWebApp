@@ -67,7 +67,7 @@ export const mainproc = (props) => {
                 selector['is_self'] = true
                 break;
             case 'subscribed':
-                selector['is_self'] = false
+                selector['is_self'] = { $ne: true }
                 selector['is_subscribed'] = true
                 break;
             case 'public':
@@ -246,7 +246,9 @@ export const mainproc = (props) => {
                                             return false
                                         }
                                         let channelDoc = {...doc, ...channelInfo, is_subscribed: true, _id: doc._id}
-                                        if(doc['avatar'] !== channelInfo['avatar'])
+                                        if(getIpfsUrl(doc['avatar']))
+                                            channelDoc['avatar'] = doc['avatar']
+                                        else if(doc['avatar'] !== channelInfo['avatar'])
                                             channelDoc['avatarSrc'] = ''
                                         subscribedChannelUpdateObj[originDoc._id] = { ...channelDoc }
                                         return channelDoc 
@@ -330,6 +332,7 @@ export const mainproc = (props) => {
                             is_public: true,
                             ...channelState[channelId],
                             time_range: [], 
+                            avatar: metaContent?.data?.avatar,
                             avatarSrc: getIpfsUrl(metaContent?.data?.avatar),
                             bannerSrc: getIpfsUrl(metaContent?.data?.banner),
                             table_type: 'channel',
@@ -727,6 +730,7 @@ export const mainproc = (props) => {
                                 })
                                     .then(_=>dispatch(setChannelData(avatarObj)))
                             })
+                            .catch(e=>{})
                     }
                 })
             })

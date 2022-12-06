@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC, useState, useEffect } from 'react'
 import { Box, styled, Avatar } from '@mui/material';
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import AvatarSkeleton from 'components/Skeleton/AvatarSkeleton';
@@ -40,6 +40,10 @@ const StyledAvatar: FC<StyledAvatarProps> = (props) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isLoadError, setIsLoadError] = useState(false)
 
+  useEffect(()=>{
+    setIsLoadError(false)
+  }, [src])
+
   const handleErrorImage = (e) => {
     const imgSrc = e.target.getAttribute('src')
     if(!imgSrc.startsWith("http")) {
@@ -51,6 +55,7 @@ const StyledAvatar: FC<StyledAvatarProps> = (props) => {
       .then(res=>res.text())
       .then(res=>{
         e.target.src=res
+        setIsLoaded(true)
       })
   }
 
@@ -83,7 +88,8 @@ const StyledAvatar: FC<StyledAvatarProps> = (props) => {
               margin: 'auto',
               width: width,
               height: width,
-              transition: 'border-radius .2s'
+              transition: 'border-radius .2s',
+              opacity: isLoaded? 1: 0
             }} 
             afterLoad={()=>setIsLoaded(true)} 
             onError={handleErrorImage}

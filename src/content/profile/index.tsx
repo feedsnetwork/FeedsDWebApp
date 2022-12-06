@@ -11,7 +11,7 @@ import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
 import ChannelSkeleton from 'components/Skeleton/ChannelSkeleton';
 import PostSkeleton from 'components/Skeleton/PostSkeleton';
-import { reduceDIDstring, decodeBase64, getImageSource } from 'utils/common'
+import { reduceDIDstring, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 import { selectMyInfo } from 'redux/slices/user';
 import { selectSelfChannels, selectSubscribedChannels } from 'redux/slices/channel';
