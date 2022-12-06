@@ -66,8 +66,8 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const [isOnValidation, setOnValidation] = useState(false);
   const [onProgress, setOnProgress] = useState(false);
   const [originChannel, setOriginChannel] = useState({});
-  const selfChannels = useSelector(selectSelfChannels)
-  const selfChannelNames = selfChannels.filter(c=>c.channel_id!==params.channelId).map(c=>c['display_name'])
+  const selfChannels = useSelector(selectSelfChannels) || {}
+  const selfChannelNames = Object.values(selfChannels).filter(c=>c['channel_id']!==params.channelId).map(c=>c['display_name'])
   const nameRef = useRef(null)
   const descriptionRef = useRef(null)
   const tippingRef = useRef(null)
