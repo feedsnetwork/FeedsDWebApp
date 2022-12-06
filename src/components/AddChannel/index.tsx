@@ -3,14 +3,19 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 import { Icon } from '@iconify/react';
+import { create } from 'ipfs-http-client'
 import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormControl, FormHelperText } from '@mui/material';
 
 import StyledButton from 'components/StyledButton';
+import { ChannelContent } from 'models/channel_content';
 import { handleSuccessModal, setTargetChannel, setChannelData, selectSelfChannels } from 'redux/slices/channel';
 import { selectMyName } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi'
-import { decodeBase64, encodeBase64, getBufferFromFile } from 'utils/common'
+import { compressImage, decFromHex, decodeBase64, encodeBase64, getBufferFromFile, getWeb3Connect, getWeb3Contract, hexFromDec } from 'utils/common'
 import { getLocalDB } from 'utils/db';
+import { ChannelRegContractAddress, ipfsURL } from 'config';
+import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
+import { HiveHelper } from 'services/HiveHelper';
 
 const AvatarWrapper = styled(Box)(
   ({ theme }) => `
@@ -50,6 +55,7 @@ const AvatarInput = styled('input')({
 interface AddChannelProps {
   action?: string;
 }
+const client = create({url: ipfsURL})
 const AddChannel: FC<AddChannelProps> = (props)=>{
   const { action='add' } = props
   const params = useParams(); // params.key
@@ -68,6 +74,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const feedsDid = localStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
+  const hiveHelper = new HiveHelper()
   const LocalDB = getLocalDB()
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -102,6 +109,17 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
     }
   };
 
+  const promiseReceipt = (method) => (
+    new Promise((resolve, reject) => {
+      method
+      .on('receipt', (receipt) => {
+        resolve(receipt)
+      })
+      .on('error', (error) => {
+        reject(error)
+      })
+    })
+  )
   const saveAction = async (e) => {
     setOnValidation(true)
     if(!avatarUrl)
@@ -131,43 +149,93 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       tippingAddr: tippingRef.current.value
     }
     let avatarContent = ''
+    let imageBuffer = null
     if(avatarUrl && typeof avatarUrl === 'object') {
-      const imageBuffer = await getBufferFromFile(avatarUrl) as Buffer
+      imageBuffer = await getBufferFromFile(avatarUrl) as Buffer
       const base64content = imageBuffer.toString('base64')
       avatarContent = `data:${avatarUrl.type};base64,${base64content}`
       const imageHivePath = await hiveApi.uploadMediaDataWithString(avatarContent)
-      newChannel['avatarPath'] = imageHivePath
+      newChannel['avatar'] = imageHivePath || originChannel['avatar']
       newChannel['avatarContent'] = base64content
     }
     if(action === 'edit')
-      hiveApi.updateChannel(originChannel['channel_id'], newChannel.name, newChannel.intro, newChannel['avatarPath'] || originChannel['avatar'], originChannel['type'], originChannel['memo'], newChannel.tippingAddr, originChannel['nft'])
+      hiveApi.updateChannel(originChannel['channel_id'], newChannel.name, newChannel.intro, newChannel['avatar'], originChannel['type'], originChannel['memo'], newChannel.tippingAddr, originChannel['nft'])
         .then(_=>{
-          setOnProgress(false)
-          return LocalDB.upsert(params.channelId, (doc)=>{
-            const channelDoc = {
-              ...doc, 
-              display_name: newChannel.name,
-              intro: newChannel.intro,
-              tipping_address: newChannel.tippingAddr,
-            }
-            if(avatarContent) {
-              channelDoc['avatar'] = newChannel['avatarPath'] || originChannel['avatar']
-              channelDoc['avatarSrc'] = encodeBase64(avatarContent)
-            }
-            return channelDoc
-          })
+          if(newChannel['avatar'] === originChannel['avatar'])
+            return ''
+          return compressImage(avatarContent)
         })
-        .then(_=>{
-          if(avatarContent) {
+        .then(newAvatarSrc=>(
+          LocalDB.upsert(params.channelId, (doc)=>{
             const updateObj = {}
             updateObj[params.channelId] = {
               display_name: newChannel.name,
               intro: newChannel.intro,
               tipping_address: newChannel.tippingAddr,
-              avatarSrc: encodeBase64(avatarContent)
+            }
+            if(newAvatarSrc) {
+              updateObj[params.channelId]['avatar'] = newChannel['avatar']
+              updateObj[params.channelId]['avatarSrc'] = encodeBase64(newAvatarSrc)
             }
             dispatch(setChannelData(updateObj))
+            return { ...doc, ...updateObj[params.channelId] }
+          })
+        ))
+        .then(async _=>{
+          if(!originChannel['is_public'])
+            return
+
+          const avatarAdded = await client.add(imageBuffer)
+          const metaObj = new ChannelContent()
+          metaObj.name = newChannel.name
+          metaObj.description = newChannel.intro
+          metaObj.creator['did'] = myDID
+          metaObj.data.cname = newChannel.name
+          metaObj.data.avatar = `feeds:image:${avatarAdded.path}`
+          metaObj.data.ownerDid = myDID
+          const channelEntry = `feeds://v3/${myDID}/${originChannel['channel_id']}`
+          metaObj.data.channelEntry = channelEntry
+          const tokenID = decFromHex(originChannel['channel_id'])
+          // request sign data
+          const signData = await hiveHelper.requestSigndata(channelEntry)
+          if(!signData.signature) {
+            setOnProgress(false)
+            enqueueSnackbar('Edit public channel error', { variant: 'error' });
+            return
           }
+          metaObj.data.signature = signData.signature
+          
+          // upload data to ipfs
+          const metaAdded = await client.add(JSON.stringify(metaObj))
+          const tokenURI = `feeds:json:${metaAdded.path}`
+
+          // publish data
+          const channelRegContract = getWeb3Contract(CHANNEL_REG_CONTRACT_ABI, ChannelRegContractAddress)
+          const web3Connect = getWeb3Connect()
+          const accounts = await web3Connect.eth.getAccounts()
+          const gasPrice = await web3Connect.eth.getGasPrice()
+          const _gasLimit = 5000000;
+          const transactionParams = {
+            'from': accounts[0],
+            'gasPrice': gasPrice,
+            'gas': _gasLimit,
+            'value': 0
+          };
+          const mintMethod = channelRegContract.methods.updateChannel(tokenID, tokenURI, channelEntry, newChannel.tippingAddr).send(transactionParams)
+          const mintRes = await promiseReceipt(mintMethod)
+          const tokenId = `0x${hexFromDec(mintRes['events']?.ChannelRegistered?.returnValues.tokenId || '0')}`
+          return LocalDB.upsert(params.channelId, (doc)=>{
+            if(doc._id) {
+              const updateObj = {}
+              updateObj[params.channelId] = {tokenId: tokenId}
+              dispatch(setChannelData(updateObj))
+              doc['tokenId'] = tokenId
+              return doc
+            }
+          })
+        })
+        .then(_=>{
+          setOnProgress(false)
           enqueueSnackbar('Edit channel success', { variant: 'success' });
         })
         .catch(error=>{
@@ -191,6 +259,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           setOnProgress(false)
           handleSuccessModal(true)(dispatch)
           dispatch(setTargetChannel(newChannel))
+          const zipAvatarContent = await compressImage(avatarContent)
           hiveApi.queryChannelInfo(myDID, result.channelId)
             .then(res=>{
               if(res['find_message'] && res['find_message']['items'].length) {
@@ -203,7 +272,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                   is_subscribed: true, 
                   time_range: [], 
                   table_type: 'channel',
-                  avatarSrc: encodeBase64(avatarContent),
+                  avatarSrc: encodeBase64(zipAvatarContent),
                   owner_name: myName || "",
                   subscribers: [newSubscriber],
                   display_name: newChannel.name
