@@ -74,13 +74,13 @@ function Profile() {
           <StyledAvatar alt={myInfo['name']} src={avatarSrc} width={90} style={{position: 'absolute', bottom: -45, left: 45}}/>
         </Box>
         <Box px={2} py={1}>
-          <Stack direction='row' spacing={1}>
+          <Stack direction='row' spacing={1} mt={4}>
             {/* <Box ml='auto'>
               <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><ShareIcon fontSize='small'/></IconButton>
             </Box> */}
-            <Box ml='auto'>
+            {/* <Box ml='auto'>
               <StyledButton type='outlined' size='small'>Edit Profile</StyledButton>
-            </Box>
+            </Box> */}
           </Stack>
           <Stack spacing={1} px={{sm: 0, md: 3}} mt={2}>
             <Typography variant="h3">@{myInfo['name'] || reduceDIDstring(feedsDid)}</Typography>

@@ -14,10 +14,12 @@ import PublicChannelSkeleton from 'components/Skeleton/PublicChannelSkeleton';
 import SubscribeButton from 'components/SubscribeButton';
 import SubscriberListItem from './SubscriberListItem';
 import PublicChannelItem from './PublicChannelItem';
-import { selectFocusedChannelId, selectVisitedChannelId, selectChannelById } from 'redux/slices/channel';
+import { selectFocusedChannelId, selectVisitedChannelId, selectChannelById, selectSelfChannelsCount, selectSubscribedChannelsCount } from 'redux/slices/channel';
+import { selectMyInfo } from 'redux/slices/user';
 import { selectQueryPublicStep } from 'redux/slices/proc';
 import { reduceHexAddress, reduceDIDstring, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db'
+import { SidebarContext } from 'contexts/SidebarContext';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -116,6 +118,47 @@ const ChannelAbout = (props) => {
     </Card>
   </>
 }
+const ProfilePreview = () => {
+  const { walletAddress } = React.useContext(SidebarContext);
+  const myInfo = useSelector(selectMyInfo)
+  const selfChannelCount = useSelector(selectSelfChannelsCount)
+  const subscribedChannelCount = useSelector(selectSubscribedChannelsCount)
+  const myAvatarUrl = myInfo['avatar_url']
+  const [avatarSrc, setAvatarSrc] = React.useState('');
+  const LocalDB = getLocalDB()
+
+  React.useEffect(()=>{
+    if(myAvatarUrl) {
+      LocalDB.get(myAvatarUrl)
+        .then(doc=>getImageSource(doc['source']))
+        .then(setAvatarSrc)
+    }
+    else
+        setAvatarSrc('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myAvatarUrl])
+
+  return (
+    <Card>
+      <CardHeader title={<Typography variant='h5'>Preview</Typography>}/>
+      <CardContent>
+        <Stack mb={2}>
+          <StyledAvatar alt={myInfo['name']} src={avatarSrc} width={80}/>
+          <Typography variant='h5' mt={1}>@{myInfo['name']}</Typography>
+          <Typography variant='body2'>{reduceHexAddress(walletAddress)}</Typography>
+          <Typography variant='body2' color='text.secondary'>{myInfo['description']}</Typography>
+        </Stack>
+        <Stack alignItems='center'>
+          <Stack direction='row' spacing={1}>
+            <Typography variant='body2'><Typography variant='subtitle2' display='inline-flex'>{selfChannelCount}&nbsp;</Typography>Channels</Typography>
+            {/* <Typography variant='body2'><Typography variant='subtitle2' display='inline-flex'>100&nbsp;</Typography>Subscribers</Typography> */}
+            <Typography variant='body2'><Typography variant='subtitle2' display='inline-flex'>{subscribedChannelCount}&nbsp;</Typography>Subscriptions</Typography>
+          </Stack>
+        </Stack>
+      </CardContent>
+    </Card>
+  )
+}
 function RightPanel() {
   const [isLoadingPublicChannel, setIsLoadingPublicChannels] = React.useState(true)
   const [publicChannels, setPublicChannels] = React.useState([])
@@ -151,25 +194,7 @@ function RightPanel() {
 
   if(pathname.startsWith('/setting')) {
     if(pathname.endsWith('/credentials'))
-      content = 
-        <Card>
-          <CardHeader title={<Typography variant='h5'>Preview</Typography>}/>
-          <CardContent>
-            <Stack mb={2}>
-              <StyledAvatar alt='Asralf' src='/channel.png' width={80}/>
-              <Typography variant='h5' mt={1}>@asralf</Typography>
-              <Typography variant='body2'>{reduceHexAddress('0x9A83Fd213843799AB8C7d383Fd213843799AB8C7')}</Typography>
-              <Typography variant='body2' color='text.secondary'>Hello! I love Elastos. Subscribe to my channel to get the latest info!</Typography>
-            </Stack>
-            <Stack alignItems='center'>
-              <Stack direction='row' spacing={1}>
-                <Typography variant='body2'><Typography variant='subtitle2' display='inline-flex'>5&nbsp;</Typography>Channels</Typography>
-                <Typography variant='body2'><Typography variant='subtitle2' display='inline-flex'>100&nbsp;</Typography>Subscribers</Typography>
-                <Typography variant='body2'><Typography variant='subtitle2' display='inline-flex'>32&nbsp;</Typography>Subscriptions</Typography>
-              </Stack>
-            </Stack>
-          </CardContent>
-        </Card>
+      content = <ProfilePreview />
   }
   else {
     const loadingChannelSkeletons = Array(5).fill(null)

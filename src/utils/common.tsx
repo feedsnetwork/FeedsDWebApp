@@ -39,8 +39,8 @@ export const reduceHexAddress = (strAddress) => {
 
 export const SettingMenuArray = [
   {to: '/profile', name: 'Account Info', description: 'Profile and verifiable credentials (DID) details'},
-  {to: '/credentials', name: 'Credentials', description: 'Manage user profile and verifiable credentials visibility'},
-  {to: '/language', name: 'Language', description: 'Global language settings'},
+  // {to: '/credentials', name: 'Credentials', description: 'Manage user profile and verifiable credentials visibility'},
+  // {to: '/language', name: 'Language', description: 'Global language settings'},
   {to: '/api', name: 'API Provider', description: 'Configure API provider'},
   {to: '/preferences', name: 'App Preferences', description: 'Manage app preferences'},
   {to: '/connections', name: 'Connections', description: 'Manage account connections'},

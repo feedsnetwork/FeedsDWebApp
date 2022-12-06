@@ -146,7 +146,9 @@ export const mainproc = (props) => {
                                 delete channel['_id']
                                 if(doc._id) {
                                     const channelDoc = {...doc, ...channel, is_self: true}
-                                    if(doc['avatar'] !== channel['avatar'])
+                                    if(getIpfsUrl(doc['avatar']))
+                                        channelDoc['avatar'] = doc['avatar']
+                                    else if(doc['avatar'] !== channel['avatar'])
                                         channelDoc['avatarSrc'] = ''
                                     selfChannelUpdateObj[channel.channel_id] = { ...channelDoc }
                                     return channelDoc

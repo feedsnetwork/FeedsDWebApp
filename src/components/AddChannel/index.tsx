@@ -145,6 +145,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
     const newChannel = {
       name: name,
       intro: description,
+      avatar: originChannel['avatar'],
       avatarPreview: avatarUrl['preview'],
       tippingAddr: tippingRef.current.value
     }
@@ -184,14 +185,17 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
         .then(async _=>{
           if(!originChannel['is_public'])
             return
-
-          const avatarAdded = await client.add(imageBuffer)
           const metaObj = new ChannelContent()
+          if(imageBuffer) {
+            const avatarAdded = await client.add(imageBuffer)
+            metaObj.data.avatar = `feeds:image:${avatarAdded.path}`
+          }
+          else
+            metaObj.data.avatar = originChannel['avatar']
           metaObj.name = newChannel.name
           metaObj.description = newChannel.intro
           metaObj.creator['did'] = myDID
           metaObj.data.cname = newChannel.name
-          metaObj.data.avatar = `feeds:image:${avatarAdded.path}`
           metaObj.data.ownerDid = myDID
           const channelEntry = `feeds://v3/${myDID}/${originChannel['channel_id']}`
           metaObj.data.channelEntry = channelEntry

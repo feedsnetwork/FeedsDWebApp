@@ -5,7 +5,8 @@ import { Box, Typography, Stack, Card, Divider, Grid } from '@mui/material';
 import StyledAvatar from 'components/StyledAvatar';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectMyInfo } from 'redux/slices/user';
-import { decodeBase64 } from 'utils/common';
+import { decodeBase64, getImageSource } from 'utils/common';
+import { getLocalDB } from 'utils/db';
 
 interface AccountInfoProps {
   // type?: string;
@@ -13,14 +14,28 @@ interface AccountInfoProps {
 const AccountInfo: React.FC<AccountInfoProps> = (props)=>{
   const { walletAddress } = React.useContext(SidebarContext);
   const myInfo = useSelector(selectMyInfo)
+  const myAvatarUrl = myInfo['avatar_url']
+  const [avatarSrc, setAvatarSrc] = React.useState('');
   const feedsDid = localStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
+  const LocalDB = getLocalDB()
+
+  React.useEffect(()=>{
+    if(myAvatarUrl) {
+      LocalDB.get(myAvatarUrl)
+        .then(doc=>getImageSource(doc['source']))
+        .then(setAvatarSrc)
+    }
+    else
+        setAvatarSrc('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myAvatarUrl])
 
   return (
     <Box p={4}>
       <Card sx={{ p: 3 }}>
         <Stack spacing={6} alignItems='center'>
-          <StyledAvatar alt={myInfo['name']} src={decodeBase64(myInfo['avatarSrc'])} width={70}/>
+          <StyledAvatar alt={myInfo['name']} src={avatarSrc} width={70}/>
           <Grid container direction="column">
             <Grid item>
               <Typography variant='subtitle1'>Name</Typography>
