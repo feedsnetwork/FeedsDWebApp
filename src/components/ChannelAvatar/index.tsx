@@ -1,8 +1,10 @@
-import { FC, useRef } from 'react'
+import { FC, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types';
+import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Avatar, Box, styled } from '@mui/material';
 import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
 
+import AvatarSkeleton from 'components/Skeleton/AvatarSkeleton';
 import { getImageSource } from 'utils/common'
 
 const ChannelWrapper = styled(Box)(
@@ -38,7 +40,10 @@ const ChannelWrapper = styled(Box)(
     &.channel-focused>.avatar-wrapper:before {
       border-radius: 16px;
     }
-    &.channel-focused>.avatar-wrapper>.MuiAvatar-root {
+    .avatar-wrapper img {
+      border-radius: 50%;
+    }
+    &.channel-focused>.avatar-wrapper img {
       border-radius: 12px;
     }
   `
@@ -64,7 +69,7 @@ const AvatarWrapper = styled(Box)(
       &:before {
         border-radius: 16px;
       },
-      & .MuiAvatar-root {
+      & img {
         border-radius: 12px;
       }
     }
@@ -91,6 +96,27 @@ const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
   const { channel, width=40, variant = 'circular', onClick=(e)=>{}, onRightClick=(e)=>{}, focused=false } = props
   const avatarSrc = getImageSource(channel['avatarSrc'])
   const rippleRef = useRef(null);
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoadError, setIsLoadError] = useState(false)
+
+  useEffect(()=>{
+    setIsLoadError(false)
+  }, [avatarSrc])
+
+  const handleErrorImage = (e) => {
+    const imgSrc = e.target.getAttribute('src')
+    if(!imgSrc.startsWith("http")) {
+      setIsLoadError(true)
+      return
+    }
+    setIsLoaded(false)
+    fetch(imgSrc)
+      .then(res=>res.text())
+      .then(res=>{
+        e.target.src=res
+        setIsLoaded(true)
+      })
+  }
   const onRippleStart = (e) => {
     rippleRef.current.start(e);
   };
@@ -115,16 +141,43 @@ const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
         onClick={onClick}
         onContextMenu={onRightClick}
       >
-        <Avatar
-          variant={variant}
-          sx={{
-            width: width,
-            height: width,
-            transition: 'border-radius .2s',
-          }}
-          alt={channel['name']}
-          src={avatarSrc}
-        />
+        {
+          avatarSrc && !isLoadError?
+          <>
+            {
+              !isLoaded && <Box sx={{width, height: width, lineHeight: 1, position: 'absolute'}}><AvatarSkeleton/></Box>
+            }
+            <LazyLoadImage
+              src={avatarSrc}
+              effect="blur" 
+              wrapperProps={{
+                style:{
+                  display: 'contents'
+                }
+              }} 
+              style={{
+                margin: 'auto',
+                width: width,
+                height: width,
+                transition: 'border-radius .2s',
+                opacity: isLoaded? 1: 0
+              }} 
+              afterLoad={()=>setIsLoaded(true)} 
+              onError={handleErrorImage}
+            />
+          </>:
+
+          <Avatar
+            variant={variant}
+            sx={{
+              width: width,
+              height: width,
+              transition: 'border-radius .2s',
+            }}
+            alt={channel['name']}
+            src={avatarSrc}
+          />
+        }
         <TouchRipple ref={rippleRef} center={false} />
       </AvatarWrapper>
     </ChannelWrapper>
