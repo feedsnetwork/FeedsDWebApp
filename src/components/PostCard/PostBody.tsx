@@ -12,6 +12,7 @@ import "odometer/themes/odometer-theme-default.css";
 import IconInCircle from 'components/IconInCircle'
 import Heart from 'components/Heart'
 import ChannelAvatarWithPopper from './ChannelAvatarWithPopper';
+import PostMedia from './PostMedia';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
@@ -258,7 +259,7 @@ const PostBody = (props) => {
             </Box>
           }
         </Stack>
-        <Stack direction={direction} spacing={(post.mediaData && post.mediaData.length>0) ?2 :0}>
+        <Stack direction={direction}>
           <Typography 
             variant="body2" 
             onClick={handleClickInContent}
@@ -273,16 +274,7 @@ const PostBody = (props) => {
           >
             {parse(filteredContentByLink)}
           </Typography>
-          <Box>
-            {
-              !!post.mediaData && post.mediaData.map((media, _i)=>(
-                media.kind === 'image' && media.thumbnailSrc?
-                <Box component='img' src={media.thumbnailSrc} key={_i} sx={direction==='row'? {width: 150, borderRadius: 1}: {width: '100%'}}/>:
-                <div key={_i}/>
-                // <Box component='video' src={media.mediaSrc}/>
-              ))
-            }
-          </Box>
+          <PostMedia postId={post.post_id} direction={direction}/>
         </Stack>
         <Stack 
           direction="row" 

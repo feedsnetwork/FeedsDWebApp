@@ -89,7 +89,6 @@ interface ChannelAvatarProps {
 
 const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
   const { channel, width=40, variant = 'circular', onClick=(e)=>{}, onRightClick=(e)=>{}, focused=false } = props
-  const channelInfo = {...channel}
   const avatarSrc = getImageSource(channel['avatarSrc'])
   const rippleRef = useRef(null);
   const onRippleStart = (e) => {
@@ -123,7 +122,7 @@ const ChannelAvatar: FC<ChannelAvatarProps> = (props) => {
             height: width,
             transition: 'border-radius .2s',
           }}
-          alt={channelInfo['name']}
+          alt={channel['name']}
           src={avatarSrc}
         />
         <TouchRipple ref={rippleRef} center={false} />

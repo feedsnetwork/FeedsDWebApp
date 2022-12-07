@@ -22,7 +22,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectFocusedChannelId } from 'redux/slices/channel'
 import { updateProc, updatePublicProc } from 'redux/slices/proc';
-import { updateLoadedPostCount } from 'redux/slices/post';
+import { setPostMediaLoaded, updateLoadedPostCount } from 'redux/slices/post';
 import { isInAppBrowser } from 'utils/common'
 import { getLocalDB, StepType } from 'utils/db'
 import { mainproc } from 'utils/mainproc';
@@ -65,6 +65,13 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         })
           .then(response => dispatch(updateLoadedPostCount(response.docs.length)))
       })
+    LocalDB.find({
+      selector: {
+        table_type: 'post',
+        media_path: {'$exists': true}
+      }
+    })
+      .then(response=>dispatch(setPostMediaLoaded(response.docs)))
     const queryProc = proc.queryProc
     proc.queryLocalChannelStep()
       .then(_=>{
@@ -104,7 +111,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           : essentialsConnector.getWalletConnectProvider().wc.accounts[0]
       );
     }
-  };
+  }
   if (sessionLinkFlag === '1') {
     initConnectivitySDK(initializeWalletConnection)
   }
