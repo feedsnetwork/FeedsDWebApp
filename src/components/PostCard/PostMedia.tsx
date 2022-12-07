@@ -14,13 +14,13 @@ const PostMedia = (props) => {
   const dispatch = useDispatch()
 
   React.useEffect(()=>{
+    setThumbnailSrc('')
     if(loadedPostMedia) {
       LocalDB.find({
         selector: {_id: loadedPostMedia},
         fields: ['thumbnail']
       })
         .then(res=>{
-          console.info(res.docs)
           if(res.docs.length) {
             setThumbnailSrc(decodeBase64(res.docs[0]['thumbnail']))
           }

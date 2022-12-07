@@ -26,6 +26,7 @@ function Channel() {
   React.useEffect(()=>{
     setIsLoading(true)
     setPageEndTime(0)
+    setPosts([])
     if(focusedChannelId && isLoadedPost)
       loadPostData(focusedChannelId, 0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
