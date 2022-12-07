@@ -5,7 +5,7 @@ import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config';
 import { DefaultAvatarMap } from "./avatar_map";
 import { setChannelData, setPostLoadedChannel } from 'redux/slices/channel'
-import { increaseLoadNum, updateLoadedPostCount } from "redux/slices/post";
+import { increaseLoadNum, setPostMediaLoaded, updateLoadedPostCount } from "redux/slices/post";
 import { getAppPreference, LimitPostCount, getMinValueFromArray, getMergedArray, getFilteredArrayByUnique,
     encodeBase64, getWeb3Contract, getIpfsUrl, excludeFromArray, getInfoFromDID, compressImage } from "./common"
 import { setUserInfo } from "redux/slices/user";
@@ -510,61 +510,41 @@ export const mainproc = (props) => {
                 const postSelector = { table_type: 'post', channel_id: channel['channel_id'] }
                 const postResponse = await LocalDB.find({ selector: postSelector })
                 const postDocWithImg = postResponse.docs.map(async post=>{
-                    if(post['status'] !== CommonStatus.deleted) {
-                        try {
-                            const contentObj = JSON.parse(post['content'])
-                            const mediaThumbnailData = contentObj.mediaData.filter(media=>!!media.thumbnailPath).map(async media => {
-                                const mediaObj = {...media}
-                                try {
-                                    const mediaSrc = await hiveApi.downloadScripting(post['target_did'], media.originMediaPath)
-                                    if(mediaSrc) {
-                                        mediaObj['thumbnailSrc'] = mediaSrc
-                                        return mediaObj
-                                    }
-                                } catch(err) {
-                                    console.log(err)
+                    if(post['status'] === CommonStatus.deleted || post['media_path'])
+                        return false
+                    try {
+                        const contentObj = JSON.parse(post['content'])
+                        const mediaOriginData = contentObj.mediaData.filter(media=>!!media.originMediaPath).map(async media => {
+                            try {
+                                const mediaSrc = await hiveApi.downloadScripting(post['target_did'], media.originMediaPath)
+                                if(mediaSrc) {
+                                    const zipMediaSrc = await compressImage(mediaSrc, true)
+                                    LocalDB.upsert(media.originMediaPath, (doc)=>{
+                                        if(!doc._id) {
+                                            return {...doc, source: encodeBase64(mediaSrc), thumbnail: encodeBase64(zipMediaSrc), table_type: 'image' }
+                                        }
+                                        return false
+                                    })
+                                    LocalDB.upsert(post._id, (doc)=>{
+                                        doc['media_path'] = media.originMediaPath
+                                        return doc
+                                    })
+                                    dispatch(setPostMediaLoaded({ postId: post['post_id'], mediaPath: media.originMediaPath}))
+                                    return true
                                 }
-                                return null
-                            })
-                            const mediaOriginData = contentObj.mediaData.filter(media=>!!media.originMediaPath).map(async media => {
-                                const mediaObj = {...media}
-                                try {
-                                    const mediaSrc = await hiveApi.downloadScripting(post['target_did'], media.originMediaPath)
-                                    if(mediaSrc) {
-                                        mediaObj['mediaSrc'] = mediaSrc
-                                        return mediaObj
-                                    }
-                                } catch(err) {
-                                    console.log(err)
-                                }
-                                return null
-                            })
-                            const mediaDataRes = await Promise.all([...mediaThumbnailData, ...mediaOriginData])
-                            const mediaData = mediaDataRes.filter(item=>!!item).reduce((mediaDataArr, item)=>{
-                                if(!mediaDataArr.length)
-                                    mediaDataArr.push(item)
-                                else {
-                                    const mediaIndex = mediaDataArr.findIndex(media=>media['originMediaPath']===item['originMediaPath'])
-                                    if(mediaIndex>=0)
-                                        mediaDataArr[mediaIndex] = {...mediaDataArr[mediaIndex], ...item}
-                                    else
-                                        mediaDataArr.push(item)
-                                }
-                                return mediaDataArr
-                            }, [])
-                            return await LocalDB.upsert(post._id, (doc)=>{
-                                doc['mediaData'] = mediaData
-                                return doc
-                            })
-                        } catch(err) {}
+                            } catch(err) {}
+                            return false
+                        })
+                        return Promise.all(mediaOriginData)
+                    } catch(err) {
+                        return false
                     }
-                    return false
                 })
                 return postDocWithImg
             })
             Promise.all(postDocsByChannel)
                 .then(postGroup=>Promise.all(getMergedArray(postGroup)))
-                .then(_=>updateQueryStep(StepType.post_like, isPublic))
+                .then(_=>updateQueryStep(StepType.post_image, isPublic))
                 .then(_=>resolve({success: true, loadingChannels}))
                 .catch(err=>resolve({success: false, loadingChannels, error: err}))
         })
@@ -654,7 +634,7 @@ export const mainproc = (props) => {
         const isPublic = channelType === "public"
         queryPostStep(channelType)
             .then(res=>queryPostLikeStep(res['loadingChannels'], isPublic))
-            // .then(res=>queryPostImgStep(res['loadingChannels'], isPublic))
+            .then(res=>queryPostImgStep(res['loadingChannels'], isPublic))
             .then(res=>queryCommentStep(res['loadingChannels'], isPublic))
             .then(res=>queryCommentLikeStep(res['loadingChannels'], isPublic))
     }

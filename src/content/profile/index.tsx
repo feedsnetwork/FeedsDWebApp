@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import { Card, Container, Box, Typography, Stack, Tabs, Tab } from '@mui/material';
 // import ShareIcon from '@mui/icons-material/ShareOutlined';
 
-import StyledButton from 'components/StyledButton'
 import StyledAvatar from 'components/StyledAvatar'
 import { EmptyViewInProfile } from 'components/EmptyView'
 import PostCard from 'components/PostCard';

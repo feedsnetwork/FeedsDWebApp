@@ -314,8 +314,9 @@ export function getMinValueFromArray(arrayOfObject, field) {
 
 //   return Math.round(bytes / Math.pow(1024, i)) + " " + sizes[i];
 // }
-export function compressImage(imgSrc) {
-  const quality = 0.65
+export function compressImage(imgSrc, isPostImg=false) {
+  const quality = isPostImg? 0.8: 0.65
+  const dimension = isPostImg? 200: 100
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = imgSrc;
@@ -327,14 +328,14 @@ export function compressImage(imgSrc) {
       const originalWidth = img.width;
       const originalHeight = img.height;
 
-      const canvasDimension = { width: 100, height: 100}
+      const canvasDimension = { width: dimension, height: dimension}
     
-      if(Math.max(originalWidth, originalHeight) < 100) {
+      if(Math.max(originalWidth, originalHeight) < dimension) {
         canvasDimension.width = originalWidth
         canvasDimension.height = originalHeight
       } else {
-        canvasDimension.width = originalWidth>originalHeight? 100: originalWidth/originalHeight * 100;
-        canvasDimension.height = originalHeight>originalWidth? 100: originalHeight/originalWidth * 100;
+        canvasDimension.width = originalWidth>originalHeight? dimension: originalWidth/originalHeight * dimension;
+        canvasDimension.height = originalHeight>originalWidth? dimension: originalHeight/originalWidth * dimension;
       }
     
       canvas.width = canvasDimension.width;

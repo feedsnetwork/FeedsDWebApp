@@ -5,7 +5,7 @@ import { Box, Typography, Stack, Card, Divider, Grid } from '@mui/material';
 import StyledAvatar from 'components/StyledAvatar';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectMyInfo } from 'redux/slices/user';
-import { decodeBase64, getImageSource } from 'utils/common';
+import { getImageSource } from 'utils/common';
 import { getLocalDB } from 'utils/db';
 
 interface AccountInfoProps {

@@ -8,6 +8,7 @@ const initialState = {
   isOpened2DelPost: false,
   activePost: null,
   activePostProps: {},
+  loadedPostMedia: {},
   loadedPostCount: 0,
   nextLoadNum: 0
 };
@@ -46,6 +47,20 @@ const slice = createSlice({
     setPublicPosts(state, action) {
       state.publicPosts = {...state.publicPosts, ...action.payload}
     },
+    setPostMediaLoaded(state, action) {
+      if(Array.isArray(action.payload)) {
+        if(!action.payload.length)
+          return
+        state.loadedPostMedia = action.payload.reduce((mediaObj, post)=>{
+          mediaObj[post.post_id] = post['media_path']
+          return mediaObj
+        }, {})
+        return
+      }
+      const {postId, mediaPath} = action.payload
+      if(!state.loadedPostMedia[postId])
+        state.loadedPostMedia[postId] = mediaPath
+    },
     updateMediaOfPosts(state, action) {
       const post = action.payload
       const currentGroup = [...state.publicPosts[post.channel_id]]
@@ -68,7 +83,15 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { setPublicPosts, setActivePost, setActivePostProps, increaseLoadNum, updateMediaOfPosts, updateLoadedPostCount } = slice.actions;
+export const { 
+  setPublicPosts, 
+  setActivePost, 
+  setActivePostProps, 
+  increaseLoadNum, 
+  updateMediaOfPosts, 
+  updateLoadedPostCount,
+  setPostMediaLoaded
+} = slice.actions;
 
 // ----------------------------------------------------------------------
 
@@ -122,4 +145,7 @@ export function selectActivePostProps(state) {
 }
 export function selectLoadedPostCount(state) {
   return state.post.loadedPostCount
+}
+export const selectLoadedPostMedia = (postId) => (state) => {
+  return state.post.loadedPostMedia[postId]
 }
