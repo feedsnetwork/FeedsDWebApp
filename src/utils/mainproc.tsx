@@ -922,26 +922,34 @@ export const nextproc = (props) => {
         new Promise((resolve, reject) => {
             const postDocWithImg = nextPostDocs.map(async post=>{
                 if(post['status'] !== CommonStatus.deleted) {
+                    if(post['status'] === CommonStatus.deleted)
+                        return false
                     try {
                         const contentObj = JSON.parse(post['content'])
-                        const mediaData = contentObj.mediaData.filter(media=>!!media.originMediaPath)
-                        if(mediaData.length) {
-                            const mediaObjArr = mediaData.map(async media => {
-                                const mediaObj = {...media}
+                        const mediaData = contentObj.mediaData
+                            .filter(media=>!!media.originMediaPath)
+                            .map(async media => {
                                 try {
                                     const mediaSrc = await hiveApi.downloadScripting(post['target_did'], media.originMediaPath)
                                     if(mediaSrc) {
-                                        mediaObj['mediaSrc'] = mediaSrc
+                                        const zipMediaSrc = await compressImage(mediaSrc, true)
+                                        LocalDB.upsert(media.originMediaPath, (doc)=>{
+                                            if(!doc._id) {
+                                                return {...doc, source: encodeBase64(mediaSrc), thumbnail: encodeBase64(zipMediaSrc), table_type: 'image' }
+                                            }
+                                            return false
+                                        })
+                                        LocalDB.upsert(post._id, (doc)=>{
+                                            doc['media_path'] = media.originMediaPath
+                                            return doc
+                                        })
+                                        dispatch(setPostMediaLoaded({ postId: post['post_id'], mediaPath: media.originMediaPath}))
+                                        return true
                                     }
                                 } catch(err) {}
-                                return mediaObj
+                                return false
                             })
-                            const mediaDataArr = await Promise.all(mediaObjArr)
-                            return await LocalDB.upsert(post._id, (doc)=>{
-                                doc['mediaData'] = mediaDataArr
-                                return doc
-                            })
-                        }
+                        return Promise.all(mediaData)
                     } catch(err) {}
                 }
                 return false
@@ -1025,4 +1033,11 @@ export const nextproc = (props) => {
                 })
         })
     )
+    const nextStreamByChannelId = (channelId) => {
+        queryPostNextStep(channelId)
+            .then(res=>queryPostLikeNextStep(res['data']))
+            .then(res=>queryPostImgNextStep(res['data']))
+            .then(res=>queryCommentNextStep(res['data']))
+            .then(res=>queryCommentLikeNextStep(res['data']))
+    }
 }
