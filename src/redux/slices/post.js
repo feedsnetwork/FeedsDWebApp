@@ -10,7 +10,9 @@ const initialState = {
   activePostProps: {},
   loadedPostMedia: {},
   loadedPostCount: 0,
-  nextLoadNum: 0
+  nextLoadNum: 0,
+  isOpenImageScreen: false,
+  activeImagePath: null
 };
 
 const slice = createSlice({
@@ -40,6 +42,12 @@ const slice = createSlice({
     },
     setActivePost(state, action) {
       state.activePost = action.payload;
+    },
+    setOpenImageScreen(state, action) {
+      state.isOpenImageScreen = action.payload;
+    },
+    setActiveImagePath(state, action) {
+      state.activeImagePath = action.payload;
     },
     setActivePostProps(state, action) {
       state.activePostProps = action.payload;
@@ -90,7 +98,9 @@ export const {
   increaseLoadNum, 
   updateMediaOfPosts, 
   updateLoadedPostCount,
-  setPostMediaLoaded
+  setPostMediaLoaded,
+  setOpenImageScreen,
+  setActiveImagePath
 } = slice.actions;
 
 // ----------------------------------------------------------------------
@@ -148,4 +158,10 @@ export function selectLoadedPostCount(state) {
 }
 export const selectLoadedPostMedia = (postId) => (state) => {
   return state.post.loadedPostMedia[postId]
+}
+export function selectPostImgScreenState(state) {
+  return state.post.isOpenImageScreen
+}
+export function selectPostImgPath(state) {
+  return state.post.activeImagePath
 }

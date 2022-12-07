@@ -17,6 +17,7 @@ import UnpublishChannelDlg from 'components/Modal/UnpublishChannel'
 import UnsubscribeChannelDlg from 'components/Modal/Unsubscribe'
 import PostDlg from 'components/Modal/Post'
 import CommentDlg from 'components/Modal/Comment'
+import PostImgScreenDlg from 'components/Modal/PostImgScreen'
 import DeletePostDlg from 'components/Modal/DeletePost'
 import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
@@ -220,13 +221,14 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           rightPanelVisible && <RightPanel />
         }
       </Stack>
-      <ChannelCreatedDlg/>
-      <PublishChannelDlg/>
-      <UnpublishChannelDlg/>
-      <UnsubscribeChannelDlg/>
-      <PostDlg/>
-      <DeletePostDlg/>
-      <CommentDlg/>
+      <ChannelCreatedDlg />
+      <PublishChannelDlg />
+      <UnpublishChannelDlg />
+      <UnsubscribeChannelDlg />
+      <PostDlg />
+      <DeletePostDlg />
+      <CommentDlg />
+      <PostImgScreenDlg />
     </Box>
   );
 };
