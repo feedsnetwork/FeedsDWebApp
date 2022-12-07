@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Box, Toolbar, Modal, IconButton, Backdrop, styled } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -20,6 +21,7 @@ function PostImgScreen() {
   const LocalDB = getLocalDB()
 
   React.useEffect(()=>{
+    setImageSrc('')
     if(postImgPath) {
       LocalDB.find({
         selector: {_id: postImgPath},
@@ -72,12 +74,19 @@ function PostImgScreen() {
           }}
           ref={imageBoxRef}
         >
-          <Box
-              draggable = {false}
-              component="img"
-              alt="attached image"
-              src={imageSrc}
-              sx={{ width: '100%', height: '100%' }}
+          <LazyLoadImage
+            src={imageSrc}
+            effect="blur" 
+            wrapperProps={{
+              style:{
+                display: 'contents'
+              }
+            }} 
+            style={{
+              margin: 'auto',
+              width: '100%',
+              height: '100%',
+            }} 
           />
         </Box>
       </Box>

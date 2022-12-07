@@ -266,6 +266,7 @@ const PostBody = (props) => {
             sx={{
               flexGrow: 1,
               whiteSpace: 'pre-line', 
+              overflowWrap: 'anywhere',
               '& a.outer-link': {
                 color: '#368BFF', 
                 textDecoration: 'none'
