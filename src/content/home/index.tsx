@@ -83,7 +83,7 @@ const Home = () => {
         !isLoading && !posts.length?
         <EmptyView/>:
 
-        <Container sx={{ my: 3 }} maxWidth="lg">
+        <Container sx={{ my: 3, px: { xs: 3, sm: 6} }} maxWidth="lg">
           <InfiniteScroll
             dataLength={posts.length}
             next={()=>{appendMoreData('next')}}

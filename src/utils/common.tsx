@@ -316,7 +316,7 @@ export function getMinValueFromArray(arrayOfObject, field) {
 // }
 export function compressImage(imgSrc, isPostImg=false) {
   const quality = isPostImg? 0.8: 0.65
-  const dimension = isPostImg? 200: 100
+  const dimension = isPostImg? 500: 100
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = imgSrc;

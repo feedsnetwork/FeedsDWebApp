@@ -102,7 +102,7 @@ function Channel() {
             <EmptyView type='post'/>:
             
             <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
-              <Container sx={{ mt: 3, flexGrow: 1 }} maxWidth="lg">
+              <Container sx={{ mt: 3, flexGrow: 1, px: { xs: 3, sm: 6} }} maxWidth="lg">
                 <InfiniteScroll
                   dataLength={posts.length}
                   next={()=>{appendMoreData('next')}}

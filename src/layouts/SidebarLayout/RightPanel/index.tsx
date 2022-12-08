@@ -306,8 +306,8 @@ function RightPanel() {
         }}
       >
         <Scrollbar>
-          <Stack spacing={3} my={3} px={2}>
-            <InputOutline
+          <Stack spacing={3} my={3} px={2} mt={8}>
+            {/* <InputOutline
               type="text"
               placeholder="Search"
               size="small"
@@ -316,7 +316,7 @@ function RightPanel() {
                   <SearchTwoToneIcon />
                 </InputAdornment>
               }
-            />
+            /> */}
             { content }
           </Stack>
         </Scrollbar>

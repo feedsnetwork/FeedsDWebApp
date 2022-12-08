@@ -10,7 +10,7 @@ import { selectChannelById } from 'redux/slices/channel';
 
 const PostCard = (props) => {
   const navigate = useNavigate();
-  const { post, replyable=false, direction='row' } = props
+  const { post, replyable=false, direction='column' } = props
   const channel = useSelector(selectChannelById(post.channel_id)) || {}
   const dispName = channel['owner_name'] || reduceDIDstring(channel['target_did'])
   const contentObj = typeof post.content === 'object'? {...post.content}: JSON.parse(post.content)

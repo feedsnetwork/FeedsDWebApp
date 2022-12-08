@@ -1,5 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Box } from '@mui/material';
 
 import { selectLoadedPostMedia, setActiveImagePath, setOpenImageScreen } from 'redux/slices/post';
@@ -34,11 +35,28 @@ const PostMedia = (props) => {
     dispatch(setActiveImagePath(loadedPostMedia))
     dispatch(setOpenImageScreen(true))
   }
+  const ImgBoxSx = direction === 'row'? {pl: 2}: {pt: 2}
   return (
     !thumbnailSrc?
     <div />:
-    <Box pl={2}>
-      <Box component='img' src={thumbnailSrc} sx={direction==='row'? {width: 180, borderRadius: 1}: {width: '100%'}} onClick={handleOpenScreen}/>
+    <Box {...ImgBoxSx}>
+      <LazyLoadImage
+        src={thumbnailSrc}
+        effect="blur" 
+        wrapperProps={{
+          style:{
+            display: 'contents'
+          }
+        }} 
+        style={{
+          margin: 'auto',
+          width: direction==='row'? 180: '100%',
+          borderRadius: direction==='row'? 1: 0,
+          // height: width,
+          transition: 'border-radius .2s',
+        }} 
+        onClick={handleOpenScreen}
+      />
     </Box>
   )
 }
