@@ -2,14 +2,14 @@ import React from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux'
 import { Icon } from '@iconify/react';
-import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
+// import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
-import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, InputAdornment, Typography, Grid, IconButton, Tooltip } from '@mui/material';
+import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, Typography, Grid, IconButton, Tooltip } from '@mui/material';
 
 import Scrollbar from 'components/Scrollbar';
 import StyledAvatar from 'components/StyledAvatar'
 import StyledButton from 'components/StyledButton'
-import InputOutline from 'components/InputOutline'
+// import InputOutline from 'components/InputOutline'
 import PublicChannelSkeleton from 'components/Skeleton/PublicChannelSkeleton';
 import SubscribeButton from 'components/SubscribeButton';
 import SubscriberListItem from './SubscriberListItem';

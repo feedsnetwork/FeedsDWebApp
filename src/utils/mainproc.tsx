@@ -834,7 +834,7 @@ export const nextproc = (props) => {
     const myDID = `did:elastos:${feedsDid}`
     const LocalDB = getLocalDB()
 
-    const queryPostNextStep = (channelId) => (
+    const queryPostNextStep = (channelId, setData, setHasMore) => (
         new Promise((resolve, reject) => {
             const prefConf = getAppPreference()
             LocalDB.get(channelId)
@@ -858,6 +858,7 @@ export const nextproc = (props) => {
                             doc['time_range'] = prevTimeRange
                             return doc
                         })
+
                         if(prefConf.DP)
                             postArr = postArr.filter(postItem=>postItem.status!==CommonStatus.deleted)
                         let nextPostDocs = postArr.map(post=>{
@@ -873,6 +874,11 @@ export const nextproc = (props) => {
                                 tempost.created = new Date(post.created['$date']).getTime()/1000
                             return tempost
                         })
+                        setData((prev)=>{
+                            return [...prev, ...nextPostDocs]
+                        })
+                        if(prevTimeRange.length<2 && !prevTimeRange[0]?.start)
+                            setHasMore(false)
                         await LocalDB.bulkDocs(nextPostDocs)
                         dispatch(increaseLoadNum())
                         resolve({success: true, data: nextPostDocs})
@@ -1033,11 +1039,12 @@ export const nextproc = (props) => {
                 })
         })
     )
-    const nextStreamByChannelId = (channelId) => {
-        queryPostNextStep(channelId)
+    const nextStreamByChannelId = (channelId, setData, setHasMore) => {
+        queryPostNextStep(channelId, setData, setHasMore)
             .then(res=>queryPostLikeNextStep(res['data']))
             .then(res=>queryPostImgNextStep(res['data']))
             .then(res=>queryCommentNextStep(res['data']))
             .then(res=>queryCommentLikeNextStep(res['data']))
     }
+    return {nextStreamByChannelId}
 }
