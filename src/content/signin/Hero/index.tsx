@@ -12,7 +12,7 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 import StyledButton from 'components/StyledButton';
 import { essentialsConnector, initConnectivitySDK, isUsingEssentialsConnector } from '../EssentialConnectivity';
 import { isInAppBrowser } from 'utils/common'
-import { DidResolverUrl } from 'config';
+import { getDidResolverUrl } from 'config';
 // import { useGlobalState } from 'global/store'
 import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
@@ -91,6 +91,7 @@ function Hero() {
       if (presentation) {
         const did = presentation.getHolder().getMethodSpecificId() || '';
 
+        const DidResolverUrl = getDidResolverUrl()
         DIDBackend.initialize(new DefaultDIDAdapter(DidResolverUrl));
         // verify
         const vp = VerifiablePresentation.parse(JSON.stringify(presentation.toJSON()));

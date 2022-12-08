@@ -43,7 +43,7 @@ export const SettingMenuArray = [
   // {to: '/language', name: 'Language', description: 'Global language settings'},
   {to: '/api', name: 'API Provider', description: 'Configure API provider'},
   {to: '/preferences', name: 'App Preferences', description: 'Manage app preferences'},
-  {to: '/connections', name: 'Connections', description: 'Manage account connections'},
+  // {to: '/connections', name: 'Connections', description: 'Manage account connections'},
   {to: '/about', name: 'About Feeds', description: 'Feeds Network basic information'},
 ]
 

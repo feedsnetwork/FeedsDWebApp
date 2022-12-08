@@ -1,7 +1,7 @@
 import { connectivity, DID as ConDID } from "@elastosfoundation/elastos-connectivity-sdk-js";
 import { Executable, InsertOptions, ScriptRunner, Vault, AppContext, Logger as HiveLogger, UpdateResult, UpdateOptions, Condition, InsertResult } from "@elastosfoundation/hive-js-sdk";
 import { DIDDocument, JWTHeader, JWTParserBuilder, DID, DIDBackend, DefaultDIDAdapter, JSONObject, VerifiablePresentation } from '@elastosfoundation/did-js-sdk'
-import { ApplicationDID, DidResolverUrl } from '../config'
+import { ApplicationDID, getDidResolverUrl } from '../config'
 
 // let TAG: string = 'Feeds-web-dapp-HiveService'
 
@@ -112,6 +112,7 @@ export class HiveService {
     return new Promise(async (resolve, reject) => {
       try {
         if(!DIDBackend.isInitialized()) {
+          const DidResolverUrl = getDidResolverUrl()
           DIDBackend.initialize(new DefaultDIDAdapter(DidResolverUrl));
         }
 

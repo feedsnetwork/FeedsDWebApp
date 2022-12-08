@@ -11,6 +11,12 @@ export const firebaseConfig = {
 
 const ApplicationDIDForMain = "did:elastos:iqtWRVjz7gsYhyuQEb1hYNNmWQt1Z9geXg"
 // const ApplicationDIDForTest = "did:elastos:ic8pRXyAT3JqEXo4PzHQHv5rsoYyEyDwpB"
+export const getDidResolverUrl = ()=>{
+  const ApiTypes = ['elastos.io', 'trinity-tech.io']
+  const typeIndex = parseInt(localStorage.getItem('FEEDS_API') || '1')
+  return `https://api.${ApiTypes[typeIndex]}/eid`
+}
+
 export const DidResolverUrl = 'https://api.trinity-tech.io/eid'
   // process.env.REACT_APP_ENV === 'production' ? 'mainnet' : 'testnet';
 
