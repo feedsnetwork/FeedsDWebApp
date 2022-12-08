@@ -59,12 +59,21 @@ const PostBody = (props) => {
   }, [post.like_me])
 
   const getCommentCount = ()=>{
-    const selector = { table_type: 'comment', post_id: post.post_id }
+    const selector = { table_type: 'comment' as any, post_id: post.post_id }
+    if(level === 1)
+      selector['table_type'] = {$in: ['comment', 'post']}
     if(level === 2)
       selector['refcomment_id'] = post.comment_id
     LocalDB.find({ selector })
-      .then(response => {
-        setCommentCount(response.docs.length)
+      .then(res => {
+        let resDocs = res.docs
+        const postIndex = resDocs.findIndex(doc=>doc['table_type']==='post')
+        if(postIndex) {
+          const postInfo = resDocs[postIndex]
+          resDocs.splice(postIndex, 1)
+          resDocs = resDocs.filter(doc=>doc['creater_did']!==postInfo['target_did'])
+        }
+        setCommentCount(resDocs.length)
       })
   }
   const handleCommentDlg = (e) => {
@@ -275,7 +284,10 @@ const PostBody = (props) => {
           >
             {parse(filteredContentByLink)}
           </Typography>
-          <PostMedia postId={post.post_id} direction={direction}/>
+          {
+            level === 1 &&
+            <PostMedia postId={post.post_id} direction={direction}/>
+          }
         </Stack>
         <Stack 
           direction="row" 

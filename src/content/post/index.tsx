@@ -24,7 +24,7 @@ const Post = () => {
 
   React.useEffect(()=>{
     if(currentPostStep && !postInfo)
-      LocalDB.get(params.post_id.toString())
+      LocalDB.get(params.post_id)
         .then(doc=>{
           setPostInfo(doc)
         })
@@ -47,15 +47,22 @@ const Post = () => {
   const getComments = ()=>{
     LocalDB.find({
       selector: {
-        table_type: 'comment',
+        table_type: {$in: ['comment', 'post']},
         post_id: params.post_id,
         created_at: {$exists: true}
       },
       sort: [{'created_at': 'desc'}],
     })
-      .then(response=>{
+      .then(res=>{
+        let resDocs = res.docs
+        const postIndex = resDocs.findIndex(doc=>doc['table_type']==='post')
+        if(postIndex) {
+          const postInfo = resDocs[postIndex]
+          resDocs.splice(postIndex, 1)
+          resDocs = resDocs.filter(doc=>doc['creater_did']!==postInfo['target_did'])
+        }
         setIsLoading(false)
-        setComments(response.docs)
+        setComments(resDocs)
       })
   }
   const loadingSkeletons = Array(5).fill(null)
