@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
-import { selectVisitedChannelId } from 'redux/slices/channel'
 import PostGrid from 'content/channel/PostGrid';
+import { selectVisitedChannelId } from 'redux/slices/channel'
 
 function Channel() {
   const channel_id = useSelector(selectVisitedChannelId)
