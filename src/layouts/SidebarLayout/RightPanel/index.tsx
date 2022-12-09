@@ -197,6 +197,9 @@ function RightPanel() {
     if(pathname.endsWith('/credentials'))
       content = <ProfilePreview />
   }
+  else if(pathname.startsWith('/post')) {
+    content = null
+  }
   else {
     const loadingChannelSkeletons = Array(5).fill(null)
     if(focusedChannel) {

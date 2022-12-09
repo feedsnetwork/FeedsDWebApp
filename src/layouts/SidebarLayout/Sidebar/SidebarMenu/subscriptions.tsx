@@ -2,7 +2,7 @@ import { useState, useEffect, memo } from 'react';
 import { NavLink as RouterLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Icon } from '@iconify/react';
-import { Box, Button, ListItem, ListItemText, ListItemIcon, ListItemButton, Typography } from '@mui/material';
+import { Box, Button, ListItem, ListItemText, ListItemIcon, ListItemButton } from '@mui/material';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 

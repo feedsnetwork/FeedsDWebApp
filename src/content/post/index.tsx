@@ -8,8 +8,9 @@ import CommentCard from 'components/CommentCard';
 import PostSkeleton from 'components/Skeleton/PostSkeleton'
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectActivePost } from 'redux/slices/post';
-import { getLocalDB } from 'utils/db';
 import { selectQueryStep } from 'redux/slices/proc';
+import { filterSelfComment } from 'utils/common';
+import { getLocalDB } from 'utils/db';
 
 const Post = () => {
   const { publishPostNumber } = React.useContext(SidebarContext);
@@ -54,15 +55,9 @@ const Post = () => {
       sort: [{'created_at': 'desc'}],
     })
       .then(res=>{
-        let resDocs = res.docs
-        const postIndex = resDocs.findIndex(doc=>doc['table_type']==='post')
-        if(postIndex>=0) {
-          const postInfo = resDocs[postIndex]
-          resDocs.splice(postIndex, 1)
-          resDocs = resDocs.filter(doc=>doc['creater_did']!==postInfo['target_did'])
-        }
+        let filteredDocs = filterSelfComment(res.docs)
         setIsLoading(false)
-        setComments(resDocs)
+        setComments(filteredDocs)
       })
   }
   const loadingSkeletons = Array(5).fill(null)

@@ -19,7 +19,7 @@ import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
 import { handleUnsubscribeModal, selectChannelById, setActiveChannelId, setFocusedChannelId, setTargetChannel } from 'redux/slices/channel';
 import { handleCommentModal, handleDelPostModal, handlePostModal, selectActivePost, setActivePost, setActivePostProps } from 'redux/slices/post';
-import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard } from 'utils/common'
+import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard, filterSelfComment } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 import { selectQueryStep } from 'redux/slices/proc';
 
@@ -67,14 +67,8 @@ const PostBody = (props) => {
       selector['refcomment_id'] = post.comment_id
     LocalDB.find({ selector })
       .then(res => {
-        let resDocs = res.docs
-        const postIndex = resDocs.findIndex(doc=>doc['table_type']==='post')
-        if(postIndex>=0) {
-          const postInfo = resDocs[postIndex]
-          resDocs.splice(postIndex, 1)
-          resDocs = resDocs.filter(doc=>doc['creater_did']!==postInfo['target_did'])
-        }
-        setCommentCount(resDocs.length)
+        let filteredDocs = filterSelfComment(res.docs)
+        setCommentCount(filteredDocs.length)
       })
   }
   const handleCommentDlg = (e) => {

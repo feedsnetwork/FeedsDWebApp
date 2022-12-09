@@ -377,4 +377,14 @@ export const getImageSource = (content) => {
     imgSrc = decodeBase64(content || "")
   return imgSrc
 }
+export const filterSelfComment = (docs) => {
+  let resDocs = docs
+  const postIndex = resDocs.findIndex(doc=>doc['table_type']==='post')
+  if(postIndex>=0) {
+    const postInfo = resDocs[postIndex]
+    resDocs.splice(postIndex, 1)
+    resDocs = resDocs.filter(doc=>doc['creater_did']!==postInfo['target_did'])
+  }
+  return resDocs
+}
 export const LimitPostCount = 30

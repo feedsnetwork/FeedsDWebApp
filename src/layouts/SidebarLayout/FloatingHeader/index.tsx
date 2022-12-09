@@ -9,7 +9,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { selectVisitedChannelId, selectFocusedChannelId, selectChannelById } from 'redux/slices/channel';
 import { selectMyName, selectUserInfoByDID } from 'redux/slices/user';
 import { selectQueryPublicStep, selectQueryStep } from 'redux/slices/proc';
-import { SettingMenuArray, reduceDIDstring } from 'utils/common'
+import { SettingMenuArray, reduceDIDstring, filterSelfComment } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
 const HeaderWrapper = styled(Box)(
@@ -95,14 +95,8 @@ function FloatingHeader(props) {
         }
       })
         .then(res=>{
-          let resDocs = res.docs
-          const postIndex = resDocs.findIndex(doc=>doc['table_type']==='post')
-          if(postIndex>=0) {
-            const postInfo = resDocs[postIndex]
-            resDocs.splice(postIndex, 1)
-            resDocs = resDocs.filter(doc=>doc['creater_did']!==postInfo['target_did'])
-          }
-          setActiveCommentCount(resDocs.length)
+          let filteredDocs = filterSelfComment(res.docs)
+          setActiveCommentCount(filteredDocs.length)
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
