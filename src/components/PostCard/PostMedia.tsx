@@ -13,6 +13,7 @@ const PostMedia = (props) => {
   const [thumbnailSrc, setThumbnailSrc] = React.useState('')
   const LocalDB = getLocalDB()
   const dispatch = useDispatch()
+  const imageRef = React.useRef();
 
   React.useEffect(()=>{
     setThumbnailSrc('')
@@ -35,26 +36,39 @@ const PostMedia = (props) => {
     dispatch(setActiveImagePath(loadedPostMedia))
     dispatch(setOpenImageScreen(true))
   }
+  const handleResize = ()=>{
+    const myImg = document.querySelector(`.img-${postId}`);
+    const ratio = myImg['width'] / (myImg['height'] || 1)
+    if(ratio >= 1.8)
+      document.querySelector(`.span-${postId}`)['style'].height = 'auto'
+    else
+      document.querySelector(`.span-${postId}`)['style'].height = `${Math.ceil(myImg['width']/1.8)}px`
+  }
   const ImgBoxSx = direction === 'row'? {pl: 2}: {pt: 2}
+  const ImgWrapperStyle = { 
+    display: 'flex', 
+    alignItems: 'center', 
+    overflow: 'hidden',
+    borderRadius: direction==='row'? 18: 0,
+  }
   return (
     !thumbnailSrc?
     <div />:
-    <Box {...ImgBoxSx}>
+    <Box {...ImgBoxSx} ref={imageRef}>
       <LazyLoadImage
+        className={`img-${postId}`}
         src={thumbnailSrc}
         effect="blur" 
         wrapperProps={{
-          style:{
-            display: 'contents'
-          }
+          style: ImgWrapperStyle,
+          className: `span-${postId}`
         }} 
         style={{
-          margin: 'auto',
           width: direction==='row'? 180: '100%',
-          borderRadius: direction==='row'? 1: 0,
           // height: width,
           transition: 'border-radius .2s',
         }} 
+        afterLoad={handleResize} 
         onClick={handleOpenScreen}
       />
     </Box>
