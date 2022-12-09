@@ -13,7 +13,7 @@ import PostSkeleton from 'components/Skeleton/PostSkeleton';
 import { reduceDIDstring, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 import { selectMyInfo } from 'redux/slices/user';
-import { selectSelfChannels, selectSubscribedChannels } from 'redux/slices/channel';
+import { selectSelfChannels, selectSubscribedChannelsCount } from 'redux/slices/channel';
 import { selectQueryStepStatus } from 'redux/slices/proc';
 
 function Profile() {
@@ -26,7 +26,7 @@ function Profile() {
   const myInfo = useSelector(selectMyInfo)
   const myAvatarUrl = myInfo['avatar_url']
   const selfChannels = Object.values(useSelector(selectSelfChannels))
-  const subscribedChannels = Object.values(useSelector(selectSubscribedChannels))
+  const subscriptionCount = useSelector(selectSubscribedChannelsCount)
   const isSelfChannelLoaded = useSelector(selectQueryStepStatus('self_channel'))
   const LocalDB = getLocalDB()
 
@@ -62,7 +62,6 @@ function Profile() {
   }, [currentLikeStep])
 
   // const backgroundImg = "/temp-back.png"
-  const subscriptionCount = selfChannels.filter(channel=>channel['is_subscribed']).length + subscribedChannels.length
   const loadingSkeletons = Array(5).fill(null)
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
