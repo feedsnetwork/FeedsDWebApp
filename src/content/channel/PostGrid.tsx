@@ -25,15 +25,16 @@ function PostGrid(props) {
   const propsInProc = { dispatch }
   const proc = nextproc(propsInProc)
 
-  console.info(timeRange)
   React.useEffect(()=>{
     setIsLoading(true)
+    setHasMore(true)
     setPageEndTime(0)
     setPosts([])
     if(isLoadedPost)
       loadPostData(channel_id, 0)
-    LocalDB.get(channel_id)
-      .then(doc=>setTimeRange(doc['time_range']))
+    if(channel_id)
+      LocalDB.get(channel_id)
+        .then(doc=>setTimeRange(doc['time_range']))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channel_id, isLoadedPost])
   React.useEffect(()=>{
@@ -118,7 +119,7 @@ function PostGrid(props) {
               dataLength={posts.length}
               next={()=>{appendMoreData('next')}}
               hasMore={posts.length<totalCount || hasMore}
-              loader={<h4>Loading...</h4>}
+              loader={<h4 style={{textAlign: 'center'}}>Loading...</h4>}
               scrollableTarget="scrollableBox"
               style={{overflow: 'visible'}}
             >

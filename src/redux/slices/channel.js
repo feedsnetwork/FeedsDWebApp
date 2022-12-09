@@ -72,8 +72,7 @@ const slice = createSlice({
       state.visitedChannelId = action.payload
     },
     setPostLoadedChannel(state, action) {
-      if(!state.postLoadedChannels[action.payload])
-        state.postLoadedChannels[action.payload] = true
+      state.postLoadedChannels[action.payload] = true
     },
   }
 });
