@@ -6,6 +6,7 @@ import { Box, Button, ListItem, ListItemText, ListItemIcon, ListItemButton, Typo
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
+import ChannelName from 'components/ChannelName';
 import SubscriptionAvatar from './subscriptionAvatar'
 import { selectSubscribedChannels, setVisitedChannelId } from 'redux/slices/channel';
 
@@ -89,7 +90,7 @@ function Subscriptions() {
                   startIcon={<SubscriptionAvatar channel={channel}/>}
                   sx={{p: '4px 14px !important'}}
                 >
-                  <Typography variant="body2" sx={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>{channel['display_name']}</Typography>
+                  <ChannelName name={channel['display_name']} isPublic={channel['is_public']} variant="body2" sx={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}/>
                 </Button>
               </ListItem>
             ))

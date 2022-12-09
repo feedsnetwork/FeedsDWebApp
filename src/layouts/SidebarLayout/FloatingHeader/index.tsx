@@ -4,12 +4,13 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Stack, Box, Button, Hidden, ListItemText, Typography, styled, alpha, lighten } from '@mui/material';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 
+import ChannelName from 'components/ChannelName';
 import { OverPageContext } from 'contexts/OverPageContext';
 import { selectVisitedChannelId, selectFocusedChannelId, selectChannelById } from 'redux/slices/channel';
 import { selectMyName, selectUserInfoByDID } from 'redux/slices/user';
-import { getLocalDB } from 'utils/db';
-import { SettingMenuArray, reduceDIDstring } from 'utils/common'
 import { selectQueryPublicStep, selectQueryStep } from 'redux/slices/proc';
+import { SettingMenuArray, reduceDIDstring } from 'utils/common'
+import { getLocalDB } from 'utils/db';
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -117,7 +118,7 @@ function FloatingHeader(props) {
   }
   
   const getActionText = () => {
-    let primaryText = ""
+    let primaryText = null
     let secondaryText = ""
     
     if(pathname.startsWith('/setting')) {
@@ -136,7 +137,7 @@ function FloatingHeader(props) {
       (pathname.startsWith('/channel') && focusedChannelId) ||
       ((pathname.startsWith('/subscription/channel') || pathname.startsWith('/explore/channel')) && visitedChannelId)
     ) {
-      primaryText = focusedChannel['display_name']
+      primaryText = <ChannelName name={focusedChannel['display_name']} isPublic={focusedChannel['is_public']} variant="div" />
       secondaryText = `${postCountInFocus} posts`
     }
     else if(pathname.startsWith('/post/')) {

@@ -5,6 +5,7 @@ import { Box, Paper, Stack, Divider, AvatarGroup, Fade, Popper, styled, Typograp
 
 import StyledAvatar from 'components/StyledAvatar'
 import SubscribeButton from 'components/SubscribeButton';
+import ChannelName from 'components/ChannelName';
 import { selectChannelById } from 'redux/slices/channel';
 import { selectUserInfoByDID } from 'redux/slices/user';
 import { getImageSource } from 'utils/common'
@@ -148,7 +149,8 @@ const ChannelAvatarWithPopper = (props) => {
                                     <Box>
                                         <Typography component='div' variant="subtitle2" noWrap pt={1}>
                                             <Link sx={{color:'inherit', cursor: 'pointer'}} onClick={handleLink2Channel}>
-                                                {contentObj.primaryName}
+                                                {/* {contentObj.primaryName} */}
+                                                <ChannelName name={contentObj.primaryName} isPublic={currentChannel['is_public']} variant="div"/>
                                             </Link>
                                         </Typography>
                                         <Typography component='div' variant="body2" noWrap>

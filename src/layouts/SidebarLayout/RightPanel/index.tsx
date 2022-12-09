@@ -10,16 +10,17 @@ import Scrollbar from 'components/Scrollbar';
 import StyledAvatar from 'components/StyledAvatar'
 import StyledButton from 'components/StyledButton'
 // import InputOutline from 'components/InputOutline'
+import ChannelName from 'components/ChannelName';
 import PublicChannelSkeleton from 'components/Skeleton/PublicChannelSkeleton';
 import SubscribeButton from 'components/SubscribeButton';
 import SubscriberListItem from './SubscriberListItem';
 import PublicChannelItem from './PublicChannelItem';
+import { SidebarContext } from 'contexts/SidebarContext';
 import { selectFocusedChannelId, selectVisitedChannelId, selectChannelById, selectSelfChannelsCount, selectSubscribedChannelsCount } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { selectQueryPublicStep } from 'redux/slices/proc';
 import { reduceHexAddress, reduceDIDstring, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db'
-import { SidebarContext } from 'contexts/SidebarContext';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -75,7 +76,7 @@ const ChannelAbout = (props) => {
         </Stack>
         <Stack alignItems='center' my={2}>
           <StyledAvatar alt={this_channel.display_name} src={this_channel.avatarSrc} width={60}/>
-          <Typography variant='h5' mt={1}>{this_channel.display_name}</Typography>
+          <ChannelName name={this_channel.display_name} isPublic={this_channel['is_public']} variant="h5" sx={{mt: 1}}/>
           <Typography variant='body2'>@{this_channel.owner_name || reduceDIDstring(this_channel.target_did)}</Typography>
           <Typography variant='body2' color='text.secondary' textAlign='center'>{this_channel.intro}</Typography>
         </Stack>

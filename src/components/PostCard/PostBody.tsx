@@ -11,6 +11,7 @@ import "odometer/themes/odometer-theme-default.css";
 
 import IconInCircle from 'components/IconInCircle'
 import Heart from 'components/Heart'
+import ChannelName from 'components/ChannelName';
 import ChannelAvatarWithPopper from './ChannelAvatarWithPopper';
 import PostMedia from './PostMedia';
 import { SidebarContext } from 'contexts/SidebarContext';
@@ -202,7 +203,7 @@ const PostBody = (props) => {
               {
                 level===1?
                 <Link sx={{color:'inherit'}} onClick={handleLink2Channel}>
-                  {contentObj.primaryName}
+                  <ChannelName name={contentObj.primaryName} isPublic={currentChannel['is_public']} variant="div" sx={{display: 'inline-flex'}}/>
                 </Link>:
 
                 contentObj.primaryName
