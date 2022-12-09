@@ -39,7 +39,7 @@ const Post = () => {
   }, [currentCommentStep])
 
   React.useEffect(()=>{
-    if(publishPostNumber && activePost['post_id']===params.post_id) {
+    if(publishPostNumber && activePost?.post_id===params.post_id) {
       getComments()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -50,7 +50,15 @@ const Post = () => {
       selector: {
         table_type: {$in: ['comment', 'post']},
         post_id: params.post_id,
-        created_at: {$exists: true}
+        created_at: {$exists: true},
+        $or: [
+          {
+            refcomment_id: {$exists: false}
+          },
+          {
+            refcomment_id: '0'
+          }
+        ]
       },
       sort: [{'created_at': 'desc'}],
     })

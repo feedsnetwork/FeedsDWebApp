@@ -61,8 +61,17 @@ const PostBody = (props) => {
 
   const getCommentCount = ()=>{
     const selector = { table_type: 'comment' as any, post_id: post.post_id }
-    if(level === 1)
+    if(level === 1) {
       selector['table_type'] = {$in: ['comment', 'post']}
+      selector['$or'] = [
+        {
+          refcomment_id: {$exists: false}
+        },
+        {
+          refcomment_id: '0'
+        }
+      ]
+    }
     if(level === 2)
       selector['refcomment_id'] = post.comment_id
     LocalDB.find({ selector })

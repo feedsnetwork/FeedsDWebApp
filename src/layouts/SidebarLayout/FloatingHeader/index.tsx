@@ -74,6 +74,7 @@ function FloatingHeader(props) {
 
   React.useEffect(()=>{
     if(selectedChannelId) {
+      setPostCountInFocus(0)
       if((currentPostStep && !isPublicChannel) || (currentPublicPostStep && isPublicChannel))
         LocalDB.find({
           selector: {
@@ -88,10 +89,19 @@ function FloatingHeader(props) {
 
   React.useEffect(()=>{
     if(params.post_id) {
+      setActiveCommentCount(0)
       LocalDB.find({
         selector: {
           table_type: {$in: ['comment', 'post']},
-          post_id: params.post_id
+          post_id: params.post_id,
+          $or: [
+            {
+              refcomment_id: {$exists: false}
+            },
+            {
+              refcomment_id: '0'
+            }
+          ]
         }
       })
         .then(res=>{
