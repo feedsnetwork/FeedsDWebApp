@@ -39,17 +39,18 @@ const PostMedia = (props) => {
   const handleResize = ()=>{
     const myImg = document.querySelector(`.img-${postId}`);
     const ratio = myImg['width'] / (myImg['height'] || 1)
-    if(ratio >= 1.8)
+    const limitRatio = 1.6
+    if(ratio >= limitRatio)
       document.querySelector(`.span-${postId}`)['style'].height = 'auto'
     else
-      document.querySelector(`.span-${postId}`)['style'].height = `${Math.ceil(myImg['width']/1.8)}px`
+      document.querySelector(`.span-${postId}`)['style'].height = `${Math.ceil(myImg['width']/limitRatio)}px`
   }
   const ImgBoxSx = direction === 'row'? {pl: 2}: {pt: 2}
   const ImgWrapperStyle = { 
     display: 'flex', 
     alignItems: 'center', 
     overflow: 'hidden',
-    borderRadius: direction==='row'? 18: 0,
+    borderRadius: direction==='row'? 18: 8,
   }
   return (
     !thumbnailSrc?

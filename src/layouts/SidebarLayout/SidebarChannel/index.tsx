@@ -11,6 +11,7 @@ import Logo from 'components/LogoSign';
 import ChannelAvatar from 'components/ChannelAvatar'
 import StyledButton from 'components/StyledButton'
 import SignoutDlg from 'components/Modal/Signout';
+import ChannelName from 'components/ChannelName';
 import { sortByDate, isValidTime, getDateDistance, convertAutoLink } from 'utils/common'
 import { selectFocusedChannelId, selectSelfChannels, setActiveChannelId, setFocusedChannelId } from 'redux/slices/channel';
 import { handlePostModal, setActivePost } from 'redux/slices/post';
@@ -300,7 +301,9 @@ function SidebarChannel() {
           <Box component="span" className="arrow" ref={setArrowRef} sx={styles.arrow} />
           <Paper sx={{p: 2}}>
             <Stack direction="row">
-              <Typography variant="h5" pb={2} flex={1}>{popoverChannel['display_name']}</Typography>
+              <Box pb={2} flex={1}>
+                <ChannelName name={popoverChannel['display_name']} isPublic={popoverChannel['is_public']} variant="h5"/>
+              </Box>
               <Box sx={{display: 'inline-block'}}>
                 <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main, mr: 1}} size='small'><Icon icon="ant-design:share-alt-outlined" /></IconButton>
                 <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><Icon icon="clarity:note-edit-line" /></IconButton>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { isString } from 'lodash';
-import { Dialog, DialogTitle, DialogContent, Typography, Box, Stack, IconButton, Paper } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Box, Stack, IconButton, Paper } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSnackbar } from 'notistack';
 import closeFill from '@iconify/icons-eva/close-fill';
@@ -20,6 +20,7 @@ import { getBufferFromFile, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 import { handlePostModal, selectPostModalState, selectActivePost } from 'redux/slices/post';
 import { selectActiveChannelId, selectChannelById, selectFocusedChannelId } from 'redux/slices/channel';
+import ChannelName from 'components/ChannelName';
 
 function PostDlg() {
   const { publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
@@ -207,8 +208,8 @@ function PostDlg() {
       </DialogTitle>
       <DialogContent sx={{minWidth: {sm: 'unset', md: 500}}}>
         <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-          <StyledAvatar alt={focusedChannel['name']} src={getImageSource(focusedChannel['avatarSrc'])}/>
-          <Typography variant="subtitle1">{focusedChannel['name']}</Typography>
+          <StyledAvatar alt={focusedChannel['display_name']} src={getImageSource(focusedChannel['avatarSrc'])}/>
+          <ChannelName name={focusedChannel['display_name']} isPublic={focusedChannel['is_public']} />
         </Stack>
         <Stack spacing={2}>
           <StyledTextFieldOutline

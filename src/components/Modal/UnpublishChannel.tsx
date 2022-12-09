@@ -5,6 +5,7 @@ import { useSnackbar } from 'notistack';
 
 import StyledButton from '../StyledButton';
 import StyledAvatar from '../StyledAvatar';
+import ChannelName from 'components/ChannelName';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ChannelRegContractAddress } from 'config'
 import { selectTargetChannel, selectUnpublishModalState, handleUnpublishModal, setChannelData } from 'redux/slices/channel'
@@ -86,8 +87,8 @@ function UnpublishChannel() {
         <Stack spacing={2} sx={{textAlign: 'center'}}>
           <Typography variant="h5">Unpublish Channel</Typography>
           <Stack spacing={1} alignItems="center">
-            <StyledAvatar alt={channel.name} src={channel.avatarPreview} width={64}/>
-            <Typography variant="subtitle2">{channel.name}</Typography>
+            <StyledAvatar alt={channel.display_name} src={channel.avatarPreview} width={64}/>
+            <ChannelName name={channel.display_name} isPublic={channel['is_public']}/>
           </Stack>
           <Typography variant="body2">
             You are about to unpublish channel

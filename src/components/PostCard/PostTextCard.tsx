@@ -7,6 +7,7 @@ import StyledAvatar from 'components/StyledAvatar'
 import PaperRecord from 'components/PaperRecord'
 import { selectChannelById } from 'redux/slices/channel';
 import { getDateDistance, isValidTime, convertAutoLink, isJson, getImageSource } from 'utils/common'
+import ChannelName from 'components/ChannelName';
 
 const PostTextCard = (props) => {
   const { post } = props
@@ -39,12 +40,11 @@ const PostTextCard = (props) => {
             // onMouseEnter={(e)=>{handlePopper(e, true)}}
             // onMouseLeave={(e)=>{handlePopper(e, false)}}
           >
-            <StyledAvatar alt={thisChannel['name']} src={getImageSource(thisChannel['avatarSrc'])} width={47}/>
+            <StyledAvatar alt={thisChannel['display_name']} src={getImageSource(thisChannel['avatarSrc'])} width={47}/>
           </Box>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-            <Typography component='div' variant="subtitle2" noWrap>
-              {thisChannel['name']}{' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
-            </Typography>
+            <ChannelName name={thisChannel['display_name']} isPublic={thisChannel['is_public']} variant="subtitle2"/>
+            <Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
             <Typography variant="body2" noWrap>
               @{thisChannel['owner_name'] || ''}
             </Typography>

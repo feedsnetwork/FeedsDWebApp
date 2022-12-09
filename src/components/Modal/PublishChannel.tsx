@@ -6,6 +6,7 @@ import { create } from 'ipfs-http-client'
 
 import StyledButton from '../StyledButton';
 import StyledAvatar from '../StyledAvatar';
+import ChannelName from 'components/ChannelName';
 import { ChannelContent } from 'models/channel_content';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ipfsURL, ChannelRegContractAddress } from 'config'
@@ -143,8 +144,8 @@ function PublishChannel() {
         <Stack spacing={2} sx={{textAlign: 'center'}}>
           <Typography variant="h5">Publish Channel</Typography>
           <Stack spacing={1} alignItems="center">
-            <StyledAvatar alt={channel.name} src={channel.avatarPreview} width={64}/>
-            <Typography variant="subtitle2">{channel.name}</Typography>
+            <StyledAvatar alt={channel.display_name} src={channel.avatarPreview} width={64}/>
+            <ChannelName name={channel.display_name} isPublic={channel['is_public']}/>
           </Stack>
           {
             !onProgress &&

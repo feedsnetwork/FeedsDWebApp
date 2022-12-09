@@ -10,6 +10,7 @@ import { selectMyName } from 'redux/slices/user';
 import { HiveApi } from 'services/HiveApi';
 import { getLocalDB } from 'utils/db';
 import { getImageSource } from 'utils/common';
+import ChannelName from 'components/ChannelName';
 
 const PublicChannelItem = (props) => {
     const { channel } = props
@@ -73,11 +74,9 @@ const PublicChannelItem = (props) => {
 
     return (
         <Stack direction="row" alignItems="center" spacing={1}>
-            <StyledAvatar alt={channel['name']} src={getImageSource(channel['avatarSrc'])} width={32}/>
+            <StyledAvatar alt={channel['display_name']} src={getImageSource(channel['avatarSrc'])} width={32}/>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                <Typography component='div' variant="subtitle2" noWrap>
-                    {channel['name']}
-                </Typography>
+                <ChannelName name={channel['display_name']} isPublic={channel['is_public']} variant="subtitle2"/>
                 <Typography variant="body2" color='text.secondary' noWrap>
                     {subscribers?.length || 0} Subscribers
                 </Typography>

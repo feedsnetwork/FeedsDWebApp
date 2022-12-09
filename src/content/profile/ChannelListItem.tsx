@@ -7,12 +7,13 @@ import { useSnackbar } from 'notistack';
 
 import IconInCircle from 'components/IconInCircle'
 import StyledAvatar from 'components/StyledAvatar'
+import ChannelName from 'components/ChannelName';
 import { handlePublishModal, handleUnpublishModal, setTargetChannel } from 'redux/slices/channel';
 import { getChannelShortUrl, copy2clipboard, getImageSource } from 'utils/common'
 
 const ChannelListItem = (props) => {
   const {channel} = props
-  const {display_name: name, avatarSrc, intro} = channel
+  const {display_name: name, avatarSrc, intro, is_public} = channel
   const avatarImg = getImageSource(avatarSrc)
   const [isOpenPopup, setOpenPopup] = React.useState(null);
   const { enqueueSnackbar } = useSnackbar();
@@ -62,7 +63,7 @@ const ChannelListItem = (props) => {
       <StyledAvatar alt={name} src={avatarImg}/>
       <Box flex={1}>
         <Hidden mdDown>
-          <Typography variant="subtitle2">{name}</Typography>
+          <ChannelName name={name} isPublic={is_public} variant="subtitle2"/>
           <Typography variant="body2">{intro}</Typography>
           <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
             <Typography variant="body2" pr={3}><strong>{subscriberCount}</strong> Subscribers</Typography>
@@ -103,7 +104,7 @@ const ChannelListItem = (props) => {
     </Stack>
     <Hidden mdUp>
       <Box mt={1}>
-        <Typography variant="subtitle2">{channel.name}</Typography>
+        <ChannelName name={name} isPublic={is_public} variant="subtitle2"/>
         <Typography variant="body2">{channel.intro}</Typography>
         <Stack direction="row" sx={{flexWrap: 'wrap', mt: 1}}>
           <Typography variant="body2" pr={3}><strong>{subscriberCount}</strong> Subscribers</Typography>
