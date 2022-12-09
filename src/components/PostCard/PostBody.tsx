@@ -69,7 +69,7 @@ const PostBody = (props) => {
       .then(res => {
         let resDocs = res.docs
         const postIndex = resDocs.findIndex(doc=>doc['table_type']==='post')
-        if(postIndex) {
+        if(postIndex>=0) {
           const postInfo = resDocs[postIndex]
           resDocs.splice(postIndex, 1)
           resDocs = resDocs.filter(doc=>doc['creater_did']!==postInfo['target_did'])
