@@ -11,16 +11,16 @@ import { selectChannelById } from 'redux/slices/channel';
 const getContentObj = (comment, channel, commentUser, parentReplyingTo='') => {
   let dispName = commentUser['name'] || reduceDIDstring(comment.creater_did)
   let dispAvatar = { name: commentUser['name'], src: decodeBase64(commentUser['avatarSrc'])}
-  if(channel['target_did'] === comment.creater_did) {
-    dispName = channel['display_name']
-    dispAvatar = { name: channel['display_name'], src: decodeBase64(channel['avatarSrc']) }
-  }
   const replyingTo = channel['owner_name'] || reduceDIDstring(channel['target_did'])
   const contentObj = {
     avatar: dispAvatar || {}, 
     primaryName: `@${dispName}`, 
     secondaryName: <><b>Replying to</b> {parentReplyingTo || `@${replyingTo}`}</>, 
     content: comment.content
+  }
+  if(channel['target_did'] === comment.creater_did) {
+    contentObj.primaryName = `@${channel['display_name']}`
+    contentObj.avatar = { name: channel['display_name'], src: decodeBase64(channel['avatarSrc']), isChannel: true }
   }
   if(comment.status === 1)
     contentObj.content = "(post deleted)"

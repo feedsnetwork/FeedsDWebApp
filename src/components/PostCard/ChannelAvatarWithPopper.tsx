@@ -92,6 +92,7 @@ const ChannelAvatarWithPopper = (props) => {
         setAnchorEl(e.target)
       setOpenPopover(open)
     }
+    const AvatarComponent = (level===2 && !contentObj.avatar.isChannel)? StyledAvatar: NoRingAvatar
     return (
         <>
             <Box
@@ -99,7 +100,7 @@ const ChannelAvatarWithPopper = (props) => {
                 onMouseLeave={(e)=>{handlePopper(e, false)}}
                 onClick={level===1? handleLink2Channel: null}
             >
-                <NoRingAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
+                <AvatarComponent alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
             </Box>
             {
                 level===1 &&
