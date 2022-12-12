@@ -17,7 +17,7 @@ import PostMedia from './PostMedia';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
-import { handleUnsubscribeModal, selectChannelById, setActiveChannelId, setFocusedChannelId, setTargetChannel } from 'redux/slices/channel';
+import { handleUnsubscribeModal, selectChannelById, setActiveChannelId, setFocusedChannelId, setTargetChannel, setVisitedChannelId } from 'redux/slices/channel';
 import { handleCommentModal, handleDelPostModal, handlePostModal, selectActivePost, setActivePost, setActivePostProps } from 'redux/slices/post';
 import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard, filterSelfComment } from 'utils/common'
 import { getLocalDB } from 'utils/db';
@@ -183,7 +183,8 @@ const PostBody = (props) => {
       dispatch(setFocusedChannelId(post.channel_id))
       navigate('/channel')
     } else {
-      navigate('/subscription/channel', {state: {channel_id: post.channel_id}});
+      dispatch(setVisitedChannelId(post.channel_id))
+      navigate('/subscription/channel');
     }
   }
   const handleLink2Profile = (e)=>{
