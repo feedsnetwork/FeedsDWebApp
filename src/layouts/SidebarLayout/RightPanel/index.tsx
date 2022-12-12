@@ -13,6 +13,7 @@ import StyledButton from 'components/StyledButton'
 import ChannelName from 'components/ChannelName';
 import PublicChannelSkeleton from 'components/Skeleton/PublicChannelSkeleton';
 import SubscribeButton from 'components/SubscribeButton';
+import NoRingAvatar from 'components/NoRingAvatar';
 import SubscriberListItem from './SubscriberListItem';
 import PublicChannelItem from './PublicChannelItem';
 import { SidebarContext } from 'contexts/SidebarContext';
@@ -75,7 +76,7 @@ const ChannelAbout = (props) => {
           </Stack>
         </Stack>
         <Stack alignItems='center' my={2}>
-          <StyledAvatar alt={this_channel.display_name} src={this_channel.avatarSrc} width={60}/>
+          <NoRingAvatar alt={this_channel.display_name} src={this_channel.avatarSrc} width={60}/>
           <ChannelName name={this_channel.display_name} isPublic={this_channel['is_public']} variant="h5" sx={{mt: 1}}/>
           <Typography variant='body2'>@{this_channel.owner_name || reduceDIDstring(this_channel.target_did)}</Typography>
           <Typography variant='body2' color='text.secondary' textAlign='center'>{this_channel.intro}</Typography>

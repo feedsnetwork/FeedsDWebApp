@@ -5,8 +5,8 @@ import { Box, Stack, Typography } from '@mui/material';
 import parse from 'html-react-parser';
 import "odometer/themes/odometer-theme-default.css";
 
-import StyledAvatar from 'components/StyledAvatar'
 import PaperRecord from 'components/PaperRecord'
+import NoRingAvatar from 'components/NoRingAvatar';
 import { convertAutoLink, isJson, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
@@ -58,7 +58,7 @@ const PostImgCard = (props) => {
           // onMouseEnter={(e)=>{handlePopper(e, true)}}
           // onMouseLeave={(e)=>{handlePopper(e, false)}}
         >
-          <StyledAvatar alt={thisChannel['name']} src={thisChannel['avatarSrc']} width={47}/>
+          <NoRingAvatar alt={thisChannel['name']} src={thisChannel['avatarSrc']} width={47}/>
         </Box>
         <Box sx={{ minWidth: 0, flexGrow: 1 }}>
           <Typography 

@@ -6,8 +6,8 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useSnackbar } from 'notistack';
 
 import IconInCircle from 'components/IconInCircle'
-import StyledAvatar from 'components/StyledAvatar'
 import ChannelName from 'components/ChannelName';
+import NoRingAvatar from 'components/NoRingAvatar';
 import { handlePublishModal, handleUnpublishModal, setTargetChannel } from 'redux/slices/channel';
 import { getChannelShortUrl, copy2clipboard, getImageSource } from 'utils/common'
 
@@ -60,7 +60,7 @@ const ChannelListItem = (props) => {
   const subscriberCount = channel['subscribers']?.length || 0
   return <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
     <Stack direction="row" spacing={2} alignItems="center">
-      <StyledAvatar alt={name} src={avatarImg}/>
+      <NoRingAvatar alt={name} src={avatarImg}/>
       <Box flex={1}>
         <Hidden mdDown>
           <ChannelName name={name} isPublic={is_public} variant="subtitle2"/>

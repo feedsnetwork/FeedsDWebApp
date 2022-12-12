@@ -7,20 +7,20 @@ import { useSnackbar } from 'notistack';
 import closeFill from '@iconify/icons-eva/close-fill';
 import { Icon } from '@iconify/react';
 
-import StyledAvatar from '../StyledAvatar';
 import StyledButton from '../StyledButton';
 import StyledTextFieldOutline from '../StyledTextFieldOutline'
 import StyledIconButton from '../StyledIconButton';
 import EmojiPopper from '../EmojiPopper';
+import ChannelName from 'components/ChannelName';
+import NoRingAvatar from 'components/NoRingAvatar';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { PostContentV3, mediaDataV3, MediaType } from 'models/post_content'
-import { HiveApi } from 'services/HiveApi'
 import { CommonStatus } from 'models/common_content'
-import { getBufferFromFile, getImageSource } from 'utils/common'
-import { getLocalDB } from 'utils/db';
+import { HiveApi } from 'services/HiveApi'
 import { handlePostModal, selectPostModalState, selectActivePost } from 'redux/slices/post';
 import { selectActiveChannelId, selectChannelById, selectFocusedChannelId } from 'redux/slices/channel';
-import ChannelName from 'components/ChannelName';
+import { getBufferFromFile, getImageSource } from 'utils/common'
+import { getLocalDB } from 'utils/db';
 
 function PostDlg() {
   const { publishPostNumber, setPublishPostNumber } = React.useContext(SidebarContext);
@@ -208,7 +208,7 @@ function PostDlg() {
       </DialogTitle>
       <DialogContent sx={{minWidth: {sm: 'unset', md: 500}}}>
         <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-          <StyledAvatar alt={focusedChannel['display_name']} src={getImageSource(focusedChannel['avatarSrc'])}/>
+          <NoRingAvatar alt={focusedChannel['display_name']} src={getImageSource(focusedChannel['avatarSrc'])}/>
           <ChannelName name={focusedChannel['display_name']} isPublic={focusedChannel['is_public']} />
         </Stack>
         <Stack spacing={2}>

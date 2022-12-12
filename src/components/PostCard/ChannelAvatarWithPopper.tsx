@@ -6,6 +6,7 @@ import { Box, Paper, Stack, Divider, AvatarGroup, Fade, Popper, styled, Typograp
 import StyledAvatar from 'components/StyledAvatar'
 import SubscribeButton from 'components/SubscribeButton';
 import ChannelName from 'components/ChannelName';
+import NoRingAvatar from 'components/NoRingAvatar';
 import { selectChannelById } from 'redux/slices/channel';
 import { selectUserInfoByDID } from 'redux/slices/user';
 import { getImageSource } from 'utils/common'
@@ -98,7 +99,7 @@ const ChannelAvatarWithPopper = (props) => {
                 onMouseLeave={(e)=>{handlePopper(e, false)}}
                 onClick={level===1? handleLink2Channel: null}
             >
-                <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
+                <NoRingAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
             </Box>
             {
                 level===1 &&
@@ -140,7 +141,7 @@ const ChannelAvatarWithPopper = (props) => {
                                 <Paper sx={{p: 2}}>
                                     <Stack direction="row">
                                         <Box onClick={handleLink2Channel} sx={{cursor: 'pointer'}}>
-                                            <StyledAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={40}/>
+                                            <NoRingAvatar alt={contentObj.avatar.name} src={contentObj.avatar.src} width={40}/>
                                         </Box>
                                         <Box sx={{flexGrow: 1}} textAlign="right">
                                             <SubscribeButton channel={currentChannel}/>
