@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router';
 import { Box, Stack, Typography } from '@mui/material';
 import parse from 'html-react-parser';
 import "odometer/themes/odometer-theme-default.css";
@@ -8,10 +9,10 @@ import ChannelName from 'components/ChannelName';
 import NoRingAvatar from 'components/NoRingAvatar';
 import { selectChannelById } from 'redux/slices/channel';
 import { getDateDistance, isValidTime, convertAutoLink, isJson, getImageSource } from 'utils/common'
-
 const PostTextCard = (props) => {
   const { post } = props
   const distanceTime = isValidTime(post.created_at)? getDateDistance(post.created_at): ''
+  const navigate = useNavigate();
 
   // const [anchorEl, setAnchorEl] = React.useState(null);
   // const [isOpenPopover, setOpenPopover] = React.useState(false);
@@ -31,9 +32,12 @@ const PostTextCard = (props) => {
   //     setAnchorEl(e.target)
   //   setOpenPopover(open)
   // }
+  const naviage2detail = (e) => {
+    navigate(`/post/${post.post_id}`);
+  }
 
   return (
-    <PaperRecord sx={{p: 2}}>
+    <PaperRecord sx={{p: 2, cursor: 'pointer'}} onClick={naviage2detail}>
       <Stack spacing={2}>
         <Stack direction="row" alignItems="center" spacing={2}>
           <Box
