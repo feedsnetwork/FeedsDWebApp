@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 import { Icon } from '@iconify/react';
 import { create } from 'ipfs-http-client'
-import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormControl, FormHelperText } from '@mui/material';
+import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormControl, FormHelperText, Avatar } from '@mui/material';
 
 import StyledButton from 'components/StyledButton';
 import { ChannelContent } from 'models/channel_content';
@@ -27,25 +27,19 @@ const AvatarWrapper = styled(Box)(
 
 const ButtonUploadWrapper = styled(Box)(
   ({ theme }) => `
-    position: absolute;
-    width: ${theme.spacing(4)};
-    height: ${theme.spacing(4)};
-    bottom: -${theme.spacing(0)};
-    right: -${theme.spacing(0)};
-
     .MuiIconButton-root {
       border-radius: 100%;
-      background: ${theme.colors.primary.main};
+      background: ${theme.colors.primary.dark};
       color: ${theme.palette.primary.contrastText};
       width: ${theme.spacing(4)};
       height: ${theme.spacing(4)};
       padding: 0;
   
       &:hover {
-        background: ${theme.colors.primary.dark};
+        background: #161c24;
       }
     }
-`
+  `
 );
 
 const AvatarInput = styled('input')({
@@ -297,7 +291,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
         })
   }
 
-  let avatarSrc = '/user-circle.svg'
+  let avatarSrc = ''
   if(avatarUrl) {
     if(typeof avatarUrl === 'object')
       avatarSrc = avatarUrl.preview
@@ -319,31 +313,62 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           </Stack>
         </Stack>:
 
-        <Card sx={{ p: 3 }}>
-          <Stack spacing={6} alignItems='center'>
-            <AvatarWrapper>
-              <Box component='img' src={avatarSrc} draggable={false} sx={{ width: 90, height: 90, borderRadius: '50%'}}/>
+        <Card>
+          <Box sx={{px: 3, py: 2, background: 'linear-gradient(180deg, #000000 0%, #A067FF 300.51%)'}}>
+            <Box sx={{display: 'flex', justifyContent: 'center', pt: 3, pb: 1}}>
+              <AvatarWrapper>
+                {
+                  !!avatarSrc?
+                  <Box component='img' src={avatarSrc} draggable={false} sx={{ width: 90, height: 90, borderRadius: '50%'}}/>:
+                  
+                  <Avatar sx={{ width: 90, height: 90, fontSize: '24pt' }}>
+                    <Icon icon="fontisto:nav-icon-grid"/>
+                  </Avatar>
+                }
+                <ButtonUploadWrapper sx={{
+                  position: 'absolute',
+                  bottom: (theme)=>theme.spacing(-.5),
+                  right: (theme)=>theme.spacing(-0.5)
+                }}>
+                  <AvatarInput
+                    accept="image/*"
+                    id="icon-button-file"
+                    name="icon-button-file"
+                    type="file"
+                    onChange={handleFileChange}
+                  />
+                  <label htmlFor="icon-button-file">
+                    <IconButton component="span" color="primary">
+                      <Icon icon={action==='edit'? "akar-icons:edit": "material-symbols:add"} />
+                    </IconButton>
+                  </label>
+                </ButtonUploadWrapper>
+              </AvatarWrapper>
+              {
+                isOnValidation && !avatarUrl &&
+                <FormControl error={true} variant="standard" sx={{width: '100%', mt: '0px !important', alignItems: 'center'}}>
+                  <FormHelperText id="avatar-error-text">Avatar file is required</FormHelperText>
+                </FormControl>
+              }
+            </Box>
+            <Box sx={{display: 'flex', justifyContent: 'end'}}>
               <ButtonUploadWrapper>
                 <AvatarInput
-                  accept="image/*"
-                  id="icon-button-file"
-                  name="icon-button-file"
-                  type="file"
-                  onChange={handleFileChange}
-                />
-                <label htmlFor="icon-button-file">
-                  <IconButton component="span" color="primary">
-                    <Icon icon="akar-icons:edit" />
-                  </IconButton>
-                </label>
+                    accept="image/*"
+                    id="banner-file-button"
+                    name="banner-file"
+                    type="file"
+                    onChange={handleFileChange}
+                  />
+                  <label htmlFor="icon-button-file">
+                    <IconButton component="span" color="primary">
+                      <Icon icon={action==='edit'? "akar-icons:edit": "material-symbols:add"} />
+                    </IconButton>
+                  </label>
               </ButtonUploadWrapper>
-            </AvatarWrapper>
-            {
-              isOnValidation && !avatarUrl &&
-              <FormControl error={true} variant="standard" sx={{width: '100%', mt: '0px !important', alignItems: 'center'}}>
-                <FormHelperText id="avatar-error-text">Avatar file is required</FormHelperText>
-              </FormControl>
-            }
+            </Box>
+          </Box>
+          <Stack spacing={6} alignItems='center' p={3}>
             <Grid container direction="column">
               <Grid item>
                 <Typography variant='subtitle1'>Name</Typography>
