@@ -121,7 +121,7 @@ export const getBufferFromFile = (f) => (
     reader.readAsArrayBuffer(f);
     reader.onloadend = async() => {
       try {
-        const fileContent = Buffer.from(reader.result as string)
+        const fileContent = Buffer.from(reader.result as ArrayBuffer)
         resolve(fileContent)
       } catch (error) {
         reject(error);

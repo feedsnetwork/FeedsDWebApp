@@ -15,7 +15,7 @@ import { HiveApi } from 'services/HiveApi'
 import { HiveHelper } from 'services/HiveHelper';
 import { selectMyName } from 'redux/slices/user';
 import { handleSuccessModal, setTargetChannel, setChannelData, selectSelfChannels } from 'redux/slices/channel';
-import { compressImage, decFromHex, decodeBase64, encodeBase64, getBufferFromFile, getWeb3Connect, getWeb3Contract, hexFromDec } from 'utils/common'
+import { compressImage, decFromHex, decodeBase64, encodeBase64, getBufferFromFile, getIpfsUrl, getWeb3Connect, getWeb3Contract, hexFromDec } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
 const AvatarWrapper = styled(Box)(
@@ -86,7 +86,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           setName(doc['display_name'] || doc['name'])
           setDescription(doc['intro'])
           // setTipping(doc['tipping_address'])
-          setAvatarUrl(decodeBase64(doc['avatarSrc'] || ''))
+          setAvatarUrl(getIpfsUrl(doc['avatar']) || decodeBase64(doc['avatarSrc'] || ''))
           setBannerUrl(doc['banner_url'] || '')
         })
     }
@@ -145,7 +145,6 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       name: name,
       intro: description,
       avatar: originChannel['avatar'],
-      avatarPreview: avatarUrl['preview'],
       banner_url: originChannel['banner_url'],
       tippingAddr: walletAddress
     }
@@ -154,15 +153,16 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       banner: {content: '', buffer: null}
     }
     if(avatarUrl && typeof avatarUrl === 'object') {
-      imageData.avatar.buffer = await getBufferFromFile(avatarUrl) as Buffer
+      imageData.avatar.buffer = await getBufferFromFile(avatarUrl)
       const base64content = imageData.avatar.buffer.toString('base64')
       imageData.avatar.content = `data:${avatarUrl.type};base64,${base64content}`
       const imageHivePath = await hiveApi.uploadMediaDataWithString(imageData.avatar.content)
       newChannel['avatar'] = imageHivePath || originChannel['avatar']
       newChannel['avatarContent'] = base64content
+      newChannel['avatarPreview'] = avatarUrl['preview']
     }
     if(bannerUrl && typeof bannerUrl === 'object') {
-      imageData.banner.buffer = await getBufferFromFile(bannerUrl) as Buffer
+      imageData.banner.buffer = await getBufferFromFile(bannerUrl)
       const base64content = imageData.banner.buffer.toString('base64')
       imageData.banner.content = `data:${bannerUrl.type};base64,${base64content}`
       newChannel['banner_url'] = bannerUrl.preview
@@ -269,10 +269,13 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           return LocalDB.upsert(params.channelId, (doc)=>{
             if(doc._id) {
               const updateObj = {}
-              updateObj[params.channelId] = {tokenId: tokenId}
+              updateObj[params.channelId] = {
+                tokenId: tokenId,
+                avatar: metaObj.data.avatar,
+                banner: metaObj.data.banner
+              }
               dispatch(setChannelData(updateObj))
-              doc['tokenId'] = tokenId
-              return doc
+              return {...doc, ...updateObj[params.channelId]}
             }
           })
         })
@@ -347,7 +350,17 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           setOnProgress(false)
         })
   }
-
+  const handleErrorImage = (e) => {
+    const imgSrc = e.target.getAttribute('src')
+    if(!imgSrc.startsWith("http")) {
+      return
+    }
+    fetch(imgSrc)
+      .then(res=>res.text())
+      .then(res=>{
+        e.target.src=res
+      })
+  }
   let avatarSrc = ''
   let bannerSrc = ''
   if(avatarUrl) {
