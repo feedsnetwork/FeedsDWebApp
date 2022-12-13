@@ -1,4 +1,4 @@
-import { FC, useState, useRef, useEffect } from 'react';
+import { FC, useState, useRef, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
@@ -6,22 +6,23 @@ import { Icon } from '@iconify/react';
 import { create } from 'ipfs-http-client'
 import { Box, Typography, Stack, Card, Input, IconButton, Grid, styled, FormControl, FormHelperText, Avatar } from '@mui/material';
 
-import StyledButton from 'components/StyledButton';
-import { ChannelContent } from 'models/channel_content';
-import { handleSuccessModal, setTargetChannel, setChannelData, selectSelfChannels } from 'redux/slices/channel';
-import { selectMyName } from 'redux/slices/user';
-import { HiveApi } from 'services/HiveApi'
-import { compressImage, decFromHex, decodeBase64, encodeBase64, getBufferFromFile, getWeb3Connect, getWeb3Contract, hexFromDec } from 'utils/common'
-import { getLocalDB } from 'utils/db';
 import { ChannelRegContractAddress, ipfsURL } from 'config';
 import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
+import StyledButton from 'components/StyledButton';
+import { ChannelContent } from 'models/channel_content';
+import { SidebarContext } from 'contexts/SidebarContext';
+import { HiveApi } from 'services/HiveApi'
 import { HiveHelper } from 'services/HiveHelper';
+import { selectMyName } from 'redux/slices/user';
+import { handleSuccessModal, setTargetChannel, setChannelData, selectSelfChannels } from 'redux/slices/channel';
+import { compressImage, decFromHex, decodeBase64, encodeBase64, getBufferFromFile, getWeb3Connect, getWeb3Contract, hexFromDec } from 'utils/common'
+import { getLocalDB } from 'utils/db';
 
 const AvatarWrapper = styled(Box)(
   ({ theme }) => `
     position: relative;
     overflow: visible;
-    display: inline-block;
+    display: flex;
 `
 );
 
@@ -52,11 +53,13 @@ interface AddChannelProps {
 const client = create({url: ipfsURL})
 const AddChannel: FC<AddChannelProps> = (props)=>{
   const { action='add' } = props
+  const { walletAddress } = useContext(SidebarContext);
   const params = useParams(); // params.key
   const [avatarUrl, setAvatarUrl] = useState(null);
+  const [bannerUrl, setBannerUrl] = useState(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [tipping, setTipping] = useState('');
+  // const [tipping, setTipping] = useState('');
   const [isOnValidation, setOnValidation] = useState(false);
   const [onProgress, setOnProgress] = useState(false);
   const [originChannel, setOriginChannel] = useState({});
@@ -64,7 +67,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const selfChannelNames = Object.values(selfChannels).filter(c=>c['channel_id']!==params.channelId).map(c=>c['display_name'])
   const nameRef = useRef(null)
   const descriptionRef = useRef(null)
-  const tippingRef = useRef(null)
+  // const tippingRef = useRef(null)
   const feedsDid = localStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
   const hiveApi = new HiveApi()
@@ -82,24 +85,26 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           setOriginChannel(doc)
           setName(doc['display_name'] || doc['name'])
           setDescription(doc['intro'])
-          setTipping(doc['tipping_address'])
+          // setTipping(doc['tipping_address'])
           setAvatarUrl(decodeBase64(doc['avatarSrc'] || ''))
+          setBannerUrl(doc['banner_url'] || '')
         })
     }
     else {
       setName('')
       setDescription('')
-      setTipping('')
+      // setTipping('')
       setAvatarUrl(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.channelId, action])
 
-  const handleFileChange = event => {
+  const handleFileChange = (event, type='avatar') => {
+    const setUrlFunc = type==='avatar'? setAvatarUrl: setBannerUrl
     const fileObj = event.target.files && event.target.files[0];
     if (fileObj) {
       const tempFileObj = Object.assign(fileObj, {preview: URL.createObjectURL(fileObj)})
-      setAvatarUrl(tempFileObj);
+      setUrlFunc(tempFileObj);
     }
   };
 
@@ -130,10 +135,10 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       descriptionRef.current.focus()
       return
     }
-    if(!tipping) {
-      tippingRef.current.focus()
-      return
-    }
+    // if(!tipping) {
+    //   tippingRef.current.focus()
+    //   return
+    // }
 
     setOnProgress(true)
     const newChannel = {
@@ -141,24 +146,33 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
       intro: description,
       avatar: originChannel['avatar'],
       avatarPreview: avatarUrl['preview'],
-      tippingAddr: tippingRef.current.value
+      banner_url: originChannel['banner_url'],
+      tippingAddr: walletAddress
     }
-    let avatarContent = ''
-    let imageBuffer = null
+    const imageData = {
+      avatar: {content: '', buffer: null},
+      banner: {content: '', buffer: null}
+    }
     if(avatarUrl && typeof avatarUrl === 'object') {
-      imageBuffer = await getBufferFromFile(avatarUrl) as Buffer
-      const base64content = imageBuffer.toString('base64')
-      avatarContent = `data:${avatarUrl.type};base64,${base64content}`
-      const imageHivePath = await hiveApi.uploadMediaDataWithString(avatarContent)
+      imageData.avatar.buffer = await getBufferFromFile(avatarUrl) as Buffer
+      const base64content = imageData.avatar.buffer.toString('base64')
+      imageData.avatar.content = `data:${avatarUrl.type};base64,${base64content}`
+      const imageHivePath = await hiveApi.uploadMediaDataWithString(imageData.avatar.content)
       newChannel['avatar'] = imageHivePath || originChannel['avatar']
       newChannel['avatarContent'] = base64content
     }
-    if(action === 'edit')
+    if(bannerUrl && typeof bannerUrl === 'object') {
+      imageData.banner.buffer = await getBufferFromFile(bannerUrl) as Buffer
+      const base64content = imageData.banner.buffer.toString('base64')
+      imageData.banner.content = `data:${bannerUrl.type};base64,${base64content}`
+      newChannel['banner_url'] = bannerUrl.preview
+    }
+    if(action === 'edit') {
       hiveApi.updateChannel(originChannel['channel_id'], newChannel.name, newChannel.intro, newChannel['avatar'], originChannel['type'], originChannel['memo'], newChannel.tippingAddr, originChannel['nft'])
         .then(_=>{
           if(newChannel['avatar'] === originChannel['avatar'])
             return ''
-          return compressImage(avatarContent)
+          return compressImage(imageData.avatar.content)
         })
         .then(newAvatarSrc=>(
           LocalDB.upsert(params.channelId, (doc)=>{
@@ -176,16 +190,46 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
             return { ...doc, ...updateObj[params.channelId] }
           })
         ))
+        .then(_=>{
+          if(newChannel['banner_url'] === originChannel['banner_url'])
+            return ''
+          return compressImage(imageData.banner.content, true)
+        })
+        .then(newBannerSrc=>{
+          if(newBannerSrc) {
+            LocalDB.upsert(newChannel.banner_url, (doc)=>{
+              if(!doc._id) {
+                  return {...doc, source: encodeBase64(imageData.banner.content), thumbnail: encodeBase64(newBannerSrc), table_type: 'image' }
+              }
+              return false
+            })
+            return LocalDB.upsert(params.channelId, (doc)=>{
+              const updateObj = {}
+              updateObj[params.channelId] = {
+                banner_url: newChannel.banner_url,
+              }
+              dispatch(setChannelData(updateObj))
+              return { ...doc, ...updateObj[params.channelId] }
+            })
+          }
+          return null
+        })
         .then(async _=>{
           if(!originChannel['is_public'])
             return
           const metaObj = new ChannelContent()
-          if(imageBuffer) {
-            const avatarAdded = await client.add(imageBuffer)
+          if(imageData.avatar.buffer) {
+            const avatarAdded = await client.add(imageData.avatar.buffer)
             metaObj.data.avatar = `feeds:image:${avatarAdded.path}`
           }
           else
             metaObj.data.avatar = originChannel['avatar']
+          if(imageData.banner.buffer) {
+            const bannerAdded = await client.add(imageData.banner.buffer)
+            metaObj.data.banner = `feeds:image:${bannerAdded.path}`
+          }
+          else
+            metaObj.data.banner = originChannel['banner']
           metaObj.name = newChannel.name
           metaObj.description = newChannel.intro
           metaObj.creator['did'] = myDID
@@ -240,6 +284,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           enqueueSnackbar('Edit channel error', { variant: 'error' });
           setOnProgress(false)
         })
+    }
     else
       hiveApi.createChannel(newChannel.name, newChannel.intro, newChannel['avatarPath'], newChannel.tippingAddr)
         .then(async result=>{
@@ -257,7 +302,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           setOnProgress(false)
           handleSuccessModal(true)(dispatch)
           dispatch(setTargetChannel(newChannel))
-          const zipAvatarContent = await compressImage(avatarContent)
+          const zipAvatarContent = await compressImage(imageData.avatar.content)
           hiveApi.queryChannelInfo(myDID, result.channelId)
             .then(res=>{
               if(res['find_message'] && res['find_message']['items'].length) {
@@ -292,11 +337,18 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   }
 
   let avatarSrc = ''
+  let bannerSrc = ''
   if(avatarUrl) {
     if(typeof avatarUrl === 'object')
       avatarSrc = avatarUrl.preview
     else avatarSrc = avatarUrl
   }
+  if(bannerUrl) {
+    if(typeof bannerUrl === 'object')
+      bannerSrc = bannerUrl.preview
+    else bannerSrc = bannerUrl
+  }
+  const bannerBg = bannerSrc ? `url(${bannerSrc}) no-repeat center` : "linear-gradient(180deg, #000000 0%, #A067FF 300.51%)"
   return (
     <Box p={4}>
       {
@@ -314,7 +366,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
         </Stack>:
 
         <Card>
-          <Box sx={{px: 3, py: 2, background: 'linear-gradient(180deg, #000000 0%, #A067FF 300.51%)'}}>
+          <Box sx={{px: 3, py: 2, background: bannerBg, backgroundSize: 'cover'}}>
             <Box sx={{display: 'flex', justifyContent: 'center', pt: 3, pb: 1}}>
               <AvatarWrapper>
                 {
@@ -344,13 +396,13 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                   </label>
                 </ButtonUploadWrapper>
               </AvatarWrapper>
-              {
-                isOnValidation && !avatarUrl &&
-                <FormControl error={true} variant="standard" sx={{width: '100%', mt: '0px !important', alignItems: 'center'}}>
-                  <FormHelperText id="avatar-error-text">Avatar file is required</FormHelperText>
-                </FormControl>
-              }
             </Box>
+            {
+              isOnValidation && !avatarUrl &&
+              <FormControl error={true} variant="standard" sx={{width: '100%', mt: '0px !important', alignItems: 'center'}}>
+                <FormHelperText id="avatar-error-text">Avatar file is required</FormHelperText>
+              </FormControl>
+            }
             <Box sx={{display: 'flex', justifyContent: 'end'}}>
               <ButtonUploadWrapper>
                 <AvatarInput
@@ -358,9 +410,9 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                     id="banner-file-button"
                     name="banner-file"
                     type="file"
-                    onChange={handleFileChange}
+                    onChange={(e)=>{handleFileChange(e, 'banner')}}
                   />
-                  <label htmlFor="icon-button-file">
+                  <label htmlFor="banner-file-button">
                     <IconButton component="span" color="primary">
                       <Icon icon={action==='edit'? "akar-icons:edit": "material-symbols:add"} />
                     </IconButton>
@@ -397,7 +449,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                   <FormHelperText id="description-error-text" hidden={!isOnValidation||(isOnValidation&&description.length>0)}>Description is required</FormHelperText>
                 </FormControl>
               </Grid>
-              <Grid item>
+              {/* <Grid item>
                 <Typography variant='subtitle1'>Tipping Address</Typography>
                 <FormControl error={isOnValidation&&!tipping.length} variant="standard" sx={{width: '100%'}}>
                   <Input 
@@ -409,7 +461,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                   />
                   <FormHelperText id="description-error-text" hidden={!isOnValidation||(isOnValidation&&tipping.length>0)}>Tipping Address is required</FormHelperText>
                 </FormControl>
-              </Grid>
+              </Grid> */}
             </Grid>
             <Box width={200}>
               <StyledButton fullWidth loading={onProgress} needLoading={true} onClick={saveAction}>{action!=='edit'? 'Create': 'Save'}</StyledButton>
