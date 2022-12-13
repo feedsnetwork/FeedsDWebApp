@@ -207,7 +207,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           if(newBannerSrc) {
             LocalDB.upsert(newChannel.banner_url, (doc)=>{
               if(!doc._id) {
-                  return {...doc, source: encodeBase64(imageData.banner.content), thumbnail: encodeBase64(newBannerSrc), table_type: 'image' }
+                  return {...doc, source: imageData.banner.buffer, thumbnail: encodeBase64(newBannerSrc), table_type: 'image' }
               }
               return false
             })
@@ -338,7 +338,7 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                 if(zipBannerContent) {
                   LocalDB.upsert(newChannel.banner_url, (doc)=>{
                     if(!doc._id) {
-                        return {...doc, source: encodeBase64(imageData.banner.content), thumbnail: encodeBase64(zipBannerContent), table_type: 'image' }
+                        return {...doc, source: imageData.banner.buffer, thumbnail: encodeBase64(zipBannerContent), table_type: 'image' }
                     }
                     return false
                   })

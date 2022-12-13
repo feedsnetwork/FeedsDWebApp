@@ -12,7 +12,7 @@ import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ipfsURL, ChannelRegContractAddress } from 'config'
 import { selectPublishModalState, selectTargetChannel, handlePublishModal, setChannelData } from 'redux/slices/channel'
 import { HiveHelper } from 'services/HiveHelper';
-import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec } from 'utils/common'
+import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec, decodeBase64 } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
 const client = create({url: ipfsURL})
@@ -21,6 +21,7 @@ function PublishChannel() {
   const isOpen = useSelector(selectPublishModalState)
   const channel = useSelector(selectTargetChannel)
   const [onProgress, setOnProgress] = React.useState(false);
+  const [bannerBuf, setBannerBuf] = React.useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const feedsDid = localStorage.getItem('FEEDS_DID')
   const userDid = `did:elastos:${feedsDid}`
@@ -28,10 +29,14 @@ function PublishChannel() {
   const hiveHelper = new HiveHelper()
 
   React.useEffect(()=>{
-    if(!isOpen) {
-      setOnProgress(false)
+    if(isOpen) {
+      if(channel['banner_url'])
+        LocalDB.get(channel['banner_url'])
+          .then(doc=>setBannerBuf(doc['source']))
     }
-  }, [isOpen])
+    else
+      setOnProgress(false)
+  }, [isOpen, channel])
 
   const promiseReceipt = (method) => (
     new Promise((resolve, reject) => {
@@ -58,6 +63,10 @@ function PublishChannel() {
         metaObj.data.cname = channel.display_name || channel.name
         metaObj.data.avatar = `feeds:image:${avatarAdded.path}`
         metaObj.data.ownerDid = userDid
+        if(bannerBuf) {
+          const bannerAdded = await client.add(bannerBuf)
+          metaObj.data.banner = `feeds:image:${bannerAdded.path}`
+        }
         const channelID = hash(`${userDid}${channel.name}`)
         const channelEntry = `feeds://v3/${userDid}/${channelID}`
         metaObj.data.channelEntry = channelEntry
@@ -106,20 +115,21 @@ function PublishChannel() {
           table_type: 'channel',
           tokenId
         }
+        const updateObj = {}
+        updateObj[channelID] = {
+          is_public: true,
+          tokenId,
+          banner: metaObj?.data?.banner
+        }
         LocalDB.upsert(channelID, (doc)=>{
           if(doc._id) {
-            if(!doc['is_public']){
-                doc['is_public'] = true
-                doc['tokenId'] = tokenId
-                return doc
-            }
+            if(!doc['is_public'])
+                return {...doc, ...updateObj[channelID]}
             return false
           }
           return {...doc, ...channelDoc}
         })
           .then(_=>{
-            const updateObj = {}
-            updateObj[channelID] = {is_public: true}
             dispatch(setChannelData(updateObj))
           })
         enqueueSnackbar('Publish channel success', { variant: 'success' });
