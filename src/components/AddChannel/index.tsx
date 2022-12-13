@@ -303,6 +303,9 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           handleSuccessModal(true)(dispatch)
           dispatch(setTargetChannel(newChannel))
           const zipAvatarContent = await compressImage(imageData.avatar.content)
+          let zipBannerContent = null
+          if(newChannel['banner_url'])
+            zipBannerContent = await compressImage(imageData.banner.content)
           hiveApi.queryChannelInfo(myDID, result.channelId)
             .then(res=>{
               if(res['find_message'] && res['find_message']['items'].length) {
@@ -316,13 +319,22 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
                   time_range: [], 
                   table_type: 'channel',
                   avatarSrc: encodeBase64(zipAvatarContent),
+                  banner_url: newChannel['banner_url'] || '',
                   owner_name: myName || "",
                   subscribers: [newSubscriber],
                   display_name: newChannel.name
                 }
-                const subscribersObj = {}
-                subscribersObj[newChannelDoc.channel_id] = newChannelDoc
-                dispatch(setChannelData(subscribersObj))
+                if(zipBannerContent) {
+                  LocalDB.upsert(newChannel.banner_url, (doc)=>{
+                    if(!doc._id) {
+                        return {...doc, source: encodeBase64(imageData.banner.content), thumbnail: encodeBase64(zipBannerContent), table_type: 'image' }
+                    }
+                    return false
+                  })
+                }
+                const channelObj = {}
+                channelObj[newChannelDoc.channel_id] = newChannelDoc
+                dispatch(setChannelData(channelObj))
                 return LocalDB.put(newChannelDoc)
               }
             })
