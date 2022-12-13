@@ -8,7 +8,7 @@ import { useSnackbar } from 'notistack';
 import IconInCircle from 'components/IconInCircle'
 import ChannelName from 'components/ChannelName';
 import NoRingAvatar from 'components/NoRingAvatar';
-import { handlePublishModal, handleUnpublishModal, setTargetChannel } from 'redux/slices/channel';
+import { handlePublishModal, handleUnpublishModal, setFocusedChannelId, setTargetChannel, setVisitedChannelId } from 'redux/slices/channel';
 import { getChannelShortUrl, copy2clipboard, getImageSource } from 'utils/common'
 
 const ChannelListItem = (props) => {
@@ -57,8 +57,22 @@ const ChannelListItem = (props) => {
     setOpenPopup(null);
   };
 
+  const link2channel = ()=>{
+    if(channel['is_self']) {
+      dispatch(setFocusedChannelId(channel['channel_id']))
+      navigate('/channel')
+    }
+    else if(channel['is_subscribed']) {
+      dispatch(setVisitedChannelId(channel['channel_id']))
+      navigate('/subscription/channel');
+    }
+    else {
+      dispatch(setVisitedChannelId(channel['channel_id']))
+      navigate('/explore/channel');
+    }
+  }
   const subscriberCount = channel['subscribers']?.length || 0
-  return <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
+  return <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2, cursor: 'pointer'}} onClick={link2channel}>
     <Stack direction="row" spacing={2} alignItems="center">
       <NoRingAvatar alt={name} src={avatarImg}/>
       <Box flex={1}>
