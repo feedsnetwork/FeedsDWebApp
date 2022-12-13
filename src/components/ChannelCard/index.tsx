@@ -7,7 +7,7 @@ import { Box, Typography, Stack } from '@mui/material';
 import PaperRecord from 'components/PaperRecord'
 import ChannelName from 'components/ChannelName';
 import { setVisitedChannelId } from 'redux/slices/channel';
-import { getImageSource } from 'utils/common';
+import { getImageSource, getIpfsUrl } from 'utils/common';
 // ----------------------------------------------------------------------
 
 const TypographyStyle = styled(Typography)(({ theme }) => ({
@@ -29,8 +29,9 @@ const AvatarBoxStyle = styled(Box)(({ theme }) => ({
 })) as any;
 
 const ChannelImgBox = (props) => {
-  const { name, bannerSrc=null, avatarSrc } = props;
-  const background = bannerSrc ? `url(${bannerSrc}) no-repeat center` : "linear-gradient(180deg, #000000 0%, #A067FF 300.51%)"
+  const { name, banner='', avatarSrc } = props;
+  const bannerUrl = getIpfsUrl(banner)
+  const background = bannerUrl ? `url(${bannerUrl}) no-repeat center` : "linear-gradient(180deg, #000000 0%, #A067FF 300.51%)"
   const avatarImg = getImageSource(avatarSrc)
   
   const handleErrorImage = (e) => {

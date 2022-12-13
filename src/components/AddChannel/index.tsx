@@ -79,6 +79,8 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(()=>{
+    setOnValidation(false)
+    setBannerUrl(null)
     if(action === 'edit') {
       LocalDB.get(params.channelId)
         .then(doc=>{
@@ -87,7 +89,13 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           setDescription(doc['intro'])
           // setTipping(doc['tipping_address'])
           setAvatarUrl(getIpfsUrl(doc['avatar']) || decodeBase64(doc['avatarSrc'] || ''))
-          setBannerUrl(doc['banner_url'] || '')
+          if(doc['banner_url'])
+            return LocalDB.get(doc['banner_url'])
+          return null
+        })
+        .then(bannerDoc=>{
+          if(bannerDoc)
+            setBannerUrl(decodeBase64(bannerDoc['thumbnail']))
         })
     }
     else {
@@ -349,17 +357,6 @@ const AddChannel: FC<AddChannelProps> = (props)=>{
           enqueueSnackbar('Add channel error', { variant: 'error' });
           setOnProgress(false)
         })
-  }
-  const handleErrorImage = (e) => {
-    const imgSrc = e.target.getAttribute('src')
-    if(!imgSrc.startsWith("http")) {
-      return
-    }
-    fetch(imgSrc)
-      .then(res=>res.text())
-      .then(res=>{
-        e.target.src=res
-      })
   }
   let avatarSrc = ''
   let bannerSrc = ''

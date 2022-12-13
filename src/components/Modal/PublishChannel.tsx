@@ -102,7 +102,7 @@ function PublishChannel() {
           is_public: true,
           time_range: [], 
           avatarSrc: getIpfsUrl(metaObj?.data?.avatar),
-          bannerSrc: getIpfsUrl(metaObj?.data?.banner),
+          banner: metaObj?.data?.banner,
           table_type: 'channel',
           tokenId
         }
