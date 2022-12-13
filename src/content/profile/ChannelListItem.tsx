@@ -20,6 +20,7 @@ const ChannelListItem = (props) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const openPopupMenu = (event) => {
+    event.stopPropagation()
     setOpenPopup(event.currentTarget);
   };
 

@@ -3,6 +3,7 @@ import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux'
 import { Icon } from '@iconify/react';
 // import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
+import { useSnackbar } from 'notistack';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
 import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, Typography, Grid, IconButton, Tooltip } from '@mui/material';
 
@@ -20,7 +21,7 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { selectFocusedChannelId, selectVisitedChannelId, selectChannelById, selectSelfChannelsCount, selectSubscribedChannelsCount } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { selectQueryPublicStep } from 'redux/slices/proc';
-import { reduceHexAddress, reduceDIDstring, getImageSource } from 'utils/common'
+import { reduceHexAddress, reduceDIDstring, getImageSource, getChannelShortUrl, copy2clipboard } from 'utils/common'
 import { getLocalDB } from 'utils/db'
 
 const SidebarWrapper = styled(Box)(
@@ -47,6 +48,7 @@ const ChannelAbout = (props) => {
   const totalPageOfSubscription = Math.ceil((subscribers.length || 0)/10) || 1
   const [currentPageOfSubscription, setCurrentPageOfSubscription] = React.useState(1);
   const editable = this_channel['is_self']
+  const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate()
 
   React.useEffect(()=>{
@@ -60,14 +62,22 @@ const ChannelAbout = (props) => {
   const handleShowMore = () => {
     setCurrentPageOfSubscription(currentPageOfSubscription+1)
   }
-
+  const handleShareChannel = () => {
+    getChannelShortUrl(this_channel)
+      .then(shortUrl=>{
+        copy2clipboard(shortUrl)
+          .then(_=>{
+            enqueueSnackbar('Copied to clipboard', { variant: 'success' });
+          })
+      })
+  }
   return <>
     <Card>
       <CardContent>
         <Stack alignItems='end'>
           <Stack direction='row' spacing={1}>
             <Box m='auto'>
-              <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small'><ShareIcon fontSize='small'/></IconButton>
+              <IconButton sx={{borderRadius: '50%', backgroundColor: (theme)=>theme.colors.primary.main}} size='small' onClick={handleShareChannel}><ShareIcon fontSize='small'/></IconButton>
             </Box>
             {
               editable &&
