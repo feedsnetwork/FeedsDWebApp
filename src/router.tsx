@@ -50,6 +50,9 @@ const Subscription = Loader(
 const SubscriptionChannel = Loader(
   lazy(() => import('content/subscription/channel'))
 );
+const SubscriptionList = Loader(
+  lazy(() => import('content/subscription/list'))
+);
 const AccountInfo = Loader(
   lazy(() => import('content/setting/profile'))
 );
@@ -203,6 +206,10 @@ const routes: RouteObject[] = [
       {
         path: 'channel',
         element: <SubscriptionChannel/>
+      },
+      {
+        path: 'list/:userDid',
+        element: <SubscriptionList/>
       }
     ]
   },

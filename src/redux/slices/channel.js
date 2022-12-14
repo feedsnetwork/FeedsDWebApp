@@ -168,6 +168,9 @@ export function selectSubscribedChannels(state) {
 export function selectSubscribedChannelsCount(state) {
   return Object.values(state.channel.channels).filter(channel=>channel['is_subscribed']).length
 }
+export const selectSubscriptionByUserDid = (userDid) => (state) => {
+  return Object.values(state.channel.channels).filter(channel=>(channel['subscribers'] && channel['subscribers'].some(subscriber=>subscriber['user_did']===userDid)))
+}
 export function selectPublicChannels(state) {
   return getChannelsByType(state.channel.channels, 'public')
 }

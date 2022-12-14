@@ -10,9 +10,7 @@ function Subscription() {
         isEmpty?
         <EmptyView type='subscription'/>:
 
-        <Container sx={{ mt: 3 }} maxWidth="lg">
-          
-        </Container>
+        <Container sx={{ mt: 3 }} maxWidth="lg"></Container>
       }
     </>
   );
