@@ -40,7 +40,7 @@ function Hero() {
   const [authProgress, setAuthProgress] = React.useState(0)
   const [activatingConnector, setActivatingConnector] = React.useState(null);
   const [isConnected2Hive, setIsConnected2Hive] = React.useState(false);
-  const { setWalletAddress } = React.useContext(SidebarContext);
+  const { setWalletAddress, setNeedQueryChannel } = React.useContext(SidebarContext);
   const hiveApi = new HiveApi()
   const dispatch = useDispatch()
   const propsInProc = { dispatch }
@@ -62,6 +62,7 @@ function Hero() {
 
   React.useEffect(()=>{
     if(sessionLinkFlag === '1') {
+      setNeedQueryChannel(true)
       initializeWalletConnection()
       setVerifyState(2)
     }
@@ -80,6 +81,7 @@ function Hero() {
         }
       }, 500);
 
+      setNeedQueryChannel(false)
       Object.keys(queryProc).forEach(type=>{
         queryProc[type]()
           .then(_=>setAuthProgress(prev=>prev<25? 25: prev+25))

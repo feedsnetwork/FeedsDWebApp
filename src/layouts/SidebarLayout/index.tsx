@@ -1,4 +1,4 @@
-import { FC, ReactNode, useEffect, useContext } from 'react';
+import { FC, ReactNode, useEffect, useContext, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, useLocation } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
@@ -34,7 +34,7 @@ interface SidebarLayoutProps {
 }
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
-  const { setWalletAddress } = useContext(SidebarContext);
+  const { needQueryChannel, setWalletAddress } = useContext(SidebarContext);
   const sessionLinkFlag = localStorage.getItem('FEEDS_LINK');
   const dispatch = useDispatch()
   const focusedChannelId = useSelector(selectFocusedChannelId)
@@ -49,7 +49,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const mainQueryAction = () => {
+  const mainQueryAction = useCallback(() => {
     LocalDB.find({
       selector: {
         table_type: 'channel',
@@ -80,10 +80,14 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
         syncPassedStep(true)
       })
     Object.keys(queryProc).forEach(type=>{
-      queryProc[type]()
-        .then(_=>proc.streamByChannelType(type))
+      if(needQueryChannel)
+        queryProc[type]().then(_=>proc.streamByChannelType(type))
+      else
+        proc.streamByChannelType(type)
     })
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [needQueryChannel])
+
   const syncPassedStep = (isPublic=false) => {
     let stepId = `query${isPublic? '-public': ''}-step`
     const stepFilterMethod = (item, currentStep, isPublic) => {
