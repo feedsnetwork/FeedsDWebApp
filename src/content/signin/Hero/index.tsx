@@ -1,5 +1,6 @@
 
 import React from 'react'
+import { useDispatch } from 'react-redux';
 import { Link as RouterLink } from 'react-router-dom';
 import FadeIn from 'react-fade-in';
 import { DID } from '@elastosfoundation/elastos-connectivity-sdk-js';
@@ -11,11 +12,12 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 
 import StyledButton from 'components/StyledButton';
 import { essentialsConnector, initConnectivitySDK, isUsingEssentialsConnector } from '../EssentialConnectivity';
-import { isInAppBrowser } from 'utils/common'
 import { getDidResolverUrl } from 'config';
 // import { useGlobalState } from 'global/store'
 import { HiveApi } from 'services/HiveApi'
 import { SidebarContext } from 'contexts/SidebarContext';
+import { isInAppBrowser } from 'utils/common'
+import { mainproc } from 'utils/mainproc';
 
 const LinearProgressWrapper = styled(LinearProgress)(
   ({ theme }) => `
@@ -37,8 +39,13 @@ function Hero() {
   const [verifyState, setVerifyState] = React.useState(0)
   const [authProgress, setAuthProgress] = React.useState(0)
   const [activatingConnector, setActivatingConnector] = React.useState(null);
+  const [isConnected2Hive, setIsConnected2Hive] = React.useState(false);
   const { setWalletAddress } = React.useContext(SidebarContext);
   const hiveApi = new HiveApi()
+  const dispatch = useDispatch()
+  const propsInProc = { dispatch }
+  const proc = mainproc(propsInProc)
+  const queryProc = proc.queryProc
   let sessionLinkFlag = localStorage.getItem('FEEDS_LINK');
   
   const initializeWalletConnection = React.useCallback(async () => {
@@ -63,12 +70,28 @@ function Hero() {
 
   React.useEffect(()=>{
     if(verifyState === 1) {
-      setTimeout(()=>{
-        setAuthProgress(100)
-        setTimeout(()=>{ setVerifyState(2) }, 500)
-      }, 1000)
+      setAuthProgress(5)
+      const checkApproval = setInterval(() => {
+        if(sessionStorage.getItem('FEEDS_DID_PREV') === localStorage.getItem('FEEDS_DID')){
+          clearInterval(checkApproval)
+          setIsConnected2Hive(true)
+          setAuthProgress(prev=>prev<25? 25: prev+25)
+          return
+        }
+      }, 500);
+
+      Object.keys(queryProc).forEach(type=>{
+        queryProc[type]()
+          .then(_=>setAuthProgress(prev=>prev<25? 25: prev+25))
+      })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verifyState])
+
+  React.useEffect(()=>{
+    if(authProgress===100)
+      setTimeout(()=>{ setVerifyState(2) }, 1000)
+  }, [authProgress])
 
   const handleSignin = async (e) => {
     if (isUsingEssentialsConnector() && essentialsConnector.hasWalletConnectSession()) {
@@ -216,7 +239,11 @@ function Hero() {
               Authorization
             </Typography>
             <Typography variant='body2' sx={{opacity: .8}}>
-              Connecting to Hive node...
+              {
+                !isConnected2Hive?
+                "Connecting to Hive node...":
+                "Importing channels..."
+              }
             </Typography>
             <Box component='img' src='hive.svg' width={{xs: 80, md: 100, lg: 120}} height={{xs: 90, md: 110, lg: 130}} py={1} draggable={false}/>
             <Box width='100%'>

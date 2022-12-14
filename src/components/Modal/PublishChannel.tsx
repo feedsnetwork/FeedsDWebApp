@@ -12,7 +12,7 @@ import { CHANNEL_REG_CONTRACT_ABI } from 'abi/ChannelRegistry';
 import { ipfsURL, ChannelRegContractAddress } from 'config'
 import { selectPublishModalState, selectTargetChannel, handlePublishModal, setChannelData } from 'redux/slices/channel'
 import { HiveHelper } from 'services/HiveHelper';
-import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec, decodeBase64 } from 'utils/common'
+import { getWeb3Contract, getWeb3Connect, decFromHex, hash, getIpfsUrl, hexFromDec } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
 const client = create({url: ipfsURL})
@@ -36,6 +36,7 @@ function PublishChannel() {
     }
     else
       setOnProgress(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, channel])
 
   const promiseReceipt = (method) => (

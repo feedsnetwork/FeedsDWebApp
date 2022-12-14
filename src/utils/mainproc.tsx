@@ -163,6 +163,8 @@ export const mainproc = (props) => {
                                     display_name: channel['display_name'] || channel['name'],
                                     table_type: 'channel'
                                 }
+                                if(getIpfsUrl(channel['avatar']))
+                                    selfChannelUpdateObj[channel.channel_id]['avatarSrc'] = getIpfsUrl(channel['avatar'])
                                 return {...doc, ...selfChannelUpdateObj[channel.channel_id]}
                             })
                         })
@@ -273,6 +275,8 @@ export const mainproc = (props) => {
                                             table_type: 'channel',
                                             display_name: channelInfo['display_name'] || channelInfo['name']
                                         }
+                                        if(getIpfsUrl(channelInfo['avatar']))
+                                            subscribedChannelUpdateObj[channel.channel_id]['avatarSrc'] = getIpfsUrl(channelInfo['avatar'])
                                         return subscribedChannelUpdateObj[channel.channel_id]
                                     })
                                 } catch(e) {
