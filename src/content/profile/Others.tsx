@@ -9,7 +9,7 @@ import { EmptyViewInProfile } from 'components/EmptyView'
 import PostCard from 'components/PostCard';
 import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
-import { reduceDIDstring, decodeBase64, getShortDIDstring } from 'utils/common'
+import { reduceDIDstring, getShortDIDstring, getImageSource } from 'utils/common'
 import { selectUserInfoByDID } from 'redux/slices/user';
 import { getLocalDB } from 'utils/db';
 import { selectQueryStep, selectQueryStepStatus } from 'redux/slices/proc';
@@ -22,15 +22,27 @@ function OthersProfile() {
   const currentLikeStep = useSelector(selectQueryStep('post_like'))
   const subscriptionCount = useSelector(selectSubscriptionCountByUserDid(user_did))
   const [tabValue, setTabValue] = React.useState(0);
+  const [avatarSrc, setAvatarSrc] = React.useState('');
   const [channels, setChannels] = React.useState([])
   const [likedPosts, setLikedPosts] = React.useState([])
   const this_user = useSelector(selectUserInfoByDID(user_did)) || {}
-  const avatarSrc = decodeBase64(this_user['avatarSrc'] || "")
+  const userAvatarUrl = this_user['avatar_url']
   const LocalDB = getLocalDB()
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+
+  React.useEffect(()=>{
+    if(userAvatarUrl) {
+      LocalDB.get(userAvatarUrl)
+        .then(doc=>getImageSource(doc['source']))
+        .then(setAvatarSrc)
+    }
+    else
+        setAvatarSrc('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userAvatarUrl])
 
   React.useEffect(()=>{
     if(isPassedChannelStep) {

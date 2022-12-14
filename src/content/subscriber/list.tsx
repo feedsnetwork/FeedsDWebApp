@@ -8,7 +8,7 @@ import { selectChannelById } from 'redux/slices/channel';
 const SubscriberList = ()=>{
   const params = useParams();
   const channelInfo = useSelector(selectChannelById(params?.channelId)) || {}
-  const subscribers = channelInfo['subsribers'] || []
+  const subscribers = channelInfo['subscribers'] || []
   return (
     <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
       <Container sx={{ mt: 3, flexGrow: 1, overFlow: 'auto', px: { xs: 3, sm: 6} }} maxWidth="lg">
