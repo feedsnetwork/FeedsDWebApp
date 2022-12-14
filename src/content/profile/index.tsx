@@ -1,6 +1,7 @@
 import React from 'react';
+import { NavLink as RouterLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Card, Container, Box, Typography, Stack, Tabs, Tab } from '@mui/material';
+import { Card, Container, Box, Typography, Stack, Tabs, Tab, Link } from '@mui/material';
 // import ShareIcon from '@mui/icons-material/ShareOutlined';
 
 import StyledAvatar from 'components/StyledAvatar'
@@ -13,7 +14,7 @@ import PostSkeleton from 'components/Skeleton/PostSkeleton';
 import { reduceDIDstring, getImageSource } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 import { selectMyInfo } from 'redux/slices/user';
-import { selectSelfChannels, selectSubscribedChannelsCount } from 'redux/slices/channel';
+import { selectSelfChannels, selectSubscriptionCountByUserDid } from 'redux/slices/channel';
 import { selectQueryStepStatus } from 'redux/slices/proc';
 
 function Profile() {
@@ -23,10 +24,11 @@ function Profile() {
   const [likedPosts, setLikedPosts] = React.useState([])
   const [isLoadingLike, setIsLoadingLike] = React.useState(true)
   const feedsDid = localStorage.getItem('FEEDS_DID')
+  const myDID = `did:elastos:${feedsDid}`
   const myInfo = useSelector(selectMyInfo)
   const myAvatarUrl = myInfo['avatar_url']
   const selfChannels = Object.values(useSelector(selectSelfChannels))
-  const subscriptionCount = useSelector(selectSubscribedChannelsCount)
+  const subscriptionCount = useSelector(selectSubscriptionCountByUserDid(myDID))
   const isSelfChannelLoaded = useSelector(selectQueryStepStatus('self_channel'))
   const LocalDB = getLocalDB()
 
@@ -86,7 +88,9 @@ function Profile() {
             <Typography variant="body1">{myInfo['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
-              <Typography variant="body1"><strong>{subscriptionCount}</strong> Subscriptions</Typography>
+              <Link component={RouterLink} to={`/subscription/list/${myDID}`} sx={{color:'inherit'}}>
+                <Typography variant="body1"><strong>{subscriptionCount}</strong> Subscriptions</Typography>
+              </Link>
             </Stack>
             {/* <Stack direction='row' spacing={1}>
               <Box component="img" src='/pasar-logo.svg' width={30}/>

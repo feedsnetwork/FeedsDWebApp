@@ -19,7 +19,8 @@ const SubscribeButton = (props) => {
   const feedsDid = localStorage.getItem('FEEDS_DID')
   const myDID = `did:elastos:${feedsDid}`
 
-  const handleSubscription = () => {
+  const handleSubscription = (e) => {
+    e.stopPropagation()
     setIsDoingSubscription(true)
     const currentTime = new Date().getTime()
     const channel_id = channel['channel_id']

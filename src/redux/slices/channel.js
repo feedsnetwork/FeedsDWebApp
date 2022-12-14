@@ -165,11 +165,11 @@ export function selectSelfChannelsCount(state) {
 export function selectSubscribedChannels(state) {
   return getChannelsByType(state.channel.channels, 'subscribed')
 }
-export function selectSubscribedChannelsCount(state) {
-  return Object.values(state.channel.channels).filter(channel=>channel['is_subscribed']).length
-}
 export const selectSubscriptionByUserDid = (userDid) => (state) => {
   return Object.values(state.channel.channels).filter(channel=>(channel['subscribers'] && channel['subscribers'].some(subscriber=>subscriber['user_did']===userDid)))
+}
+export const selectSubscriptionCountByUserDid = (userDid) => (state) => {
+  return Object.values(state.channel.channels).filter(channel=>(channel['subscribers'] && channel['subscribers'].some(subscriber=>subscriber['user_did']===userDid))).length
 }
 export function selectPublicChannels(state) {
   return getChannelsByType(state.channel.channels, 'public')

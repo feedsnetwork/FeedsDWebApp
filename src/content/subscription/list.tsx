@@ -4,7 +4,7 @@ import { useParams } from 'react-router';
 import { Box, Container, Stack } from '@mui/material';
 
 import { EmptyView } from 'components/EmptyView'
-import ChannelListCard from './ChannelListItem';
+import ChannelListCard from './ChannelListCard';
 import { selectSubscriptionByUserDid } from 'redux/slices/channel';
 
 const SubscriptionList = ()=>{
@@ -18,7 +18,7 @@ const SubscriptionList = ()=>{
 
         <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
           <Container sx={{ mt: 3, flexGrow: 1, overFlow: 'auto', px: { xs: 3, sm: 6} }} maxWidth="lg">
-            <Stack spacing={1}>
+            <Stack spacing={3} pb={3}>
               {
                 subscribedChannels.map((channel, _i)=><ChannelListCard channel={channel} key={channel['channel_id']}/>)
               }

@@ -18,7 +18,7 @@ import NoRingAvatar from 'components/NoRingAvatar';
 import SubscriberListItem from './SubscriberListItem';
 import PublicChannelItem from './PublicChannelItem';
 import { SidebarContext } from 'contexts/SidebarContext';
-import { selectFocusedChannelId, selectVisitedChannelId, selectChannelById, selectSelfChannelsCount, selectSubscribedChannelsCount } from 'redux/slices/channel';
+import { selectFocusedChannelId, selectVisitedChannelId, selectChannelById, selectSelfChannelsCount, selectSubscriptionCountByUserDid } from 'redux/slices/channel';
 import { selectMyInfo } from 'redux/slices/user';
 import { selectQueryPublicStep } from 'redux/slices/proc';
 import { reduceHexAddress, reduceDIDstring, getImageSource, getChannelShortUrl, copy2clipboard } from 'utils/common'
@@ -132,9 +132,11 @@ const ChannelAbout = (props) => {
 }
 const ProfilePreview = () => {
   const { walletAddress } = React.useContext(SidebarContext);
+  const feedsDid = localStorage.getItem('FEEDS_DID')
+  const myDID = `did:elastos:${feedsDid}`
   const myInfo = useSelector(selectMyInfo)
   const selfChannelCount = useSelector(selectSelfChannelsCount)
-  const subscribedChannelCount = useSelector(selectSubscribedChannelsCount)
+  const subscribedChannelCount = useSelector(selectSubscriptionCountByUserDid(myDID))
   const myAvatarUrl = myInfo['avatar_url']
   const [avatarSrc, setAvatarSrc] = React.useState('');
   const LocalDB = getLocalDB()
@@ -208,7 +210,7 @@ function RightPanel() {
     if(pathname.endsWith('/credentials'))
       content = <ProfilePreview />
   }
-  else if(pathname.startsWith('/post')) {
+  else if(pathname.startsWith('/post') || pathname.startsWith('/subscription/list')) {
     content = null
   }
   else {

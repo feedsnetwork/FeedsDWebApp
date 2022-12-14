@@ -13,15 +13,17 @@ import { reduceDIDstring, decodeBase64 } from 'utils/common'
 import { selectUserInfoByDID } from 'redux/slices/user';
 import { getLocalDB } from 'utils/db';
 import { selectQueryStep, selectQueryStepStatus } from 'redux/slices/proc';
+import { selectSubscriptionCountByUserDid } from 'redux/slices/channel';
 
 function OthersProfile() {
+  const location = useLocation();
+  const { user_did } = (location.state || {}) as any
   const isPassedChannelStep = useSelector(selectQueryStepStatus('subscribed_channel'))
   const currentLikeStep = useSelector(selectQueryStep('post_like'))
+  const subscriptionCount = useSelector(selectSubscriptionCountByUserDid(user_did))
   const [tabValue, setTabValue] = React.useState(0);
   const [channels, setChannels] = React.useState([])
   const [likedPosts, setLikedPosts] = React.useState([])
-  const location = useLocation();
-  const { user_did } = (location.state || {}) as any
   const this_user = useSelector(selectUserInfoByDID(user_did)) || {}
   const avatarSrc = decodeBase64(this_user['avatarSrc'] || "")
   const LocalDB = getLocalDB()
@@ -61,7 +63,6 @@ function OthersProfile() {
 
   // const backgroundImg = "/temp-back.png"
   const selfChannels = channels.filter(channel=>channel['target_did'] === user_did)
-  const subscribedChannels = channels.filter(channel=>(channel['subscribers'] && channel['subscribers'].some(subscriber=>subscriber['user_did']===user_did)))
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
       <Card>
@@ -81,7 +82,7 @@ function OthersProfile() {
             <Typography variant="body1">{this_user['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
-              <Typography variant="body1"><strong>{subscribedChannels.length}</strong> Subscriptions</Typography>
+              <Typography variant="body1"><strong>{subscriptionCount}</strong> Subscriptions</Typography>
             </Stack>
             {/* <Stack direction='row' spacing={1}>
               <Box component="img" src='/pasar-logo.svg' width={30}/>
