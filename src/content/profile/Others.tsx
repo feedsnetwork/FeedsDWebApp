@@ -9,7 +9,7 @@ import { EmptyViewInProfile } from 'components/EmptyView'
 import PostCard from 'components/PostCard';
 import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
-import { reduceDIDstring, decodeBase64 } from 'utils/common'
+import { reduceDIDstring, decodeBase64, getShortDIDstring } from 'utils/common'
 import { selectUserInfoByDID } from 'redux/slices/user';
 import { getLocalDB } from 'utils/db';
 import { selectQueryStep, selectQueryStepStatus } from 'redux/slices/proc';
@@ -82,7 +82,7 @@ function OthersProfile() {
             <Typography variant="body1">{this_user['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
-              <Link component={RouterLink} to={`/subscription/list/${user_did}`} sx={{color:'inherit'}}>
+              <Link component={RouterLink} to={`/subscription/list/${getShortDIDstring(user_did)}`} sx={{color:'inherit'}}>
                 <Typography variant="body1"><strong>{subscriptionCount}</strong> Subscriptions</Typography>
               </Link>
             </Stack>

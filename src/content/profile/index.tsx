@@ -11,7 +11,7 @@ import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
 import ChannelSkeleton from 'components/Skeleton/ChannelSkeleton';
 import PostSkeleton from 'components/Skeleton/PostSkeleton';
-import { reduceDIDstring, getImageSource } from 'utils/common'
+import { reduceDIDstring, getImageSource, getShortDIDstring } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 import { selectMyInfo } from 'redux/slices/user';
 import { selectSelfChannels, selectSubscriptionCountByUserDid } from 'redux/slices/channel';
@@ -88,7 +88,7 @@ function Profile() {
             <Typography variant="body1">{myInfo['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
-              <Link component={RouterLink} to={`/subscription/list/${myDID}`} sx={{color:'inherit'}}>
+              <Link component={RouterLink} to={`/subscription/list/${getShortDIDstring(myDID)}`} sx={{color:'inherit'}}>
                 <Typography variant="body1"><strong>{subscriptionCount}</strong> Subscriptions</Typography>
               </Link>
             </Stack>

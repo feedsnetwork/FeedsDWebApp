@@ -387,4 +387,20 @@ export const filterSelfComment = (docs) => {
   }
   return resDocs
 }
+export const getShortDIDstring = (strDID) => {
+  if(!strDID)
+    return ''
+
+  if((strDID.match(/:/g) || []).length !== 2){
+    return strDID
+  }
+
+  const prefix = strDID.split(':', 2).join(':');
+  if (prefix.length >= strDID.length)
+    return strDID;
+  return strDID.substring(prefix.length + 1);
+}
+export const getFullDIDstring = (shortDID) => {
+  return `did:elastos:${shortDID}`
+}
 export const LimitPostCount = 30

@@ -6,10 +6,12 @@ import { Box, Container, Stack } from '@mui/material';
 import { EmptyView } from 'components/EmptyView'
 import ChannelListCard from './ChannelListCard';
 import { selectSubscriptionByUserDid } from 'redux/slices/channel';
+import { getFullDIDstring } from 'utils/common';
 
 const SubscriptionList = ()=>{
   const params = useParams();
-  const subscribedChannels = useSelector(selectSubscriptionByUserDid(params.userDid))
+  const userDID = getFullDIDstring(params.userDid)
+  const subscribedChannels = useSelector(selectSubscriptionByUserDid(userDID))
   return (
     <>
       {

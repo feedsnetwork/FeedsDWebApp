@@ -9,7 +9,7 @@ import { OverPageContext } from 'contexts/OverPageContext';
 import { selectVisitedChannelId, selectFocusedChannelId, selectChannelById, selectSubscriptionCountByUserDid } from 'redux/slices/channel';
 import { selectMyName, selectUserInfoByDID } from 'redux/slices/user';
 import { selectQueryPublicStep, selectQueryStep } from 'redux/slices/proc';
-import { SettingMenuArray, reduceDIDstring, filterSelfComment } from 'utils/common'
+import { SettingMenuArray, reduceDIDstring, filterSelfComment, getFullDIDstring } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
 const HeaderWrapper = styled(Box)(
@@ -68,7 +68,7 @@ function FloatingHeader(props) {
   const focusedChannel = useSelector(selectChannelById(selectedChannelId)) || {}
   const currentPostStep = useSelector(selectQueryStep('post_data'))
   const currentPublicPostStep = useSelector(selectQueryPublicStep('post_data'))
-  const subscriptionCount = useSelector(selectSubscriptionCountByUserDid(params?.userDid))
+  const subscriptionCount = useSelector(selectSubscriptionCountByUserDid(getFullDIDstring(params?.userDid)))
   const [postCountInFocus, setPostCountInFocus] = React.useState(0)
   const [activeCommentCount, setActiveCommentCount] = React.useState(0)
   const LocalDB = getLocalDB()
