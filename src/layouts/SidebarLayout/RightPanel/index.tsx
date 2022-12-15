@@ -5,7 +5,7 @@ import { Icon } from '@iconify/react';
 // import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import { useSnackbar } from 'notistack';
 import ShareIcon from '@mui/icons-material/ShareOutlined';
-import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, Typography, Grid, IconButton, Tooltip } from '@mui/material';
+import { Stack, Box, styled, useTheme, Button, Card, CardHeader, CardContent, Typography, Grid, IconButton, Tooltip, Link } from '@mui/material';
 
 import Scrollbar from 'components/Scrollbar';
 import StyledAvatar from 'components/StyledAvatar'
@@ -105,7 +105,11 @@ const ChannelAbout = (props) => {
           <Typography variant='h5' sx={{ display: 'flex', alignItems: 'center' }}>Subscribers</Typography>
         } 
         subheader={
-          <Typography variant='body2' color='text.secondary'>View all Subscribers</Typography>
+          subscribers.length>0?
+          <Link component={RouterLink} to={`/subscriber/list/${this_channel['channel_id']}`} sx={{color:'inherit'}}>
+            <Typography variant='body2' color='text.secondary'>View all Subscribers</Typography>
+          </Link>: 
+          <Typography variant='body2' color='text.secondary' align='center' pt={1.5}>No subscribers found</Typography>
         }
       />
       <CardContent sx={{pt: 0}}>
@@ -210,9 +214,12 @@ function RightPanel() {
     if(pathname.endsWith('/credentials'))
       content = <ProfilePreview />
   }
-  else if(pathname.startsWith('/post') || pathname.startsWith('/subscription/list')) {
+  else if(
+    pathname.startsWith('/post') || 
+    pathname.startsWith('/subscription/list') ||
+    pathname.startsWith('/subscriber/list')
+  )
     content = null
-  }
   else {
     const loadingChannelSkeletons = Array(5).fill(null)
     if(focusedChannel) {

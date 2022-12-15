@@ -131,6 +131,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
     || (pathname.startsWith('/channel') && focusedChannelId)
     || pathname.startsWith('/subscription/channel')
     || pathname.startsWith('/subscription/list')
+    || pathname.startsWith('/subscriber/list')
     || pathname.startsWith('/explore/channel')
     || pathname.startsWith('/setting')
     || pathname.startsWith('/post/')

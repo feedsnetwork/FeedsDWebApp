@@ -6,7 +6,7 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 
 import ChannelName from 'components/ChannelName';
 import { OverPageContext } from 'contexts/OverPageContext';
-import { selectVisitedChannelId, selectFocusedChannelId, selectChannelById, selectSubscriptionCountByUserDid } from 'redux/slices/channel';
+import { selectVisitedChannelId, selectFocusedChannelId, selectChannelById, selectSubscriptionCountByUserDid, selectSubscriberCountByChannelId } from 'redux/slices/channel';
 import { selectMyName, selectUserInfoByDID } from 'redux/slices/user';
 import { selectQueryPublicStep, selectQueryStep } from 'redux/slices/proc';
 import { SettingMenuArray, reduceDIDstring, filterSelfComment, getFullDIDstring } from 'utils/common'
@@ -69,6 +69,7 @@ function FloatingHeader(props) {
   const currentPostStep = useSelector(selectQueryStep('post_data'))
   const currentPublicPostStep = useSelector(selectQueryPublicStep('post_data'))
   const subscriptionCount = useSelector(selectSubscriptionCountByUserDid(getFullDIDstring(params?.userDid)))
+  const subscriberCount = useSelector(selectSubscriberCountByChannelId(params?.channelId))
   const [postCountInFocus, setPostCountInFocus] = React.useState(0)
   const [activeCommentCount, setActiveCommentCount] = React.useState(0)
   const LocalDB = getLocalDB()
@@ -152,6 +153,10 @@ function FloatingHeader(props) {
     else if(pathname.startsWith('/subscription/list')) {
       primaryText = "Subscriptions"
       secondaryText = `${subscriptionCount} subscriptions`
+    }
+    else if(pathname.startsWith('/subscriber/list')) {
+      primaryText = "Subscribers"
+      secondaryText = `${subscriberCount} subscriptions`
     }
     else if(pathname.startsWith('/profile')) {
       if(pathname.startsWith('/profile/others')) {

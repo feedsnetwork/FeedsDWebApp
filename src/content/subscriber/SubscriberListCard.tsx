@@ -44,7 +44,7 @@ const SubscriberListCard = (props) => {
           </Typography>
           {
             !!userInfo['description'] &&
-            <Typography variant="body2" color='text.secondary' noWrap>{userInfo['description']}</Typography>
+            <Typography variant="body2" color='text.secondary'>{userInfo['description']}</Typography>
           }
         </Hidden>
       </Box>
@@ -58,7 +58,7 @@ const SubscriberListCard = (props) => {
         </Typography>
         {
           !!userInfo['description'] &&
-          <Typography variant="body2" color='text.secondary' noWrap>{userInfo['description']}</Typography>
+          <Typography variant="body2" color='text.secondary'>{userInfo['description']}</Typography>
         }
       </Box>
     </Hidden>
