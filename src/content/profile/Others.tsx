@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { useLocation, NavLink as RouterLink } from 'react-router-dom';
+import { NavLink as RouterLink, useParams } from 'react-router-dom';
 import { Card, Container, Box, Typography, Stack, Tabs, Tab, Link } from '@mui/material';
 // import ShareIcon from '@mui/icons-material/ShareOutlined';
 
@@ -9,23 +9,23 @@ import { EmptyViewInProfile } from 'components/EmptyView'
 import PostCard from 'components/PostCard';
 import TabPanel from 'components/TabPanel'
 import ChannelListItem from './ChannelListItem'
-import { reduceDIDstring, getShortDIDstring, getImageSource } from 'utils/common'
+import { reduceDIDstring, getShortDIDstring, getImageSource, getFullDIDstring } from 'utils/common'
 import { selectUserInfoByDID } from 'redux/slices/user';
 import { getLocalDB } from 'utils/db';
 import { selectQueryStep, selectQueryStepStatus } from 'redux/slices/proc';
 import { selectSubscriptionCountByUserDid } from 'redux/slices/channel';
 
 function OthersProfile() {
-  const location = useLocation();
-  const { user_did } = (location.state || {}) as any
+  const params = useParams();
+  const userDID = getFullDIDstring(params?.userDid)
   const isPassedChannelStep = useSelector(selectQueryStepStatus('subscribed_channel'))
   const currentLikeStep = useSelector(selectQueryStep('post_like'))
-  const subscriptionCount = useSelector(selectSubscriptionCountByUserDid(user_did))
+  const subscriptionCount = useSelector(selectSubscriptionCountByUserDid(userDID))
   const [tabValue, setTabValue] = React.useState(0);
   const [avatarSrc, setAvatarSrc] = React.useState('');
   const [channels, setChannels] = React.useState([])
   const [likedPosts, setLikedPosts] = React.useState([])
-  const this_user = useSelector(selectUserInfoByDID(user_did)) || {}
+  const this_user = useSelector(selectUserInfoByDID(userDID)) || {}
   const userAvatarUrl = this_user['avatar_url']
   const LocalDB = getLocalDB()
 
@@ -63,7 +63,7 @@ function OthersProfile() {
       LocalDB.find({
         selector: {
           table_type: 'post',
-          like_creators: {'$elemMatch': {'$eq': user_did}}
+          like_creators: {'$elemMatch': {'$eq': userDID}}
         }
       })
         .then(response => {
@@ -71,10 +71,10 @@ function OthersProfile() {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentLikeStep])
+  }, [currentLikeStep, userDID])
 
   // const backgroundImg = "/temp-back.png"
-  const selfChannels = channels.filter(channel=>channel['target_did'] === user_did)
+  const selfChannels = channels.filter(channel=>channel['target_did'] === userDID)
   return (
     <Container sx={{ mt: 3 }} maxWidth="lg">
       <Card>
@@ -90,11 +90,11 @@ function OthersProfile() {
             </Box> */}
           </Stack>
           <Stack spacing={1} px={{sm: 0, md: 3}} mt={2}>
-            <Typography variant="h3">@{this_user['name'] || reduceDIDstring(user_did)}</Typography>
+            <Typography variant="h3">@{this_user['name'] || reduceDIDstring(userDID)}</Typography>
             <Typography variant="body1">{this_user['description']}</Typography>
             <Stack direction="row" sx={{flexWrap: 'wrap'}}>
               <Typography variant="body1" pr={3}><strong>{selfChannels.length}</strong> Channel</Typography>
-              <Link component={RouterLink} to={`/subscription/list/${getShortDIDstring(user_did)}`} sx={{color:'inherit'}}>
+              <Link component={RouterLink} to={`/subscription/list/${getShortDIDstring(userDID)}`} sx={{color:'inherit'}}>
                 <Typography variant="body1"><strong>{subscriptionCount}</strong> Subscriptions</Typography>
               </Link>
             </Stack>

@@ -19,7 +19,7 @@ import { CommonStatus } from 'models/common_content'
 import { HiveApi } from 'services/HiveApi'
 import { handleUnsubscribeModal, selectChannelById, setActiveChannelId, setFocusedChannelId, setTargetChannel, setVisitedChannelId } from 'redux/slices/channel';
 import { handleCommentModal, handleDelPostModal, handlePostModal, selectActivePost, setActivePost, setActivePostProps } from 'redux/slices/post';
-import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard, filterSelfComment } from 'utils/common'
+import { getDateDistance, isValidTime, hash, convertAutoLink, getPostShortUrl, copy2clipboard, filterSelfComment, getShortDIDstring } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 import { selectQueryStep } from 'redux/slices/proc';
 
@@ -193,7 +193,7 @@ const PostBody = (props) => {
     if(isSelf) {
       navigate('/profile')
     } else {
-      navigate('/profile/others', {state: {user_did: `did:elastos:${post.target_did}`}});
+      navigate(`/profile/others/${getShortDIDstring(post.target_did)}`);
     }
   }
   const channelAvatarProps = {contentObj, isReply, level, channel_id: post.channel_id, handleLink2Channel, handleLink2Profile}

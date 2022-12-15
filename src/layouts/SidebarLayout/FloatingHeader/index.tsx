@@ -51,14 +51,12 @@ function FloatingHeader(props) {
   const { rightPanelVisible } = props
   const { pageType, closeOverPage } = React.useContext(OverPageContext);
   const { pathname } = useLocation()
-  const location = useLocation()
   const navigate = useNavigate();
   const params = useParams()
-  const { user_did } = (location.state || {}) as any
+  const userInfo = useSelector(selectUserInfoByDID(getFullDIDstring(params?.userDid))) || {}
   const feedsDid = localStorage.getItem('FEEDS_DID')
   const visitedChannelId = useSelector(selectVisitedChannelId)
   const myName = useSelector(selectMyName)
-  const userInfo = useSelector(selectUserInfoByDID(user_did)) || {}
   const focusedChannelId = useSelector(selectFocusedChannelId)
   let selectedChannelId = focusedChannelId
   const isSubscribedChannel = pathname.startsWith('/subscription/channel')? true: false
@@ -160,7 +158,7 @@ function FloatingHeader(props) {
     }
     else if(pathname.startsWith('/profile')) {
       if(pathname.startsWith('/profile/others')) {
-        primaryText = userInfo['name'] || `@${reduceDIDstring(user_did)}`
+        primaryText = userInfo['name'] || `@${reduceDIDstring(params?.user_did)}`
       }
       else
         primaryText = myName || `@${reduceDIDstring(feedsDid)}`

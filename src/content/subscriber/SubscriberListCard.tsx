@@ -5,7 +5,7 @@ import { Card, Box, Typography, Stack, Link, Hidden } from '@mui/material';
 
 import StyledAvatar from 'components/StyledAvatar';
 import { selectUserInfoByDID } from 'redux/slices/user';
-import { getImageSource } from 'utils/common'
+import { getImageSource, getShortDIDstring } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 
 const SubscriberListCard = (props) => {
@@ -28,7 +28,7 @@ const SubscriberListCard = (props) => {
   }, [userAvatarUrl])
 
   const handleLink2Profile = (user_did)=>{
-      navigate('/profile/others', {state: {user_did}});
+      navigate(`/profile/others/${getShortDIDstring(user_did)}`);
   }
   return <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
     <Stack direction="row" spacing={2} alignItems="center">
@@ -38,7 +38,7 @@ const SubscriberListCard = (props) => {
       <Box flex={1}>
         <Hidden mdDown>
           <Typography variant="subtitle2" noWrap>
-            <Link component={RouterLink} to="/profile/others" state={{user_did: subscriber.user_did}} sx={{color:'inherit'}}>
+            <Link component={RouterLink} to={`/profile/others/${getShortDIDstring(subscriber.user_did)}`} sx={{color:'inherit'}}>
               @{subscriber.display_name}
             </Link>
           </Typography>
@@ -52,7 +52,7 @@ const SubscriberListCard = (props) => {
     <Hidden mdUp>
       <Box mt={1}>
         <Typography variant="subtitle2" noWrap>
-          <Link component={RouterLink} to="/profile/others" state={{user_did: subscriber.user_did}} sx={{color:'inherit'}}>
+          <Link component={RouterLink} to={`/profile/others/${getShortDIDstring(subscriber.user_did)}`} sx={{color:'inherit'}}>
             @{subscriber.display_name}
           </Link>
         </Typography>

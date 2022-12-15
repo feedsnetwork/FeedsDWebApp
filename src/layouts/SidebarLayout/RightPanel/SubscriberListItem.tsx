@@ -5,7 +5,7 @@ import { Stack, Box, Typography, Link } from '@mui/material'
 
 import StyledAvatar from 'components/StyledAvatar'
 import { selectUserInfoByDID } from 'redux/slices/user';
-import { getImageSource } from 'utils/common';
+import { getImageSource, getShortDIDstring } from 'utils/common';
 import { getLocalDB } from 'utils/db';
 
 const SubscriberListItem = (props) => {
@@ -27,7 +27,7 @@ const SubscriberListItem = (props) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userAvatarUrl])
     const handleLink2Profile = (user_did)=>{
-        navigate('/profile/others', {state: {user_did}});
+        navigate(`/profile/others/${getShortDIDstring(user_did)}`);
     }
 
     // const avatarContent = userInfo['avatarSrc'] || ""
@@ -39,7 +39,7 @@ const SubscriberListItem = (props) => {
             </Box>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
                 <Typography variant="subtitle2" noWrap>
-                    <Link component={RouterLink} to="/profile/others" state={{user_did: subscriber.user_did}} sx={{color:'inherit'}}>
+                    <Link component={RouterLink} to={`/profile/others/${getShortDIDstring(subscriber.user_did)}`} sx={{color:'inherit'}}>
                         @{subscriber.display_name}
                     </Link>
                 </Typography>

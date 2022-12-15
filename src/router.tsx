@@ -161,7 +161,7 @@ const routes: RouteObject[] = [
         element: <Profile />
       },
       {
-        path: 'others',
+        path: 'others/:userDid',
         element: <OthersProfile />
       }
     ]
