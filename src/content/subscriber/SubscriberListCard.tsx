@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
-import { useNavigate, NavLink as RouterLink } from 'react-router-dom';
-import { Card, Box, Typography, Stack, Link, Hidden } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Card, Box, Typography, Stack, Hidden } from '@mui/material';
 
 import StyledAvatar from 'components/StyledAvatar';
 import { selectUserInfoByDID } from 'redux/slices/user';
@@ -30,17 +30,15 @@ const SubscriberListCard = (props) => {
   const handleLink2Profile = (user_did)=>{
       navigate(`/profile/others/${getShortDIDstring(user_did)}`);
   }
-  return <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2}}>
+  return <Card sx={{background: (theme)=>theme.palette.primary.main, p: 2, cursor: 'pointer'}} onClick={(e)=>{handleLink2Profile(subscriber.user_did)}}>
     <Stack direction="row" spacing={2} alignItems="center">
-      <Box onClick={(e)=>{handleLink2Profile(subscriber.user_did)}} sx={{cursor: 'pointer'}}>
+      <Box>
         <StyledAvatar alt={subscriber.display_name} src={avatarSrc} width={32}/>
       </Box>
       <Box flex={1}>
         <Hidden mdDown>
           <Typography variant="subtitle2" noWrap>
-            <Link component={RouterLink} to={`/profile/others/${getShortDIDstring(subscriber.user_did)}`} sx={{color:'inherit'}}>
-              @{subscriber.display_name}
-            </Link>
+            @{subscriber.display_name}
           </Typography>
           {
             !!userInfo['description'] &&
@@ -52,9 +50,7 @@ const SubscriberListCard = (props) => {
     <Hidden mdUp>
       <Box mt={1}>
         <Typography variant="subtitle2" noWrap>
-          <Link component={RouterLink} to={`/profile/others/${getShortDIDstring(subscriber.user_did)}`} sx={{color:'inherit'}}>
-            @{subscriber.display_name}
-          </Link>
+          @{subscriber.display_name}
         </Typography>
         {
           !!userInfo['description'] &&
