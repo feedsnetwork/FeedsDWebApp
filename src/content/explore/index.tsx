@@ -13,7 +13,7 @@ import PostTextCard from 'components/PostCard/PostTextCard'
 import PostImgCard from 'components/PostCard/PostImgCard'
 // import InputOutline from 'components/InputOutline'
 import { selectPublicChannels } from 'redux/slices/channel';
-import { getMergedArray, sortByDate } from 'utils/common'
+import { getMergedArray, shuffleArray, sortByDate, spreadArrayByShuffledIndex } from 'utils/common'
 import { getLocalDB } from 'utils/db';
 import { selectQueryPublicStep } from 'redux/slices/proc';
 
@@ -24,7 +24,9 @@ function Explore() {
   const [tabValue, setTabValue] = React.useState(tab);
   const [containerWidth, setContainerWidth] = React.useState(0);
   const [publicPosts, setPublicPosts] = React.useState([])
+  const [shuffledIndexArr, setShuffledIndexArr] = React.useState([])
   const publicChannels = useSelector(selectPublicChannels)
+  const publicChannelArr = Object.values(publicChannels)
   const latestPublicPosts = sortByDate(getMergedArray(publicPosts)).slice(0, 10)
   const containerRef = React.useRef(null)
   const theme = useTheme();
@@ -66,7 +68,12 @@ function Explore() {
   React.useEffect(()=>{
     handleResize()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicChannels.length])
+  }, [publicChannelArr.length])
+
+  React.useEffect(()=>{
+    const tempIndexArr = new Array(publicChannelArr.length+publicPosts.length).fill(0).map((_, i)=>i)
+    setShuffledIndexArr(shuffleArray(tempIndexArr))
+  }, [publicChannelArr.length, publicPosts.length])
   
   const handleResize = () => {
     if(containerRef.current)
@@ -91,7 +98,7 @@ function Explore() {
     let content = []
     if("01".includes(tabValue.toString())) {
       content = content.concat(
-        Object.values(publicChannels).map((channel, _i)=>(
+        publicChannelArr.map((channel, _i)=>(
           <div className="item" key={channel['channel_id']} style={
             {
               width: cardWidthUnit,
@@ -112,7 +119,7 @@ function Explore() {
           return <div className="item" key={post.post_id} style={
             {
               width: isImageCard? 2*cardWidthUnit: cardWidthUnit,
-              height: isImageCard? 400: 200,
+              height: isImageCard? 488: 240,
               paddingRight: 8,
               paddingBottom: 8,
             }
@@ -125,8 +132,12 @@ function Explore() {
       )
     }
     return content
+    // return shuffleArray(content)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabValue, publicChannels, publicPosts])
+
+  let gridData = getGridContent()
+  gridData = spreadArrayByShuffledIndex(gridData, shuffledIndexArr, tabValue===2? publicChannels.length: 0)
 
   return (
     <Container sx={{ mt: 3 }} maxWidth={false}>
@@ -164,7 +175,7 @@ function Explore() {
       <Box ref={containerRef}>
         <Box pt={2}>
           <AutoResponsive {...getAutoResponsiveProps()}>
-            {getGridContent()}
+            {gridData}
           </AutoResponsive>
         </Box>
         {/* <TabPanel value={tabValue} index={1}>

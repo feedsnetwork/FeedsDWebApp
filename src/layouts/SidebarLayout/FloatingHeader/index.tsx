@@ -154,7 +154,7 @@ function FloatingHeader(props) {
     }
     else if(pathname.startsWith('/subscriber/list')) {
       primaryText = "Subscribers"
-      secondaryText = `${subscriberCount} subscriptions`
+      secondaryText = `${subscriberCount} subscribers`
     }
     else if(pathname.startsWith('/profile')) {
       if(pathname.startsWith('/profile/others')) {

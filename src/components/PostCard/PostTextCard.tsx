@@ -62,12 +62,13 @@ const PostTextCard = (props) => {
               color: '#368BFF', 
               textDecoration: 'none'
             },
-            lineHeight: 1.3,
+            lineHeight: 1.4,
             WebkitLineClamp: 5,
             WebkitBoxOrient: 'vertical',
             // whiteSpace: 'normal',
             textOverflow: 'ellipsis',
             overflow: 'hidden',
+            wordBreak: 'break-all',
             display: '-webkit-box !important'
           }}
         >

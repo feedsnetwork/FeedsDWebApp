@@ -5,7 +5,6 @@ import { styled } from '@mui/material/styles';
 import { Box, Typography, Stack } from '@mui/material';
 
 import PaperRecord from 'components/PaperRecord'
-import ChannelName from 'components/ChannelName';
 import { setVisitedChannelId } from 'redux/slices/channel';
 import { getImageSource, getIpfsUrl } from 'utils/common';
 // ----------------------------------------------------------------------
@@ -64,7 +63,7 @@ const ChannelCardPaper = (props) => {
         </Box>
         <Box sx={{px:2, pt: 1, pb: 2}}>
           <Stack direction="column" sx={{justifyContent: 'center', textAlign: 'center'}}>
-            <ChannelName name={display_name} isPublic={true} variant="h6" sx={{fontWeight: 'normal', justifyContent: 'center'}}/>
+            <Typography variant='h6' noWrap sx={{fontWeight: 'normal', justifyContent: 'center'}}>{display_name} </Typography>
             <TypographyStyle 
               variant="subtitle2"
               color='text.secondary'
@@ -75,7 +74,8 @@ const ChannelCardPaper = (props) => {
                 whiteSpace: 'normal',
                 textOverflow: 'ellipsis',
                 overflow: 'hidden',
-                display: '-webkit-box !important'
+                display: '-webkit-box !important',
+                wordBreak: 'break-all'
               }}
             >
               {intro}
