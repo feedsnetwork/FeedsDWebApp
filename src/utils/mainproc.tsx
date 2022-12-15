@@ -99,7 +99,16 @@ export const mainproc = (props) => {
                     table_type: 'channel'
                 }
             })
-                .then(response=>dispatch(setChannelData(response.docs)))
+                .then(response=>{
+                    const postLoadedObj = response.docs
+                        .filter(doc=>doc['loaded_post'])
+                        .reduce((res, doc)=>{
+                            res[doc._id] = true
+                            return res
+                        }, {})
+                    dispatch(setPostLoadedChannel(postLoadedObj))
+                    return dispatch(setChannelData(response.docs))
+                })
                 .then(resolve)
                 .catch(reject)
         })

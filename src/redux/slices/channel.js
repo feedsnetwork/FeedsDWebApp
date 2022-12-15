@@ -72,7 +72,10 @@ const slice = createSlice({
       state.visitedChannelId = action.payload
     },
     setPostLoadedChannel(state, action) {
-      state.postLoadedChannels[action.payload] = true
+      if(typeof action.payload === 'object')
+        state.postLoadedChannels = {...state.postLoadedChannels, ...action.payload}
+      else
+        state.postLoadedChannels[action.payload] = true
     },
   }
 });
