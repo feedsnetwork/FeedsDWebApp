@@ -766,7 +766,6 @@ export const mainproc = (props) => {
                 subscriberArr = getFilteredArrayByUnique(subscriberArr, 'user_did')
                 const userDataResponse = await LocalDB.find({ selector: {table_type: 'user'} })
                 const userDataDocs = userDataResponse.docs
-                dispatch(setUserInfo(userDataDocs))
                 // query user info
                 const queriedDIDs = userDataDocs.map(doc=>doc._id)
                 subscriberArr = excludeFromArray(subscriberArr, queriedDIDs, 'user_did')

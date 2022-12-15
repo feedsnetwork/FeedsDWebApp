@@ -2,16 +2,16 @@ import React from 'react'
 import { useLocation } from 'react-router';
 import { useSelector } from 'react-redux';
 // import InfiniteScroll from "react-infinite-scroll-component";
-import { Box, Tabs, Tab, Stack, Container, InputAdornment } from '@mui/material';
+import { Box, Tabs, Tab, Stack, Container } from '@mui/material';
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
+// import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 import AutoResponsive from 'autoresponsive-react'
 
 import ChannelCard from 'components/ChannelCard'
 import PostTextCard from 'components/PostCard/PostTextCard'
 import PostImgCard from 'components/PostCard/PostImgCard'
-import InputOutline from 'components/InputOutline'
+// import InputOutline from 'components/InputOutline'
 import { selectPublicChannels } from 'redux/slices/channel';
 import { getMergedArray, sortByDate } from 'utils/common'
 import { getLocalDB } from 'utils/db';

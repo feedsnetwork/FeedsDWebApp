@@ -14,24 +14,31 @@ const slice = createSlice({
       state.myInfo = {...state.myInfo, ...action.payload}
     },
     setUserInfo(state, action) {
+      const prevUserDocs = {...state.userData}
       if(Array.isArray(action.payload)) {
         let tempDocs = [...action.payload]
-        tempDocs = tempDocs.filter(doc=>!Object.keys(state.userData).includes(doc?.user_did))
-        const userDocs = tempDocs.reduce((group, doc)=>{
-          group[doc?.user_did] = doc
-          return group
-        }, {})
-        state.userData = { ...state.userData, ...userDocs }
+        const newUserDocs = tempDocs
+          .filter(doc=>!Object.keys(prevUserDocs).includes(doc?.user_did))
+          .reduce((group, doc)=>{
+            group[doc?.user_did] = doc
+            return group
+          }, {})
+        tempDocs
+          .filter(doc=>Object.keys(prevUserDocs).includes(doc?.user_did))
+          .map(doc=>{
+            prevUserDocs[doc?.user_did] = {...prevUserDocs[doc?.user_did], ...doc}
+            return true
+          })
+        state.userData = { ...prevUserDocs, ...newUserDocs }
         return
       }
-      const tempState = { ...state.userData }
       Object.keys(action.payload).forEach(key=>{
-        if(tempState[key])
-          tempState[key] = {...tempState[key], ...action.payload[key]}
+        if(prevUserDocs[key])
+          prevUserDocs[key] = {...prevUserDocs[key], ...action.payload[key]}
         else
-          tempState[key] = {...action.payload[key]}
+          prevUserDocs[key] = {...action.payload[key]}
       })
-      state.userData = tempState
+      state.userData = prevUserDocs
     },
   }
 });

@@ -24,6 +24,7 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { selectFocusedChannelId } from 'redux/slices/channel'
 import { updateProc, updatePublicProc } from 'redux/slices/proc';
 import { setPostMediaLoaded, updateLoadedPostCount } from 'redux/slices/post';
+import { setUserInfo } from 'redux/slices/user';
 import { isInAppBrowser } from 'utils/common'
 import { getLocalDB, StepType } from 'utils/db'
 import { mainproc } from 'utils/mainproc';
@@ -73,6 +74,8 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
       }
     })
       .then(response=>dispatch(setPostMediaLoaded(response.docs)))
+    LocalDB.find({ selector: {table_type: 'user'} })
+      .then(response=>dispatch(setUserInfo(response.docs)))
     const queryProc = proc.queryProc
     proc.queryLocalChannelStep()
       .then(_=>{
