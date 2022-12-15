@@ -9,7 +9,7 @@ import SidebarChannel from './SidebarChannel';
 import RightPanel from './RightPanel';
 import Header from './Header';
 import FloatingHeader from './FloatingHeader'
-import { essentialsConnector, initConnectivitySDK } from 'content/signin/EssentialConnectivity';
+import BannerNotice from './BannerNotice';
 import AddChannel from 'components/AddChannel';
 import ChannelCreatedDlg from 'components/Modal/ChannelCreated'
 import PublishChannelDlg from 'components/Modal/PublishChannel'
@@ -19,6 +19,7 @@ import PostDlg from 'components/Modal/Post'
 import CommentDlg from 'components/Modal/Comment'
 import PostImgScreenDlg from 'components/Modal/PostImgScreen'
 import DeletePostDlg from 'components/Modal/DeletePost'
+import { essentialsConnector, initConnectivitySDK } from 'content/signin/EssentialConnectivity';
 import { OverPageContext } from 'contexts/OverPageContext';
 import { SidebarContext } from 'contexts/SidebarContext';
 import { selectFocusedChannelId } from 'redux/slices/channel'
@@ -36,9 +37,9 @@ interface SidebarLayoutProps {
 const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
   const { maxWidth=false } = props
   const { needQueryChannel, setWalletAddress } = useContext(SidebarContext);
+  const focusedChannelId = useSelector(selectFocusedChannelId)
   const sessionLinkFlag = localStorage.getItem('FEEDS_LINK');
   const dispatch = useDispatch()
-  const focusedChannelId = useSelector(selectFocusedChannelId)
   const LocalDB = getLocalDB()
   // LocalDB.destroy()
 
@@ -186,6 +187,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = (props) => {
           <stop offset={1} stopColor="#368BFF" />
         </linearGradient>
       </svg>
+      <BannerNotice />
       <Hidden lgUp>
         <Header />
       </Hidden>
