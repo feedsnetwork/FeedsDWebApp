@@ -149,7 +149,7 @@ function Explore() {
             {/* <Tab label="Hashtags" />
             <Tab label="NFTs" /> */}
         </Tabs>
-        <InputOutline
+        {/* <InputOutline
           type="text"
           placeholder="Search"
           size="small"
@@ -159,7 +159,7 @@ function Explore() {
             </InputAdornment>
           }
           style={{flexGrow: 1}}
-        />
+        /> */}
       </Stack>
       <Box ref={containerRef}>
         <Box pt={2}>

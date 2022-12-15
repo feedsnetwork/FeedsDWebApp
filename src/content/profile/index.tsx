@@ -118,7 +118,7 @@ function Profile() {
             !selfChannels.length && isSelfChannelLoaded?
             <EmptyViewInProfile type='channel'/>:
 
-            <Stack spacing={1}>
+            <Stack spacing={2}>
               {
                 !isSelfChannelLoaded?
                 loadingSkeletons.map((_, _i)=><ChannelSkeleton key={_i}/>):

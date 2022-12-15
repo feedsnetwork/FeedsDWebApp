@@ -217,6 +217,7 @@ function RightPanel() {
   else if(
     pathname.startsWith('/post') || 
     pathname.startsWith('/subscription/list') ||
+    pathname.startsWith('/profile/others') ||
     pathname.startsWith('/subscriber/list')
   )
     content = null

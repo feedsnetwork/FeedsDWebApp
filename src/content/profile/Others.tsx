@@ -124,7 +124,7 @@ function OthersProfile() {
             !selfChannels.length?
             <EmptyViewInProfile type='channel'/>:
 
-            <Stack spacing={1}>
+            <Stack spacing={2}>
               {
                 selfChannels.map((channel, _i)=>(
                   <ChannelListItem channel={channel} key={_i}/>
