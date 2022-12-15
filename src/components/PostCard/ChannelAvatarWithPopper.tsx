@@ -1,4 +1,5 @@
 import React from 'react'
+import { NavLink as RouterLink } from 'react-router-dom';
 import { useSelector } from 'react-redux'
 import { Icon } from '@iconify/react';
 import { Box, Paper, Stack, Divider, AvatarGroup, Fade, Popper, styled, Typography, Link, Avatar } from '@mui/material';
@@ -98,7 +99,8 @@ const ChannelAvatarWithPopper = (props) => {
             <Box
                 onMouseEnter={(e)=>{handlePopper(e, true)}}
                 onMouseLeave={(e)=>{handlePopper(e, false)}}
-                onClick={level===1? handleLink2Channel: null}
+                onClick={level===1? handleLink2Channel: handleLink2Profile}
+                sx={{cursor: 'pointer'}}
             >
                 <AvatarComponent alt={contentObj.avatar.name} src={contentObj.avatar.src} width={isReply?40:47}/>
             </Box>
@@ -163,10 +165,12 @@ const ChannelAvatarWithPopper = (props) => {
                                         <Typography component='div' variant="body2" color="secondary">{currentChannel['intro']}</Typography>
                                     </Box>
                                     <Divider sx={{my: 1}}/>
-                                    <Typography variant="body2" component='div' sx={{display: 'flex'}}>
-                                    <Icon icon="clarity:group-line" fontSize='20px' />&nbsp;
-                                        {subscribersOfThis.length} Subscribers
-                                    </Typography>
+                                    <Link component={RouterLink} to={`/subscriber/list/${currentChannel['channel_id']}`} sx={{color:'inherit'}}>
+                                        <Typography variant="body2" component='div' sx={{display: 'flex'}}>
+                                            <Icon icon="clarity:group-line" fontSize='20px' />&nbsp;
+                                            {subscribersOfThis.length} Subscribers
+                                        </Typography>
+                                    </Link>
                                     {
                                         subscribersOfThis.length>0 &&
                                         <Stack direction="row" mt={1} spacing={1}>

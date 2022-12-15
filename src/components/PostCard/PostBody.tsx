@@ -189,11 +189,12 @@ const PostBody = (props) => {
   }
   const handleLink2Profile = (e)=>{
     e.stopPropagation()
-    const isSelf = post.target_did === feedsDid
+    const userDID = level===1? post.target_did: post.creater_did
+    const isSelf = userDID === feedsDid
     if(isSelf) {
       navigate('/profile')
     } else {
-      navigate(`/profile/others/${getShortDIDstring(post.target_did)}`);
+      navigate(`/profile/others/${getShortDIDstring(userDID)}`);
     }
   }
   const channelAvatarProps = {contentObj, isReply, level, channel_id: post.channel_id, handleLink2Channel, handleLink2Profile}
@@ -205,12 +206,16 @@ const PostBody = (props) => {
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography component='div' variant="subtitle2" noWrap>
               {
-                level===1?
+                level===1 &&
                 <Link sx={{color:'inherit'}} onClick={handleLink2Channel}>
                   <ChannelName name={contentObj.primaryName} isPublic={currentChannel['is_public']} variant="div" sx={{display: 'inline-flex'}}/>
-                </Link>:
-
-                contentObj.primaryName
+                </Link>
+              }
+              {
+                level===2 &&
+                <Link sx={{color:'inherit', cursor:'pointer'}} onClick={handleLink2Profile}>
+                  {contentObj.primaryName}
+                </Link>
               }
               {' '}<Typography variant="body2" color="text.secondary" sx={{display: 'inline'}}>{distanceTime}</Typography>
             </Typography>
