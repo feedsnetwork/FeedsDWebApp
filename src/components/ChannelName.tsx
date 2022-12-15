@@ -1,4 +1,4 @@
-import { Typography } from '@mui/material';
+import { Typography, Tooltip } from '@mui/material';
 import StyledIcon from './StyledIcon';
 
 const ChannelName = (props)=>{
@@ -9,7 +9,7 @@ const ChannelName = (props)=>{
       {styledName}
       {
         isPublic &&
-        <>&nbsp;<StyledIcon icon="bi:x-diamond-fill" /></>
+        <>&nbsp;<Tooltip arrow title="Channel NFT" disableInteractive enterTouchDelay={0}><span><StyledIcon icon="bi:x-diamond-fill" /></span></Tooltip></>
       }
       {
         !!props.children &&
