@@ -16,7 +16,15 @@ function BannerNotice() {
   }, [needQueryChannel, loadedPostCount])
 
   return (
-    <Collapse in={isOpenedAlert}>
+    <Collapse 
+      in={isOpenedAlert} 
+      sx={{ 
+        position: 'absolute', 
+        width: '100%', 
+        zIndex: 10, 
+        backdropFilter: 'blur(4px)' 
+      }}
+    >
       <Alert
         severity="info"
         action={
@@ -31,7 +39,15 @@ function BannerNotice() {
             <CloseIcon fontSize="inherit" />
           </IconButton>
         }
-        sx={{borderRadius: 0}}
+        sx={{
+          borderRadius: 0, 
+          justifyContent: 'center', 
+          '& .MuiAlert-action': {
+            position: 'absolute', 
+            ml: 'unset', 
+            right: '20px'
+          }
+        }}
       >
         Loading posts...✨ It may take some time ⏱️ so feel free to browse around while waiting for the loading to complete 🙏
       </Alert>
